@@ -6,7 +6,7 @@ $database = [
     'host' => 'localhost',
     'user' => 'root',
     'password' => '',
-    'database' => 'portfolio',
+    'database' => 'satisfactory_planner',
 ];
 
 /**
@@ -30,7 +30,7 @@ $email = [
  */
 $site = [
     // General settings
-    'siteName' => 'PDO Template',
+    'siteName' => 'Satisfactory Planner',
     'debug' => true, // shows errors if true
     'maintenance' => false, // shows the maintenance page if true the client's IP is not in the allowedIPs array
 
@@ -51,13 +51,13 @@ $site = [
 
     // Accounts settings
     'accounts'=>[
-        'enabled' => false,
+        'enabled' => true   ,
         'sessionName' => 'userId', // the session name that will be used to store that the user is logged in check by isset function
         'filterInUrl' => '', // empty string means no filter
     ],
 
     // popup settings
-    'showPopup' => true,
+    'showPopup' => false,
     'popupTitle' => 'Note',
     'popupMessage' => 'This is a popup you can change it in the settings!',
     'popupButtons' => [

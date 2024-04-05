@@ -15,7 +15,7 @@ class GlobalUtility
 
         $table = '<div class="' . ($bootstrap ? 'table-responsive' : '') . '">';
         $table .= '<table class="' . $tableClass . '">';
-        $table .= '<thead><tr>';
+        $table .= '<thead class="' .($bootstrap ? 'table-dark' : '') . '"><tr>';
 
         if (!empty($data)) {
             foreach (get_object_vars($data[0]) as $column => $value) {

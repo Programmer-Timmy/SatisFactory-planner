@@ -67,7 +67,7 @@ class Database
     /**
      * @param string $table
      * @param array $columns
-     * @param $join
+     * @param array $join
      * @param array $where
      * @param string $orderBy
      * @return mixed

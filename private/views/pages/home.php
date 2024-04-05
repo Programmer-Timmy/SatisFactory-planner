@@ -1,4 +1,32 @@
+<?php
+$gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
 
-<div class="container">
-<?= GlobalUtility::createTable(Database::getAll('projects'), ['name'], [['class' => 'btn btn-danger', 'action'=> '?delete=', 'label' => 'X'],['class' => 'btn btn-primary', 'action'=> 'edit_project?id=', 'label' => '...']], true) ?>
+?>
+<div class="container mt-5">
+    <h1>Game Saves</h1>
+    <?php if (empty($gameSaves)) : ?>
+        <h1>No Game Saves Found</h1>
+    <?php else :?>
+<!--    show cards-->
+        <div class="row">
+            <?php foreach ($gameSaves as $gameSave) : ?>
+                <div class="col-md-4">
+                    <a href="game_save?id=<?= $gameSave->game_saves_id ?>" class="card-link text-black text-decoration-none">
+                        <div class="card mt-3">
+                            <img src="image/default_img.png" class="card-img-top" style="height: 250px; object-fit: cover" alt="...">
+                            <div class="card-body">
+                                <h5 class="card-title"><?= $gameSave->title ?></h5>
+                                <p class="card-text">Owner: <?= $gameSave->Owner ?></p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted text-right">Created At: <?= $gameSave->created_at ?></small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+
 </div>
