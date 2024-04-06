@@ -1,4 +1,6 @@
 <?php
+
+
 // Include necessary files
 require_once __DIR__ . '/../private/autoload.php';
 require_once __DIR__ . '/../private/config/settings.php';
@@ -12,6 +14,7 @@ global $allowedIPs;
 
 // Determine which page to display based on the request
 $requestedPage = $_SERVER['REQUEST_URI'];
+
 if ($requestedPage == "/") {
     $requestedPage = '/home';
 }
@@ -40,7 +43,7 @@ if ($site['admin']['enabled']) {
         if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && $require !== '/404' && $require !== '/maintenance') {
             if (!isset($_SESSION[$admin['sessionName']])) {
                 if($site['saveUrl']){
-                    $_SESSION['redirect'] = $require;
+                    $_SESSION['redirect'] = $requestedPage;
                 }
                 header('Location:' . $admin['redirect']);
             }
@@ -59,7 +62,7 @@ if ($site['accounts']['enabled']) {
             if (!isset($_SESSION[$accounts['sessionName']])) {
                 if ($site['saveUrl']) {
                     if ($require !== '/' . $site['redirect']) {
-                        $_SESSION['redirect'] = $require;
+                        $_SESSION['redirect'] = $requestedPage;
                     }
                 }
 

@@ -13,12 +13,12 @@ if (empty($gameSave)) {
 }
 
 $productionLines = ProductionLines::getProductionLinesByGameSave($gameSave->id);
-var_dump($productionLines);
 $total_power_consumption = 0;
 foreach ($productionLines as $productionLine) {
     $total_power_consumption += $productionLine->power_consumbtion;
 }
-var_dump($total_power_consumption);
+
+$_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 ?>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">

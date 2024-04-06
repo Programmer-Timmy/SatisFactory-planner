@@ -49,9 +49,9 @@ class Database
     {// use foreach use ani sql injection use ?
         $sql = "INSERT INTO $table (";
         foreach ($columns as $column) {
-            $sql .= "$column,";
+            $sql .= "$column, ";
         }
-        $sql = substr($sql, 0, -1);
+        $sql = substr($sql, 0, -2);
         $sql .= ") VALUES (";
         foreach ($values as $value) {
             $sql .= "?,";
@@ -60,7 +60,17 @@ class Database
         $sql .= ")";
         $sql = htmlspecialchars($sql);
         $stmt = (new Database)->prepare($sql);
-        $stmt->execute($values);
+        try {
+            $stmt->execute($values);
+        } catch (Exception $e) {
+            // Construct error message including SQL query and values
+            $errorMessage = "Error executing SQL query: " . $stmt->queryString . ". Values: " . json_encode($values) . ". Exception: " . $e->getMessage();
+
+            // Handle the exception, such as logging or displaying an error message
+            // Then you can rethrow the exception if needed
+            throw new ErrorException($errorMessage);
+        }
+
 
     }
 
