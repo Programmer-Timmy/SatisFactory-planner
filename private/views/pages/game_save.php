@@ -18,6 +18,12 @@ foreach ($productionLines as $productionLine) {
     $total_power_consumption += $productionLine->power_consumbtion;
 }
 
+if (isset($_GET['productDelete'])) {
+    Database::delete("production_lines", ['id' => $_GET['productDelete']]);
+    header('Location: game_save?id=' . $_GET['id']);
+    exit();
+}
+
 $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 ?>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -50,7 +56,10 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
     <h1 class="text-center pb-3">Game Save [<?= $gameSave->title ?>]</h1>
     <div class="row">
         <div class="col-md-8">
-            <h2>Production Lines</h2>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Production Lines</h2>
+                <button id="add_product_line" class="btn btn-primary">Add Production Line</button>
+            </div>
             <?php if (empty($productionLines)) : ?>
                 <h4 class="text-center mt-3">No Production Lines Found</h4>
             <?php else: ?>
@@ -61,6 +70,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                         <th scope="col">Power Consumption</th>
                         <th scope="col">Updated At</th>
                         <th scope="col"></th>
+                        <th scope="col"></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -69,7 +79,12 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                             <td><?= $productionLine->name ?></td>
                             <td><?= $productionLine->power_consumbtion ?></td>
                             <td><?= $productionLine->updated_at ?></td>
-                            <td><a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary">View Production Line</a></td>
+                            <td class="">
+                                <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary">View Production Line</a>
+                            </td>
+                            <td>
+                                <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>" onclick="return confirm('Are you sure you want to delete this production line?')" class="btn btn-danger">X</a>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -85,3 +100,6 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 
         </div>
     </div>
+</div>
+
+<?php require_once '../private/views/Popups/addProductionLine.php'; ?>
