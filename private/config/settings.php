@@ -35,7 +35,7 @@ $site = [
     'maintenance' => false, // shows the maintenance page if true the client's IP is not in the allowedIPs array
 
     // ajax on or off
-    'ajax' => false, // if true the site will only load the ajax pages
+    'ajax' => true, // if true the site will only load the ajax pages
 
     // Auth settings
     'user-adminTable' => 'users', // the table name that will be used to check if the user/admin exists

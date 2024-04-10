@@ -28,7 +28,7 @@ class ProductionLines
 
     public static function getProductionByProductionLine(int $productionLineId)
     {
-        return Database::getAll("production", ['recipes.id as recipe_id', 'production.local_usage as `usage`', 'recipes.name as recipe_name', 'production.export_ammount_per_min as export_amount_per_min', 'buildings.name as building_name', 'buildings.power_used', 'production.quantity as product_quantity'], ["recipes" => "recipes.id = production.recipe_id", 'buildings' => 'buildings.id = recipes.buildings_id'], ["production_lines_id" => $productionLineId]);
+        return Database::getAll("production", ['recipes.id as recipe_id', 'production.local_usage', 'recipes.name as recipe_name', 'production.export_ammount_per_min as export_amount_per_min', 'buildings.name as building_name', 'buildings.power_used', 'production.quantity as product_quantity'], ["recipes" => "recipes.id = production.recipe_id", 'buildings' => 'buildings.id = recipes.buildings_id'], ["production_lines_id" => $productionLineId]);
     }
 
     public static function getPowerByProductionLine(int $productionLineId)
@@ -41,18 +41,19 @@ class ProductionLines
         Database::delete("input", ['production_lines_id' => $id]);
         Database::delete("production", ['production_lines_id' => $id]);
         Database::delete("power", ['production_lines_id' => $id]);
+        Database::delete("output", ['production_lines_id' => $id]);
+
         Database::update("production_lines",['power_consumbtion'], [$totalConsumption], ['id' => $id]);
         foreach ($imports as $import) {
-//            print_r($import);
             Database::insert("input", ['production_lines_id', 'items_id', 'ammount'], [$id, $import->id, $import->ammount]);
         }
         foreach ($production as $prod) {
-            print_r($prod);
+            $recipes = Recipes::getRecipeById($prod->recipe_id);
             Database::insert("production", ['production_lines_id', 'recipe_id', 'quantity', 'local_usage', 'export_ammount_per_min'], [$id, $prod->recipe_id, $prod->product_quantity, $prod->usage, $prod->export_amount_per_min]);
+            Database::insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id, $prod->export_amount_per_min]);
         }
         foreach ($power as $pow) {
-//            print_r($pow);
-            Database::insert("power", ['production_lines_id', 'buildings_id', 'building_ammount', 'clock_speed', 'power_used'], [$id, $pow->buildings_id, $pow->building_ammount, $pow->clock_speed, $pow->power_used]);
+            Database::insert("power", ['production_lines_id', 'buildings_id', 'building_ammount', 'clock_speed', 'power_used', 'user'], [$id, $pow->buildings_id, $pow->building_ammount, $pow->clock_speed, $pow->power_used, $pow->user]);
         }
 
         return true;
