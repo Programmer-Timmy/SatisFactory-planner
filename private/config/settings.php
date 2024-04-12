@@ -92,6 +92,8 @@ $titles = [
     'about' => 'About Us - ' . $site['siteName'],
     'contact' => 'Contact Us - ' . $site['siteName'],
     'game_save' => 'Game Save - ' . $site['siteName'],
+    'production_line' => 'Production Line - ' . $site['siteName'],
+
     '404' => '404 - Oops page not found!',
     // Add more titles as needed
 ];

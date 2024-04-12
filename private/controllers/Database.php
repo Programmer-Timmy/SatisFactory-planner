@@ -39,14 +39,20 @@ class Database
         return $this->connection->prepare($sql);
     }
 
+    function lastInsertId()
+    {
+        return $this->connection->lastInsertId();
+    }
+
+
     /**
      * @param string $table
      * @param array $columns
      * @param array $values
      * @return void
      */
-    public static function insert(string $table, array $columns, array $values)
-    {// use foreach use ani sql injection use ?
+    public static function insert(string $table, array $columns, array $values, $connection = (new Database))
+    {
         $sql = "INSERT INTO $table (";
         foreach ($columns as $column) {
             $sql .= "$column, ";
@@ -59,9 +65,12 @@ class Database
         $sql = substr($sql, 0, -1);
         $sql .= ")";
         $sql = htmlspecialchars($sql);
-        $stmt = (new Database)->prepare($sql);
+        $stmt = $connection->prepare($sql);
         try {
             $stmt->execute($values);
+            // Get the last inserted ID
+            $lastInsertId = $connection->lastInsertId();
+            return $lastInsertId;
         } catch (Exception $e) {
             // Construct error message including SQL query and values
             $errorMessage = "Error executing SQL query: " . $stmt->queryString . ". Values: " . json_encode($values) . ". Exception: " . $e->getMessage();
@@ -70,8 +79,6 @@ class Database
             // Then you can rethrow the exception if needed
             throw new ErrorException($errorMessage);
         }
-
-
     }
 
     /**

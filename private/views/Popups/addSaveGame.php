@@ -1,19 +1,20 @@
 <?php
-if ($_POST && isset($_POST['productionLineName'])) {
+if ($_POST && isset($_POST['saveGameName'])) {
     // Assuming you've included or defined the Database class somewhere
-    $gameSaveId = $_GET['id'];
-    $productionLineName = $_POST['productionLineName'];
+    ;
+    $saveGameName = $_POST['saveGameName'];
 
     // Assuming Database::insert() is a function that inserts data into the database
-    $id = ProductionLines::addProductionline($gameSaveId, $productionLineName);
-    if ($id) {
-        echo "<script>location.href = 'production_line?id=$id';</script>";
+    $gameSaveId = GameSaves::createSaveGame($_SESSION['userId'], $saveGameName);
+    if ($gameSaveId) {
+        header('Location: game_save?id=' . $gameSaveId);
         exit();
     }
+
 }
 ?>
 
-<div class="modal" id="addProductionLine" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
+<div class="modal" id="popupModal" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -23,8 +24,8 @@ if ($_POST && isset($_POST['productionLineName'])) {
             <form method="post">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="productionLineName" class="form-label">Production Line Name</label>
-                        <input type="text" class="form-control" id="productionLineName" name="productionLineName"
+                        <label for="saveGameName" class="form-label">Production Line Name</label>
+                        <input type="text" class="form-control" id="saveGameName" name="saveGameName"
                                required>
                     </div>
                 </div>
@@ -37,7 +38,7 @@ if ($_POST && isset($_POST['productionLineName'])) {
 </div>
 <script>
     document.getElementById('add_product_line').addEventListener('click', function () {
-        const addProductionLine = new bootstrap.Modal(document.getElementById('addProductionLine'));
-        addProductionLine.show();
+        const popupModal = new bootstrap.Modal(document.getElementById('popupModal'));
+        popupModal.show();
     });
 </script>

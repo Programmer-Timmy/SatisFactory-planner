@@ -22,40 +22,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $productionData = [];
     $powerData = [];
 
-    for ($i = 0; $i < count($data['imports_item_id']); $i++) {
-        if ($data['imports_ammount'][$i] == 0 || $data['imports_ammount'][$i] == '' || !$data['imports_item_id'][$i]) {
-            continue;
+    if (!empty($data['imports_item_id'])) {
+        for ($i = 0; $i < count($data['imports_item_id']); $i++) {
+            if ($data['imports_ammount'][$i] == 0 || $data['imports_ammount'][$i] == '' || !$data['imports_item_id'][$i]) {
+                continue;
+            }
+            $importsData[] = (object)[
+                'id' => $data['imports_item_id'][$i],
+                'ammount' => $data['imports_ammount'][$i]
+            ];
         }
-        $importsData[] = (object)[
-            'id' => $data['imports_item_id'][$i],
-            'ammount' => $data['imports_ammount'][$i]
-        ];
     }
 
-    for ($i = 0; $i < count($data['production_recipe_id']); $i++) {
-        if ($data['production_quantity'][$i] == 0 || $data['production_quantity'][$i] == '' || !$data['production_recipe_id'][$i]) {
-            continue;
+
+    if (!empty($data['production_recipe_id'])) {
+        for ($i = 0; $i < count($data['production_recipe_id']); $i++) {
+            if ($data['production_quantity'][$i] == 0 || $data['production_quantity'][$i] == '' || !$data['production_recipe_id'][$i]) {
+                continue;
+            }
+            $productionData[] = (object)[
+                'recipe_id' => $data['production_recipe_id'][$i],
+                'product_quantity' => $data['production_quantity'][$i],
+                'usage' => $data['production_usage'][$i],
+                'export_amount_per_min' => $data['production_export'][$i]
+            ];
         }
-        $productionData[] = (object)[
-            'recipe_id' => $data['production_recipe_id'][$i],
-            'product_quantity' => $data['production_quantity'][$i],
-            'usage' => $data['production_usage'][$i],
-            'export_amount_per_min' => $data['production_export'][$i]
-        ];
     }
 
-    for ($i = 0; $i < count($data['power_building_id']); $i++) {
-        if ($data['power_amount'][$i] == 0 || $data['power_amount'][$i] == '' || !$data['power_building_id'][$i]) {
-            continue;
-        }
-        $powerData[] = (object)[
-            'buildings_id' => $data['power_building_id'][$i],
-            'building_ammount' => $data['power_amount'][$i],
-            'clock_speed' => $data['power_clock_speed'][$i],
-            'power_used' => $buildings[array_search($data['power_building_id'][$i], array_column($buildings, 'id'))]->power_used,
-            'user' => $data['user'][$i]
+    if (!empty($data['power_building_id'])) {
+        for ($i = 0; $i < count($data['power_building_id']); $i++) {
+            if ($data['power_amount'][$i] == 0 || $data['power_amount'][$i] == '' || !$data['power_building_id'][$i]) {
+                continue;
+            }
+            $powerData[] = (object)[
+                'buildings_id' => $data['power_building_id'][$i],
+                'building_ammount' => $data['power_amount'][$i],
+                'clock_speed' => $data['power_clock_speed'][$i],
+                'power_used' => $buildings[array_search($data['power_building_id'][$i], array_column($buildings, 'id'))]->power_used,
+                'user' => $data['user'][$i]
 
-        ];
+            ];
+        }
     }
 
     if (ProductionLines::saveProductionLine($importsData, $productionData, $powerData, $total_consumption, $productLine->id)) {
@@ -207,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        value="<?= $power->building_ammount ?>">
                             </td>
                             <td class="m-0 p-0 w-25">
-                                <input min="0" type="number" name="power_clock_speed[]" class="form-control rounded-0 clock-speed"
+                                <input min="0" type="number" name="power_clock_speed[]" step="any" class="form-control rounded-0 clock-speed"
                                        onchange="calculateConsumption(this)"
                                        value="<?= $power->clock_speed ?>">
                             </td>
@@ -236,7 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </td>
                         <td class="m-0 p-0 w-25">
                             <input min="0" max="250" type="number" name="power_clock_speed[]"
-                                   class="form-control rounded-0 clock-speed" value="100"
+                                   class="form-control rounded-0 clock-speed" step="any" value="100"
                                    onchange="calculateConsumption(this)">
                         </td>
                         <td class="w-25 m-0 p-0">

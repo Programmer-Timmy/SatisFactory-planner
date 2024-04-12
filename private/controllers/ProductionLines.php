@@ -2,6 +2,11 @@
 
 class ProductionLines
 {
+    public static function addProductionline($gameSaveId, $title)
+    {
+        return Database::insert("production_lines", ['game_saves_id', 'title'], [$gameSaveId, $title]);
+    }
+
     public static function getProductionLinesByGameSave(int $gameSaveId)
     {
         return Database::getAll("production_lines", ['production_lines.id as id', 'production_lines.title as name', 'power_consumbtion as `power_consumbtion`', 'production_lines.updated_at'], ['game_saves' => 'game_saves.id = production_lines.game_saves_id'], ['production_lines.game_saves_id' => $gameSaveId], 'production_lines.updated_at DESC');
@@ -56,6 +61,16 @@ class ProductionLines
             Database::insert("power", ['production_lines_id', 'buildings_id', 'building_ammount', 'clock_speed', 'power_used', 'user'], [$id, $pow->buildings_id, $pow->building_ammount, $pow->clock_speed, $pow->power_used, $pow->user]);
         }
 
+        return true;
+    }
+
+    public static function deleteProductionLine(int $id)
+    {
+        Database::delete("input", ['production_lines_id' => $id]);
+        Database::delete("production", ['production_lines_id' => $id]);
+        Database::delete("power", ['production_lines_id' => $id]);
+        Database::delete("output", ['production_lines_id' => $id]);
+        Database::delete("production_lines", ['id' => $id]);
         return true;
     }
 

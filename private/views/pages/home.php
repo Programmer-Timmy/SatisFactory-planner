@@ -3,9 +3,20 @@ $gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
 
 ?>
 <div class="container mt-5">
-    <h1>Game Saves</h1>
+    <div class="row justify-content-end align-items-center">
+        <div class="col-md-7 text-md-end text-sm-center">
+            <h2>Game Saves</h2>
+        </div>
+        <div class="col-md-5">
+            <div class="text-md-end text-sm-center">
+                <button id="add_product_line" class="btn btn-primary">Add Game Save</button>
+            </div>
+        </div>
+    </div>
+
     <?php if (empty($gameSaves)) : ?>
         <h1>No Game Saves Found</h1>
+
     <?php else :?>
 <!--    show cards-->
         <div class="row">
@@ -30,3 +41,5 @@ $gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
 
 
 </div>
+
+<?php require_once '../private/views/Popups/addSaveGame.php'; ?>

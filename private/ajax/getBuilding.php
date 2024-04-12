@@ -1,5 +1,4 @@
 <?php
-
 $building = Buildings::getBuildingById($_GET['id']);
 
 if (empty($building)) {

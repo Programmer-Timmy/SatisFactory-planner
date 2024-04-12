@@ -19,7 +19,7 @@ foreach ($productionLines as $productionLine) {
 }
 
 if (isset($_GET['productDelete'])) {
-    Database::delete("production_lines", ['id' => $_GET['productDelete']]);
+    ProductionLines::deleteProductionLine($_GET['productDelete']);
     header('Location: game_save?id=' . $_GET['id']);
     exit();
 }
@@ -33,7 +33,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 
     function drawChart() {
 
-        var available_power  = 1000;
+        var available_power  = <?= $gameSave->total_power_production ?>;
 
         var data = google.visualization.arrayToDataTable([
             ['Label', 'Value'],
@@ -79,7 +79,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                             <td><?= $productionLine->name ?></td>
                             <td><?= $productionLine->power_consumbtion ?></td>
                             <td><?= $productionLine->updated_at ?></td>
-                            <td class="">
+                            <td>
                                 <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary">View Production Line</a>
                             </td>
                             <td>
@@ -93,7 +93,10 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 
         </div>
         <div class="col-md-4">
-            <h2>Power</h2>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Power Consumption</h2>
+                <button id="update_power_production" class="btn btn-primary">Update Power Production</button>
+            </div>
             <div id="chart_div" ></div>
 
             <h2>Outputs</h2>
@@ -103,3 +106,4 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 </div>
 
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>
+<?php require_once '../private/views/Popups/updatePowerProduction.php'; ?>

@@ -27,14 +27,15 @@ function calculateConsumption(element) {
     let clockSpeed = row.find('.clock-speed').val();
     let consumption = row.find('.consumption');
     let buildingConsumption = getBuildingConsumption(building_id);
-
     consumption.val(buildingConsumption * quantity * clockSpeed / 100);
     calculateTotalConsumption();
+
 }
 
 function getBuildingConsumption(building_id) {
     let consumption = 0;
-    // send ajax request to php file
+
+    console.log(building_id);
     let building = getBuilding(building_id);
     return building.power_used;
 }
@@ -45,7 +46,7 @@ function getBuilding(building_id) {
         type: 'GET',
         url: 'getBuilding',
         data: {
-            id: building_id
+            id: parseInt(building_id)
         },
         async: false,
         success: function(response) {
@@ -61,7 +62,7 @@ function getRecipe(recipe_id) {
         type: 'GET',
         url: 'getRecipe',
         data: {
-            id: recipe_id
+            id: parseInt(recipe_id)
         },
         async: false,
         success: function(response) {
@@ -114,6 +115,7 @@ function insertBuildingRow(recipe, building, outputQuantity) {
     let roundedQuantity = Math.floor(quantity)
     let clockSpeed = (quantity % 1).toFixed(5) * 100;
     let buildingAlreadyInTable = 0;
+    console.log(building)
 
     // check if one of the buildings is already in the table and not from the user
     $('.building').each(function(){
@@ -152,6 +154,7 @@ function insertBuildingRow(recipe, building, outputQuantity) {
 
         if (clockSpeed != 0) {
             let row = element.clone();
+            row.find('.building').val(building.id);
             row.find('.quantity').val(1);
             row.find('.user').val(0);
             row.find('.clock-speed').val(clockSpeed);
