@@ -2,7 +2,7 @@
 global $site;
 ?>
 
-<footer class="bg-dark text-white fixed-bottom">
+<footer class="bg-dark text-white">
     <div class="container py-4">
         <div class="row">
             <div class="col">
