@@ -31,6 +31,8 @@ function getPageTitle() {
     <link rel="stylesheet" href="css/styles.css">
     <!-- ajax -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!-- font awasome -->
+    <script src="https://kit.fontawesome.com/65416f0144.js" crossorigin="anonymous"></script>
 </head>
 <body>
 

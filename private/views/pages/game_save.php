@@ -58,7 +58,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         <div class="col-md-8">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
-                <button id="add_product_line" class="btn btn-primary">Add Production Line</button>
+                <button id="add_product_line" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
             </div>
             <?php if (empty($productionLines)) : ?>
                 <h4 class="text-center mt-3">No Production Lines Found</h4>
@@ -80,7 +80,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                             <td><?= $productionLine->power_consumbtion ?></td>
                             <td><?= $productionLine->updated_at ?></td>
                             <td>
-                                <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary">View Production Line</a>
+                                <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"><i class="fa-solid fa-gears"></i></a>
                             </td>
                             <td>
                                 <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>" onclick="return confirm('Are you sure you want to delete this production line?')" class="btn btn-danger">X</a>
@@ -95,7 +95,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         <div class="col-md-4">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Power Consumption</h2>
-                <button id="update_power_production" class="btn btn-primary">Update Power Production</button>
+                <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i></button>
             </div>
             <div id="chart_div" ></div>
 

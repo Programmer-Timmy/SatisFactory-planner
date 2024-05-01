@@ -9,7 +9,7 @@ $gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
         </div>
         <div class="col-md-5">
             <div class="text-md-end text-sm-center">
-                <button id="add_product_line" class="btn btn-primary">Add Game Save</button>
+                <button id="add_product_line" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
             </div>
         </div>
     </div>
