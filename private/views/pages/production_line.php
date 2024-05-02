@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="mt-5 px-5">
     <h1 class="text-center pb-3"><?= $productLine->title ?></h1>
-    <form method="post">
+    <form method="post" onkeydown="return event.key != 'Enter';">
         <div class="row">
             <div class="col-md-2">
                 <h2>Imports</h2>
@@ -266,7 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </table>
             </div>
             <div class="col-md-12">
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" id="save_button" class="btn btn-primary">Save</button>
             </div>
     </form>
 </div>
