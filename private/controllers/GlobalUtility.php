@@ -73,4 +73,27 @@ class GlobalUtility
 
     }
 
+    public static function formatUpdatedTime($updated_at): string
+    {
+        // Convert updated_at to a DateTime object
+        $updatedTime = new DateTime($updated_at);
+
+        // Get the current time
+        $currentTime = new DateTime('now');
+
+        // Calculate the difference between the current time and updated time
+        $interval = $currentTime->diff($updatedTime);
+
+        // Format the time difference
+        if ($interval->days > 0) {
+             return $interval->format('%a days ago');
+        } elseif ($interval->h > 0) {
+            return $interval->format('%h hours ago');
+        } elseif ($interval->i > 0) {
+            return  $interval->format('%i minutes ago');
+        } else {
+            return  'Just now';
+        }
+    }
 }
+

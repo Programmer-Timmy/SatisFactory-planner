@@ -48,7 +48,7 @@ class ProductionLines
         Database::delete("power", ['production_lines_id' => $id]);
         Database::delete("output", ['production_lines_id' => $id]);
 
-        Database::update("production_lines",['power_consumbtion'], [$totalConsumption], ['id' => $id]);
+        Database::update("production_lines",['power_consumbtion', 'updated_at'], [$totalConsumption, date('Y-m-d H:i:s')], ['id' => $id]);
         foreach ($imports as $import) {
             Database::insert("input", ['production_lines_id', 'items_id', 'ammount'], [$id, $import->id, $import->ammount]);
         }

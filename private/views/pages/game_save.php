@@ -78,7 +78,10 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                         <tr>
                             <td><?= $productionLine->name ?></td>
                             <td><?= $productionLine->power_consumbtion ?></td>
-                            <td><?= $productionLine->updated_at ?></td>
+                            <td>
+                                <?= GlobalUtility::formatUpdatedTime($productionLine->updated_at) ?>
+                            </td>
+
                             <td>
                                 <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"><i class="fa-solid fa-gears"></i></a>
                             </td>
