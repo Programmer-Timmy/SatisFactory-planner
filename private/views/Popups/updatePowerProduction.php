@@ -42,7 +42,7 @@ if ($_POST && isset($_POST['Biomass_Burner'])) {
                     <?php endif; ?>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Add Production Line</button>
+                    <button type="submit" class="btn btn-primary">Update Power Production</button>
                 </div>
             </form>
         </div>
