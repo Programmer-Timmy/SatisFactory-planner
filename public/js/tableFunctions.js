@@ -23,11 +23,15 @@ function calculateTotalConsumption() {
 }
 
 function calculateConsumption(element) {
+    let button = $('#save_button');
     let row = $(element).closest('tr');
     let quantity = row.find('.quantity').val();
     let building_id = row.find('.building').val();
     let clockSpeed = row.find('.clock-speed').val();
     let consumption = row.find('.consumption');
+
+    button.prop('disabled', true);
+
     Promise.all([
         getBuildingConsumption(building_id),
         Promise.resolve(quantity),
@@ -46,13 +50,12 @@ function calculateConsumption(element) {
 
             // Recalculate total consumption if needed
             calculateTotalConsumption();
+            button.prop('disabled', false);
         })
         .catch(function(error) {
             console.error('Error fetching building consumption:', error);
             // Handle the error if necessary
         });
-
-
 
 }
 
