@@ -77,9 +77,7 @@ if ($_GET && isset($_GET['delete'])) {
                         </div>
                     </a>
                 </div>
-                <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
-                    <?php require '../private/views/Popups/updateSaveGame.php'; ?>
-                <?php endif; ?>
+
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
