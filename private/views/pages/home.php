@@ -1,6 +1,5 @@
 <?php
 ob_start();
-var_dump($_SERVER);
 $gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
 
 if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
