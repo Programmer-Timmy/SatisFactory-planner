@@ -32,7 +32,7 @@ $site = [
     // General settings
     'siteName' => 'Satisfactory Planner',
     'debug' => true, // shows errors if true
-    'maintenance' => false, // shows the maintenance page if true the client's IP is not in the allowedIPs array
+    'maintenance' => true, // shows the maintenance page if true the client's IP is not in the allowedIPs array
 
     // ajax on or off
     'ajax' => true, // if true the site will only load the ajax pages
@@ -73,7 +73,7 @@ $site = [
 /**
  * Allowed IPs That can bypass the maintenance
  */
-$allowedIPs = ['::0']; // ['::0'] means all IPs are allowed
+$allowedIPs = ['51.83.187.248']; // ['::0'] means all IPs are allowed
 
 /**
  * Page Title Settings
