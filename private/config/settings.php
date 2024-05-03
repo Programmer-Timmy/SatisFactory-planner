@@ -73,7 +73,7 @@ $site = [
 /**
  * Allowed IPs That can bypass the maintenance
  */
-$allowedIPs = ['51.83.187.248']; // ['::0'] means all IPs are allowed
+$allowedIPs = ['84.83.150.26']; // ['::0'] means all IPs are allowed
 
 /**
  * Page Title Settings
