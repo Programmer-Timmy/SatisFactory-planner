@@ -83,9 +83,9 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         var alert = bootstrap.Alert.getInstance(alertNode);
 
         if (total_power_consumption > <?= $gameSave->total_power_production ?>) {
-            alert.show();
+            new bootstrap.Alert(alertNode).show();
         } else if(alert) {
-            alert.hide();
+            alert.close();
         }
 
     }
