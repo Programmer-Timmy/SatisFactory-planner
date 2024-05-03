@@ -83,10 +83,20 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 
         if (total_power_consumption > <?= $gameSave->total_power_production ?>) {
             alertNode.classList.remove('hidden');
+            sleep(200).then(() => {
+                alertNode.classList.add('show');
+            });
         } else {
-            alertNode.classList.add('hidden');
-        }
+            alertNode.classList.remove('show');
+            sleep(200).then(() => {
+                alertNode.classList.add('hidden');
+            });
 
+        }
+    }
+
+    async function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
 </script>
@@ -149,7 +159,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i>
                 </button>
             </div>
-            <div class="alert alert-danger <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"
+            <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"
                  id="power-alert" role="alert">
                 <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
             </div>
