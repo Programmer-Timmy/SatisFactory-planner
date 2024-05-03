@@ -24,6 +24,10 @@ class GameSaves
             self::uploadImage($id, $image);
         }
 
+        foreach ($allowedUsers as $user) {
+            self::addUserToSaveGame($user, $id);
+        }
+
         return $id;
     }
 
@@ -94,6 +98,25 @@ class GameSaves
         return $users;
     }
 
+    public static function transferSaveGames(int $userId)
+    {
+        $gamesaves = self::getSaveGamesByUser($userId);
+        foreach ($gamesaves as $game) {
+            if ($game->owner_id == $userId) {
+                continue;
+            }
+            $gamesaveUsers = self::getAllowedUsers($game->id);
+            $gamesaveUsers = array_diff($gamesaveUsers, [$userId]);
+            if (count($gamesaveUsers) == 0) {
+                self::deleteSaveGame($game->id);
+                continue;
+            }
+            $newOwner = $gamesaveUsers[0];
+            Database::update("game_saves", ['owner_id'], [$newOwner], ['id' => $game->id]);
+
+        }
+
+    }
 
 
 }
