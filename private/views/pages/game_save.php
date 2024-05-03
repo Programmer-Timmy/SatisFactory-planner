@@ -79,7 +79,17 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         data.setValue(0, 1, total_power_consumption);
         chart.draw(data, options);
 
+        var alertNode = document.querySelector('.alert')
+        var alert = bootstrap.Alert.getInstance(alertNode);
+
+        if (total_power_consumption > <?= $gameSave->total_power_production ?>) {
+            alert.show();
+        } else if(alert) {
+            alert.hide();
+        }
+
     }
+
 </script>
 <div class="container">
     <h1 class="text-center pb-3">Game Save [<?= $gameSave->title ?>]</h1>
