@@ -74,5 +74,17 @@ class ProductionLines
         return true;
     }
 
+    public static function deleteProductionLineOnGameId(int $id)
+    {
+        $producitonId = Database::getAll("production_lines", ['id'], [], ['game_saves_id' => $id]);
+        foreach ($producitonId as $prodId) {
+            Database::delete("input", ['production_lines_id' => $prodId->id]);
+            Database::delete("production", ['production_lines_id' => $prodId->id]);
+            Database::delete("power", ['production_lines_id' => $prodId->id]);
+            Database::delete("output", ['production_lines_id' => $prodId->id]);
+            Database::delete("production_lines", ['id' => $prodId->id]);
+        }
+    }
+
 
 }
