@@ -79,11 +79,11 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         data.setValue(0, 1, total_power_consumption);
         chart.draw(data, options);
 
-        var alertNode = document.querySelector('.alert')
+        var alertNode = document.querySelector('.power-alert')
         var alert = bootstrap.Alert.getInstance(alertNode);
 
         if (total_power_consumption > <?= $gameSave->total_power_production ?>) {
-            new bootstrap.Alert(alertNode).show();
+            new bootstrap.Alert(alertNode)
         } else if(alert) {
             alert.close();
         }
@@ -151,7 +151,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 </button>
             </div>
             <?php if ($gameSave->total_power_production < $total_power_consumption) : ?>
-                <div class="alert alert-danger" role="alert">
+                <div class="alert alert-danger power-alert" role="alert">
                     <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
                 </div>
             <?php endif; ?>
