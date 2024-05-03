@@ -138,23 +138,25 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 id: productLineId,
                 active: active
             })
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
         })
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    console.log('API response:', data.message);
-                    // Handle the success message as needed
+                    console.log(data.message);
                 } else {
-                    console.error('API error:', data.message);
-                    // Handle the error message as needed
+                    console.error(data.error);
                 }
-            }).catch(error => {
-            console.error(error);
-        })
+            })
+
+
+
+
+
+
+
+
+
+
 
 
     }
