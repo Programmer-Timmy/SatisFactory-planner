@@ -80,12 +80,11 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         chart.draw(data, options);
 
         var alertNode = $('#power-alert')[0];
-        var alert = bootstrap.Alert.getInstance(alertNode);
 
         if (total_power_consumption > <?= $gameSave->total_power_production ?>) {
-            new bootstrap.Alert(alertNode)
-        } else if(alert) {
-            alert.close();
+            alertNode.classList.remove('hidden');
+        } else {
+            alertNode.classList.add('hidden');
         }
 
     }
@@ -150,11 +149,10 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i>
                 </button>
             </div>
-            <?php if ($gameSave->total_power_production < $total_power_consumption) : ?>
-                <div class="alert alert-danger" id="power-alert" role="alert">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
-                </div>
-            <?php endif; ?>
+            <div class="alert alert-danger <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"
+                 id="power-alert" role="alert">
+                <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
+            </div>
             <div id="chart_div"></div>
 
 
