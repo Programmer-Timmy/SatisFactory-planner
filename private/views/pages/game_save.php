@@ -28,12 +28,12 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 ?>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
-    google.charts.load('current', {'packages':['gauge']});
+    google.charts.load('current', {'packages': ['gauge']});
     google.charts.setOnLoadCallback(drawChart);
 
     function drawChart() {
 
-        var available_power  = <?= $gameSave->total_power_production ?>;
+        var available_power = <?= $gameSave->total_power_production ?>;
 
         var data = google.visualization.arrayToDataTable([
             ['Label', 'Value'],
@@ -42,7 +42,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 
         var options = {
             redFrom: available_power * 0.9, redTo: available_power,
-            yellowFrom:available_power * 0.75, yellowTo: available_power * 0.9,
+            yellowFrom: available_power * 0.75, yellowTo: available_power * 0.9,
             minorTicks: 5,
             max: available_power
         };
@@ -55,7 +55,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 <div class="container">
     <h1 class="text-center pb-3">Game Save [<?= $gameSave->title ?>]</h1>
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
                 <button id="add_product_line" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
@@ -63,12 +63,14 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             <?php if (empty($productionLines)) : ?>
                 <h4 class="text-center mt-3">No Production Lines Found</h4>
             <?php else: ?>
+            <div class="overflow-auto">
                 <table class="table table-striped">
                     <thead>
                     <tr>
                         <th scope="col">Name</th>
                         <th scope="col">Power Consumption</th>
                         <th scope="col">Updated At</th>
+                        <th scope="col">Active</th>
                         <th scope="col"></th>
                         <th scope="col"></th>
                     </tr>
@@ -81,31 +83,40 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                             <td>
                                 <?= GlobalUtility::formatUpdatedTime($productionLine->updated_at) ?>
                             </td>
-
                             <td>
-                                <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"><i class="fa-solid fa-gears"></i></a>
+                                <input type="checkbox" data-toggle="toggle" data-onstyle="success"
+                                       onchange="changeActiveStats(<?= $productionLine->id ?>, this)"
+                                       data-offstyle="danger" data-size="sm" data-onlabel="Yes"
+                                       data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>>
                             </td>
                             <td>
-                                <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>" onclick="return confirm('Are you sure you want to delete this production line?')" class="btn btn-danger">X</a>
+                                <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"><i
+                                            class="fa-solid fa-gears"></i></a>
+                            </td>
+                            <td>
+                                <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"
+                                   onclick="return confirm('Are you sure you want to delete this production line?')"
+                                   class="btn btn-danger">X</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
                 </table>
-            <?php endif; ?>
-
+                <?php endif; ?>
+            </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Power Consumption</h2>
-                <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i></button>
+                <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i>
+                </button>
             </div>
             <?php if ($gameSave->total_power_production < $total_power_consumption) : ?>
                 <div class="alert alert-danger" role="alert">
                     <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
                 </div>
             <?php endif; ?>
-            <div id="chart_div" ></div>
+            <div id="chart_div"></div>
 
 
             <h2>Outputs</h2>
@@ -113,6 +124,41 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         </div>
     </div>
 </div>
+
+<script>
+    function changeActiveStats(productLineId, object) {
+        let active = object.checked ? 1 : 0;
+        //     use api give id and active
+        fetch('/api/changeActiveStats', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: productLineId,
+                active: active
+            })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+            .then(data => {
+                if (data.success) {
+                    console.log('API response:', data.message);
+                    // Handle the success message as needed
+                } else {
+                    console.error('API error:', data.message);
+                    // Handle the error message as needed
+                }
+            }).catch(error => {
+            console.error(error);
+        })
+
+
+    }
+</script>
 
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>
 <?php require_once '../private/views/Popups/updatePowerProduction.php'; ?>

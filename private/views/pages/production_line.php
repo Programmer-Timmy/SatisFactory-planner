@@ -1,4 +1,5 @@
 <?php
+ob_start();
 $productLineId = $_GET['id'];
 $productLine = ProductionLines::getProductionLineById($productLineId);
 
@@ -15,7 +16,7 @@ $items = Items::getAllItems();
 $Recipes = Recipes::getAllRecipes();
 $buildings = Buildings::getAllBuildings();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption'])) {
     $data = $_POST;
     $total_consumption = $_POST['total_consumption'];
     $importsData = [];
@@ -72,9 +73,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<div class="mt-5 px-5">
-    <h1 class="text-center pb-3"><?= $productLine->title ?></h1>
+<div class="px-5">
     <form method="post" onkeydown="return event.key != 'Enter';">
+        <div class="row justify-content-end align-items-center">
+            <div class="col-md-3"></div>
+            <div class="col-md-6 text-center">
+                <h1><?= $productLine->title ?></h1>
+            </div>
+            <div class="col-md-3">
+                <div class="text-md-end text-center">
+                    <button type="submit" id="save_button" class="btn btn-primary"><i class="fa-solid fa-save"></i></button>
+                    <button type="button" id="edit_product_line" class="btn btn-warning"><i class="fa-solid fa-pencil"></i></button>
+                    <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i></a>
+                </div>
+            </div>
+        </div>
+
+
         <div class="row">
             <div class="col-md-2">
                 <h2>Imports</h2>
@@ -276,3 +291,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script>
     calculateTotalConsumption();
 </script>
+
+<?php require_once '../private/views/Popups/editProductinoLine.php'; ?>

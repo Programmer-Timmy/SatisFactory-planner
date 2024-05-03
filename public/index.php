@@ -1,6 +1,4 @@
 <?php
-
-
 // Include necessary files
 require_once __DIR__ . '/../private/autoload.php';
 require_once __DIR__ . '/../private/config/settings.php';
@@ -33,6 +31,12 @@ if ($site['ajax']) {
         include __DIR__ . "/../private/ajax/$require.php";
         exit();
     }
+}
+
+// if url has api in it load the api file and exit
+if (str_contains($require, '/api')) {
+    include __DIR__ . "/../private/Views/pages/$require.php";
+    var_dump($require);
 }
 
 if ($site['admin']['enabled']) {
