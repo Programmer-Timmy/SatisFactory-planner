@@ -9,7 +9,7 @@ class ProductionLines
 
     public static function getProductionLinesByGameSave(int $gameSaveId)
     {
-        return Database::getAll("production_lines", ['production_lines.id as id', 'production_lines.title as name', 'power_consumbtion as `power_consumbtion`', 'production_lines.updated_at'], ['game_saves' => 'game_saves.id = production_lines.game_saves_id'], ['production_lines.game_saves_id' => $gameSaveId], 'production_lines.updated_at DESC');
+        return Database::getAll("production_lines", ['production_lines.id as id', 'production_lines.title as name', 'power_consumbtion as `power_consumbtion`', 'production_lines.updated_at', 'active'], ['game_saves' => 'game_saves.id = production_lines.game_saves_id'], ['production_lines.game_saves_id' => $gameSaveId], 'production_lines.updated_at DESC');
     }
 
     public static function checkProductionLineVisability(int $gameSaveId, int $userId)
@@ -84,6 +84,19 @@ class ProductionLines
             Database::delete("output", ['production_lines_id' => $prodId->id]);
             Database::delete("production_lines", ['id' => $prodId->id]);
         }
+    }
+
+    public static function updateProductionLine(int $productLineId, string $productionLineName, int $active)
+    {
+        self::changeActiveStats($productLineId, $active);
+        Database::update("production_lines", ['title'], [$productionLineName], ['id' => $productLineId]);
+        return true;
+    }
+
+    public static function changeActiveStats(int $productLineId, int $active)
+    {
+        $updated_at = Database::get("production_lines", ['updated_at'],[], ['id' => $productLineId]);
+        Database::update("production_lines", ['active', 'updated_at'], [$active, $updated_at->updated_at], ['id' => $productLineId]);
     }
 
 
