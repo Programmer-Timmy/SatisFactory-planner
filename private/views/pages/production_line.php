@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="mt-5 px-5">
     <h1 class="text-center pb-3"><?= $productLine->title ?></h1>
-    <form method="post">
+    <form method="post" onkeydown="return event.key != 'Enter';">
         <div class="row">
             <div class="col-md-2">
                 <h2>Imports</h2>
@@ -100,14 +100,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </select>
                             </td>
                             <td class="m-0 p-0 w-25">
-                                <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0"
+                                <input min="0" type="number" step="any" name="imports_ammount[]" class="form-control rounded-0"
                                        value="<?= $import->ammount ?>">
                             </td>
                         </tr>
                     <?php endforeach; ?>
                     <tr>
                         <td class="m-0 p-0 w-75">
-                            <select name="imports_item_id[]" class="form-control rounded-0 input-item-id"
+                            <select name="imports_item_id[]" step="any" class="form-control rounded-0 input-item-id"
                                     onchange="addInputRow('input-item-id')">
                                 <option value="" disabled selected>Select an item</option>
                                 <?php foreach ($items as $item) : ?>
@@ -147,15 +147,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </select>
                             </td>
                             <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_quantity[]" required class="form-control rounded-0 production-quantity" onchange="calculatePowerOfProduction(this)"
+                                <input min="0" type="number" name="production_quantity[]" step="any" required class="form-control rounded-0 production-quantity" onchange="calculatePowerOfProduction(this)"
                                        value="<?= $product->product_quantity ?>">
                             </td>
                             <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_usage[]" required class="form-control rounded-0 usage-amount" onchange="calculatePowerOfProduction(this)"
+                                <input min="0" type="number" name="production_usage[]" step="any" required class="form-control rounded-0 usage-amount" onchange="calculatePowerOfProduction(this)"
                                        value="<?= $product->local_usage ?>">
                             </td>
                             <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_export[]" required readonly class="form-control rounded-0 export-amount"
+                                <input min="0" type="number" name="production_export[]" step="any" required readonly class="form-control rounded-0 export-amount"
                                        value="<?= $product->export_amount_per_min ?>">
                             </td>
 
@@ -172,14 +172,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </select>
                         </td>
                         <td class="m-0 p-0">
-                            <input min="0" type="number" name="production_quantity[]" value="0" required class="form-control rounded-0 production-quantity" onchange="calculatePowerOfProduction(this)">
+                            <input min="0" type="number" step="any" name="production_quantity[]" value="0" required class="form-control rounded-0 production-quantity" onchange="calculatePowerOfProduction(this)">
                         </td>
                         <td class="m-0 p-0">
-                            <input min="0" type="number" name="production_usage[]" value="0" required class="form-control rounded-0 usage-amount" onchange="calculatePowerOfProduction(this)"
+                            <input min="0" type="number" step="any" name="production_usage[]" value="0" required class="form-control rounded-0 usage-amount" onchange="calculatePowerOfProduction(this)"
                                    >
                         </td>
                         <td class="m-0 p-0">
-                            <input min="0" type="number" name="production_export[]" value="0" required class="form-control rounded-0 export-amount">
+                            <input min="0" type="number" step="any" name="production_export[]" value="0" required class="form-control rounded-0 export-amount">
                         </td>
                     </tr>
                     </tbody>
@@ -266,9 +266,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </table>
             </div>
             <div class="col-md-12">
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" id="save_button" class="btn btn-primary">Save</button>
             </div>
     </form>
+</div>
 </div>
 
 <script src="js/tableFunctions.js"></script>

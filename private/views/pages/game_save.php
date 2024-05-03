@@ -52,7 +52,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         chart.draw(data, options);
     }
 </script>
-<div class="container mt-5">
+<div class="container">
     <h1 class="text-center pb-3">Game Save [<?= $gameSave->title ?>]</h1>
     <div class="row">
         <div class="col-md-8">
@@ -78,7 +78,10 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                         <tr>
                             <td><?= $productionLine->name ?></td>
                             <td><?= $productionLine->power_consumbtion ?></td>
-                            <td><?= $productionLine->updated_at ?></td>
+                            <td>
+                                <?= GlobalUtility::formatUpdatedTime($productionLine->updated_at) ?>
+                            </td>
+
                             <td>
                                 <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"><i class="fa-solid fa-gears"></i></a>
                             </td>
@@ -97,7 +100,13 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 <h2>Power Consumption</h2>
                 <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i></button>
             </div>
+            <?php if ($gameSave->total_power_production < $total_power_consumption) : ?>
+                <div class="alert alert-danger" role="alert">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
+                </div>
+            <?php endif; ?>
             <div id="chart_div" ></div>
+
 
             <h2>Outputs</h2>
 
