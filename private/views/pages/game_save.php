@@ -15,7 +15,9 @@ if (empty($gameSave)) {
 $productionLines = ProductionLines::getProductionLinesByGameSave($gameSave->id);
 $total_power_consumption = 0;
 foreach ($productionLines as $productionLine) {
-    $total_power_consumption += $productionLine->power_consumbtion;
+    if ($productionLine->active) {
+        $total_power_consumption += $productionLine->power_consumbtion;
+    }
 }
 
 if (isset($_GET['productDelete'])) {
@@ -31,25 +33,52 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
     google.charts.load('current', {'packages': ['gauge']});
     google.charts.setOnLoadCallback(drawChart);
 
+    let data;
+    let chart;
+    let options;
+
     function drawChart() {
 
         var available_power = <?= $gameSave->total_power_production ?>;
 
-        var data = google.visualization.arrayToDataTable([
+        data = google.visualization.arrayToDataTable([
             ['Label', 'Value'],
             ['Power', <?= $total_power_consumption ?>]
         ]);
 
-        var options = {
+        options = {
             redFrom: available_power * 0.9, redTo: available_power,
             yellowFrom: available_power * 0.75, yellowTo: available_power * 0.9,
             minorTicks: 5,
             max: available_power
         };
 
-        var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+        chart = new google.visualization.Gauge(document.getElementById('chart_div'));
 
         chart.draw(data, options);
+    }
+
+    function update_total_power_consumption() {
+        let total_power_consumption = 0;
+        document.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+            if (checkbox.checked) {
+                const parentElement = checkbox.parentElement;
+
+                const grandparentElement = parentElement.parentElement;
+
+                const previousSibling = grandparentElement.previousElementSibling;
+
+                const nextPreviousSibling = previousSibling.previousElementSibling;
+
+                const textContent = nextPreviousSibling.innerText;
+
+                total_power_consumption += parseInt(textContent);
+            }
+        });
+
+        data.setValue(0, 1, total_power_consumption);
+        chart.draw(data, options);
+
     }
 </script>
 <div class="container">
@@ -141,6 +170,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         }).catch(error => {
             console.error('Error:', error);
         });
+        update_total_power_consumption();
     }
 </script>
 
