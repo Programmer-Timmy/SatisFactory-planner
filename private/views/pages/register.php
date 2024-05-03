@@ -1,23 +1,33 @@
 <?php
-ob_start();
-$error = '';
-if (isset($_POST['username']) && isset($_POST['password'])) {
+$error = null;
+if ($_POST) {
     $username = $_POST['username'];
     $password = $_POST['password'];
-
-    $data = AuthControler::login($username, $password);
-    if ($data != null) {
-        header('Location: ' . $data);
+    $password2 = $_POST['password2'];
+    if ($password == $password2) {
+        if (Users::getUserByUsername($username)) {
+            $error = 'Username already exists';
+        } else {
+            if (Users::createUser($username, $password)) {
+                $_SESSION['userId'] = null;
+                $_SESSION['redirect'] = '/account';
+                header('Location: /login');
+            } else {
+                $error = 'Error creating user';
+            }
+        }
     } else {
-        $error = 'Username or password is incorrect';
+        $error = 'Passwords do not match';
+
     }
 }
 ?>
+
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="text-center mb-4">
-                <h3 class="title">Login</h3>
+                <h3 class="title">Register</h3>
             </div>
             <?php if ($error) : ?>
                 <div class="alert alert-danger" role="alert">
@@ -35,8 +45,12 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Login</button>
-                        <a href="/register" class="btn btn-secondary">Register</a>
+                        <div class="mb-3">
+                            <label for="password2" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="password2" name="password2" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                        <a href="/login" class="btn btn-secondary">Go back</a>
                     </form>
                 </div>
             </div>

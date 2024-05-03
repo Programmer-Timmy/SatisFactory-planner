@@ -18,8 +18,13 @@ class AuthControler
                 }
             }
             if ($site['saveUrl']) {
-                return $_SESSION['redirect'];
-                exit();
+                if (isset($_SESSION['redirect'])) {
+                    return $_SESSION['redirect'];
+                    exit();
+                }else{
+                    return '/home';
+                    exit();
+                }
             }
             return 'home';
             exit();
