@@ -138,27 +138,9 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 id: productLineId,
                 active: active
             })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log(data.message);
-                } else {
-                    console.error(data.error);
-                }
-            })
-
-
-
-
-
-
-
-
-
-
-
-
+        }).catch(error => {
+            console.error('Error:', error);
+        });
     }
 </script>
 
