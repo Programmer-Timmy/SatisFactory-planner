@@ -38,7 +38,7 @@ class Users
 
     public static function deleteUser($id)
     {
-        GameSaves::transferSaveGames($id);
+        GameSaves::getSaveGameByOwner($id);
         return Database::delete("users", ['id' => $id]);
     }
 

@@ -2,6 +2,10 @@
 
 class GameSaves
 {
+    public static function getSaveGameByOwner(int $owner_id)
+    {
+        return Database::getAll("game_saves", ['*'], [], ['owner_id' => $owner_id]);
+    }
 
     public static function  getSaveGamesByUser(int $user_id)
 
