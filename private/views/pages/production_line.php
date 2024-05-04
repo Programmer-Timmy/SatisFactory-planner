@@ -38,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 
 
     if (!empty($data['production_recipe_id'])) {
-        var_dump($data);
         for ($i = 0; $i < count($data['production_recipe_id']); $i++) {
             if ($data['production_quantity'][$i] == 0 || $data['production_quantity'][$i] == '' || !$data['production_recipe_id'][$i]) {
                 continue;
@@ -87,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
         header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
         exit();
     }else{
-        $error = 'Something went wrong';
+        $error = 'Something went wrong while saving the production line. Please try again. If the problem persists, please contact the administrator.';
     }
 }elseif (isset($_POST['total_consumption'])) {
     $error = 'Please fill all the fields';
@@ -97,8 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 <div class="px-5">
     <form method="post" onkeydown="return event.key != 'Enter';">
         <?php if ($error) : ?>
-            <div class="alert alert-danger" role="alert">
-                <?= $error ?>
+            <div class="alert alert-danger text-center" role="alert">
+                <i class="fa-solid fa-exclamation-triangle"></i> <?= $error ?>
             </div>
         <?php endif; ?>
         <div class="row justify-content-end align-items-center">

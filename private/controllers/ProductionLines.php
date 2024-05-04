@@ -43,42 +43,37 @@ class ProductionLines
 
     public static function saveProductionLine(array $imports, array $production, array $power, string $totalConsumption, int $id)
     {
-        try {
-            Database::delete("input", ['production_lines_id' => $id]);
-            Database::delete("production", ['production_lines_id' => $id]);
-            Database::delete("power", ['production_lines_id' => $id]);
-            Database::delete("output", ['production_lines_id' => $id]);
+        $database = Database::beginTransaction();
 
-            Database::update("production_lines",['power_consumbtion', 'updated_at'], [$totalConsumption, date('Y-m-d H:i:s')], ['id' => $id]);
+        try {
+            Database::delete("input", ['production_lines_id' => $id], $database);
+            Database::delete("production", ['production_lines_id' => $id], $database);
+            Database::delete("power", ['production_lines_id' => $id], $database);
+            Database::delete("output", ['production_lines_id' => $id], $database);
+
+            Database::update("production_lines",['power_consumbtion', 'updated_at'], [$totalConsumption, date('Y-m-d H:i:s')], ['id' => $id], $database);
             foreach ($imports as $import) {
-                Database::insert("input", ['production_lines_id', 'items_id', 'ammount'], [$id, $import->id, $import->ammount]);
+                Database::insert("input", ['production_lines_id', 'items_id', 'ammount'], [$id, $import->id, $import->ammount], $database);
             }
             foreach ($production as $prod) {
-                var_dump($prod);
                 $recipes = Recipes::getRecipeById($prod->recipe_id);
-                Database::insert("production", ['production_lines_id', 'recipe_id', 'quantity', 'local_usage', 'export_ammount_per_min', 'export_ammount_per_min2', 'local_usage2'], [$id, $prod->recipe_id, $prod->product_quantity, $prod->usage, $prod->export_amount_per_min, $prod->export_ammount_per_min2, $prod->local_usage2]);
-                Database::insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id, $prod->export_amount_per_min]);
+                Database::insert("production", ['production_lines_id', 'recipe_id', 'quantity', 'local_usage', 'export_ammount_per_min', 'export_ammount_per_min2', 'local_usage2'], [$id, $prod->recipe_id, $prod->product_quantity, $prod->usage, $prod->export_amount_per_min, $prod->export_ammount_per_min2, $prod->local_usage2], $database);
+                Database::insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id, $prod->export_amount_per_min], $database);
                 if ($recipes->item_id2) {
-                    Database::insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id2, $prod->export_ammount_per_min2]);
+                    Database::insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id2, $prod->export_ammount_per_min2], $database);
                 }
             }
             foreach ($power as $pow) {
-                Database::insert("power", ['production_lines_id', 'buildings_id', 'building_ammount', 'clock_speed', 'power_used', 'user'], [$id, $pow->buildings_id, $pow->building_ammount, $pow->clock_speed, $pow->power_used, $pow->user]);
+                Database::insert("power", ['production_lines_id', 'buildings_id', 'building_ammount', 'clock_speed', 'power_used', 'user'], [$id, $pow->buildings_id, $pow->building_ammount, $pow->clock_speed, $pow->power_used, $pow->user], $database);
             }
+            Database::commit($database);
+
+            return true;
         } catch (Exception $e) {
-            // rolback all changes
-            Database::rolback();
-            Database::rolback();
-            Database::rolback();
-            Database::rolback();
-            Database::rolback();
-            Database::rolback();
-            Database::rolback();
+            Database::rollBack($database);
             return false;
+
         }
-
-
-        return true;
     }
 
     public static function deleteProductionLine(int $id)

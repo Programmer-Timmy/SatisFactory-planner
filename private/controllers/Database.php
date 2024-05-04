@@ -2,11 +2,11 @@
 
 class Database
 {
-    private $connection;
-    private $host;
-    private $user;
-    private $password;
-    private $database;
+    private PDO $connection;
+    private string $host;
+    private string $user;
+    private string $password;
+    private string $database;
     function __construct()
     {
         global $database;
@@ -25,7 +25,7 @@ class Database
      * @param $database
      * @return void
      */
-    function connect($host, $user, $password, $database)
+    function connect($host, $user, $password, $database): void
     {
         $this->connection = new PDO("mysql:host=$host;dbname=$database", $user, $password);
     }
@@ -156,7 +156,7 @@ class Database
      * @param array $where
      * @return void
      */
-    public static function update(string $table, array $columns, array $values, array $where)
+    public static function update(string $table, array $columns, array $values, array $where, Database $database = new Database)
     {
         $sql = "UPDATE $table SET ";
         foreach ($columns as $column) {
@@ -169,7 +169,7 @@ class Database
         }
         $sql = substr($sql, 0, -5);
         $sql = htmlspecialchars($sql);
-        $stmt = (new Database)->prepare($sql);
+        $stmt = $database->prepare($sql);
         $stmt->execute(array_merge($values, array_values($where)));
     }
 
@@ -178,7 +178,7 @@ class Database
      * @param array $where
      * @return void
      */
-    public static function delete(string $table, array $where)
+    public static function delete(string $table, array $where, Database $database = new Database)
     {
         $sql = "DELETE FROM $table WHERE ";
         foreach ($where as $column => $value) {
@@ -186,7 +186,7 @@ class Database
         }
         $sql = substr($sql, 0, -5);
         $sql = htmlspecialchars($sql);
-        $stmt = (new Database)->prepare($sql);
+        $stmt = $database->prepare($sql);
         $stmt->execute(array_values($where));
     }
 
@@ -195,15 +195,28 @@ class Database
      * @param array $values
      * @return mixed
      */
-    public static function query(string $query, array $values = [])
+    public static function query(string $query, array $values = [], Database $database = new Database)
     {
-        $stmt = (new Database)->prepare($query);
+        $stmt = $database->prepare($query);
         $stmt->execute($values);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
-    public static function rolback()
+    public static function beginTransaction()
     {
-        (new Database)->connection->rollBack();
+        $database = new Database;
+        $database->connection->beginTransaction();
+
+        return $database;
+    }
+
+    public static function commit(Database $database)
+    {
+        $database->connection->commit();
+    }
+
+    public static function rollBack(Database $database)
+    {
+        $database->connection->rollBack();
     }
 }
