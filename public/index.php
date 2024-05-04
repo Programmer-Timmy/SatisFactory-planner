@@ -36,7 +36,7 @@ if ($site['ajax']) {
 // if url has api in it load the api file and exit
 if (str_contains($require, '/api')) {
     include __DIR__ . "/../private/Views/pages$require.php";
-    var_dump($require);
+    exit();
 }
 
 if ($site['admin']['enabled']) {

@@ -18,7 +18,6 @@ $Recipes = Recipes::getAllRecipes();
 $buildings = Buildings::getAllBuildings();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption'])) {
-    var_dump($_POST);
     $data = $_POST;
     $total_consumption = $_POST['total_consumption'];
     $importsData = [];
@@ -39,16 +38,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 
 
     if (!empty($data['production_recipe_id'])) {
+        var_dump($data);
         for ($i = 0; $i < count($data['production_recipe_id']); $i++) {
             if ($data['production_quantity'][$i] == 0 || $data['production_quantity'][$i] == '' || !$data['production_recipe_id'][$i]) {
                 continue;
             }
+            $secondUsage = 0;
+            $secondExport = 0;
+            if (Recipes::checkIfMultiOutput($data['production_recipe_id'][$i])) {
+                $secondUsage = $data['production_usage2'][$i];
+                $secondExport = $data['production_export2'][$i];
+            }
+
             $productionData[] = (object)[
                 'recipe_id' => $data['production_recipe_id'][$i],
                 'product_quantity' => $data['production_quantity'][$i],
                 'usage' => $data['production_usage'][$i],
-                'export_amount_per_min' => $data['production_export'][$i]
+                'export_amount_per_min' => $data['production_export'][$i],
+                'local_usage2' => $secondUsage,
+                'export_ammount_per_min2' => $secondExport
+
             ];
+
+
         }
     }
 
@@ -108,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                 <table class="table table-striped" id="imports">
                     <thead class="table-dark">
                     <tr>
-                        <th scope="col">Name</th>
+                        <th scope="col">Item</th>
                         <th scope="col">Quantity</th>
                     </tr>
                     </thead>
@@ -153,8 +165,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                 <table class="table table-striped" id="recipes">
                     <thead class="table-dark">
                     <tr>
-                        <th scope="col">Name</th>
+                        <th scope="col">Recipe</th>
                         <th scope="col">Quantity Per/min</th>
+                        <th scope="col">Product</th>
                         <th scope="col">Usage Per/min</th>
                         <th scope="col">Export Per/min</th>
                     </tr>
@@ -162,17 +175,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                     <tbody>
                     <?php foreach ($production as $product) : ?>
                         <tr>
-                            <td class="m-0 p-0">
-                                <select name="production_recipe_id[]" class="form-control rounded-0 recipe" onchange="calculatePowerOfProduction(this)">
-                                    <?php foreach ($Recipes as $recipe) : ?>
+                            <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
+
+                                <select name="production_recipe_id[]" class="form-control rounded-0 recipe" onchange="calculatePowerOfProduction(this)" <?php if ($product->item_name_2) echo 'style="height: 78px"'?>>
+                                <?php foreach ($Recipes as $recipe) : ?>
                                         <option <?php if ($product->recipe_id == $recipe->id) echo 'selected' ?>
                                                 value="<?= $recipe->id ?>"><?= $recipe->name ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
-                            <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_quantity[]" step="any" required class="form-control rounded-0 production-quantity" onchange="calculatePowerOfProduction(this)"
+                            <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
+                                <input min="0"  type="number" name="production_quantity[]" step="any" <?php if ($product->item_name_2) echo 'style="height: 78px"'?> required class="form-control rounded-0 production-quantity" onchange="calculatePowerOfProduction(this)"
                                        value="<?= $product->product_quantity ?>">
+                            </td>
+                                                       <td class="m-0 p-0">
+                                <input type="text"  readonly class="form-control rounded-0 product-name"
+                                       value="<?= $product->item_name_1 ?>">
                             </td>
                             <td class="m-0 p-0">
                                 <input min="0" type="number" name="production_usage[]" step="any" required class="form-control rounded-0 usage-amount" onchange="calculatePowerOfProduction(this)"
@@ -182,8 +200,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                                 <input min="0" type="number" name="production_export[]" step="any" required readonly class="form-control rounded-0 export-amount"
                                        value="<?= $product->export_amount_per_min ?>">
                             </td>
-
                         </tr>
+                        <?php if ($product->item_name_2) : ?>
+
+                            <tr class="extra-output">
+                                <td class="m-0 p-0">
+                                <input type="text" readonly class="form-control rounded-0 product-name"
+                                       value="<?= $product->item_name_2 ?>">
+                            </td>
+                            <td class="m-0 p-0">
+                                <input min="0" type="number" name="production_usage2[]" step="any" required class="form-control rounded-0 usage-amount" onchange="calculatePowerOfProduction(this)"
+                                       value="<?= $product->local_usage2 ?>">
+                            </td>
+                            <td class="m-0 p-0">
+                                <input min="0" type="number" name="production_export2[]" step="any" required readonly class="form-control rounded-0 export-amount"
+                                       value="<?= $product->export_ammount_per_min2 ?>">
+                            </td>
+                            </tr>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                     <tr>
                         <td class="m-0 p-0">
@@ -197,6 +231,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                         </td>
                         <td class="m-0 p-0">
                             <input min="0" type="number" step="any" name="production_quantity[]" value="0" required class="form-control rounded-0 production-quantity" onchange="calculatePowerOfProduction(this)">
+                        </td>
+                        <td class="m-0 p-0">
+                            <input type="text" readonly class="form-control rounded-0 product-name">
                         </td>
                         <td class="m-0 p-0">
                             <input min="0" type="number" step="any" name="production_usage[]" value="0" required class="form-control rounded-0 usage-amount" onchange="calculatePowerOfProduction(this)"
@@ -223,3 +260,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 </script>
 
 <?php require_once '../private/views/Popups/editProductinoLine.php'; ?>
+
