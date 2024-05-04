@@ -161,7 +161,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                     </thead>
                     <tbody>
                     <?php foreach ($production as $product) : ?>
-                    <?php var_dump(Recipes::getRecipeById($product->recipe_id)); ?>
                         <tr>
                             <td class="m-0 p-0">
                                 <select name="production_recipe_id[]" class="form-control rounded-0 recipe" onchange="calculatePowerOfProduction(this)">
