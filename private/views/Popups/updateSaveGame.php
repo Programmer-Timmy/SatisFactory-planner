@@ -3,7 +3,7 @@ global $gameSave;
 $users = Users::getAllUsers();
 $allowedUsers = GameSaves::getAllowedUsers($gameSave->id);
 ?>
-<div class="modal" id="UpdatedSaveGame_<?= $gameSave->id ?>" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
+<div class="modal fade" id="UpdatedSaveGame_<?= $gameSave->id ?>" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">

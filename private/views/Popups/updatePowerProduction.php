@@ -19,7 +19,7 @@ if ($_POST && isset($_POST['Biomass_Burner'])) {
 
 ?>
 
-<div class="modal" id="updatePowerProduction" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
+<div class="modal fade" id="updatePowerProduction" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">

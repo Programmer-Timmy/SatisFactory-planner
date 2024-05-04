@@ -14,7 +14,7 @@ if ($_POST && isset($_POST['productionLineName'])) {
 }
 ?>
 
-<div class="modal" id="editProductionLine" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
+<div class="modal fade" id="editProductionLine" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
