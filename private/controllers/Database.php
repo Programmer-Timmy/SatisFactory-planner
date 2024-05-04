@@ -201,4 +201,9 @@ class Database
         $stmt->execute($values);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
+
+    public static function rolback()
+    {
+        (new Database)->connection->rollBack();
+    }
 }

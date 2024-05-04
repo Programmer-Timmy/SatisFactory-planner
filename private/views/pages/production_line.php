@@ -46,8 +46,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
             $secondUsage = 0;
             $secondExport = 0;
             if (Recipes::checkIfMultiOutput($data['production_recipe_id'][$i])) {
-                $secondUsage = $data['production_usage2'][$i];
-                $secondExport = $data['production_export2'][$i];
+                $secondUsage = $data['production_usage2'][0];
+                // remove the just saved value from the array
+                array_shift($data['production_usage2']);
+                $secondExport = $data['production_export2'][0];
+                array_shift($data['production_export2']);
             }
 
             $productionData[] = (object)[
