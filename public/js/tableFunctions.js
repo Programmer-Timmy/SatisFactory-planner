@@ -2,10 +2,37 @@ function addInputRow(className) {
     // Clone the last row
     var lastRow = $("." + className).last().closest('tr').clone();
     // remove the onchange attribute from the cloned row
+    var row = $("." + className).last().closest('tr');
     $("." + className).removeAttr('onchange');
 
-    // Reset any values or attributes if needed
+    // get the recipe info from the api
+    getRecipe(row.find('.recipe').val())
+        .then(function (recipe) {
+
+            row.find('.product-name').val(recipe.itemName);
+            // Update the recipe name
+            if (recipe.secondItemName !== 'empty' && recipe.secondItemName != null) {
+                let secondItemClone = row.clone();
+                secondItemClone.addClass('extra-output');
+                secondItemClone.find('.product-name').val(recipe.secondItemName);
+                // delete first two tds
+                secondItemClone.find('td').slice(0, 2).remove();
+                // insert the clone
+                secondItemClone.insertAfter(row);
+                row.find('td:eq(0)').attr('rowspan', '2');
+                row.find('td:eq(1)').attr('rowspan', '2');
+                row.find('td:eq(0)').find('select').css('height', '78px');
+                row.find('td:eq(1)').find('input').css('height', '78px');
+
+                row.find('.export-amount').attr('name', 'production_export2[]');
+                row.find('.usage-amount').attr('name', 'production_usage2[]');
+
+                }
+        });
+
+
     lastRow.find('input').val('0');
+    lastRow.find('.product-name').val('');
 
     // Append the cloned row after the last row
     lastRow.insertAfter($("." + className).last().closest('tr'));
@@ -14,10 +41,8 @@ function addInputRow(className) {
 
 function calculateTotalConsumption() {
     var total = 0;
-    console.log('calculateTotalConsumption')
     $('.consumption').each(function () {
         total += parseInt($(this).val()) || 0;
-        console.log(total)
     });
     $('#totalConsumption').val(total);
 }
@@ -107,8 +132,7 @@ function getRecipe(recipe_id) {
             success: function (response) {
                 try {
                     // Parse the JSON response
-                    var recipe = JSON.parse(response);
-                    resolve(recipe);
+                    resolve(JSON.parse(response));
                 } catch (error) {
                     reject(error);
                 }
@@ -124,7 +148,7 @@ function getRecipe(recipe_id) {
 function calculatePowerOfProduction(element) {
     deletePowerNonUserRows();
     let row = $(element).closest('tbody').find('tr');
-
+    row = row.not('.extra-output');
     // Create an array to store all promises
     let promises = [];
 
@@ -132,7 +156,6 @@ function calculatePowerOfProduction(element) {
         if (row.eq(i).find('.production-quantity').val() == 0 || row.eq(i).find('.production-quantity').val() == '') {
             continue;
         }
-
         // Call getRecipe asynchronously and push the promise to the array
         let recipePromise = getRecipe(row.eq(i).find('.recipe').val());
         promises.push(recipePromise);
@@ -154,14 +177,56 @@ function calculatePowerOfProduction(element) {
             return Promise.all(buildingPromises)
                 .then(function (buildings) {
                     // Now all recipe and building data is available
-                    for (let i = 0; i < row.length; i++) {
+                    for (let i = 0; i < row.length -1; i++) {
+                        // if the tr has extra-output then skip
+
+
                         if (row.eq(i).find('.production-quantity').val() == 0 || row.eq(i).find('.production-quantity').val() == '') {
                             continue;
                         }
-                        let outputQuantity = row.eq(i).find('.production-quantity').val();
+                        var outputQuantity = row.eq(i).find('.production-quantity').val();
                         let recipe = recipes[i];
                         let building = buildings[i];
                         insertBuildingRow(recipe, building, outputQuantity);
+
+                        // if recipe has a second item then add it to the table if the next row is not the extra-output row
+                        if (recipe.secondItemName !== 'empty' && recipe.secondItemName != null) {
+                            var existingTr = row.eq(i);
+                            var tr = existingTr.next();
+                            if (!tr.hasClass('extra-output')) {
+                                let secondItemClone = existingTr.clone();
+                                secondItemClone.addClass('extra-output');
+                                // delete first two tds
+                                secondItemClone.find('td').slice(0, 2).remove();
+
+
+
+                                // insert the clone
+                                secondItemClone.insertAfter(existingTr);
+
+                                existingTr.find('td:eq(0)').attr('rowspan', '2');
+                                existingTr.find('td:eq(1)').attr('rowspan', '2');
+                                existingTr.find('td:eq(0)').find('select').css('height', '78px');
+                                existingTr.find('td:eq(1)').find('input').css('height', '78px');
+                                // change the name of the element to production_usage2
+                                existingTr.find('.export-amount').attr('name', 'production_export2');
+                                existingTr.find('.usage-amount').attr('name', 'production_usage2');
+
+
+                            }
+
+                        } else {
+                            var existingTr = row.eq(i);
+                            var tr = existingTr.next();
+                            if (tr.hasClass('extra-output')) {
+                                tr.remove();
+                                existingTr.find('td:eq(0)').attr('rowspan', '1');
+                                existingTr.find('td:eq(1)').attr('rowspan', '1');
+                                existingTr.find('td:eq(0) select').css('height', 'auto');
+                                existingTr.find('td:eq(1) input').css('height', 'auto');
+
+                            }
+                        }
 
                         let exportAmount = row.eq(i).find('.production-quantity').val() - row.eq(i).find('.usage-amount').val();
                         if (exportAmount < 0) {
@@ -170,11 +235,33 @@ function calculatePowerOfProduction(element) {
                             } else {
                                 row.eq(i).find('.usage-amount').val(row.eq(i).find('.production-quantity').val());
                             }
-                            exportAmount = 0;
                             alert('The export amount is negative, please check the usage amount');
                             calculatePowerOfProduction(element);
                         }
                         row.eq(i).find('.export-amount').val(exportAmount);
+                        row.eq(i).find('.product-name').val(recipe.itemName);
+                        if (recipe.secondItemName !== 'empty' && recipe.secondItemName != null) {
+                            var tr = row.eq(i).closest('tr').next();
+                            var usage = tr.find('.usage-amount').val();
+                            var secondExportAmount = row.eq(i).find('.production-quantity').val() - usage;
+                            var amountPerOne = recipe.export_amount_per_min2 / recipe.export_amount_per_min;
+
+                            if (secondExportAmount < 0) {
+                                if (row.eq(i).find('.usage-amount').val > row.eq(i).find('.production-quantity').val()) {
+                                    row.eq(i).find('.production-quantity').val(row.eq(i).find('.usage-amount').val());
+                                } else {
+                                    row.eq(i).find('.usage-amount').val(row.eq(i).find('.production-quantity').val());
+                                }
+                                alert('The export amount is negative, please check the usage amount');
+                                calculatePowerOfProduction(element);
+                            }
+
+                            tr.find('.export-amount').val(outputQuantity * amountPerOne - usage);
+                            tr.find('.product-name').val(recipe.secondItemName);
+                            tr.find('.production-quantity').val(usage);
+
+                        }
+
                     }
                 });
         })
