@@ -1,5 +1,6 @@
 <?php
 ob_start();
+$error = null;
 $productLineId = $_GET['id'];
 $productLine = ProductionLines::getProductionLineById($productLineId);
 
@@ -17,6 +18,7 @@ $Recipes = Recipes::getAllRecipes();
 $buildings = Buildings::getAllBuildings();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption'])) {
+    var_dump($_POST);
     $data = $_POST;
     $total_consumption = $_POST['total_consumption'];
     $importsData = [];
@@ -69,12 +71,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
     if (ProductionLines::saveProductionLine($importsData, $productionData, $powerData, $total_consumption, $productLine->id)) {
         header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
         exit();
+    }else{
+        $error = 'Something went wrong';
     }
+}elseif (isset($_POST['total_consumption'])) {
+    $error = 'Please fill all the fields';
 }
 ?>
 
 <div class="px-5">
     <form method="post" onkeydown="return event.key != 'Enter';">
+        <?php if ($error) : ?>
+            <div class="alert alert-danger" role="alert">
+                <?= $error ?>
+            </div>
+        <?php endif; ?>
         <div class="row justify-content-end align-items-center">
             <div class="col-md-3"></div>
             <div class="col-md-6 text-center">
@@ -150,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                     </thead>
                     <tbody>
                     <?php foreach ($production as $product) : ?>
+                    <?php var_dump(Recipes::getRecipeById($product->recipe_id)); ?>
                         <tr>
                             <td class="m-0 p-0">
                                 <select name="production_recipe_id[]" class="form-control rounded-0 recipe" onchange="calculatePowerOfProduction(this)">
@@ -198,8 +210,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                     </tbody>
                 </table>
             </div>
-        </form>
-    </div>
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+        <?php require_once '../private/views/Popups/showPower.php'; ?>
+    </form>
 </div>
 
 <script src="js/tableFunctions.js"></script>
@@ -208,4 +224,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 </script>
 
 <?php require_once '../private/views/Popups/editProductinoLine.php'; ?>
-<?php require_once '../private/views/Popups/showPower.php'; ?>

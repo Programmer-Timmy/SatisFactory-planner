@@ -10,7 +10,7 @@ class Recipes
 
     public static function getRecipeById(int $id)
     {
-        return Database::get("recipes", ['*'], [], ['id' => $id]);
+        return Database::get("recipes", ['recipes.*', 'items.name as itemName'], ['items' => 'items.id = recipes.item_id'], ['recipes.id' => $id]);
     }
 
 }
