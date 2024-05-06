@@ -167,7 +167,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             </div>
             <div id="chart_div"></div>
             <h2>Outputs</h2>
-            <div class="overflow-auto" style="height: 35vh;">
+            <div class="overflow-auto" style="height: 40vh;">
                 <table class="table table-striped">
                     <thead>
                     <tr>
