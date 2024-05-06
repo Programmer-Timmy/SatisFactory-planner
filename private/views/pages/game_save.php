@@ -105,7 +105,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 <div class="container">
     <h1 class="text-center pb-3">Game Save [<?= $gameSave->title ?>]</h1>
     <div class="row">
-        <div class="col-lg-8" id="productionLines">
+        <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
                 <button id="add_product_line" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
@@ -155,35 +155,35 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 <?php endif; ?>
             </div>
         </div>
-        <div class="col-lg-4"> <!-- Adjust the width as needed -->
-            <div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <h2>Power Consumption</h2>
-                    <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i></button>
-                </div>
-                <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>" id="power-alert" role="alert">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
-                </div>
-                <div id="chart_div"></div>
+        <div class="col-lg-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Power Consumption</h2>
+                <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i>
+                </button>
             </div>
+            <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"
+                 id="power-alert" role="alert">
+                <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
+            </div>
+            <div id="chart_div"></div>
             <h2>Outputs</h2>
-            <div class="overflow-auto" style="height: 40vh">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th scope="col">Item</th>
-                    <th scope="col">Amount</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($outputs as $output) : ?>
+            <div class="overflow-auto" style="height: 35vh;">
+                <table class="table table-striped">
+                    <thead>
                     <tr>
-                        <td><?= $output->item ?></td>
-                        <td><?= $output->ammount ?></td>
+                        <th scope="col">Item</th>
+                        <th scope="col">Ammount</th>
                     </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($outputs as $output) : ?>
+                        <tr>
+                            <td><?= $output->item ?></td>
+                            <td><?= $output->ammount ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -207,10 +207,6 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         });
         update_total_power_consumption();
     }
-
-//     get height of production lines
-    let productionLines = document.querySelector('.overflow-auto');
-
 </script>
 
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>
