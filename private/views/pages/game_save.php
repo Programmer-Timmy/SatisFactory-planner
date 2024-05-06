@@ -155,7 +155,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 <?php endif; ?>
             </div>
         </div>
-        <div class="col-lg-4 d-flex flex-column"> <!-- Adjust the width as needed -->
+        <div class="col-lg-4"> <!-- Adjust the width as needed -->
             <div>
                 <div class="d-flex justify-content-between align-items-center">
                     <h2>Power Consumption</h2>
@@ -166,12 +166,9 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 </div>
                 <div id="chart_div"></div>
             </div>
-            <div class="mt-auto"> <!-- Push content to the bottom -->
-                <!-- Empty div to fill remaining space if needed -->
-            </div>
             <h2>Outputs</h2>
             <div class="overflow-auto" style="height: 100px">
-            <table class="table table-striped" style="max-height: 300px; overflow-y: auto;">>
+            <table class="table table-striped">
                 <thead>
                 <tr>
                     <th scope="col">Item</th>
