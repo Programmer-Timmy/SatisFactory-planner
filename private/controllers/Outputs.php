@@ -40,8 +40,6 @@ class Outputs
         }
 
         //sort the array by item name
-
-
         return $outputArray;
 
 

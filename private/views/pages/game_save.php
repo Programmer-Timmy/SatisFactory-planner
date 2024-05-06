@@ -155,25 +155,26 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 <?php endif; ?>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2>Power Consumption</h2>
-                <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i>
-                </button>
+        <div class="col-lg-4 d-flex flex-column"> <!-- Adjust the width as needed -->
+            <div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2>Power Consumption</h2>
+                    <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i></button>
+                </div>
+                <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>" id="power-alert" role="alert">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
+                </div>
+                <div id="chart_div"></div>
             </div>
-            <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"
-                 id="power-alert" role="alert">
-                <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
+            <div class="mt-auto"> <!-- Push content to the bottom -->
+                <!-- Empty div to fill remaining space if needed -->
             </div>
-            <div id="chart_div"></div>
-
-
             <h2>Outputs</h2>
             <table class="table table-striped">
                 <thead>
                 <tr>
                     <th scope="col">Item</th>
-                    <th scope="col">Ammount</th>
+                    <th scope="col">Amount</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -185,7 +186,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 <?php endforeach; ?>
                 </tbody>
             </table>
-                    </div>
+        </div>
     </div>
 </div>
 
