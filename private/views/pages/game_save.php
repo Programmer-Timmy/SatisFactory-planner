@@ -209,6 +209,16 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         update_total_power_consumption();
     }
 
+    function setPowerOutputsHeight() {
+        const productionLinesHeight = document.getElementById('production-lines').clientHeight;
+        const powerOutputs = document.getElementById('power-outputs');
+
+        powerOutputs.style.height = productionLinesHeight + 'px';
+
+    }
+
+    setPowerOutputsHeight();
+
 </script>
 
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>
