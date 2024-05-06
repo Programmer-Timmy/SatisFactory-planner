@@ -6,6 +6,8 @@ if (!isset($_GET['id'])) {
 }
 
 $gameSave = GameSaves::getSaveGameById($_GET['id']);
+$outputs = Outputs::getAllOutputs();
+
 
 if (empty($gameSave)) {
     header('Location: /');
@@ -167,8 +169,23 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 
 
             <h2>Outputs</h2>
-
-        </div>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Item</th>
+                    <th scope="col">Ammount</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($outputs as $output) : ?>
+                    <tr>
+                        <td><?= $output->item ?></td>
+                        <td><?= $output->ammount ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+                    </div>
     </div>
 </div>
 
