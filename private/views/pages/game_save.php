@@ -211,6 +211,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 
     function setPowerOutputsHeight() {
         const productionLinesHeight = document.getElementById('production-lines').clientHeight;
+        console.log(productionLinesHeight)
         const powerOutputs = document.getElementById('power-outputs');
 
         powerOutputs.style.height = productionLinesHeight + 'px';
