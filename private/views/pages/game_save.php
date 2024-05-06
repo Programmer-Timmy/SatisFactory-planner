@@ -105,7 +105,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 <div class="container">
     <h1 class="text-center pb-3">Game Save [<?= $gameSave->title ?>]</h1>
     <div class="row">
-        <div class="col-lg-8" id="production-lines">
+        <div class="col-lg-8" id="productionLines">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
                 <button id="add_product_line" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
@@ -155,7 +155,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 <?php endif; ?>
             </div>
         </div>
-        <div class="col-lg-4 d-flex flex-column" id="power-outputs"> <!-- Adjust the width as needed -->
+        <div class="col-lg-4 d-flex flex-column"> <!-- Adjust the width as needed -->
             <div>
                 <div class="d-flex justify-content-between align-items-center">
                     <h2>Power Consumption</h2>
@@ -170,7 +170,8 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 <!-- Empty div to fill remaining space if needed -->
             </div>
             <h2>Outputs</h2>
-            <table class="table table-striped" style="overflow-y: auto;">
+            <div class="overflow-auto" style="height: 100px">
+            <table class="table table-striped" style="max-height: 300px; overflow-y: auto;">>
                 <thead>
                 <tr>
                     <th scope="col">Item</th>
@@ -186,6 +187,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </div>
@@ -209,15 +211,8 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         update_total_power_consumption();
     }
 
-    function setPowerOutputsHeight() {
-        const productionLinesHeight = document.getElementById('production-lines').clientHeight;
-        const powerOutputs = document.getElementById('power-outputs');
-
-        powerOutputs.style.height = productionLinesHeight + 'px';
-
-    }
-
-    setPowerOutputsHeight();
+//     get height of production lines
+    let productionLines = document.querySelector('.overflow-auto');
 
 </script>
 
