@@ -4,7 +4,7 @@ class Outputs
 {
     public static function getAllOutputs()
     {
-        $outputs = Database::getAll("output", ['output.*', 'items.name as item'], ['items' => 'items.id = output.items_id where output.ammount > 0'], [], 'items_id ASC');
+        $outputs = Database::getAll("output", ['output.*', 'items.name as item'], ['items' => 'items.id = output.items_id where output.ammount > 0'], [], 'items.name ASC');
         $imports = Database::getAll("input", ['*'], [], [], 'items_id ASC');
 
         // Combine amounts of the same item ID
@@ -38,6 +38,9 @@ class Outputs
                 }
             }
         }
+
+        //sort the array by item name
+
 
         return $outputArray;
 
