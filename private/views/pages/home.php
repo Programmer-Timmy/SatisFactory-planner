@@ -32,12 +32,13 @@ if ($_GET && isset($_GET['delete'])) {
 
 ?>
 <div class="container">
-    <div class="row justify-content-end align-items-center">
-        <div class="col-md-7 text-md-end text-sm-center">
+    <div class="row align-items-center">
+        <div class="d-none d-md-block col-3 "></div>
+        <div class="col-9 col-md-6 text-md-center text-start">
             <h2>Game Saves</h2>
         </div>
-        <div class="col-md-5">
-            <div class="text-md-end text-sm-center">
+        <div class="col-3">
+            <div class="text-end">
                 <button id="add_product_line" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
             </div>
         </div>
@@ -57,7 +58,7 @@ if ($_GET && isset($_GET['delete'])) {
                         $gameSave->image = 'default_img.png';
                     }
                 ?>
-                <div class="col-md-4 d-flex align-items-stretch">
+                <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
                     <a href="game_save?id=<?= $gameSave->game_saves_id ?>" class="card-link text-black text-decoration-none">
                         <div class="card mt-3">
                             <div class="position-relative">

@@ -24,6 +24,12 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                     <?= $error ?>
                 </div>
             <?php endif; ?>
+
+            <?php if (isset($_GET['registered'])) : ?>
+                <div class="alert alert-success" role="alert">
+                    You have successfully registered. Please login.
+                </div>
+            <?php endif; ?>
             <div class="card">
                 <div class="card-body">
                     <form method="post">

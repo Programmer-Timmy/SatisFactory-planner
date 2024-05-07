@@ -61,7 +61,7 @@ if ($site['accounts']['enabled']) {
     $pageTemplate = __DIR__ . "/../private/Views/pages$require.php";
 
     if (file_exists($pageTemplate)) {
-        if (str_contains($require, $accounts['filterInUrl']) && $require !== '/' . $site['redirect'] && $require !== '/404' && $require !== '/maintenance') {
+        if (str_contains($require, $accounts['filterInUrl']) && $require !== '/' . $site['redirect'] && $require !== '/404' && $require !== '/maintenance' && $require !== '/register') {
 
             if (!isset($_SESSION[$accounts['sessionName']])) {
                 if ($site['saveUrl']) {

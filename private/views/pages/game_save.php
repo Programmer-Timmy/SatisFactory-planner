@@ -140,6 +140,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                                        data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>>
                             </td>
                             <td>
+                                <div>
                                 <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"><i
                                             class="fa-solid fa-gears"></i></a>
                             </td>
