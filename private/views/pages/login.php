@@ -1,5 +1,4 @@
 <?php
-ob_start();
 $error = '';
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
@@ -28,6 +27,12 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
             <?php if (isset($_GET['registered'])) : ?>
                 <div class="alert alert-success" role="alert">
                     You have successfully registered. Please login.
+                </div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['logout'])) : ?>
+                <div class="alert alert-success" role="alert">
+                    You have successfully logged out.
                 </div>
             <?php endif; ?>
             <div class="card">
