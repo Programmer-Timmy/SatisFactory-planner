@@ -21,4 +21,10 @@ class Recipes
         }
         return false;
     }
+
+    public static function getRecipeResources(int $id)
+    {
+        return Database::getAll("recipe_ingredients", ['recipes_id as recipeId', 'items_id as itemId', 'items.name as name', 'import_amount_per_min as importAmount'], ['items' => 'items.id = recipe_ingredients.items_id'], ['recipes_id' => $id]);
+    }
+
 }

@@ -6,7 +6,7 @@ if (!isset($_GET['id'])) {
 }
 
 $gameSave = GameSaves::getSaveGameById($_GET['id']);
-$outputs = Outputs::getAllOutputs();
+$outputs = Outputs::getAllOutputs($_GET['id']);
 
 
 if (empty($gameSave)) {
@@ -173,7 +173,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                     <thead>
                     <tr>
                         <th scope="col">Item</th>
-                        <th scope="col">Ammount</th>
+                        <th scope="col">Amount</th>
                     </tr>
                     </thead>
                     <tbody>
