@@ -153,8 +153,8 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                     <?php endforeach; ?>
                     </tbody>
                 </table>
-                <?php endif; ?>
             </div>
+            <?php endif; ?>
         </div>
         <div class="col-lg-4">
             <div class="d-flex justify-content-between align-items-center">

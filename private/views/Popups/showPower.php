@@ -9,7 +9,7 @@ global $productLine, $buildings, $powers;
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <table class="table table-striped">
+                <table class="table table-striped" id="power">
                     <thead class="table-dark">
                     <tr>
                         <th scope="col">Name</th>
@@ -23,7 +23,7 @@ global $productLine, $buildings, $powers;
                         <tr <?= $power->user ? 'class="user"' : '' ?>>
                             <td class="m-0 p-0 w-50">
                                 <select name="power_building_id[]" class="form-control rounded-0 building"
-                                        onchange="calculateConsumption(this)">
+                                        >
                                     <?php foreach ($buildings as $building) : ?>
                                         <option <?php if ($power->buildings_id == $building->id) echo 'selected' ?>
                                                 value="<?= $building->id ?>"><?= $building->name ?></option>
@@ -32,23 +32,24 @@ global $productLine, $buildings, $powers;
                             </td>
                             <td class="m-0 p-0 w-25">
                                 <input min="0" type="number" name="power_amount[]"
-                                       class="form-control rounded-0 quantity " onchange="calculateConsumption(this)"
+                                       class="form-control rounded-0 quantity " 
                                        value="<?= $power->building_ammount ?>">
                             </td>
                             <td class="m-0 p-0 w-25">
                                 <input min="0" type="number" name="power_clock_speed[]" step="any"
                                        class="form-control rounded-0 clock-speed"
-                                       onchange="calculateConsumption(this)"
+                                       
                                        value="<?= $power->clock_speed ?>">
                             </td>
                             <td class="w-25 m-0 p-0">
                                 <input type="number" name="power_Consumption[]"
                                        class="form-control rounded-0 consumption" disabled
-                                       onchange="calculateTotalConsumption()"
+                                       
                                        value="<?= $power->building_ammount * $power->power_used * ($power->clock_speed / 100) ?>">
+                            </td>
+                            <td class="w-25 m-0 p-0">
                                 <input type="hidden" class="user" name="user[]" value="<?= $power->user ?>">
                             </td>
-
                         </tr>
                     <?php endforeach; ?>
                     <tr class="user">
@@ -62,18 +63,20 @@ global $productLine, $buildings, $powers;
                             </select>
                         </td>
                         <td class="m-0 p-0 w-25">
-                            <input min="0" type="number" name="power_amount[]" class="form-control rounded-0 quantity"
-                                   onchange="calculateConsumption(this)">
+                            <input min="0" type="number" name="power_amount[]" class="form-control rounded-0 quantity" value="1"
+                                   >
                         </td>
                         <td class="m-0 p-0 w-25">
                             <input min="0" max="250" type="number" name="power_clock_speed[]"
                                    class="form-control rounded-0 clock-speed" step="any" value="100"
-                                   onchange="calculateConsumption(this)">
+                                   >
                         </td>
                         <td class="w-25 m-0 p-0">
                             <input type="number" name="power_Consumption[]" disabled
                                    class="form-control rounded-0 consumption"
                                    onchange="calculateTotalConsumption(this)">
+                        </td>
+                        <td class="w-25 m-0 p-0">
                             <input type="hidden" class="user" name="user[]" value="1">
                         </td>
                     </tr>

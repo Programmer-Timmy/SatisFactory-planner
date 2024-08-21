@@ -71,13 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
             if ($data['power_amount'][$i] == 0 || $data['power_amount'][$i] == '' || !$data['power_building_id'][$i]) {
                 continue;
             }
+
             $powerData[] = (object)[
                 'buildings_id' => $data['power_building_id'][$i],
                 'building_ammount' => $data['power_amount'][$i],
                 'clock_speed' => $data['power_clock_speed'][$i],
                 'power_used' => $buildings[array_search($data['power_building_id'][$i], array_column($buildings, 'id'))]->power_used,
                 'user' => $data['user'][$i]
-
             ];
         }
     }
@@ -93,6 +93,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 }
 ?>
 
+<style>
+    /*!* Chrome, Safari, Edge, Opera *!*/
+    /*input::-webkit-outer-spin-button,*/
+    /*input::-webkit-inner-spin-button {*/
+    /*    -webkit-appearance: none;*/
+    /*    margin: 0;*/
+    /*}*/
+
+    /*!* Firefox *!*/
+    /*input[type=number] {*/
+    /*    -moz-appearance: textfield;*/
+    /*}*/
+</style>
+
 <div class="px-5">
     <form method="post" onkeydown="return event.key != 'Enter';">
         <?php if ($error) : ?>
@@ -107,10 +121,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
             </div>
             <div class="col-md-3">
                 <div class="text-md-end text-center">
-                    <button type="submit" id="save_button" class="btn btn-primary"><i class="fa-solid fa-save"></i></button>
-                    <button type="button" id="edit_product_line" class="btn btn-warning"><i class="fa-solid fa-pencil"></i></button>
-                    <button type="button" id="showPower" class="btn btn-info"><i class="fa-solid fa-bolt"></i></button>
-                    <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i></a>
+                    <button type="submit" id="save_button" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Save the production line"><i class="fa-solid fa-save"></i></button>
+                    <button type="button" id="edit_product_line" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit the production line"><i class="fa-solid fa-pencil"></i></button>
+                    <button type="button" id="showPower" class="btn btn-info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show power consumption"><i class="fa-solid fa-bolt"></i></button>
+                    <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i class="fa-solid fa-arrow-left"></i></a>
                 </div>
             </div>
         </div>
@@ -145,8 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                     <?php endforeach; ?>
                     <tr>
                         <td class="m-0 p-0 w-75">
-                            <select name="imports_item_id[]" step="any" class="form-control rounded-0 input-item-id"
-                                    onchange="addInputRow('input-item-id')">
+                            <select name="imports_item_id[]" step="any" class="form-control rounded-0 input-item-id">
                                 <option value="" disabled selected>Select an item</option>
                                 <?php foreach ($items as $item) : ?>
                                     <option value="<?= $item->id ?>"><?= $item->name ?></option>
@@ -179,7 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                         <tr>
                             <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
 
-                                <select name="production_recipe_id[]" class="form-control rounded-0 recipe" onchange="calculatePowerOfProduction(this)" <?php if ($product->item_name_2) echo 'style="height: 78px"'?>>
+                                <select name="production_recipe_id[]" class="form-control rounded-0 recipe"<?php if ($product->item_name_2) echo 'style="height: 78px"'?>>
                                 <?php foreach ($Recipes as $recipe) : ?>
                                         <option <?php if ($product->recipe_id == $recipe->id) echo 'selected' ?>
                                                 value="<?= $recipe->id ?>"><?= $recipe->name ?></option>
@@ -187,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                                 </select>
                             </td>
                             <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
-                                <input min="0"  type="number" name="production_quantity[]" step="any" <?php if ($product->item_name_2) echo 'style="height: 78px"'?> required class="form-control rounded-0 production-quantity" onchange="calculatePowerOfProduction(this)"
+                                <input min="0"  type="number" name="production_quantity[]" step="any" <?php if ($product->item_name_2) echo 'style="height: 78px"'?> required class="form-control rounded-0 production-quantity" "
                                        value="<?= $product->product_quantity ?>">
                             </td>
                                                        <td class="m-0 p-0">
@@ -195,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                                        value="<?= $product->item_name_1 ?>">
                             </td>
                             <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_usage[]" step="any" required class="form-control rounded-0 usage-amount" onchange="calculatePowerOfProduction(this)"
+                                <input min="0" type="number" name="production_usage[]" step="any" required class="form-control rounded-0 usage-amount"
                                        value="<?= $product->local_usage ?>">
                             </td>
                             <td class="m-0 p-0">
@@ -211,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                                        value="<?= $product->item_name_2 ?>">
                             </td>
                             <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_usage2[]" step="any" required class="form-control rounded-0 usage-amount" onchange="calculatePowerOfProduction(this)"
+                                <input min="0" type="number" name="production_usage2[]" step="any" required class="form-control rounded-0 usage-amount" "
                                        value="<?= $product->local_usage2 ?>">
                             </td>
                             <td class="m-0 p-0">
@@ -223,8 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                     <?php endforeach; ?>
                     <tr>
                         <td class="m-0 p-0">
-                            <select name="production_recipe_id[]" class="form-control rounded-0 item-recipe-id recipe" oninput="calculatePowerOfProduction(this)"
-                                    onchange="addInputRow('item-recipe-id')">
+                            <select name="production_recipe_id[]" class="form-control rounded-0 item-recipe-id recipe">
                                 <option value="" disabled selected>Select a recipe</option>
                                 <?php foreach ($Recipes as $recipe) : ?>
                                     <option value="<?= $recipe->id ?>"><?= $recipe->name ?></option>
@@ -232,13 +244,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                             </select>
                         </td>
                         <td class="m-0 p-0">
-                            <input min="0" type="number" step="any" name="production_quantity[]" value="0" required class="form-control rounded-0 production-quantity" onchange="calculatePowerOfProduction(this)">
+                            <input min="0" type="number" step="any" name="production_quantity[]" value="0" required class="form-control rounded-0 production-quantity">
                         </td>
                         <td class="m-0 p-0">
                             <input type="text" readonly class="form-control rounded-0 product-name">
                         </td>
                         <td class="m-0 p-0">
-                            <input min="0" type="number" step="any" name="production_usage[]" value="0" required class="form-control rounded-0 usage-amount" onchange="calculatePowerOfProduction(this)"
+                            <input min="0" type="number" step="any" name="production_usage[]" value="0" required class="form-control rounded-0 usage-amount"
                                    >
                         </td>
                         <td class="m-0 p-0">
@@ -248,18 +260,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
                     </tbody>
                 </table>
             </div>
-            <div class="col-md-12">
-                <button type="submit" class="btn btn-primary">Save</button>
-            </div>
         </div>
         <?php require_once '../private/views/Popups/showPower.php'; ?>
     </form>
 </div>
 
-<script src="js/tableFunctions.js"></script>
-<script>
-    calculateTotalConsumption();
-</script>
+<!--<script src="js/tableFunctions.js"></script>-->
+<script type="module" src="js/bundle.js"></script>
 
 <?php require_once '../private/views/Popups/editProductinoLine.php'; ?>
 

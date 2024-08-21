@@ -8,4 +8,9 @@ class Items
         return Database::getAll("items" , ['*'], [], [], 'name ASC');
     }
 
+    public static function getItemById($id)
+    {
+        return Database::get("items", ['*'],[], ['id' => $id]);
+    }
+
 }
