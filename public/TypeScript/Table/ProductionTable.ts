@@ -61,7 +61,7 @@ export class ProductionTable extends Table {
 
     public async calculateExport() {
         // Fetch all recipes in parallel for performance improvement
-        const recipesPromises = this.tableRows.slice(0, -1).map(row => this.getRecipe(row.cells[0]));
+        const recipesPromises = this.tableRows.slice(0, -1).map(row => this.getRecipe(+row.cells[0]));
         const recipes = await Promise.all(recipesPromises);
 
         for (let i = 0; i < this.tableRows.length - 1; i++) {

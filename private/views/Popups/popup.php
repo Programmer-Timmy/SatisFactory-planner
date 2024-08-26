@@ -2,11 +2,11 @@
 global $site
 ?>
 <!-- Bootstrap Popup Modal -->
-<div class="modal" id="popupModal" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
+<div class="modal" id="popupModalStart" tabindex="-1" aria-labelledby="popupModalStartLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="popupModalLabel"><?php echo $site['popupTitle']; ?></h5>
+                <h5 class="modal-title" id="popupModalStartLabel"><?php echo $site['popupTitle']; ?></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -27,7 +27,7 @@ global $site
 <!-- JavaScript to show the popup when the page loads -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const popupModal = new bootstrap.Modal(document.getElementById('popupModal'));
-        popupModal.show();
+        const popupModalStart = new bootstrap.Modal(document.getElementById('popupModalStart'));
+        popupModalStart.show();
     });
 </script>

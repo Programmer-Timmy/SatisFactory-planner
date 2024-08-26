@@ -59,90 +59,67 @@ export class ImportsTable extends Table {
         this.deleteAllRows();
 
         for (const row of productionRows) {
-            const recipe = row.cells[0];
-            const quantity = row.cells[1];
-            const recipeImports : Promise<{[key: string]: any}> = this.getRecipeImports(+recipe);
-            const recipeData: Promise<{[key: string]: any}> = this.getRecipe(recipe);
+            const recipeId = +row.cells[0];
+            const quantity = +row.cells[1];
 
-            if (!recipeImports || !recipeData) {
+            // Fetching recipe imports and recipe data asynchronously
+            const recipeImportsPromise: Promise<{ [key: string]: any }> = this.getRecipeImports(recipeId);
+            const recipeDataPromise: Promise<{ [key: string]: any }> = this.getRecipe(recipeId);
+
+            // Skip iteration if either promise is falsy
+            if (!recipeImportsPromise || !recipeDataPromise) {
                 continue;
             }
 
-            await Promise.all([recipeImports, recipeData]).then((values) => {
-                const imports :{[key: string]: any} = values[0];
-                const recipeData :{[key: string]: any} = values[1];
+            try {
+                // Wait for both promises to resolve
+                const [imports, recipeData] = await Promise.all([recipeImportsPromise, recipeDataPromise]);
 
-                const perMin = +quantity / recipeData['export_amount_per_min']
+                const productionRate = quantity / recipeData['export_amount_per_min'];
 
-                imports.forEach((key: {[key: string]: any}) => {
-                    let amount = key['importAmount'] * perMin;
-                    const existingImport = this.checkIfImportAlreadyExists(key['itemId']);
+                // Iterate through each import item
+                imports.forEach((importItem: { [key: string]: any }) => {
+                    const importAmount = importItem['importAmount'] * productionRate;
+                    const existingImportIndex = this.checkIfImportAlreadyExists(importItem['itemId']);
 
-                    if (existingImport !== false) {
-                        this.tableRows[existingImport].cells[1] = Math.round((+this.tableRows[existingImport].cells[1] + amount)* 1).toString();
-                        return;
-                    }
-
-                    if (amount > 0) {
+                    if (existingImportIndex !== false) {
+                        // Update existing import amount
+                        this.tableRows[existingImportIndex].cells[1] = Math.round(
+                            +this.tableRows[existingImportIndex].cells[1] + importAmount
+                        ).toString();
+                    } else if (importAmount > 0) {
+                        // Add new row if import amount is positive and not already existing
                         this.addRow();
-                        this.tableRows[this.tableRows.length - 1].cells = [key['itemId'],  Math.round(amount * 1)];
+                        this.tableRows[this.tableRows.length - 1].cells = [importItem['itemId'], Math.round(importAmount)];
                     }
                 });
-            });
+            } catch (error) {
+                console.error(`Error processing recipe ID ${recipeId}:`, error);
+            }
         }
 
-        for (let i = 0; i < this.tableRows.length -2 ; i++) {
+
+        for (let i = 0; i < this.tableRows.length; i++) {
             const itemId = this.tableRows[i].cells[0];
-            const alreadyProdused = await this.checkIfAlreadyProdused(itemId, this.productionTable);
-            let amount = +this.tableRows[i].cells[1];
+            const alreadyProduced = await this.checkIfAlreadyProduced(itemId, this.productionTable);
 
-            if (alreadyProdused !== false) {
-                const index = alreadyProdused.index;
+            if (alreadyProduced) {
+                let remainingAmount = +this.tableRows[i].cells[1];
 
-                if (alreadyProdused.double) {
-                    let exesAmount = amount - +this.productionTable.tableRows[index].extraCells[2];
-                    let usageAmount = amount;
+                for (const { index, double } of alreadyProduced) {
+                    remainingAmount = this.updateProductionRow(index, remainingAmount, double);
 
-                    if (exesAmount > 0) {
-                        usageAmount = +this.productionTable.tableRows[index].extraCells[1];
-                    }
-
-                    this.productionTable.tableRows[index].extraCells[1] = usageAmount.toString();
-                    this.productionTable.tableRows[index].extraCells[2] = (+this.productionTable.tableRows[index].extraCells[2] - +this.productionTable.tableRows[index].extraCells[1]).toString();
-
-                    if (exesAmount <= 0) {
+                    if (remainingAmount <= 0) {
                         this.deleteRow(i);
                         i--;
-                        continue;
+                        break;
                     }
 
-                    amount = exesAmount;
-
-                    this.tableRows[i].cells[1] = amount.toString();
-                } else {
-
-                    let usageAmount = amount;
-                    let exesAmount = amount - +this.productionTable.tableRows[index].cells[3];
-
-                    if (exesAmount > 0) {
-                        usageAmount = +this.productionTable.tableRows[index].cells[1];
-                    }
-
-                    this.productionTable.tableRows[index].cells[3] = usageAmount.toString();
-                    this.productionTable.tableRows[index].cells[4] = (+this.productionTable.tableRows[index].cells[1] - +this.productionTable.tableRows[index].cells[3]).toString();
-
-                    if (exesAmount <= 0) {
-                        this.deleteRow(i);
-                        i--;
-                        continue;
-                    }
-
-                    amount = exesAmount;
-
-                    this.tableRows[i].cells[1] = amount.toString();
+                    this.tableRows[i].cells[1] = remainingAmount.toString();
                 }
             }
         }
+
         this.addRow();
         this.renderTable();
 
@@ -159,19 +136,90 @@ export class ImportsTable extends Table {
         return false;
     }
 
-    private async checkIfAlreadyProdused(itemId: string, productionTable: ProductionTable): Promise<{double: boolean, index: number} | false>{
+    /**
+     * Check if the item is already produced
+     *
+     * @param itemId
+     * @param productionTable
+     * @private
+     */
+
+    private async checkIfAlreadyProduced(itemId: string, productionTable: ProductionTable): Promise<[{double: boolean, index: number}] | false>{
         const itemName = await this.getItemName(+itemId);
+        let returnData : [{double: boolean, index: number}] = [{double: false, index: 0}];
         for (let i = 0; i < productionTable.tableRows.length; i++) {
+            productionTable.tableRows[i].cells[3] = '0';
+            productionTable.tableRows[i].cells[4] = productionTable.tableRows[i].cells[1];
             if (productionTable.tableRows[i].cells[2] == itemName) {
-                return {double: false, index: i};
+                returnData.push({double: false, index: i});
             }
             if (productionTable.tableRows[i].doubleExport && productionTable.tableRows[i].extraCells[0] == itemName) {
-                return {double: true, index: i};
+                returnData.push({double: true, index: i});
             }
         }
-        return false
+        if (returnData.length == 1) {
+            return false;
+        }
+        returnData.shift();
+
+        return returnData;
     }
 
+    /**
+     * Updates a production row based on the given index, remaining amount, and whether the row is "double".
+     * @param index - The index of the production row.
+     * @param remainingAmount - The remaining amount to be processed.
+     * @param isDouble - Whether the row is a "double" row.
+     * @returns The remaining amount after processing.
+     */
+    updateProductionRow(index: number, remainingAmount: number, isDouble: boolean): number {
+        if (isDouble) {
+            return this.updateDoubleRow(index, remainingAmount);
+        } else {
+            return this.updateSingleRow(index, remainingAmount);
+        }
+    }
+
+    /**
+     * Updates a "double" production row.
+     * @param index - The index of the production row.
+     * @param remainingAmount - The remaining amount to be processed.
+     * @returns The remaining amount after processing.
+     */
+    updateDoubleRow(index: number, remainingAmount: number): number {
+        const productionRow = this.productionTable.tableRows[index];
+        const usedAmount = Math.min(remainingAmount, +productionRow.extraCells[1]);
+        const excessAmount = remainingAmount - +productionRow.extraCells[2];
+
+        productionRow.extraCells[1] = usedAmount.toString();
+        productionRow.extraCells[2] = (+productionRow.extraCells[2] - usedAmount).toString();
+
+        return excessAmount > 0 ? excessAmount : 0;
+    }
+
+    /**
+     * Updates a single production row.
+     * @param index - The index of the production row.
+     * @param remainingAmount - The remaining amount to be processed.
+     * @returns The remaining amount after processing.
+     */
+    updateSingleRow(index: number, remainingAmount: number): number {
+        const productionRow = this.productionTable.tableRows[index];
+        const tableProductionAmount = +productionRow.cells[1];
+        const usedAmount = Math.min(remainingAmount, tableProductionAmount);
+        const excessAmount = remainingAmount - tableProductionAmount;
+
+        productionRow.cells[3] = usedAmount.toString();
+        productionRow.cells[4] = (tableProductionAmount - usedAmount).toString();
+
+        return excessAmount > 0 ? excessAmount : 0;
+    }
+
+    /**
+     * Get the recipe imports from the database
+     * @param recipeId
+     * @private
+     */
     private async getRecipeImports(recipeId: number): Promise<object> {
         return new Promise(function (resolve, reject) {
             $.ajax({
@@ -195,6 +243,11 @@ export class ImportsTable extends Table {
         });
     }
 
+    /**
+     * Get the recipe from the database
+     * @param itemId
+     * @private
+     */
     private async getItemName(itemId: number): Promise<string> {
         return new Promise(function (resolve, reject) {
             $.ajax({

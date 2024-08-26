@@ -1,0 +1,28 @@
+[
+  {
+    "version": "1.1.1",
+    "date": "august 26, 2024",
+    "changes": [
+      "Fixed small bug for loading data from the database.",
+      "Fixed small bug for the calculation of the total amount of the imported products.",
+      "Made it run faster and more efficient."
+    ]
+  },
+
+  {
+    "version": "1.1.0",
+    "date": "august 20, 2024",
+
+    "changes": [
+      "Made all the calculations faster and automated."
+    ]
+  },
+  {
+    "version": "1.0.0",
+    "date": "September 24, 2024",
+
+    "changes": [
+      "Initial release."
+    ]
+  }
+]

@@ -44,7 +44,7 @@ if ($site['admin']['enabled']) {
     $pageTemplate = __DIR__ . "/../private/Views/pages$require.php";
 
     if (file_exists($pageTemplate)) {
-        if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && $require !== '/404' && $require !== '/maintenance') {
+        if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && $require !== '/404' && $require !== '/maintenance' && $require !== '/changelog') {
             if (!isset($_SESSION[$admin['sessionName']])) {
                 if($site['saveUrl']){
                     $_SESSION['redirect'] = $requestedPage;
@@ -61,7 +61,7 @@ if ($site['accounts']['enabled']) {
     $pageTemplate = __DIR__ . "/../private/Views/pages$require.php";
 
     if (file_exists($pageTemplate)) {
-        if (str_contains($require, $accounts['filterInUrl']) && $require !== '/' . $site['redirect'] && $require !== '/404' && $require !== '/maintenance' && $require !== '/register') {
+        if (str_contains($require, $accounts['filterInUrl']) && $require !== '/' . $site['redirect'] && $require !== '/404' && $require !== '/maintenance' && $require !== '/register' && $require !== '/changelog') {
 
             if (!isset($_SESSION[$accounts['sessionName']])) {
                 if ($site['saveUrl']) {
@@ -107,9 +107,9 @@ if ($site['maintenance'] && !in_array($_SERVER['REMOTE_ADDR'], $allowedIPs)) {
     include __DIR__ . '/../private/Views/templates/footer.php';
 }
 
-if ($site['showPopup'] && !isset($_SESSION['popupShown'])) {
-    // Include your popup HTML or JavaScript code here
-    include __DIR__ . '/../private/Views/popups/popup.php';
+    if ($site['showPopup'] && !isset($_SESSION['popupShown'])) {
+        // Include your popup HTML or JavaScript code here
+        include __DIR__ . '/../private/Views/popups/popup.php';
 
     // Set a session variable to remember that the popup has been shown
     $_SESSION['popupShown'] = true;

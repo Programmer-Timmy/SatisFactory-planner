@@ -2,6 +2,11 @@
 ob_start();
 $error = null;
 $productLineId = $_GET['id'];
+if ($productLineId == null) {
+    header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
+    exit();
+}
+
 $productLine = ProductionLines::getProductionLineById($productLineId);
 
 if (empty($productLine) || !ProductionLines::checkProductionLineVisability($productLine->game_saves_id, $_SESSION['userId'])) {
@@ -94,17 +99,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 ?>
 
 <style>
-    /*!* Chrome, Safari, Edge, Opera *!*/
-    /*input::-webkit-outer-spin-button,*/
-    /*input::-webkit-inner-spin-button {*/
-    /*    -webkit-appearance: none;*/
-    /*    margin: 0;*/
-    /*}*/
+    /* Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
 
-    /*!* Firefox *!*/
-    /*input[type=number] {*/
-    /*    -moz-appearance: textfield;*/
-    /*}*/
+    /* Firefox */
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+
+    .form-control:hover{
+        border-color: #86b7fe;
+    }
+
+    .form-control:focus{
+        box-shadow: none;
+    }
+
+    input:read-only {
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
 </style>
 
 <div class="px-5">

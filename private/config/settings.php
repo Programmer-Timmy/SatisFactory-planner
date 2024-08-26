@@ -57,13 +57,13 @@ $site = [
     ],
 
     // popup settings
-    'showPopup' => false,
-    'popupTitle' => 'Note',
-    'popupMessage' => 'This is a popup you can change it in the settings!',
+    'showPopup' => true,
+    'popupTitle' => 'Welcome to the site!',
+    'popupMessage' => 'This is Satisfactory Planner, a site that helps you plan and organize your factories in the game Satisfactory.',
     'popupButtons' => [
         [
-            'label' => 'Change button', // change the button label
-            'action' => '' // change the button link
+            'label' => 'Changelog',
+            'action' => '/changelog'
         ],
         // Add more buttons as needed
     ]
@@ -93,6 +93,7 @@ $titles = [
     'contact' => 'Contact Us - ' . $site['siteName'],
     'game_save' => 'Game Save - ' . $site['siteName'],
     'production_line' => 'Production Line - ' . $site['siteName'],
+    'login' => 'Login - ' . $site['siteName'],
     '404' => '404 - Oops page not found!',
     // Add more titles as needed
 ];

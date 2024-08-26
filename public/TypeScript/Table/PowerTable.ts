@@ -80,7 +80,7 @@ export class PowerTable extends Table {
 
         // Collect all promises for processing the rows
         const promises = this.productionTable.tableRows.map(async row => {
-            const recipe : {[key: string]: any} = await this.getRecipe(row.cells[0]);
+            const recipe : {[key: string]: any} = await this.getRecipe(+row.cells[0]);
             const building : {[key: string]: any} = await this.getBuilding(recipe['buildings_id']);
 
             const buildingAmount = this.calculateBuildingAmount(+row.cells[1], +recipe['export_amount_per_min']);

@@ -236,13 +236,13 @@ export class Table{
         return element.is('input[type="number"]');
     }
 
-    public getRecipe(recipe_id:string): Promise<object> {
+    public getRecipe(recipe_id:number): Promise<object> {
         return new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'GET',
                 url: 'getRecipe',
                 data: {
-                    id: parseInt(recipe_id)
+                    id: recipe_id
                 },
                 success: function (response) {
 
