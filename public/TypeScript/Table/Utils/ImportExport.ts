@@ -26,6 +26,7 @@ export class ImportExport {
                 powerTableData.importData(data.powerTable),
                 importTableData.importData(data.importTable)
             ]).catch((error) => {
+                console.error(error);
                 thisClass.showErrorMessage('An error occurred while importing the data. Please try again.');
                 return;
             });
@@ -44,7 +45,7 @@ export class ImportExport {
                 return;
             }
 
-            thisClass.showErrorMessage('An error occurred while importing the data. Please try again.');
+            thisClass.showErrorMessage('An error occurred while importing/saving the data. Please try again.');
 
         }
     }
