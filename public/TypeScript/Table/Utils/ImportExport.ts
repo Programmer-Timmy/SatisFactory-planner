@@ -45,7 +45,7 @@ export class ImportExport {
                 return;
             }
 
-            thisClass.showErrorMessage('An error occurred while importing/saving the data. Please try again.');
+            thisClass.showErrorMessage('An error occurred while importing the data. Please try again.');
 
         }
     }
