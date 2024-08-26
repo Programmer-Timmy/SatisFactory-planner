@@ -218,6 +218,13 @@ export class PowerTable extends Table {
             }
         }
     }
+
+    public override async importData(json: Record<string, any>) {
+        this.tableRows = json.tableRows;
+
+        await this.applyTotalConsumption();
+        this.renderTable();
+    }
 }
 
 

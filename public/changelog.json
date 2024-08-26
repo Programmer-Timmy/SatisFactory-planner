@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.2",
+    "date": "august 27, 2024",
+    "changes": [
+      "Added import and export functionality for the data."
+    ]
+  },
+  {
     "version": "1.1.1",
     "date": "august 26, 2024",
     "changes": [

@@ -21,23 +21,42 @@ if ($_POST && isset($_POST['productionLineName'])) {
                 <h5 class="modal-title" id="popupModalLabel">Update production line</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post">
-                <div class="modal-body">
+            <div class="modal-body">
+                <div id="successAlert" class="alert alert-success d-none fade" role="alert">
+                    Import was successful!
+                </div>
+                <div id="errorAlert" class="alert alert-danger d-none fade" role="alert"></div>
+                <form method="post" id="editProductionLineForm">
                     <div class="mb-3">
-                        <label for="productionLineName" class="form-label" >Production Line Name</label>
-                        <input type="text" value="<?=$productLine->title?>" class="form-control" id="productionLineName" name="productionLineName"
+                        <label for="productionLineName" class="form-label">Production Line Name</label>
+                        <input type="text" value="<?= $productLine->title ?>" class="form-control"
+                               id="productionLineName" name="productionLineName"
                                required>
                     </div>
                     <div class="mb-3">
                         <label for="productionLineActive" class="form-label">Active</label><br>
-                        <input type="checkbox" id="productionLineActive" class="from-control" data-onstyle="success" data-offstyle="danger" data-toggle="toggle" name="productionLineActive"
-                               <?php if ($productLine->active) echo 'checked'; ?>>
+                        <input type="checkbox" id="productionLineActive" class="from-control" data-onstyle="success"
+                               data-offstyle="danger" data-toggle="toggle" name="productionLineActive"
+                            <?php if ($productLine->active) echo 'checked'; ?>>
+                    </div>
+                </form>
+                <div class="row mb-3">
+                    <label for="importFile" class="form-label">Import/Export</label>
+                    <div class="col-8 pe-0">
+                        <input type="file" id="importFile" name="file" accept=".json" class="form-control rounded-0 rounded-start" required>
+                        <div class="invalid-feedback">Please select a valid JSON file.</div>
+                    </div>
+                    <div class="col-2 p-0">
+                        <button class="btn btn-success w-100 rounded-0" id="importButton">Import</button>
+                    </div>
+                    <div class="col-2 ps-0">
+                        <button class="btn btn-primary w-100 rounded-0 rounded-end" id="exportButton">Export</button>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Update Production Line</button>
-                </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="editProductionLineForm" class="btn btn-primary">Update Production Line</button>
+            </div>
         </div>
     </div>
 </div>

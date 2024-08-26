@@ -143,8 +143,4 @@ export class ProductionTable extends Table {
         }
         return true
     }
-
-    private SetProduct() {
-        console.error('SetProduct not implemented')
-    }
 }

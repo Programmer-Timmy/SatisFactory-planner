@@ -67,7 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 
             ];
 
-
         }
     }
 
@@ -121,7 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 
     input:read-only {
         cursor: not-allowed;
-        pointer-events: none;
     }
 
 </style>
@@ -136,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
         <div class="row justify-content-end align-items-center">
             <div class="col-md-3"></div>
             <div class="col-md-6 text-center">
-                <h1><?= $productLine->title ?></h1>
+                <h1 id="productionLineName"><?= $productLine->title ?></h1>
             </div>
             <div class="col-md-3">
                 <div class="text-md-end text-center">

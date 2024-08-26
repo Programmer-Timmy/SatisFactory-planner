@@ -282,5 +282,11 @@ export class Table{
             });
         });
     }
+
+    public importData(json: Record<string, any>) {
+        this.tableRows = json.tableRows;
+
+        this.renderTable();
+    }
 }
 
