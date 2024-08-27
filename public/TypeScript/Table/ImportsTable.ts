@@ -3,9 +3,11 @@ import {Options, TableHeader} from "./Utils/TableHeader";
 import {ProductionTable} from "./ProductionTable";
 import {TableRow} from "./Utils/TableRow";
 
+
 export class ImportsTable extends Table {
 
     private productionTable: ProductionTable;
+
     constructor(tableId: string, productionTable: ProductionTable, disableOnChange: boolean = false, skipReading: boolean = false) {
 
         super(tableId, disableOnChange);
@@ -40,6 +42,7 @@ export class ImportsTable extends Table {
     }
 
     override async handleChange(event: Event) {
+
         // Get new changes
         await this.ReadRows();
 
@@ -50,10 +53,26 @@ export class ImportsTable extends Table {
             await this.addRow();
         }
 
-        await this.calculateImport();
+        this.productionTable.handleChange(event);
+
     }
 
     public async calculateImport() {
+        await this.processImports();
+
+        await this.processTableRows();
+
+        this.consoleLog();
+        this.productionTable.consoleLog();
+
+        this.addRow();
+        this.renderTable();
+
+        this.productionTable.addRow();
+        this.productionTable.renderTable();
+    }
+
+    private async processImports() {
         const productionRows = this.productionTable.tableRows;
 
         this.deleteAllRows();
@@ -71,42 +90,40 @@ export class ImportsTable extends Table {
                 continue;
             }
 
-            try {
-                // Wait for both promises to resolve
-                const [imports, recipeData] = await Promise.all([recipeImportsPromise, recipeDataPromise]);
+            // Wait for both promises to resolve
+            const [imports, recipeData] = await Promise.all([recipeImportsPromise, recipeDataPromise]);
 
-                const productionRate = quantity / recipeData['export_amount_per_min'];
+            const productionRate = quantity / recipeData['export_amount_per_min'];
 
-                // Iterate through each import item
-                imports.forEach((importItem: { [key: string]: any }) => {
-                    const importAmount = importItem['importAmount'] * productionRate;
-                    const existingImportIndex = this.checkIfImportAlreadyExists(importItem['itemId']);
+            // Iterate through each import item
+            imports.forEach((importItem: { [key: string]: any }) => {
+                const importAmount = importItem['importAmount'] * productionRate;
+                const existingImportIndex = this.checkIfImportAlreadyExists(importItem['itemId']);
 
-                    if (existingImportIndex !== false) {
-                        // Update existing import amount
-                        this.tableRows[existingImportIndex].cells[1] = Math.round(
-                            +this.tableRows[existingImportIndex].cells[1] + importAmount
-                        ).toString();
-                    } else if (importAmount > 0) {
-                        // Add new row if import amount is positive and not already existing
-                        this.addRow();
-                        this.tableRows[this.tableRows.length - 1].cells = [importItem['itemId'], Math.round(importAmount)];
-                    }
-                });
-            } catch (error) {
-                console.error(`Error processing recipe ID ${recipeId}:`, error);
-            }
+                if (existingImportIndex !== false) {
+                    // Update existing import amount
+                    this.tableRows[existingImportIndex].cells[1] = Math.round(
+                        +this.tableRows[existingImportIndex].cells[1] + importAmount
+                    ).toString();
+                } else if (importAmount > 0) {
+                    // Add new row if import amount is positive and not already existing
+                    this.addRow();
+                    this.tableRows[this.tableRows.length - 1].cells = [importItem['itemId'], Math.round(importAmount)];
+                }
+            });
+
         }
+    }
 
-
+    private async processTableRows() {
         for (let i = 0; i < this.tableRows.length; i++) {
             const itemId = this.tableRows[i].cells[0];
-            const alreadyProduced = await this.checkIfAlreadyProduced(itemId, this.productionTable);
+            const alreadyProduced = await this.checkIfAlreadyProduced(itemId);
 
-            if (alreadyProduced) {
+            if (alreadyProduced !== false) {
                 let remainingAmount = +this.tableRows[i].cells[1];
+                for (const {index, double} of alreadyProduced) {
 
-                for (const { index, double } of alreadyProduced) {
                     remainingAmount = this.updateProductionRow(index, remainingAmount, double);
 
                     if (remainingAmount <= 0) {
@@ -119,12 +136,6 @@ export class ImportsTable extends Table {
                 }
             }
         }
-
-        this.addRow();
-        this.renderTable();
-
-        this.productionTable.addRow();
-        this.productionTable.renderTable();
     }
 
     private checkIfImportAlreadyExists(itemId: string): number | false {
@@ -144,16 +155,22 @@ export class ImportsTable extends Table {
      * @private
      */
 
-    private async checkIfAlreadyProduced(itemId: string, productionTable: ProductionTable): Promise<[{double: boolean, index: number}] | false>{
+    private async checkIfAlreadyProduced(itemId: string): Promise<[{ double: boolean, index: number }] | false> {
         const itemName = await this.getItemName(+itemId);
-        let returnData : [{double: boolean, index: number}] = [{double: false, index: 0}];
-        for (let i = 0; i < productionTable.tableRows.length; i++) {
-            productionTable.tableRows[i].cells[3] = '0';
-            productionTable.tableRows[i].cells[4] = productionTable.tableRows[i].cells[1];
-            if (productionTable.tableRows[i].cells[2] == itemName) {
+        let returnData: [{ double: boolean, index: number }] = [{double: false, index: 0}];
+        for (let i = 0; i < this.productionTable.tableRows.length; i++) {
+            const row = this.productionTable.tableRows[i];
+
+            if (row.cells[2] == itemName) {
+                row.cells[3] = '0';
+                row.cells[4] = row.cells[1];
                 returnData.push({double: false, index: i});
             }
-            if (productionTable.tableRows[i].doubleExport && productionTable.tableRows[i].extraCells[0] == itemName) {
+
+            if (row.doubleExport && row.extraCells[0] == itemName) {
+                row.extraCells[1] = '0';
+                const recipe = await this.getRecipe(+row.cells[0]);
+                this.productionTable.handleDoubleExport(row, recipe, +row.cells[1]);
                 returnData.push({double: true, index: i});
             }
         }
@@ -172,7 +189,7 @@ export class ImportsTable extends Table {
      * @param isDouble - Whether the row is a "double" row.
      * @returns The remaining amount after processing.
      */
-    updateProductionRow(index: number, remainingAmount: number, isDouble: boolean): number {
+    private updateProductionRow(index: number, remainingAmount: number, isDouble: boolean): number {
         if (isDouble) {
             return this.updateDoubleRow(index, remainingAmount);
         } else {
@@ -186,9 +203,9 @@ export class ImportsTable extends Table {
      * @param remainingAmount - The remaining amount to be processed.
      * @returns The remaining amount after processing.
      */
-    updateDoubleRow(index: number, remainingAmount: number): number {
+    private updateDoubleRow(index: number, remainingAmount: number): number {
         const productionRow = this.productionTable.tableRows[index];
-        const usedAmount = Math.min(remainingAmount, +productionRow.extraCells[1]);
+        const usedAmount = Math.min(remainingAmount, +productionRow.extraCells[2]);
         const excessAmount = remainingAmount - +productionRow.extraCells[2];
 
         productionRow.extraCells[1] = usedAmount.toString();
@@ -203,17 +220,20 @@ export class ImportsTable extends Table {
      * @param remainingAmount - The remaining amount to be processed.
      * @returns The remaining amount after processing.
      */
-    updateSingleRow(index: number, remainingAmount: number): number {
+    private updateSingleRow(index: number, remainingAmount: number): number {
         const productionRow = this.productionTable.tableRows[index];
         const tableProductionAmount = +productionRow.cells[1];
         const usedAmount = Math.min(remainingAmount, tableProductionAmount);
         const excessAmount = remainingAmount - tableProductionAmount;
 
+        // Update cells
         productionRow.cells[3] = usedAmount.toString();
         productionRow.cells[4] = (tableProductionAmount - usedAmount).toString();
 
+        // Ensure any potential issue with consoleLog or similar methods
         return excessAmount > 0 ? excessAmount : 0;
     }
+
 
     /**
      * Get the recipe imports from the database

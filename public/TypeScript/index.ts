@@ -5,7 +5,6 @@ import {ImportsTable} from "./Table/ImportsTable";
 
 let productionTable = new ProductionTable('recipes', true);
 
-productionTable.consoleLog();
 productionTable.renderTable();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,12 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// let powerTable = new PowerTable('power', true);
-//
-// powerTable.consoleLog();
-// powerTable.renderTable();
-//
-// let importsTable = new ImportsTable('imports', true);
-//
-// importsTable.consoleLog();
-// importsTable.renderTable();
+let powerTable = new PowerTable('power', productionTable, true);
+
+powerTable.renderTable();
+
+let importsTable = new ImportsTable('imports', productionTable, true);
+
+importsTable.renderTable();

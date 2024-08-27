@@ -102,7 +102,7 @@ export class ProductionTable extends Table {
         if (exportPerMin < 0) row.cells[4] = '0';
     }
 
-    private handleDoubleExport(row: any, recipe: Record<string, any>, quantityPerMin: number) {
+    public handleDoubleExport(row: any, recipe: Record<string, any>, quantityPerMin: number) {
         const firstExportPerMin = +recipe.export_amount_per_min;
         const secondExportPerMin = +recipe.export_amount_per_min2;
         const secondExportPerMinMultiplier = secondExportPerMin / firstExportPerMin;
