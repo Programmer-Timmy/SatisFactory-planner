@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
     $error = 'Please fill all the fields';
 }
 
-$changeLog = json_decode(file_get_contents(__DIR__ . "/../../../public/changelog.json"), true)[0];
+$changelog = json_decode(file_get_contents('changelog.json'), true)[0];
 
 ?>
 
