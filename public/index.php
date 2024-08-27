@@ -112,6 +112,6 @@ if ($site['maintenance'] && !in_array($_SERVER['REMOTE_ADDR'], $allowedIPs)) {
         include __DIR__ . '/../private/Views/popups/popup.php';
 
     // Set a session variable to remember that the popup has been shown
-    $_SESSION['popupShown'] = true;
+//    $_SESSION['popupShown'] = true;
 }
 
