@@ -6,7 +6,7 @@
         </div>
         <div class="col-md-3">
             <div class="text-md-end text-center">
-                <a href="<?= $_SESSION['redirect']?>" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Go back"><i class="fa-solid fa-arrow-left"></i></a>
+                <a href="home" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Go back"><i class="fa-solid fa-arrow-left"></i></a>
             </div>
         </div>
     </div>

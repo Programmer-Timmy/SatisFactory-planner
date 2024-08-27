@@ -47,12 +47,12 @@ export class ProductionTable extends Table {
         }
 
         await this.calculateExport();
-        this.renderTable();
 
         const importsTable = new ImportsTable('imports', this, true, true);
         const powerTable = new PowerTable('power', this, true);
 
         Promise.all([
+            this.renderTable(),
             importsTable.calculateImport(),
             powerTable.calculatePowerUsage()
         ])

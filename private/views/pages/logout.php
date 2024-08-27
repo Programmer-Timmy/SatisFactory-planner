@@ -1,3 +1,3 @@
 <?php
-session_destroy();
+$_SESSION['userId'] = null;
 header('Location:/login?logout=true');

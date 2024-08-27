@@ -23,6 +23,10 @@ global $require;
             <div class="d-flex">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item me-lg-2">
+                        <a class="btn btn-primary" aria-current="page" onclick="
+" href="/changelog">Changelog</a>
+                    </li>
+                    <li class="nav-item me-lg-2">
                         <a class="btn btn-success" aria-current="page" target="_blank"
                            href="https://forms.gle/fAd5LrGRATYwFHzr7">Leave Feedback</a>
                     </li>
