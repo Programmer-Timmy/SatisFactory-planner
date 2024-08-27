@@ -95,6 +95,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 }elseif (isset($_POST['total_consumption'])) {
     $error = 'Please fill all the fields';
 }
+
+$changeLog = json_decode(file_get_contents(__DIR__ . "/../../../public/changelog.json"), true)[0];
+
 ?>
 
 <style>
@@ -282,8 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
     </form>
 </div>
 
-<!--<script src="js/tableFunctions.js"></script>-->
-<script type="module" src="js/bundle.js"></script>
+<script type="module" src="js/bundle.js?v=<?=$changeLog['version']?>"></script>
 
 <?php require_once '../private/views/Popups/editProductinoLine.php'; ?>
 
