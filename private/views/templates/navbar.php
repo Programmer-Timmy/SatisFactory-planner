@@ -26,7 +26,7 @@ global $require;
                         <a class="btn btn-primary" aria-current="page" onclick="
 " href="/changelog">Changelog</a>
                     </li>
-                    <li class="nav-item me-lg-2">
+                    <li class="nav-item me-lg-2 mt-lg-0 mt-2">
                         <a class="btn btn-success" aria-current="page" target="_blank"
                            href="https://forms.gle/fAd5LrGRATYwFHzr7">Leave Feedback</a>
                     </li>

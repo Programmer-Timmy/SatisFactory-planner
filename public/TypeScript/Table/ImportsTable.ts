@@ -92,23 +92,22 @@ export class ImportsTable extends Table {
 
             // Wait for both promises to resolve
             const [imports, recipeData] = await Promise.all([recipeImportsPromise, recipeDataPromise]);
-
             const productionRate = quantity / recipeData['export_amount_per_min'];
 
             // Iterate through each import item
             imports.forEach((importItem: { [key: string]: any }) => {
                 const importAmount = importItem['importAmount'] * productionRate;
                 const existingImportIndex = this.checkIfImportAlreadyExists(importItem['itemId']);
+                importAmount.toFixed(3);
 
                 if (existingImportIndex !== false) {
                     // Update existing import amount
-                    this.tableRows[existingImportIndex].cells[1] = Math.round(
-                        +this.tableRows[existingImportIndex].cells[1] + importAmount
-                    ).toString();
+                    this.tableRows[existingImportIndex].cells[1] = (parseFloat(((+this.tableRows[existingImportIndex].cells[1] + importAmount) * 1).toFixed(3)) * 1).toString();
+
                 } else if (importAmount > 0) {
                     // Add new row if import amount is positive and not already existing
                     this.addRow();
-                    this.tableRows[this.tableRows.length - 1].cells = [importItem['itemId'], Math.round(importAmount)];
+                    this.tableRows[this.tableRows.length - 1].cells = [importItem['itemId'], (parseFloat((importAmount * 1).toFixed(3)) * 1).toString()];
                 }
             });
 

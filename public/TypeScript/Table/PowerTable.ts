@@ -97,7 +97,7 @@ export class PowerTable extends Table {
 
                 // if there is a remainder, add a new row with the remainder
                 if (buildingAmount.remainder > 0) {
-                    this.addRemainderRow(buildingAmount, building);
+                    this.addRemainderRow(buildingAmount, building, existingRow);
                 }
 
                 return;
@@ -155,9 +155,21 @@ export class PowerTable extends Table {
         return false;
     }
 
-    private addRemainderRow(buildingAmount: {amount: number, remainder: number}, building: {[key: string]: any}) {
-        let clockSpeed : number = +(100 * buildingAmount.remainder).toFixed(3);
+    private addRemainderRow(buildingAmount: {amount: number, remainder: number}, building: {[key: string]: any}, existing: number | false = false) {
+        let clockSpeed : number = parseFloat((100 * buildingAmount.remainder).toFixed(3));
         clockSpeed = clockSpeed * 1;
+
+        if (existing) {
+            this.addRowBefore(existing);
+            this.tableRows[existing].cells = [
+                building['id'],
+                1,
+                clockSpeed,
+                this.calculateConsumption(1, clockSpeed, building['power_used']),
+                0
+            ];
+            return;
+        }
 
         this.addRowBegin();
         this.tableRows[0].cells = [
@@ -170,7 +182,7 @@ export class PowerTable extends Table {
     }
 
     private calculateConsumption(amount: number, ClockSpeed: number, Consumption: number) {
-        return amount * Consumption * (ClockSpeed / 100);
+        return parseFloat((amount * Consumption * (ClockSpeed / 100)).toFixed(3));
 
     }
 
@@ -179,12 +191,13 @@ export class PowerTable extends Table {
         for (let i = 0; i < this.tableRows.length; i++) {
             totalConsumption += +this.tableRows[i].cells[3];
         }
-
-        return totalConsumption
+        // max 3 decimals
+        return Math.round(totalConsumption);
     }
 
     private async applyTotalConsumption() {
         let totalConsumption = await this.calculateTotalConsumption();
+
         this.Footer.find('input').attr('value', totalConsumption.toString());
     }
 

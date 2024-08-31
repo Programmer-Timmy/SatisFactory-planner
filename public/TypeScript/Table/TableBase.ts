@@ -36,6 +36,20 @@ export class Table{
         this.tableRows.unshift(tableRow);
     }
 
+    public async addRowBefore(index: number): Promise<void> {
+        // Create a new TableRow instance
+        let tableRow = new TableRow();
+
+        // Add default values to the cells of the new row
+        for (let i = 0; i < this.tableHeaders.length; i++) {
+            tableRow.cells.push(this.tableHeaders[i].default);
+        }
+
+        // Insert the new row into the tableRows array at the specified index
+        this.tableRows.splice(index, 0, tableRow);
+    }
+
+
     public async addRowAfter(index: number) : Promise<void>{
         let tableRow = new TableRow();
         for (let i = 0; i < this.tableHeaders.length; i++) {
