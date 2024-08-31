@@ -35,6 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 event.preventDefault();
                 ImportExport.saveProductionLine();
             }
+
+            $('#save_button').tooltip('hide')
+            $('#save_button').blur();
+
         });
     }
 });
