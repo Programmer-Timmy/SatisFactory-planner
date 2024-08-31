@@ -19,6 +19,7 @@ importsTable.renderTable();
 document.addEventListener('DOMContentLoaded', () => {
     const importButton = document.getElementById('importButton');
     const exportButton = document.getElementById('exportButton');
+    const saveButton = document.getElementById('save_button');
 
     if (importButton) {
         importButton.addEventListener('click', () => ImportExport.importData());
@@ -28,14 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
         exportButton.addEventListener('click', () => ImportExport.exportData());
     }
 
-    const saveButton = document.getElementById('save_button') as HTMLButtonElement;
-
-    saveButton.addEventListener('click', (event: MouseEvent) => {
-        event.preventDefault();
-
-        if (event.shiftKey) {
-            ImportExport.saveProductionLine();
-
-        }
-    });
+    if (saveButton) {
+        saveButton.addEventListener('click', (event: MouseEvent) => {
+            if (event.shiftKey) {
+                event.preventDefault();
+                ImportExport.saveProductionLine();
+            }
+        });
+    }
 });
