@@ -107,7 +107,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
-                <button id="add_product_line" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
+                <button id="add_product_line" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add Production Line"><i class="fa-solid fa-plus" ></i></button>
             </div>
             <?php if (empty($productionLines)) : ?>
                 <h4 class="text-center mt-3">No Production Lines Found</h4>
@@ -140,11 +140,11 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                             </td>
                             <td>
                                 <div>
-                                <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"><i
+                                <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Open Production Line"><i
                                             class="fa-solid fa-gears"></i></a>
                             </td>
                             <td>
-                                <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"
+                                <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"  data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete Production Line"
                                    onclick="return confirm('Are you sure you want to delete this production line?')"
                                    class="btn btn-danger">X</a>
                             </td>
@@ -158,7 +158,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         <div class="col-lg-4">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Power Consumption</h2>
-                <button id="update_power_production" class="btn btn-primary"><i class="fa-solid fa-bolt-lightning"></i>
+                <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Update Power Production"><i class="fa-solid fa-bolt-lightning"></i>
                 </button>
             </div>
             <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"

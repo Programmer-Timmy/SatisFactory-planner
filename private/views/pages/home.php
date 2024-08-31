@@ -39,7 +39,7 @@ if ($_GET && isset($_GET['delete'])) {
         </div>
         <div class="col-3">
             <div class="text-end">
-                <button id="add_product_line" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
+                <button id="add_product_line" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add Game Save"><i class="fa-solid fa-plus"></i></button>
             </div>
         </div>
     </div>
@@ -64,8 +64,8 @@ if ($_GET && isset($_GET['delete'])) {
                             <div class="position-relative">
                                 <img src="image/<?= $gameSave->image ?>" class="card-img-top" alt="...">
                                 <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
-                                    <a class="btn btn-danger position-absolute top-0 end-0" href="home?delete=<?= $gameSave->game_saves_id ?>" onclick="return confirm('Are you sure you want to delete this game save?')"><i class="fa-solid fa-trash"></i></a>
-                                    <button id="update_product_line_<?= $gameSave->id ?>" class="btn btn-primary position-absolute top-0 start-0"><i class="fa-solid fa-pencil"></i></button>
+                                    <a class="btn btn-danger position-absolute top-0 end-0" href="home?delete=<?= $gameSave->game_saves_id ?>" onclick="return confirm('Are you sure you want to delete this game save?')" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete Game Save"><i class="fa-solid fa-trash"></i></a>
+                                    <button id="update_product_line_<?= $gameSave->id ?>" class="btn btn-primary position-absolute top-0 start-0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit Game Save"><i class="fa-solid fa-pencil"></i></button>
                                 <?php endif; ?>
                             </div>
                             <div class="card-body">
