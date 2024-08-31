@@ -151,7 +151,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
 
 
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-3 overflow-x-auto">
                 <h2>Imports</h2>
                 <table class="table table-striped" id="imports">
                     <thead class="table-dark">
@@ -195,7 +195,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
 
                 </table>
             </div>
-            <div class="col-md-9">
+            <div class="col-md-9 overflow-x-auto">
                 <h2>Production</h2>
                 <table class="table table-striped" id="recipes">
                     <thead class="table-dark">

@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.6",
+    "date": "august 31, 2024",
+    "changes": [
+      "Changed some styling to make it more user-friendly."
+    ]
+  },
+  {
     "version": "1.1.5",
     "date": "august 31, 2024",
     "changes": [

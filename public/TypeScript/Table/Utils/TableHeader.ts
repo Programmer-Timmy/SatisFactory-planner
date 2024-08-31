@@ -19,7 +19,7 @@ export class TableHeader {
     min : number = 0;
     max : number = 0;
 
-    constructor(name: string, inputType: string, readOnly : boolean = false, options: Options = {}, inputName: string = '', defaultVal: string = '', min: number = 0, max: number = 0) {
+    constructor(name: string, inputType: string, readOnly : boolean = false, options: Options = {}, inputName: string = '', defaultVal: string = '', min: number = 0, max: number = 0, htmlClass: string = '') {
         this.Name = name;
         this.InputType = inputType;
         this.ReadOnly = readOnly;
@@ -28,5 +28,6 @@ export class TableHeader {
         this.default = defaultVal;
         this.min = min;
         this.max = max;
+        this.class = htmlClass;
     }
 }

@@ -163,7 +163,7 @@ export class Table{
                     height = 'style="height: 78px"';
                 }
                 if (header.InputType === 'select') {
-                    table += '<td class="m-0 p-0" ' + rowspan + '><select class="form-control rounded-0" ' + readOnly + ' name="'+ header.InputName +'" ' + height + ' ' + min + ' ' + max + '>';
+                    table += '<td class="m-0 p-0 ' + header.class + '" ' + rowspan + '><select class="form-control rounded-0" ' + readOnly + ' name="'+ header.InputName +'" ' + height + ' ' + min + ' ' + max + '>';
                     for (const key in header.Options) {
                         let selected = header.Options[key].value == row.cells[j] ? 'selected' : '';
                         const disabled = header.Options[key].disabled ? 'disabled' : '';
@@ -177,7 +177,7 @@ export class Table{
                     }
                     table += '</select></td>';
                 } else {
-                    table += '<td class="m-0 p-0" ' + rowspan + '><input type="' + this.tableHeaders[j].InputType + '" value="' + row.cells[j] + '" class="form-control rounded-0" ' + readOnly + ' name="'+ header.InputName +'" ' + height + ' ' + min + ' ' + max + ' ' + step + '></td>';
+                    table += '<td class="m-0 p-0 ' + header.class + '" ' + rowspan + '><input type="' + this.tableHeaders[j].InputType + '" value="' + row.cells[j] + '" class="form-control rounded-0" ' + readOnly + ' name="'+ header.InputName +'" ' + height + ' ' + min + ' ' + max + ' ' + step + '></td>';
                 }
             }
             table += '</tr>';

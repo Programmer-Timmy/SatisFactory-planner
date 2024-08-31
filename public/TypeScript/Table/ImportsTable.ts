@@ -32,8 +32,8 @@ export class ImportsTable extends Table {
         }
 
         this.tableHeaders = [
-            new TableHeader('Item', 'select', false, options, 'imports_item_id[]'),
-            new TableHeader('Amount', 'number', false, {}, 'imports_ammount[]'),
+            new TableHeader('Item', 'select', false, options, 'imports_item_id[]', '', 0, 0, 'w-75'),
+            new TableHeader('Amount', 'number', false, {}, 'imports_ammount[]' , '', 0, 0, 'w-25'),
         ]
 
         if (!skipReading) {

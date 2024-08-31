@@ -26,14 +26,14 @@ if ($_POST && isset($_POST['productionLineName'])) {
                     Import was successful!
                 </div>
                 <div id="errorAlert" class="alert alert-danger d-none fade" role="alert"></div>
-                <form method="post" id="editProductionLineForm">
-                    <div class="mb-3">
+                <form method="post" id="editProductionLineForm" class="row">
+                    <div class="mb-3 col-10">
                         <label for="productionLineName" class="form-label">Production Line Name</label>
                         <input type="text" value="<?= $productLine->title ?>" class="form-control"
                                id="productionLineName" name="productionLineName"
                                required>
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-3 col-2">
                         <label for="productionLineActive" class="form-label">Active</label><br>
                         <input type="checkbox" id="productionLineActive" class="from-control" data-onstyle="success"
                                data-offstyle="danger" data-toggle="toggle" name="productionLineActive"

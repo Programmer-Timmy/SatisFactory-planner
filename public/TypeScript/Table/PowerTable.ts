@@ -32,11 +32,11 @@ export class PowerTable extends Table {
             options = {};
         }
         this.tableHeaders = [
-            new TableHeader('Name', 'select', false, options, 'power_building_id[]'),
-            new TableHeader('Amount', 'number', false, {}, 'power_amount[]', '1', 0),
-            new TableHeader('Clock Speed', 'number', false, {}, 'power_clock_speed[]', '100', 1, 250),
-            new TableHeader('Consumption', 'number', true, {}, 'power_Consumption[]'),
-            new TableHeader('user', 'hidden', true, {}, 'user[]', '1'),
+            new TableHeader('Name', 'select', false, options, 'power_building_id[]', '', 0, 0, 'w-50'),
+            new TableHeader('Amount', 'number', false, {}, 'power_amount[]', '1', 0, 0, 'w-25'),
+            new TableHeader('Clock Speed', 'number', false, {}, 'power_clock_speed[]', '100', 1, 250 , 'w-25'),
+            new TableHeader('Consumption', 'number', true, {}, 'power_Consumption[]' , '0', 0, 0, 'w-25'),
+            new TableHeader('user', 'hidden', true, {}, 'user[]', '1' , 0, 0, 'w-25'),
         ]
 
         this.ReadRows();

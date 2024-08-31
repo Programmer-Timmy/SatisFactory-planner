@@ -1,7 +1,7 @@
 <?php
 global $productLine, $buildings, $powers;
 ?>
-<div class="modal fade" id="showPowerModal" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
+<div class="modal modal-lg fade" id="showPowerModal" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
