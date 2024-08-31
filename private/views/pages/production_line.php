@@ -144,7 +144,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
             </div>
             <div class="col-md-3">
                 <div class="text-md-end text-center">
-                    <button type="submit" id="save_button" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Save production line. Hold Shift to save without returning to the save game."><i class="fa-solid fa-save"></i></button>
+                    <button type="submit" id="save_button" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" data-bs-title="Save production line.<br> <small>Hold <b>Shift</b> to save without returning to the save game.</small>"><i class="fa-solid fa-save"></i></button>
                     <button type="button" id="edit_product_line" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit the production line"><i class="fa-solid fa-pencil"></i></button>
                     <button type="button" id="showPower" class="btn btn-info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show power consumption"><i class="fa-solid fa-bolt"></i></button>
                     <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i class="fa-solid fa-arrow-left"></i></a>
