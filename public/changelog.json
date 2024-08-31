@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.5",
+    "date": "august 31, 2024",
+    "changes": [
+      "Added hover all the buttons to explain what they do."
+    ]
+  },
+  {
     "version": "1.1.4",
     "date": "august 31, 2024",
     "changes": [
