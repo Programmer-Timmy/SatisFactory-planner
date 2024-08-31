@@ -127,7 +127,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
 
 </style>
 
-<div class="px-5">
+<div class="px-3 px-lg-5">
     <form method="post" onkeydown="return event.key != 'Enter';">
         <?php if ($error) : ?>
             <div class="alert alert-danger text-center" role="alert">
@@ -151,7 +151,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
 
 
         <div class="row">
-            <div class="col-md-3 overflow-x-auto">
+            <div class="col-md-3">
                 <h2>Imports</h2>
                 <table class="table table-striped" id="imports">
                     <thead class="table-dark">
@@ -195,9 +195,10 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
 
                 </table>
             </div>
-            <div class="col-md-9 overflow-x-auto">
+            <div class="col-md-9">
                 <h2>Production</h2>
-                <table class="table table-striped" id="recipes">
+                <div class="overflow-x-auto">
+                <table class="table table-striped " id="recipes">
                     <thead class="table-dark">
                     <tr>
                         <th scope="col">Recipe</th>
@@ -279,6 +280,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                     </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
         <?php require_once '../private/views/Popups/showPower.php'; ?>
