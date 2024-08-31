@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.7",
+    "date": "august 31, 2024",
+    "changes": [
+      "Added on shift click not returning to game save when saving the production line."
+    ]
+  },
+  {
     "version": "1.1.6",
     "date": "august 31, 2024",
     "changes": [

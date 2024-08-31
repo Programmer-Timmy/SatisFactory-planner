@@ -141,12 +141,25 @@ export class ImportExport {
         }
     }
 
-    private static showSuccessMessage(message: string) {
-        this.showMessage('successAlert', message);
+    private static showSuccessMessage(message: string, type: 1 | 2 = 1) {
+        if (type === 1) {
+            this.showMessage('successAlert', message);
+            return;
+        } else if (type === 2) {
+            this.showMessage('saveSuccessAlert', message);
+            return;
+
+        }
     }
 
-    private static showErrorMessage(message: string) {
-        this.showMessage('errorAlert', message);
+    private static showErrorMessage(message: string, type: 1 | 2 = 1) {
+        if (type === 1) {
+            this.showMessage('errorAlert', message);
+            return;
+        } else if (type === 2) {
+            this.showMessage('saveErrorAlert', message);
+            return;
+        }
     }
 
     private static generateFileName(): string {
@@ -177,5 +190,29 @@ export class ImportExport {
         });
     }
 
+    public static saveProductionLine() {
+        // Save data
+        const productionTableData = new ProductionTable('recipes', true);
+        const powerTableData = new PowerTable('power', productionTableData, true);
+        const importTableData = new ImportsTable('imports', productionTableData, true);
 
+        const dataToSave = {
+            productionTable: productionTableData,
+            powerTable: powerTableData,
+            importTable: importTableData
+        }
+
+        const url = new URL(window.location.href);
+        const id = parseInt(url.searchParams.get('id') as string);
+
+        this.saveData(dataToSave, id).then((response) => {
+            if (response['success']) {
+                this.showSuccessMessage('Data successfully saved.', 2);
+                return;
+            }
+            this.showErrorMessage('An error occurred while saving the data. Please try again.', 2);
+        }).catch((error) => {
+            this.showErrorMessage('An error occurred while saving the data. Please try again.', 2);
+        });
+    }
 }
