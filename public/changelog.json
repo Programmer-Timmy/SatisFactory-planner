@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.8",
+    "date": "september 2, 2024",
+    "changes": [
+      "Added a start for settings for production lines. NOTE: This is not yet implemented."
+    ]
+  },
+  {
     "version": "1.1.7",
     "date": "august 31, 2024",
     "changes": [

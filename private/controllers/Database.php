@@ -50,6 +50,8 @@ class Database
      * @param array $columns
      * @param array $values
      * @return void
+     *
+     * @throws ErrorException
      */
     public static function insert(string $table, array $columns, array $values, $connection = (new Database))
     {

@@ -12,6 +12,11 @@ if ($_POST && isset($_POST['productionLineName'])) {
         exit();
     }
 }
+
+$productionLineSettings = ProductionLineSettings::getProductionLineSettings(intval($_GET['id']), $_SESSION['userId']);
+if (!$productionLineSettings) {
+    $productionLineSettings = ProductionLineSettings::addProductionLineSettings(intval($_GET['id']), $_SESSION['userId']);
+}
 ?>
 
 <div class="modal fade" id="editProductionLine" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
@@ -40,6 +45,42 @@ if ($_POST && isset($_POST['productionLineName'])) {
                             <?php if ($productLine->active) echo 'checked'; ?>>
                     </div>
                 </form>
+                <div class="row mb-3">
+                    <h5>Settings</h5>
+                    <small>This is still in development and may not work as expected.</small>
+                    <div class="col-6 py-2">
+                        <div class="d-flex align-items-center justify-content-between" data-bs-toggle="tooltip"
+                             data-bs-placement="top" data-bs-html="true"
+                             title="This will automatically calculate the import and export values for the production line.">
+                            <label for="auto_import_export" class="form-label me-2">Auto Import-Export</label>
+                            <input type="checkbox" id="auto_import_export" class="from-control" data-onstyle="success"
+                                   data-offstyle="danger"
+                                   data-toggle="toggle" <?= $productionLineSettings->auto_import_export ? 'checked' : '' ?>>
+                        </div>
+                    </div>
+                    <div class="col-6 py-2">
+                        <div class="d-flex align-items-center justify-content-between" data-bs-toggle="tooltip"
+                             data-bs-placement="top" data-bs-html="true"
+                             title="This will automatically calculate the power and machine values for the production line.">
+                            <label for="auto_power_machine" class="form-label me-2">Auto Power-Machine</label>
+                            <input type="checkbox" id="auto_power_machine" class="from-control" data-onstyle="success"
+                                   data-offstyle="danger"
+                                   data-toggle="toggle" <?= $productionLineSettings->auto_power_machine ? 'checked' : '' ?>>
+                        </div>
+                    </div>
+                    <div class="col-6 py-2">
+                        <div class="d-flex align-items-center justify-content-between" data-bs-toggle="tooltip"
+                             data-bs-placement="top" data-bs-html="true"
+                             title="This will automatically save the production line every 5 minutes.">
+                            <label for="auto_save" class="form-label me-2">Auto Save</label>
+                            <input type="checkbox" id="auto_save" class="from-control" data-onstyle="success"
+                                   data-offstyle="danger"
+                                   data-toggle="toggle" <?= $productionLineSettings->auto_save ? 'checked' : '' ?>>
+                        </div>
+                    </div>
+
+
+                </div>
                 <div class="row mb-3">
                     <label for="importFile" class="form-label">Import/Export</label>
                     <div class="col-8 pe-0">
