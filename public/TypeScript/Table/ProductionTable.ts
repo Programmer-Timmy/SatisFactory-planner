@@ -39,43 +39,45 @@ export class ProductionTable extends Table {
     }
 
     override async handleChange(event: Event) {
-        // Get new changes
+        // reading the rows
         await this.ReadRows();
+        this.Settings.applyChanges();
 
+        const powerTable = new PowerTable('power', this, true);
         const $target = $(event.target as HTMLInputElement);
         const $row = $($target).closest('tr');
 
+        // check if the last row is. If it is and the select is selected add a new row
         if (this.checkIfLastRow($row) && this.checkIfSelect($($target))) {
             await this.addRow();
             this.renderTable();
-
         }
 
-        await this.calculateExport();
+        // removing the last row
+        this.deleteRow(-1)
 
-        this.renderTable();
-
-        const importsTable = new ImportsTable('imports', this, true, true);
-        const powerTable = new PowerTable('power', this, true);
-
-        let promises = []
-
-        this.Settings.applyChanges();
-
-        this.Settings.autoImportExport ? promises.push(await importsTable.calculateImport()) : null;
+        // preparing promises
+        let promises = [await this.calculateExport()]
         this.Settings.autoPowerMachine ? promises.push(await powerTable.calculatePowerUsage()) : null;
 
-        Promise.all(promises)
+        // calculating
+        await Promise.all(promises)
 
+        // adding row and rendering the table
+        await this.addRow();
+        this.renderTable();
 
+        if (this.Settings.autoImportExport) {
+            await new ImportsTable('imports', this, true, true).calculateImport();
+        }
     }
 
     public async calculateExport() {
         // Fetch all recipes in parallel for performance improvement
-        const recipesPromises = this.tableRows.slice(0, -1).map(row => this.getRecipe(+row.cells[0]));
+        const recipesPromises = this.tableRows.map(row => this.getRecipe(+row.cells[0]));
         const recipes = await Promise.all(recipesPromises);
 
-        for (let i = 0; i < this.tableRows.length - 1; i++) {
+        for (let i = 0; i < this.tableRows.length; i++) {
             let row = this.tableRows[i];
             let quantityPerMin = +row.cells[1];
             let usagePerMin = +row.cells[3];

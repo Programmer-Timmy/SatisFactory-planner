@@ -84,7 +84,6 @@ export class PowerTable extends Table {
     }
 
     public async calculatePowerUsage() {
-        this.productionTable.deleteRow(-1);
         this.deleteNonUserRows();
 
         // Collect all promises for processing the rows
@@ -132,10 +131,7 @@ export class PowerTable extends Table {
 
         await this.calculateUserRows();
 
-        // Wait for all promises to resolve
-
         await Promise.all(promises);
-
 
         await this.applyTotalConsumption();
 

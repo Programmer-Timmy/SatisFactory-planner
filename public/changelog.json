@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.1.10",
+    "date": "september 2, 2024",
+    "changes": [
+      "Improved the performance of the calculations."
+    ]
+  },
+  {
     "version": "1.1.9",
     "date": "september 2, 2024",
     "changes": [
