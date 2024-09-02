@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.1.9",
+    "date": "september 2, 2024",
+    "changes": [
+      "Fixed adding a miner or other machines removed the other machines.",
+      "Added options to stop auto calculations and start them again.",
+      "Added auto save every 5 minutes. (Off by default)"
+    ]
+  },
+  {
     "version": "1.1.8",
     "date": "september 2, 2024",
     "changes": [

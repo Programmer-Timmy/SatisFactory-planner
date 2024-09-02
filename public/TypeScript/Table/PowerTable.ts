@@ -1,12 +1,13 @@
 import {Table} from "./TableBase";
 import {Options, TableHeader} from "./Utils/TableHeader";
 import {ProductionTable} from "./ProductionTable";
-import {TableRow} from "./Utils/TableRow";
+import {Settings} from "./Utils/Settings";
 
 export class PowerTable extends Table {
 
     private readonly Footer: JQuery<HTMLElement>;
     private productionTable: ProductionTable;
+    public Settings: Settings = new Settings();
 
     constructor(tableId: string, productionTable: ProductionTable, disableOnChange: boolean = false) {
         super(tableId, disableOnChange);
@@ -54,19 +55,27 @@ export class PowerTable extends Table {
     }
 
     override async handleChange(event: Event) {
+        this.Settings.applyChanges();
+
         // Get new changes
         await this.ReadRows();
-        this.deleteRow(this.tableRows.length - 1);
 
         const $target = $(event.target as HTMLInputElement);
         const $row = $($target).closest('tr');
 
+        this.deleteRow(-1)
+
         if (this.checkIfSecondLastRow($row) && this.checkIfSelect($target)) {
             await this.addRow();
-            // check if the last row was changed
+            await this.renderTable();
         }
 
-        await this.calculatePowerUsage();
+        if (this.Settings.autoPowerMachine) {
+            await this.productionTable.handleChange(new Event('change'));
+        } else {
+            await this.calculateUserRows();
+            this.renderTable();
+        }
     }
 
     private checkIfSecondLastRow(element: JQuery<HTMLElement>) {
@@ -75,7 +84,7 @@ export class PowerTable extends Table {
     }
 
     public async calculatePowerUsage() {
-        this.productionTable.deleteRow(this.productionTable.tableRows.length - 1);
+        this.productionTable.deleteRow(-1);
         this.deleteNonUserRows();
 
         // Collect all promises for processing the rows
@@ -124,7 +133,9 @@ export class PowerTable extends Table {
         await this.calculateUserRows();
 
         // Wait for all promises to resolve
+
         await Promise.all(promises);
+
 
         await this.applyTotalConsumption();
 
@@ -147,7 +158,7 @@ export class PowerTable extends Table {
     // returns the index row of the building if it already exists
     private checkIfBuildingAlreadyExists(buildingId: number) : false | number {
         for (let i = 0; i < this.tableRows.length; i++) {
-            if (this.tableRows[i].cells[0] == buildingId.toString() && this.tableRows[i].cells[4] == '0' && this.tableRows[i].cells[2] == '100') {
+            if (this.tableRows[i].cells[0] == buildingId.toString() && this.tableRows[i].cells[4] == '0' && this.tableRows[i].cells[2] == '100' && this.tableRows[i].cells[4] == '0') {
                 return i;
             }
         }

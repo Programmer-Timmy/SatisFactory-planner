@@ -7,8 +7,6 @@ if (!isset($_POST['data']) || !isset($_POST['id'])) {
 
 $data = json_decode($_POST['data'], true);
 
-
-
 $importsData = [];
 $productionData = [];
 $powerData = [];
@@ -29,7 +27,7 @@ for ($i = 0; $i < count($data['importTable']['tableRows']); $i++) {
 
 $productionRows = $data['productionTable']['tableRows'];
 for ($i = 0; $i < count($data['productionTable']['tableRows']); $i++) {
-    if ($productionRows[$i]['cells'][0] == null || $productionRows[$i]['cells'][1] == '' || $productionRows[$i]['cells'][2] == '' || $productionRows[$i]['cells'][3] == '') {
+    if ($productionRows[$i]['cells'][0] == null || $productionRows[$i]['cells'][1] == 0 || $productionRows[$i]['cells'][1] == '') {
         continue;
     }
     $secondUsage = $productionRows[$i]['doubleExport'] == 'true' ? $productionRows[$i]['extraCells'][1] : null;

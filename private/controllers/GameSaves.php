@@ -117,9 +117,11 @@ class GameSaves
             return false;
         }
         self::deleteImage($game_save_id);
+        ProductionLineSettings::deleteProductionLineSettings($game_save_id);
         ProductionLines::deleteProductionLineOnGameId($game_save_id);
         Database::delete("users_has_game_saves", ['game_saves_id' => $game_save_id]);
         Database::delete("game_saves", ['id' => $game_save_id, 'owner_id' => $_SESSION['userId']]);
+
     }
 
     /**

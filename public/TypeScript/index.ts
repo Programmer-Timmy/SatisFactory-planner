@@ -2,6 +2,7 @@ import {ProductionTable} from "./Table/ProductionTable";
 import {ImportExport} from "./Table/Utils/ImportExport";
 import {PowerTable} from "./Table/PowerTable";
 import {ImportsTable} from "./Table/ImportsTable";
+import {Settings} from "./Table/Utils/Settings";
 
 let productionTable = new ProductionTable('recipes', true);
 
@@ -42,3 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+const settings = new Settings();
+
+settings.addEventListeners();
+if (settings.autoSave) {
+    ImportExport.autoSave();
+}

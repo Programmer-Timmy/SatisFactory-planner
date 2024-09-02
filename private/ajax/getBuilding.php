@@ -2,7 +2,7 @@
 $building = Buildings::getBuildingById($_GET['id']);
 
 if (empty($building)) {
-    header('Location: /');
+    echo json_encode(['error' => 'Invalid request']);
     exit();
 }
 

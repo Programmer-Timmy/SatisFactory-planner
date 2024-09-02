@@ -38,6 +38,7 @@ class Users
 
     public static function deleteUser($id)
     {
+        ProductionLineSettings::deleteProductionLineSettingsByUser($id);
         GameSaves::getSaveGameByOwner($id);
         return Database::delete("users", ['id' => $id]);
     }

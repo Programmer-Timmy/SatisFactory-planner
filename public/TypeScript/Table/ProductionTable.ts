@@ -3,8 +3,11 @@ import {TableHeader} from "./Utils/TableHeader";
 import {Options} from "./Utils/TableHeader";
 import {PowerTable} from "./PowerTable";
 import {ImportsTable} from "./ImportsTable";
+import {Settings} from "./Utils/Settings";
 
 export class ProductionTable extends Table {
+
+    public Settings: Settings = new Settings();
 
     constructor(tableId: string, disableOnChange: boolean = false) {
         super(tableId, disableOnChange);
@@ -44,18 +47,26 @@ export class ProductionTable extends Table {
 
         if (this.checkIfLastRow($row) && this.checkIfSelect($($target))) {
             await this.addRow();
+            this.renderTable();
+
         }
 
         await this.calculateExport();
 
+        this.renderTable();
+
         const importsTable = new ImportsTable('imports', this, true, true);
         const powerTable = new PowerTable('power', this, true);
 
-        Promise.all([
-            this.renderTable(),
-            importsTable.calculateImport(),
-            powerTable.calculatePowerUsage()
-        ])
+        let promises = []
+
+        this.Settings.applyChanges();
+
+        this.Settings.autoImportExport ? promises.push(await importsTable.calculateImport()) : null;
+        this.Settings.autoPowerMachine ? promises.push(await powerTable.calculatePowerUsage()) : null;
+
+        Promise.all(promises)
+
 
     }
 

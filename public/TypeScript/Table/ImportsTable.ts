@@ -1,12 +1,13 @@
 import {Table} from "./TableBase";
 import {Options, TableHeader} from "./Utils/TableHeader";
 import {ProductionTable} from "./ProductionTable";
-import {TableRow} from "./Utils/TableRow";
+import {Settings} from "./Utils/Settings";
 
 
 export class ImportsTable extends Table {
 
     private productionTable: ProductionTable;
+    private Settings: Settings = new Settings();
 
     constructor(tableId: string, productionTable: ProductionTable, disableOnChange: boolean = false, skipReading: boolean = false) {
 
@@ -53,7 +54,13 @@ export class ImportsTable extends Table {
             await this.addRow();
         }
 
-        this.productionTable.handleChange(event);
+        this.renderTable();
+
+        this.Settings.applyChanges();
+
+        if (this.Settings.autoImportExport) {
+            this.productionTable.handleChange(new Event('change'));
+        }
 
     }
 
@@ -61,9 +68,6 @@ export class ImportsTable extends Table {
         await this.processImports();
 
         await this.processTableRows();
-
-        this.consoleLog();
-        this.productionTable.consoleLog();
 
         this.addRow();
         this.renderTable();
@@ -73,6 +77,7 @@ export class ImportsTable extends Table {
     }
 
     private async processImports() {
+        this.productionTable.deleteRow(-1)
         const productionRows = this.productionTable.tableRows;
 
         this.deleteAllRows();

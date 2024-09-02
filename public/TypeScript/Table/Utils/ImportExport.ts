@@ -170,8 +170,44 @@ export class ImportExport {
         return `${productionLineName}_data_${dateTimestamp}.json`;
     }
 
+    public static saveProductionLine() {
+
+        const url = new URL(window.location.href);
+        const id = parseInt(url.searchParams.get('id') as string);
+
+        const dataToSave = this.prepareDataToSave();
+
+        this.saveData(dataToSave, id).then((response) => {
+            if (response['success']) {
+                this.showSuccessMessage('Data successfully saved.', 2);
+                return;
+            }
+            this.showErrorMessage('An error occurred while saving the data. Please try again.', 2);
+        }).catch((error) => {
+            this.showErrorMessage('An error occurred while saving the data. Please try again.', 2);
+        });
+    }
+
+    public static autoSave() {
+        setInterval(() => {
+            const url = new URL(window.location.href);
+            const id = parseInt(url.searchParams.get('id') as string);
+
+            const dataToSave = this.prepareDataToSave();
+
+            this.saveData(dataToSave, id).then((response) => {
+                if (response['success']) {
+                    return;
+                }
+                this.showErrorMessage('An error occurred while saving the data. Please try again.', 2);
+            }).catch((error) => {
+                this.showErrorMessage('An error occurred while saving the data. Please try again.', 2);
+            });
+
+        }, 60000);
+    }
+
     private static async saveData(data: Record<string, any>, id: number) : Promise<Record<string, any>> {
-        // ajax call to save data
         return new Promise((resolve, reject) => {
             $.ajax({
                 type: 'POST',
@@ -185,12 +221,12 @@ export class ImportExport {
                 },
                 error: function (xhr, status, error) {
                     reject(error);
-                }
+                },
             });
         });
     }
 
-    public static saveProductionLine() {
+    private static prepareDataToSave(): Record<string, any> {
         // Save data
         const productionTableData = new ProductionTable('recipes', true);
         const powerTableData = new PowerTable('power', productionTableData, true);
@@ -202,17 +238,8 @@ export class ImportExport {
             importTable: importTableData
         }
 
-        const url = new URL(window.location.href);
-        const id = parseInt(url.searchParams.get('id') as string);
+        return dataToSave;
 
-        this.saveData(dataToSave, id).then((response) => {
-            if (response['success']) {
-                this.showSuccessMessage('Data successfully saved.', 2);
-                return;
-            }
-            this.showErrorMessage('An error occurred while saving the data. Please try again.', 2);
-        }).catch((error) => {
-            this.showErrorMessage('An error occurred while saving the data. Please try again.', 2);
-        });
+
     }
 }

@@ -3,7 +3,7 @@
 $id = $_GET['id'];
 
 if (!isset($id)) {
-    header('Location: /');
+    echo json_encode(['error' => 'Invalid request']);
     exit();
 }
 

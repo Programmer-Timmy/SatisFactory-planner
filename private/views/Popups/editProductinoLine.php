@@ -31,23 +31,8 @@ if (!$productionLineSettings) {
                     Import was successful!
                 </div>
                 <div id="errorAlert" class="alert alert-danger d-none fade" role="alert"></div>
-                <form method="post" id="editProductionLineForm" class="row">
-                    <div class="mb-3 col-10">
-                        <label for="productionLineName" class="form-label">Production Line Name</label>
-                        <input type="text" value="<?= $productLine->title ?>" class="form-control"
-                               id="productionLineName" name="productionLineName"
-                               required>
-                    </div>
-                    <div class="mb-3 col-2">
-                        <label for="productionLineActive" class="form-label">Active</label><br>
-                        <input type="checkbox" id="productionLineActive" class="from-control" data-onstyle="success"
-                               data-offstyle="danger" data-toggle="toggle" name="productionLineActive"
-                            <?php if ($productLine->active) echo 'checked'; ?>>
-                    </div>
-                </form>
                 <div class="row mb-3">
                     <h5>Settings</h5>
-                    <small>This is still in development and may not work as expected.</small>
                     <div class="col-6 py-2">
                         <div class="d-flex align-items-center justify-content-between" data-bs-toggle="tooltip"
                              data-bs-placement="top" data-bs-html="true"
@@ -78,11 +63,24 @@ if (!$productionLineSettings) {
                                    data-toggle="toggle" <?= $productionLineSettings->auto_save ? 'checked' : '' ?>>
                         </div>
                     </div>
-
-
                 </div>
+                <form method="post" id="editProductionLineForm" class="row">
+                    <h5>Production Line</h5>
+                    <div class="mb-3 col-10">
+                        <label for="productionLineName" class="form-label">Production Line Name</label>
+                        <input type="text" value="<?= $productLine->title ?>" class="form-control"
+                               id="productionLineName" name="productionLineName"
+                               required>
+                    </div>
+                    <div class="mb-3 col-2">
+                        <label for="productionLineActive" class="form-label">Active</label><br>
+                        <input type="checkbox" id="productionLineActive" class="from-control" data-onstyle="success"
+                               data-offstyle="danger" data-toggle="toggle" name="productionLineActive"
+                            <?php if ($productLine->active) echo 'checked'; ?>>
+                    </div>
+                </form>
                 <div class="row mb-3">
-                    <label for="importFile" class="form-label">Import/Export</label>
+                    <h5>Import/Export</h5>
                     <div class="col-8 pe-0">
                         <input type="file" id="importFile" name="file" accept=".json" class="form-control rounded-0 rounded-start" required>
                         <div class="invalid-feedback">Please select a valid JSON file.</div>
@@ -95,8 +93,13 @@ if (!$productionLineSettings) {
                     </div>
                 </div>
             </div>
+
             <div class="modal-footer">
-                <button type="submit" form="editProductionLineForm" class="btn btn-primary">Update Production Line</button>
+                <button type="submit" form="editProductionLineForm" class="btn btn-primary" data-bs-toggle="tooltip"
+                        data-bs-placement="top" data-bs-html="true"
+                        title="This will update the production line with the new settings. Only needed if you changed the name or active status.">
+                    Update Production Line
+                </button>
             </div>
         </div>
     </div>

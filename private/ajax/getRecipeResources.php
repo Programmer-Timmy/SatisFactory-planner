@@ -8,7 +8,7 @@ if (!isset($_GET['id'])) {
 $resourses = Recipes::getRecipeResources($_GET['id']);
 
 if (empty($resourses)) {
-    header('Location: /');
+    echo json_encode(['error' => 'Invalid request']);
     exit();
 }else{
     echo json_encode($resourses);

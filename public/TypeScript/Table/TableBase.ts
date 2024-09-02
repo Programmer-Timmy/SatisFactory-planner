@@ -1,5 +1,6 @@
 import {TableRow} from "./Utils/TableRow";
 import {TableHeader} from "./Utils/TableHeader";
+import {Settings} from "./Utils/Settings";
 
 export class Table{
     tableId: string = '';
