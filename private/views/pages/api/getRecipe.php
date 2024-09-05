@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 
     $id = $requestData['id'];
-    $recipe = Recipes::getRecipeById($id);
+    $recipe = Recipes::getRecipeWithResources($id);
 
     if (empty($recipe)) {
         $response = array(

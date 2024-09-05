@@ -35,4 +35,11 @@ class Recipes
         }
         return $recipes;
     }
+
+    public static function getRecipeWithResources(int $id)
+    {
+        $recipe = self::getRecipeById($id);
+        $recipe->resources = self::getRecipeResources($id);
+        return $recipe;
+    }
 }
