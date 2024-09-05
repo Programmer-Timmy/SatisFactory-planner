@@ -4,6 +4,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Extracting data from JSON request
     if (empty($requestData['id'])) {
         Recipes::getAllRecipes();
+        $response = array(
+            'success' => true,
+            'recipes' => Recipes::getAllRecipes()
+        );
         exit();
     }
 
