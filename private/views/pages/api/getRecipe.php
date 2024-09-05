@@ -3,10 +3,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $requestData = $_GET;
     // Extracting data from JSON request
     if (empty($requestData['id'])) {
-        Recipes::getAllRecipes();
         $response = array(
             'success' => true,
-            'recipes' => Recipes::getAllRecipes()
+            'recipes' => Recipes::getAllRecipeWithResources()
         );
         header('Content-Type: application/json');
         echo json_encode($response);
