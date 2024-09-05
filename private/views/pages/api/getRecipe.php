@@ -8,6 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'success' => true,
             'recipes' => Recipes::getAllRecipes()
         );
+        header('Content-Type: application/json');
+        echo json_encode($response);
         exit();
     }
 
