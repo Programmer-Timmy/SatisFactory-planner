@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "@types/bootstrap": "^5.2.10",
     "@types/jquery": "^3.5.30",
     "ts-loader": "^9.5.1",
     "typescript": "^5.5.4",
