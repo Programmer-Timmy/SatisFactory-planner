@@ -1,6 +1,6 @@
 <?php
 // get and web request
-var_dump($_SERVER['REQUEST_METHOD']);
+var_dump($_SERVER);
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $requestData = $_GET;
     // Extracting data from JSON request
