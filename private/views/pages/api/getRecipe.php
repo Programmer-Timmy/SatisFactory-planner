@@ -2,17 +2,12 @@
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $requestData = $_GET;
     // Extracting data from JSON request
-    $id = $requestData['id'];
-    if (empty($id)) {
-        $response = array(
-            'success' => false,
-            'error' => 'ID is required'
-        );
-        header('Content-Type: application/json');
-        echo json_encode($response);
+    if (empty($requestData['id'])) {
+        Recipes::getAllRecipes();
         exit();
     }
 
+    $id = $requestData['id'];
     $recipe = Recipes::getRecipeById($id);
 
     if (empty($recipe)) {
