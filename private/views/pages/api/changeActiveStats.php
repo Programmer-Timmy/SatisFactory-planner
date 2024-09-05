@@ -1,4 +1,5 @@
 <?php
+var_dump($_SERVER['REQUEST_METHOD']);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $requestData = json_decode(file_get_contents('php://input'), true);
