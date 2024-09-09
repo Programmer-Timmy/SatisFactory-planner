@@ -17,6 +17,11 @@ class Users
         return Database::get("users", ['*'], [], ["username" => $username]);
     }
 
+    public static function getUserByEmail($email)
+    {
+        return Database::get("users", ['*'], [], ["email" => $email]);
+    }
+
     public static function updateUsername($id, $username, $email, $updates)
     {
         Database::update("users", ['username', 'email', 'updates'], [$username, $email, $updates], ['id' => $id]);
@@ -30,10 +35,10 @@ class Users
         return true;
     }
 
-    public static function createUser($username, $password)
+    public static function createUser($username, $password, $email)
     {
         $password = password_hash($password, PASSWORD_DEFAULT);
-        return Database::insert("users", ['username', 'password_hash'], [$username, $password]);
+        return Database::insert("users", ['username', 'password_hash', 'email'], [$username, $password, $email]);
     }
 
     public static function deleteUser($id)

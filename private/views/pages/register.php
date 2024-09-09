@@ -2,13 +2,16 @@
 $error = null;
 if ($_POST) {
     $username = $_POST['username'];
+    $email = $_POST['email'];
     $password = $_POST['password'];
     $password2 = $_POST['password2'];
     if ($password == $password2) {
         if (Users::getUserByUsername($username)) {
             $error = 'Username already exists';
+        } else if (Users::getUserByEmail($email)) {
+            $error = 'Email already exists';
         } else {
-            if (Users::createUser($username, $password)) {
+            if (Users::createUser($username, $password, $email)) {
                 $_SESSION['userId'] = null;
                 $_SESSION['redirect'] = '/account';
                 header('Location: /login?registered=true');
@@ -40,6 +43,10 @@ if ($_POST) {
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>

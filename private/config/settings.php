@@ -13,15 +13,15 @@ $database = [
  * email settings
  */
 $emailSettings = [
-    'host' => 'iriks.eu',
+    'host' => '',
     'SMTPAuth' => true,
-    'username' => 'timmy',
-    'password' => '3BuoPeccLXnrlgb',
+    'username' => '',
+    'password' => '',
     'encryption' => 'tls', // tls or ssl
     'port' => 587, // 587 or 465
     'from' => [
-        'email' => 'updates@satisfactoryplanner.timmygamer.nl',
-        'name' => 'Satisfactory Planner'
+        'email' => '',
+        'name' => ''
     ]
 ];
 
