@@ -17,6 +17,10 @@ class AuthControler
                     $_SESSION[$site['admin']['sessionName']] = $user->id;
                 }
             }
+            if ($user->email == null) {
+                return '/account';
+                exit();
+            }
             if ($site['saveUrl']) {
                 if (isset($_SESSION['redirect'])) {
                     return $_SESSION['redirect'];

@@ -17,9 +17,9 @@ class Users
         return Database::get("users", ['*'], [], ["username" => $username]);
     }
 
-    public static function updateUsername($id, $username)
+    public static function updateUsername($id, $username, $email, $updates)
     {
-        Database::update("users", ['username'], [$username], ['id' => $id]);
+        Database::update("users", ['username', 'email', 'updates'], [$username, $email, $updates], ['id' => $id]);
         return true;
     }
 

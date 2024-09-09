@@ -5,15 +5,12 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['username'])) {
         $username = $_POST['username'];
-        if (Users::getUserByUsername($username)) {
-            $error = 'Username already exists';
+        if (Users::updateUsername($user->id, $username, $_POST['email'], isset($_POST['updates']) ? 1 : 0)) {
+            header('Location: /account');
         } else {
-            if (Users::updateUsername($user->id, $username)){
-                header('Location: /account');
-            } else {
-                $error = 'Error updating username';
-            }
+            $error = 'Error updating username';
         }
+
     }
     if (isset($_POST['password']) && isset($_POST['password2'])) {
         $password = $_POST['password'];
@@ -39,7 +36,6 @@ if (isset($_GET['delete'])) {
     $_SESSION['redirect'] = '/account';
     header('Location: /login');
 }
-
 ?>
 
 <div class="container">
@@ -49,19 +45,34 @@ if (isset($_GET['delete'])) {
         </div>
     <?php endif; ?>
     <h1>Account</h1>
-    <!-- Change Username form -->
+    <!-- Change user info form -->
     <form method="post">
-        <!-- Username change card -->
+        <!-- user info change card -->
         <div class="row">
             <div class="col-12">
+                <?php if ($user->email == null) : ?>
+                    <div class="alert alert-warning" role="alert">
+                        You have not set an email address please update your account info.
+                    </div>
+                <?php endif; ?>
                 <div class="card mt-3">
                     <div class="card-body">
-                        <h5 class="card-title">Change Username</h5>
+                        <h5 class="card-title">Change User Info</h5>
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="username" name="username" value="<?= $user->username ?>" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Change Username</button>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="<?= $user->email ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label me-2" for="updates">Recieve updates</label>
+                            <input type="checkbox" name="updates" data-toggle="toggle" data-onstyle="success"
+                                   data-offstyle="danger" data-size="sm" data-onlabel="Yes"
+                                   data-offlabel="No" <?= $user->updates ? 'checked' : '' ?>>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Account</button>
                     </div>
                 </div>
             </div>
