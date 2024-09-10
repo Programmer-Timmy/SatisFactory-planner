@@ -3,6 +3,7 @@
     "version": "1.1.11",
     "date": "september 10, 2024",
     "changes": [
+      "Updated the power production to the newest be able to handle the new update.",
       "Updated the database to be the latest version. For the satisfactory update 1.0!!!.",
       "Full save game wipe was sadly necessary to make this update work. Sorry for the inconvenience."
     ]

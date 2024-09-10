@@ -6,11 +6,17 @@ if ($_POST && isset($_POST['Biomass_Burner'])) {
     $gameSaveId = $_GET['id'];
 
     $totalProduction = 0;
+    $bonus_percentage = 0;
     foreach ($powerProductionBuildings as $building) {
+        if ($building->name == 'Alien Power Augmenter') {
+            $bonus_percentage = 10 * $_POST['Alien_Power_Augmenter'];
+        }
         $totalProduction += $_POST[str_replace(' ', '_', $building->name)] * $building->power_generation;
     }
 
-    GameSaves::updatePowerProduction($gameSaveId, $_POST['Biomass_Burner'], $_POST['Coal_Generator'], $_POST['Fuel_Generator'], $_POST['Nuclear_Power_Plant'], $totalProduction);
+    $totalProduction += $totalProduction * $bonus_percentage / 100;
+
+    GameSaves::updatePowerProduction($gameSaveId, $_POST['Biomass_Burner'], $_POST['Coal-Powered_Generator'], $_POST['Fuel-Powered_Generator'], $_POST['Nuclear_Power_Plant'], $_POST['Alien_Power_Augmenter'], $totalProduction);
 
     echo "<script>location.href = 'game_save?id=$gameSaveId';</script>";
     exit();

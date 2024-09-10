@@ -35,7 +35,13 @@ if ($site['ajax']) {
 
 // if url has api in it load the api file and exit
 if (str_contains($require, '/api')) {
-    include __DIR__ . "/../private/Views/pages$require.php";
+    if (file_exists(__DIR__ . "/../private/Views/pages$require.php")) {
+        include __DIR__ . "/../private/Views/pages$require.php";
+        exit();
+    }
+    http_response_code(404);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Invalid API endpoint']);
     exit();
 }
 
