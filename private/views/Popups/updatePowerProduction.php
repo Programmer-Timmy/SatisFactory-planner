@@ -6,17 +6,20 @@ if ($_POST && isset($_POST['Biomass_Burner'])) {
     $gameSaveId = $_GET['id'];
 
     $totalProduction = 0;
-    $bonus_percentage = 0;
     foreach ($powerProductionBuildings as $building) {
         if ($building->name == 'Alien Power Augmenter') {
-            $bonus_percentage = 10 * $_POST['Alien_Power_Augmenter'];
+            $totalProduction += $_POST[str_replace(' ', '_', $building->name)] * $building->power_generation;
+            $totalProduction += $_POST['Boosted_' . str_replace(' ', '_', $building->name)] * $building->power_generation;
+        } else {
+            $totalProduction += $_POST[str_replace(' ', '_', $building->name)] * $building->power_generation;
         }
-        $totalProduction += $_POST[str_replace(' ', '_', $building->name)] * $building->power_generation;
     }
+    $bonus_percentage = 1;
+    $bonus_percentage += 0.1 * $_POST['Alien_Power_Augmenter'];
+    $bonus_percentage += 0.3 * $_POST['Boosted_Alien_Power_Augmenter'];
+    $totalProduction *= $bonus_percentage;
 
-    $totalProduction += $totalProduction * $bonus_percentage / 100;
-
-    GameSaves::updatePowerProduction($gameSaveId, $_POST['Biomass_Burner'], $_POST['Coal-Powered_Generator'], $_POST['Fuel-Powered_Generator'], $_POST['Nuclear_Power_Plant'], $_POST['Alien_Power_Augmenter'], $totalProduction);
+    GameSaves::updatePowerProduction($gameSaveId, $_POST['Biomass_Burner'], $_POST['Coal-Powered_Generator'], $_POST['Fuel-Powered_Generator'], $_POST['Nuclear_Power_Plant'], $_POST['Alien_Power_Augmenter'], $_POST['Boosted_Alien_Power_Augmenter'], $totalProduction);
 
     echo "<script>location.href = 'game_save?id=$gameSaveId';</script>";
     exit();
@@ -36,12 +39,38 @@ if ($_POST && isset($_POST['Biomass_Burner'])) {
                 <div class="modal-body">
                     <?php if (!empty($powerProductionBuildings)) : ?>
                         <?php foreach ($powerProductionBuildings as $building) : ?>
-                            <div class="form-group">
-                                <label class="form-check-label" for="<?= $building->id ?>">
-                                    <?= $building->name ?>
-                                </label>
-                                <input type="number" class="form-control" min="0" value="<?= $gameSave->{strtolower(str_replace(' ', '_', $building->name))} ?>" id="<?= str_replace(' ', '_', $building->name) ?>" name="<?= str_replace(' ', '_', $building->name) ?>">
-                            </div>
+                            <?php if ($building->name == 'Alien Power Augmenter') : ?>
+                                <div class="row">
+                                    <div class="form-group col-6 pe-1">
+                                        <label class="form-check-label" for="<?= $building->id ?>">
+                                            <?= $building->name ?>
+                                        </label>
+                                        <input type="number" class="form-control" min="0" required
+                                               value="<?= $gameSave->{strtolower(str_replace(' ', '_', $building->name))} ?>"
+                                               id="<?= str_replace(' ', '_', $building->name) ?>"
+                                               name="<?= str_replace(' ', '_', $building->name) ?>">
+                                    </div>
+                                    <div class="form-group col-6 ps-1">
+                                        <label class="form-check-label" for="<?= $building->id ?>">
+                                            Boosted Alien Augmenter
+                                        </label>
+                                        <input type="number" class="form-control" min="0" required
+                                               value="<?= $gameSave->{strtolower('Boosted_' . str_replace(' ', '_', $building->name))} ?>"
+                                               id=Boosted_"<?= str_replace(' ', '_', $building->name) ?>"
+                                               name="Boosted_<?= str_replace(' ', '_', $building->name) ?>">
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <div class="form-group">
+                                    <label class="form-check-label" for="<?= $building->id ?>">
+                                        <?= $building->name ?>
+                                    </label>
+                                    <input type="number" class="form-control" min="0" required
+                                           value="<?= $gameSave->{strtolower(str_replace(' ', '_', $building->name))} ?>"
+                                           id="<?= str_replace(' ', '_', $building->name) ?>"
+                                           name="<?= str_replace(' ', '_', $building->name) ?>">
+                                </div>
+                            <?php endif; ?>
                         <?php endforeach; ?>
                     <?php else : ?>
                         <p>No buildings available</p>
