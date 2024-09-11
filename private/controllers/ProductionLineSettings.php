@@ -11,7 +11,7 @@ class ProductionLineSettings
     public static function addProductionLineSettings(int $productionLineId, int $userId)
     {
         Database::insert("productionlinesettings", ['production_line_id', 'user_id'], [$productionLineId, $userId]);
-        return Database::get("productionLineSettings", ['*'], [], ['production_line_id' => $productionLineId, 'user_id' => $userId]);
+        return Database::get("productionlinesettings", ['*'], [], ['production_line_id' => $productionLineId, 'user_id' => $userId]);
     }
 
     public static function updateProductionLineSettings(int $productionLineId, int $userId, bool $autoImportExport, bool $autoPowerMachine, bool $autoSave)
