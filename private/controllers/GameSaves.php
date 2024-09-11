@@ -189,5 +189,14 @@ class GameSaves
 
     }
 
+    /**
+     * @param int $userId
+     * @return void
+     */
+    public static function deleteUserHasGameSavesByUser(int $userId)
+    {
+        Database::delete("users_has_game_saves", ['users_id' => $userId]);
+    }
+
 
 }
