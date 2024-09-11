@@ -3,7 +3,8 @@
     "version": "1.2.1",
     "date": "september 10, 2024",
     "changes": [
-      "Fixed not able to delete production lines."
+      "Fixed not able to delete production lines.",
+      "Fixed not able to delete user"
     ]
   },
   {
