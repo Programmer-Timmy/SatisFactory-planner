@@ -113,16 +113,13 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
         -moz-appearance: textfield;
     }
 
-    .form-control:hover{
-        border-color: #86b7fe;
-    }
-
     .form-control:focus{
         box-shadow: none;
+        border-color: #4a4a4a;
     }
 
     input:read-only {
-        cursor: not-allowed;
+        cursor: default;
     }
 
 </style>

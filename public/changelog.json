@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.2.2",
+    "date": "september 11, 2024",
+    "changes": [
+      "Applied new color scheme to the website.",
+      "Added light and dark mode.",
+      "Added button to toggle between light and dark mode. on the account page."
+    ]
+  },
+  {
     "version": "1.2.1",
     "date": "september 10, 2024",
     "changes": [
@@ -95,11 +104,9 @@
       "Made it run faster and more efficient."
     ]
   },
-
   {
     "version": "1.1.0",
     "date": "august 20, 2024",
-
     "changes": [
       "Made all the calculations faster and automated."
     ]
@@ -107,7 +114,6 @@
   {
     "version": "1.0.0",
     "date": "September 24, 2024",
-
     "changes": [
       "Initial release."
     ]

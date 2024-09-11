@@ -1,5 +1,6 @@
 <?php
 global $site;
+global $changelog;
 ?>
 <div class="mt-5"></div>
 <footer class="bg-dark text-white">
@@ -20,5 +21,12 @@ global $site;
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
+    // Theme toggle based on cookie
+    const theme = document.cookie.replace(/(?:(?:^|.*;\s*)theme\s*=\s*([^;]*).*$)|^.*$/, "$1");
+    if (theme === 'dark') {
+        document.documentElement.setAttribute('data-bs-theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-bs-theme', 'light');
+    }
 </script>
 </body>

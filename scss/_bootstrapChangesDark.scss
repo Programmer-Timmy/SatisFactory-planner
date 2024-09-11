@@ -1,0 +1,90 @@
+// Color palette - Satisfactory-inspired refined colors
+$primary: #ff8a47; // Softer orange
+$secondary: #4db8ff; // Calming light blue
+$success: #57e389; // Vibrant green
+$danger: #ff6b6b; // Warm red
+$warning: #ffd54f; // Softer yellow
+$info: #4a90e2; // Deeper blue
+$light: #f0f4f8; // Clean light gray
+$dark: #2e2e2e; // Modern dark gray
+
+// Body and global background
+$body-bg: #1e1e1e; // Dark background color
+$body-bg-dark: #1e1e1e; // Darker background color for contrast
+$body-color: #f0f4f8; // Light text color for contrast
+
+// Text colors
+$text-color: #f0f4f8; // Light text color
+$headings-color: #f0f4f8; // Light headings color
+$link-color: #4db8ff; // Custom link color (same as secondary)
+$link-hover-color: #ff8a47; // Hover color for links
+
+// Borders
+$border-color: #383838; // Darker border color for better contrast with dark background
+
+// Button colors
+$btn-primary-bg: #ff8a47;
+$btn-primary-border: #ff8a47;
+$btn-primary-color: #1e1e1e; // Dark text for contrast on primary button
+
+$btn-secondary-bg: #4db8ff;
+$btn-secondary-border: #4db8ff;
+$btn-secondary-color: #1e1e1e; // Dark text for contrast on secondary button
+
+$btn-success-bg: #57e389;
+$btn-success-border: #57e389;
+$btn-success-color: #1e1e1e; // Dark text for contrast on success button
+
+$btn-danger-bg: #ff6b6b;
+$btn-danger-border: #ff6b6b;
+$btn-danger-color: #1e1e1e; // Dark text for contrast on danger button
+
+$btn-warning-bg: #ffd54f;
+$btn-warning-border: #ffd54f;
+$btn-warning-color: #1e1e1e; // Dark text for contrast on warning button
+
+$btn-info-bg: #4a90e2;
+$btn-info-border: #4a90e2;
+$btn-info-color: #f0f4f8; // Light text for contrast on info button
+
+$btn-light-bg: #f0f4f8;
+$btn-light-border: #f0f4f8;
+$btn-light-color: #2e2e2e; // Dark text for contrast on light button
+
+$btn-dark-bg: #2e2e2e;
+$btn-dark-border: #2e2e2e;
+$btn-dark-color: #f0f4f8; // Light text for contrast on dark button
+
+// Navbar customization
+$navbar-bg: #2b2b2b; // Darker navbar background
+$navbar-dark-color: #f0f4f8; // Light text color for navbar links
+$navbar-dark-hover-color: #ff8a47; // Navbar links hover color
+$navbar-dark-active-color: #ff8a47; // Navbar links active color
+
+// Form elements (input, select, etc.)
+$input-bg: #383838; // Dark background for input fields
+$input-border-color: #4a4a4a; // Darker border for input fields
+$input-color: #f0f4f8; // Light text color inside input fields
+$input-placeholder-color: #b0b0b0; // Lighter placeholder text
+
+// Tables
+$table-bg: #2b2b2b; // Darker table background
+$table-border-color: #383838; // Darker border for tables
+$table-striped-bg: #323232; // Darker striped row background for tables
+$table-text-color: #f0f4f8; // Light text color for better readability in tables
+
+// Modals and cards
+$modal-bg: #2e2e2e; // Slightly lighter background for modals
+$modal-border-color: #383838; // Border color for modals
+$modal-text-color: #f0f4f8; // Light text color for modals
+
+$card-bg: #2e2e2e; // Same as modal background for consistency
+$card-border-color: #383838; // Border color for cards
+$card-text-color: #f0f4f8; // Light text color for cards
+
+// Close button (card)
+$close-btn-bg: #383838; // Background color for close button
+$close-btn-color: #f0f4f8; // Color of the close button icon
+$close-btn-hover-bg: #ff6b6b; // Hover background color for close button
+
+

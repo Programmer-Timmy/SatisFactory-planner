@@ -18,6 +18,11 @@ function getPageTitle() {
 
 $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
 
+$theme = 'styles-light';
+if (isset($_COOKIE['theme'])) {
+    $theme = $_COOKIE['theme'] === 'dark' ? 'styles-dark' : 'styles-light';
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -45,10 +50,11 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
     <!-- title -->
     <title><?php echo getPageTitle(); ?></title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">-->
     <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/styles.css?v=<?=$changelog['version']?>">
+
+    <link rel="stylesheet" href="/css/<?= $theme ?>.css?v=<?= $changelog['version'] ?>" id="theme">
     <!-- ajax -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap5-toggle@5.0.4/css/bootstrap5-toggle.min.css" rel="stylesheet">
     <!-- font awasome -->
