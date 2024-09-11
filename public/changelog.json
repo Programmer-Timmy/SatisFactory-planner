@@ -1,6 +1,13 @@
 [
   {
-    "version": "1.1.11",
+    "version": "1.2.1",
+    "date": "september 10, 2024",
+    "changes": [
+      "Fixed not able to delete production lines."
+    ]
+  },
+  {
+    "version": "1.2.0",
     "date": "september 10, 2024",
     "changes": [
       "Added Boosted Alien Power Augmenter to the power production.",
