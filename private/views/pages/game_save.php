@@ -167,6 +167,9 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             </div>
             <div id="chart_div"></div>
             <h2>Outputs</h2>
+            <?php if (empty($outputs)) : ?>
+                <h4 class="text-center mt-3">No Outputs Found</h4>
+            <?php else: ?>
             <div class="overflow-auto" style="height: 40vh;">
                 <table class="table table-striped">
                     <thead>
@@ -185,6 +188,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                     </tbody>
                 </table>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

@@ -5,7 +5,8 @@
     "changes": [
       "Applied new color scheme to the website.",
       "Added light and dark mode.",
-      "Added button to toggle between light and dark mode. on the account page."
+      "Added button to toggle between light and dark mode. on the account page.",
+      "Fixed showing table of outputs when there are no outputs."
     ]
   },
   {
