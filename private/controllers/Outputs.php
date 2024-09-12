@@ -4,7 +4,7 @@ class Outputs
 {
     public static function getAllOutputs($id)
     {
-        $productionLines = Database::getAll("production_lines", ['id'], [], ['game_saves_id' => $id]);
+        $productionLines = Database::getAll("production_lines", ['id'], [], ['game_saves_id' => $id, 'active' => 1]);
         $outputArray = [];
         $importArray = [];
         foreach ($productionLines as $productionLine) {
