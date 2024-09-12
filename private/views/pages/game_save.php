@@ -170,7 +170,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             <?php if (empty($outputs)) : ?>
                 <h4 class="text-center mt-3">No Outputs Found</h4>
             <?php else: ?>
-            <div class="overflow-auto" style="height: 40vh;">
+            <div class="overflow-auto" style="max-height: 40vh;">
                 <table class="table table-striped">
                     <thead class="table-dark">
                     <tr>
