@@ -114,7 +114,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             <?php else: ?>
             <div class="overflow-auto">
                 <table class="table table-striped">
-                    <thead>
+                    <thead class="table-dark">
                     <tr>
                         <th scope="col">Name</th>
                         <th scope="col">Power Consumption</th>
@@ -172,7 +172,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             <?php else: ?>
             <div class="overflow-auto" style="height: 40vh;">
                 <table class="table table-striped">
-                    <thead>
+                    <thead class="table-dark">
                     <tr>
                         <th scope="col">Item</th>
                         <th scope="col">Amount</th>
