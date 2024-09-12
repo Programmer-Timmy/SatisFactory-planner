@@ -107,8 +107,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
-                <button id="add_product_line" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top"
-                        data-bs-title="Add Production Line"><i class="fa-solid fa-plus"></i></button>
+                <button id="add_product_line" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add Production Line"><i class="fa-solid fa-plus" ></i></button>
             </div>
             <?php if (empty($productionLines)) : ?>
                 <h4 class="text-center mt-3">No Production Lines Found</h4>
@@ -141,15 +140,11 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                                 </td>
                                 <td>
                                     <div>
-                                        <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"
-                                           data-bs-toggle="tooltip" data-bs-placement="top"
-                                           data-bs-title="Open Production Line"><i
+                                        <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Open Production Line"><i
                                                     class="fa-solid fa-gears"></i></a>
                                 </td>
                                 <td>
-                                    <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"
-                                       data-bs-toggle="tooltip" data-bs-placement="top"
-                                       data-bs-title="Delete Production Line"
+                                    <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"  data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete Production Line"
                                        onclick="return confirm('Are you sure you want to delete this production line?')"
                                        class="btn btn-danger">X</a>
                                 </td>
@@ -163,9 +158,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         <div class="col-lg-4">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Power Consumption</h2>
-                <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip"
-                        data-bs-placement="top" data-bs-title="Update Power Production"><i
-                            class="fa-solid fa-bolt-lightning"></i>
+                <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Update Power Production"><i class="fa-solid fa-bolt-lightning"></i>
                 </button>
             </div>
             <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"
@@ -175,9 +168,9 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             <div id="chart_div"></div>
             <h2>Outputs</h2>
             <div id="output_table">
-                <?php if (empty($outputs)) : ?>
-                    <h4 class="text-center mt-3">No Outputs Found</h4>
-                <?php else: ?>
+            <?php if (empty($outputs)) : ?>
+                <h4 class="text-center mt-3">No Outputs Found</h4>
+            <?php else: ?>
                 <div class="overflow-auto" style="max-height: 40vh;">
                     <table class="table table-striped">
                         <thead class="table-dark">
@@ -203,27 +196,9 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 </div>
 
 <script>
-    async function changeActiveStats(productLineId, object) {
+    function changeActiveStats(productLineId, object) {
         let active = object.checked ? 1 : 0;
         //     use api give id and active
-        await sendApiRequest(productLineId, active);
-
-        // ajax to get new outputs
-        $.ajax({
-            url: 'getOutput',
-            type: 'GET',
-            data: {
-                id: <?= $gameSave->id ?>
-            },
-            success: function (response) {
-                $('#output_table').html(response);
-            }
-        });
-
-        update_total_power_consumption();
-    }
-
-    async function sendApiRequest(productLineId, active) {
         fetch('/api/changeActiveStats', {
             method: 'POST',
             headers: {
@@ -231,14 +206,22 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             },
             body: JSON.stringify({
                 id: productLineId,
-                active: active
+                active: active,
+                gameSaveId: <?= $gameSave->id ?>
             })
-        }).catch(success => {
-            return true;
-        }).catch(error => {
-            console.error('Error:', error);
-            return false;
-        })
+        }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let htmlString = data.html;
+                    $('#output_table').html(htmlString);
+                    update_total_power_consumption();
+                } else {
+                    console.error(data.error);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
     }
 </script>
 
