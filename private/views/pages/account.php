@@ -5,13 +5,21 @@ global $changelog;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['username'])) {
-        $username = $_POST['username'];
-        if (Users::updateUsername($user->id, $username, $_POST['email'], isset($_POST['updates']) ? 1 : 0)) {
-            header('Location: /account');
+        if (Users::getUserByEmail($_POST['email']) && $_POST['email'] != $user->email) {
+            $error = 'Email already in use';
+        } elseif (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
+            $error = 'Invalid email';
+        } elseif (Users::getUserByUsername($_POST['username']) && $_POST['username'] != $user->username) {
+            $error = 'Username already in use';
+            return;
         } else {
-            $error = 'Error updating username';
+            $username = $_POST['username'];
+            if (Users::updateUser($user->id, $username, $_POST['email'], isset($_POST['updates']) ? 1 : 0)) {
+                header('Location: /account');
+            } else {
+                $error = 'Error updating username';
+            }
         }
-
     }
     if (isset($_POST['password']) && isset($_POST['password2'])) {
         $password = $_POST['password'];

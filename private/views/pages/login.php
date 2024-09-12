@@ -1,15 +1,39 @@
 <?php
 $error = '';
+$success = '';
+if (isset($_GET['resent'])) {
+    if (Users::resendVerificationEmail($_GET['resent'])) {
+        header('Location: /login');
+        $success = 'Verification email resent';
+    } else {
+        $error = 'Error resending verification email';
+    }
+}
+
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
     $data = AuthControler::login($username, $password);
     if ($data != null) {
+        if (is_array($data)) {
+            $error = 'Email not verified please check your email. If you did not receive an email please check your spam folder. <a href="?resent=' . $username . '">Resend verification email</a>';
+        } else {
         header('Location: ' . $data);
+        }
     } else {
         $error = 'Username or password is incorrect';
     }
+}
+
+if (isset($_GET['verify'])) {
+    if (Users::verifyUser($_GET['verify'])) {
+        $success = 'Email verified';
+    } else {
+        $error = 'Error verifying account';
+    }
+    echo '<script>const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
+    window.history.replaceState({ path: url }, "", url);</script>';
 }
 ?>
 <div class="container mt-5">
@@ -23,13 +47,16 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                     <?= $error ?>
                 </div>
             <?php endif; ?>
-
+            <?php if ($success) : ?>
+                <div class="alert alert-success" role="alert">
+                    <?= $success ?>
+                </div>
+            <?php endif; ?>
             <?php if (isset($_GET['registered'])) : ?>
                 <div class="alert alert-success" role="alert">
                     You have successfully registered. Please login.
                 </div>
             <?php endif; ?>
-
             <?php if (isset($_GET['logout'])) : ?>
                 <div class="alert alert-success" role="alert">
                     You have successfully logged out.

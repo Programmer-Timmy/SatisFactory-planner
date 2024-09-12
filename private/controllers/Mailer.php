@@ -10,7 +10,7 @@ require '../static/phpmailer/src/SMTP.php';
 class Mailer
 {
 
-    public static function sendEmail($to, $subject, $body)
+    public static function sendEmail($to, $subject, $body, $plainText)
     {
         global $emailSettings;
         $encryption = '';
@@ -35,8 +35,11 @@ class Mailer
             $mail->addCustomHeader("List-Unsubscribe", "<https://satisfactoryplanner.timmygamer.nl/unsubscribe.php?email=$to>");
             $mail->addAddress($to);
             $mail->isHTML(true);
+            $mail->CharSet = 'UTF-8';
+            $mail->Encoding = 'base64';
             $mail->Subject = $subject;
             $mail->Body = $body;
+            $mail->AltBody = $plainText;
 
             $mail->send();
             return true;
@@ -50,69 +53,153 @@ class Mailer
     {
         $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
         $subject = 'Website Update ' . $changelog['version'];
-        $body = '
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        /* Include Bootstrap inline styles */
-        .container {
-            width: 100%;
-            padding: 15px;
-            margin: 0 auto;
-        }
-        .header {
-            background-color: #f8f9fa;
-            padding: 15px;
-            text-align: center;
-        }
-        .content {
-            background-color: #ffffff;
-            padding: 20px;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-        .footer {
-            text-align: center;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-top: 1px solid #dee2e6;
-        }
-        a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>Welcome to Satisfactory Planner</h2>
-        </div>
-        <div class="content">
-            <p>Hello ' . htmlspecialchars($user->username) . ',</p>
-            <p>The website has been updated to version ' . htmlspecialchars($changelog['version']) . '.</p>
-            <p>The changes are:</p>
-            <ul>';
-        foreach ($changelog['changes'] as $change) {
-            $body .= '<li>' . htmlspecialchars($change) . '</li>';
-        }
-        $body .= '
-            </ul>
-            <p>If you have any issues or suggestions, let us know at <a href="https://docs.google.com/forms/d/e/1FAIpQLSdFw0S39IJaHRyNnLRictd9nmD5VHzwDGtK8_yC-eaTdFsBeA/viewform">this link</a>.</p>
-            <p><a href="https://satisfactoryplanner.timmygamer.nl/changelog">satisfactoryplanner.timmygamer.nl/changelog</a>.</p>
-        </div>
-        <div class="footer">
-            <p>Kind regards,<br>The Satisfactory Planner Team</p>
-        </div>
-    </div>
-</body>
-</html> ';
 
-        return self::sendEmail($user->email, $subject, $body);
+        // HTML body
+        $htmlBody = '
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            /* Include Bootstrap inline styles */
+            .container {
+                width: 100%;
+                padding: 15px;
+                margin: 0 auto;
+            }
+            .header {
+                background-color: #f8f9fa;
+                padding: 15px;
+                text-align: center;
+            }
+            .content {
+                background-color: #ffffff;
+                padding: 20px;
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                margin: 20px 0;
+            }
+            .footer {
+                text-align: center;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border-top: 1px solid #dee2e6;
+            }
+            a {
+                color: #007bff;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>Welcome to Satisfactory Planner</h2>
+            </div>
+            <div class="content">
+                <p>Hello ' . htmlspecialchars($user->username) . ',</p>
+                <p>The website has been updated to version ' . htmlspecialchars($changelog['version']) . '.</p>
+                <p>The changes are:</p>
+                <ul>';
+        foreach ($changelog['changes'] as $change) {
+            $htmlBody .= '<li>' . htmlspecialchars($change) . '</li>';
+        }
+        $htmlBody .= '
+                </ul>
+            </div>
+            <div class="footer">
+                <p>Kind regards,<br>The Satisfactory Planner Team</p>
+                <p>If you no longer wish to receive these updates, you can <a href="https://satisfactoryplanner.timmygamer.nl/unsubscribe">unsubscribe here</a>.</p>
+            </div>
+        </div>
+    </body>
+    </html>';
+
+        // Plain text version
+        $plainTextBody = "Hello " . htmlspecialchars($user->username) . ",\n";
+        $plainTextBody .= "The website has been updated to version " . htmlspecialchars($changelog['version']) . ".\n";
+        $plainTextBody .= "The changes are:\n";
+        foreach ($changelog['changes'] as $change) {
+            $plainTextBody .= "- " . htmlspecialchars($change) . "\n";
+        }
+        $plainTextBody .= "\nKind regards,\nThe Satisfactory Planner Team";
+
+        // Send email as multipart/alternative (HTML + Plain Text)
+        // Use your mail sending method here
+        return self::sendEmail($user->email, $subject, $htmlBody, $plainTextBody);
+    }
+
+    public static function sendVerificationEmail($to, $token)
+    {
+        $subject = 'Verify your email address';
+        $url = 'https://satisfactoryplanner.timmygamer.nl/login?verify=' . $token;
+
+        // HTML body
+        $htmlBody = '
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            /* Include Bootstrap inline styles */
+            .container {
+                width: 100%;
+                padding: 15px;
+                margin: 0 auto;
+            }
+            .header {
+                background-color: #f8f9fa;
+                padding: 15px;
+                text-align: center;
+            }
+            .content {
+                background-color: #ffffff;
+                padding: 20px;
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                margin: 20px 0;
+            }
+            .footer {
+                text-align: center;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border-top: 1px solid #dee2e6;
+            }
+            a {
+                color: #007bff;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>Welcome to Satisfactory Planner</h2>
+            </div>
+            <div class="content">
+                <p>Hello,</p>
+                <p>Thank you for registering at Satisfactory Planner. Please verify your email address by clicking the link below.</p>
+                <p><a href="' . $url . '">Verify Email</a></p>
+            </div>
+            <div class="footer">
+                <p>Kind regards,<br>The Satisfactory Planner Team</p>
+            </div>
+        </div>
+    </body>
+    </html>';
+
+        // Plain text version
+        $plainTextBody = "Hello,\n";
+        $plainTextBody .= "Thank you for registering at Satisfactory Planner. Please verify your email address by clicking the link below.\n";
+        $plainTextBody .= $url . "\n";
+        $plainTextBody .= "\nKind regards,\nThe Satisfactory Planner Team";
+
+        // Send email as multipart/alternative (HTML + Plain Text)
+        // Use your mail sending method here
+        return self::sendEmail($to, $subject, $htmlBody, $plainTextBody);
     }
 }

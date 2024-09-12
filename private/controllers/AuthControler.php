@@ -11,12 +11,17 @@ class AuthControler
             exit();
         }
         if (password_verify($password, $user->password_hash)) {
+            if ($user->verified != 1) {
+                return [$user->username, 'notVerified'];
+                exit();
+            }
             $_SESSION[$site['accounts']['sessionName']] = $user->id;
             if ($site['admin']['enabled']) {
                 if ($user->admin = 1) {
                     $_SESSION[$site['admin']['sessionName']] = $user->id;
                 }
             }
+
             if ($user->email == null) {
                 return '/account';
                 exit();

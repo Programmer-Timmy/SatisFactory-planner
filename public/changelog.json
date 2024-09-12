@@ -1,4 +1,13 @@
 [
+
+  {
+    "version": "1.2.4",
+    "date": "september 12, 2024",
+    "changes": [
+      "Made it required to verify email before being able to log in.",
+      "Fixed changing email and username in the account settings."
+    ]
+  },
   {
     "version": "1.2.3",
     "date": "september 12, 2024",
