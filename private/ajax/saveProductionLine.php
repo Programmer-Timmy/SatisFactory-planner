@@ -5,8 +5,8 @@ if (!isset($_POST['data']) || !isset($_POST['id'])) {
     exit();
 }
 
-if (empty($productLine) || !ProductionLines::checkProductionLineVisability($productLine->game_saves_id, $_SESSION['userId'])) {
-    header('Location: /');
+if (!ProductionLines::checkProductionLineVisability($_SESSION['lastVisitedSaveGame'], $_SESSION['userId'])) {
+//    header('Location: /');
     exit();
 }
 
