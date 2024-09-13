@@ -60,7 +60,8 @@ $requests = GameSaves::getRequests($_SESSION['userId']);
                                aria-hidden="true" id="request-count"><?= count($requests) ?></p>
                         <?php endif; ?>
                         <button id="requests" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
-                                data-bs-title="Requests for collaboration with other users.<br> If you know you should have a request and it is not showing, try refreshing the page."
+                                data-bs-html="true"
+                                data-bs-title="Requests for collaboration with other users. <br> If you know you should have a request and it is not showing, try refreshing the page."
                         ><i class="fa-solid fa-envelope"></i>
                         </button>
                     </div>
