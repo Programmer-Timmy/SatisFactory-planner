@@ -59,8 +59,9 @@ $requests = GameSaves::getRequests($_SESSION['userId']);
                             <p class="pinned position-absolute translate-middle p-2 bg-danger border border-light rounded-circle"
                                aria-hidden="true" id="request-count"><?= count($requests) ?></p>
                         <?php endif; ?>
-                        <button id="requests" class="btn btn-secondary"
-                                data-bs-placement="top" data-bs-title="Requests"><i class="fa-solid fa-envelope"></i>
+                        <button id="requests" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-title="Requests for collaboration with other users.<br> If you know you should have a request and it is not showing, try refreshing the page."
+                        ><i class="fa-solid fa-envelope"></i>
                         </button>
                     </div>
                     <div id="requestsDropdown" class="dropdown-menu p-2" aria-labelledby="requests"
