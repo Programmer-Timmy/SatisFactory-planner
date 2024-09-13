@@ -18,7 +18,7 @@ class GameSaves
     public static function  getSaveGamesByUser(int $user_id)
 
     {
-        return Database::getAll("users_has_game_saves", ['game_saves_id', 'title', 'created_at', 'username as Owner', 'image', 'game_saves.id', 'game_saves.owner_id'], ['game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', 'users' => 'users.id = game_saves.owner_id'], ['users_has_game_saves.users_id' => $user_id]);
+        return Database::getAll("users_has_game_saves", ['game_saves_id', 'title', 'created_at', 'username as Owner', 'image', 'game_saves.id', 'game_saves.owner_id'], ['game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', 'users' => 'users.id = game_saves.owner_id'], ['users_has_game_saves.users_id' => $user_id, 'accepted' => 1]);
     }
 
     /**
@@ -64,8 +64,19 @@ class GameSaves
     public static function addUserToSaveGame(int $user_id, int $game_save_id)
     {
 
-        return Database::insert("users_has_game_saves", ['users_id', 'game_saves_id'], [$user_id, $game_save_id]);
+        return Database::insert("users_has_game_saves", ['users_id', 'game_saves_id', 'accepted'], [$user_id, $game_save_id, 0]);
 
+    }
+
+    /**
+     * @param int $user_id
+     * @param int $game_save_id
+     * @return null
+     * @throws ErrorException
+     */
+    public static function removeUserFromSaveGame(int $user_id, int $game_save_id)
+    {
+        Database::delete("users_has_game_saves", ['users_id' => $user_id, 'game_saves_id' => $game_save_id]);
     }
 
     /**
@@ -157,12 +168,17 @@ class GameSaves
      */
     public static function getAllowedUsers(int $gameSaveId): array
     {
-        $allowedUsers = Database::getAll("users_has_game_saves", ['users_id'], [], ['game_saves_id' => $gameSaveId]);
-        $users = [];
-        foreach ($allowedUsers as $user) {
-            $users[] = $user->users_id;
-        }
-        return $users;
+        $allowedUsers = Database::getAll("users_has_game_saves", ['users_id', 'username'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 1]);
+        return $allowedUsers;
+    }
+
+    /**
+     * @param int $gameSaveId
+     * @return array
+     */
+    public static function getRequestedUsers(int $gameSaveId): array
+    {
+        return Database::getAll("users_has_game_saves", ['users_id', 'username'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 0]);
     }
 
     /**
@@ -196,6 +212,33 @@ class GameSaves
     public static function deleteUserHasGameSavesByUser(int $userId)
     {
         Database::delete("users_has_game_saves", ['users_id' => $userId]);
+    }
+
+    /**
+     * @param int $userId
+     * @return array
+     */
+    public static function getRequests(int $userId): array
+    {
+        return Database::getAll("users_has_game_saves", ['users_has_game_saves.id', 'game_saves_id', 'title', 'users.username'], ['game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', 'users' => 'users.id = game_saves.owner_id'], ['users_id' => $userId, 'accepted' => 0]);
+    }
+
+    /**
+     * @param int $requestId
+     * @return void
+     */
+    public static function declineRequest(int $requestId)
+    {
+        Database::delete("users_has_game_saves", ['id' => $requestId]);
+    }
+
+    /**
+     * @param int $requestId
+     * @return void
+     */
+    public static function acceptRequest(int $requestId)
+    {
+        Database::update("users_has_game_saves", ['accepted'], [1], ['id' => $requestId]);
     }
 
 

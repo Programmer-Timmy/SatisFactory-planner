@@ -1,5 +1,9 @@
 //@import "reset";
 
+@import "bootstrapChangesLight";
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+
 @import "variables";
 
 @import "small";
@@ -11,10 +15,6 @@
 @media only screen and (min-width: 1140px) {
   @import "large";
 }
-
-@import "bootstrapChangesLight";
-
-@import "../node_modules/bootstrap/scss/bootstrap";
 
 .table > tbody > tr > td > input:not(:read-only):not(:disabled),
 .table > tbody > tr > td > select {

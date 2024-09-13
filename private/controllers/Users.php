@@ -7,6 +7,16 @@ class Users
         return Database::getAll("users");
     }
 
+    public static function getAllValidatedUsers()
+    {
+        return Database::getAll("users", ['*'], [], ['verified' => 1]);
+    }
+
+    public static function searchUsers($search)
+    {
+        return Database::query("SELECT * FROM users WHERE username LIKE ?", ["%$search%"]);
+    }
+
     public static function getUserById($id)
     {
         return Database::get("users", ['*'], [], ["id" => $id]);
@@ -74,6 +84,49 @@ class Users
         return false;
     }
 
+    public static function filterUsers($users, &$allowedUsers, &$requestUsers): array
+    {
+        // Filter out current session user from the lists
+        $users = array_filter($users, function ($user) use ($allowedUsers, $requestUsers) {
+            return !(
+                in_array($user->id, array_column($allowedUsers, 'users_id')) ||
+                $user->id == $_SESSION['userId'] ||
+                in_array($user->id, array_column($requestUsers, 'users_id'))
+            );
+        });
+
+        $requestUsers = array_filter($requestUsers, function ($user) {
+            return $user->users_id != $_SESSION['userId'];
+        });
+
+        $allowedUsers = array_filter($allowedUsers, function ($user) {
+            return $user->users_id != $_SESSION['userId'];
+        });
+
+        return [
+            'users' => $users,
+            'allowedUsers' => $allowedUsers,
+            'requestUsers' => $requestUsers
+        ];
+    }
+
+    public static function generateUserListHTML($users, $game_id, $class, $buttonText, $buttonId)
+    {
+
+        $html = '';
+        foreach ($users as $user) {
+            $userId = $user->id ?? $user->users_id;
+            $html .= '<div class="card mb-2 p-2">
+        <div class="card-body d-flex justify-content-between align-items-center p-0">
+            <h6 class="mb-1">' . htmlspecialchars($user->username) . '</h6>
+            <button type="button" class="btn ' . $class . '"
+                    user-id="' . htmlspecialchars($userId) . '"
+                    game-id="' . htmlspecialchars($game_id) . '">' . $buttonText . '</button>
+        </div>
+    </div>';
+        }
+        return $html;
+    }
 
 
 }

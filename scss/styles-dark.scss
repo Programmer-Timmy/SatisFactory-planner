@@ -1,5 +1,9 @@
 //@import "reset";
 
+@import "bootstrapChangesDark";
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+
 @import "variables";
 
 @import "small";
@@ -12,9 +16,7 @@
   @import "large";
 }
 
-@import "bootstrapChangesDark";
 
-@import "../node_modules/bootstrap/scss/bootstrap";
 
 .table > tbody > tr > td > input:not(:read-only):not(:disabled),
 .table > tbody > tr > td > select {

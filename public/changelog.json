@@ -1,5 +1,12 @@
 [
-
+  {
+    "version": "1.2.5",
+    "date": "september 13, 2024",
+    "changes": [
+      "Improved the add user and delete user functionality on production lines.",
+      "The other user now has to accept the invitation to join the production line."
+    ]
+  },
   {
     "version": "1.2.4",
     "date": "september 12, 2024",

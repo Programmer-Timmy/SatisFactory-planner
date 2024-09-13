@@ -30,10 +30,11 @@ if (isset($_GET['verify'])) {
     if (Users::verifyUser($_GET['verify'])) {
         $success = 'Email verified';
     } else {
-        $error = 'Error verifying account';
+        $error = 'The verification code is invalid. Please check your latest email for the correct link. If you did not receive an email please check your spam folder.';
     }
     echo '<script>const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
-    window.history.replaceState({ path: url }, "", url);</script>';
+    window.history.replaceState({ path: url }, "", url);
+</script>';
 }
 ?>
 <div class="container mt-5">
@@ -81,3 +82,6 @@ if (isset($_GET['verify'])) {
         </div>
     </div>
 </div>
+<script>const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
+    window.history.replaceState({path: url}, "", url);
+</script>

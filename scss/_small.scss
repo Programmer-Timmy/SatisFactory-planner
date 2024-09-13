@@ -11,3 +11,17 @@ footer{
 .hidden{
   display: none;
 }
+
+#request-count {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  z-index: 1;
+  right: -17px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}

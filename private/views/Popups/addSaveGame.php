@@ -1,23 +1,22 @@
 <?php
 ob_start();
 if ($_POST && isset($_POST['saveGameName'])) {
-    // Assuming you've included or defined the Database class somewhere
-    ;
     $saveGameName = $_POST['saveGameName'];
-
-    if ($_POST['AllowedUsers'] == null) {
-        $_POST['AllowedUsers'] = [];
+    var_dump($_FILES);
+    if ($_POST['selectedUsers'] == null) {
+        $_POST['selectedUsers'] = [];
+    } else {
+        $_POST['selectedUsers'] = explode(',', $_POST['selectedUsers']);
     }
 
-    // Assuming Database::insert() is a function that inserts data into the database
-    $gameSaveId = GameSaves::createSaveGame($_SESSION['userId'], $saveGameName, $_FILES['UpdatedSaveGameImage'], $_POST['AllowedUsers']);
+    $gameSaveId = GameSaves::createSaveGame($_SESSION['userId'], $saveGameName, $_FILES['saveGameImage'], $_POST['selectedUsers']);
     if ($gameSaveId) {
         header('Location:/game_save?id=' . $gameSaveId);
         exit();
     }
 
 }
-$users = Users::getAllUsers();
+$users = Users::getAllValidatedUsers();
 
 ?>
 
@@ -30,29 +29,48 @@ $users = Users::getAllUsers();
             </div>
             <form method="post" enctype="multipart/form-data">
                 <div class="modal-body">
+                    <!-- Other form fields for the save game -->
                     <div class="mb-3">
                         <label for="saveGameName" class="form-label">Production Line Name</label>
-                        <input type="text" class="form-control" id="saveGameName" name="saveGameName"
-                               required>
+                        <input type="text" class="form-control" id="saveGameName" name="saveGameName" required>
                     </div>
                     <div class="mb-3">
-                        <label for="UpdatedSaveGameImage" class="form-label">Production Line Image</label>
-                        <input type="file" class="form-control" id="UpdatedSaveGameImage" name="UpdatedSaveGameImage">
+                        <label for="saveGameImage" class="form-label">Production Line Image</label>
+                        <input type="file" class="form-control" id="saveGameImage" name="saveGameImage">
                     </div>
 
-                <div class="mb-3">
-                    <label for="Allowed users" class="form-label">Allowed users</label>
-                    <!--                        multi select-->
-                    <select class="form-select" name="AllowedUsers[]" multiple>
-                        <?php foreach ($users as $user) : ?>
-                            <?php if ($user->id == $_SESSION['userId']) continue; ?>
-                            <option value="<?= $user->id ?>"><?= $user->username ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div id="selectedUsers" class="mt-3">
+                        <h6 class="requested hidden">Requested Users</h6>
+                        <div class="selected-users-list">
+                        </div>
+                    </div>
+
+                    <div id="userList">
+                        <div class="mb-3">
+                            <h6>Add Users</h6>
+                            <input type="text" class="form-control mb-2" id="addSearchUser"
+                                   placeholder="Search for user">
+                            <div class="users">
+                                <!--                                max of 5-->
+                                <?php foreach (array_slice($users, 0, 5) as $user) : ?>
+                                    <?php if ($user->id == $_SESSION['userId']) continue; ?>
+                                    <div class="card mb-2 p-2">
+                                        <div class="card-body d-flex justify-content-between align-items-center p-0">
+                                            <h6 class="mb-1"><?= $user->username ?></h6>
+                                            <button type="button" class="btn btn-success add_user"
+                                                    data-user-id="<?= $user->id ?>">Add User
+                                            </button>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <!-- Hidden input to store selected user IDs -->
+                        <input type="hidden" name="selectedUsers" id="selectedUsersInput">
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Add Production Line</button>
-                </div>
+                    <button type="submit" class="btn btn-primary">Create Save Game</button>
                 </div>
             </form>
         </div>
@@ -63,4 +81,139 @@ $users = Users::getAllUsers();
         const popupModal = new bootstrap.Modal(document.getElementById('popupModal'));
         popupModal.show();
     });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectedUsers = [];
+        const selectedUsersInput = document.getElementById('selectedUsersInput');
+
+        // Handle user search input
+        document.getElementById('addSearchUser').addEventListener('input', function () {
+            const search = this.value;
+            // AJAX call to search for users
+            $.ajax({
+                url: 'searchUser', // Ensure this is the correct path
+                type: 'POST',
+                data: {
+                    add: true,
+                    search: search,
+                    selectedUsers: selectedUsers.join(',')
+                },
+                success: function (response) {
+                    // Populate the .users container with the search results
+                    $('#userList .users').html(response);
+                    handleAddUserButtons(); // Re-bind events to new buttons
+                },
+                error: function () {
+                    console.error('Error during search');
+                }
+            });
+        });
+
+        // Function to handle Add User button clicks
+        function handleAddUserButtons() {
+            const addUserButtons = document.querySelectorAll('.add_user');
+            addUserButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const userId = this.getAttribute('data-user-id');
+                    const username = this.previousElementSibling.textContent;
+
+                    if (!selectedUsers.includes(userId)) {
+                        // Add user to the selected list
+                        selectedUsers.push(userId);
+                        updateSelectedUsersDisplay(username, userId);
+                        updateHiddenInput();
+
+                        // Remove user from selectable list
+                        this.closest('.card').remove();
+                    }
+
+                    // if this is the first user added, show the requested users section
+                    if (selectedUsers.length === 1) {
+                        document.querySelector('.requested').classList.remove('hidden');
+                    }
+
+                    // if users is now empty, show no users found
+                    if (document.querySelectorAll('.add_user').length === 0) {
+                        $('#userList .users').html('<h6 class="text-center">No users found</h6>');
+                    }
+                });
+            });
+        }
+
+        // Update the display for selected users
+        function updateSelectedUsersDisplay(username, userId) {
+            const selectedUsersList = document.querySelector('.selected-users-list');
+            const userElement = document.createElement('div');
+            userElement.classList.add('card', 'mb-2', 'p-2');
+            userElement.innerHTML = `
+            <div class="card-body d-flex justify-content-between align-items-center p-0">
+                <h6 class="mb-1">${username}</h6>
+                <button type="button" class="btn btn-danger remove_user" data-user-id="${userId}">Remove</button>
+            </div>
+        `;
+            selectedUsersList.appendChild(userElement);
+
+            // Handle remove button click
+            userElement.querySelector('.remove_user').addEventListener('click', function () {
+                removeUser(userId, userElement, username);
+            });
+        }
+
+        // Remove user from selected list and add back to selectable list
+        function removeUser(userId, userElement, username) {
+            const index = selectedUsers.indexOf(userId);
+            if (index !== -1) {
+                selectedUsers.splice(index, 1);
+                userElement.remove();
+                updateHiddenInput();
+
+                // Re-add user to the selectable list
+                const userCard = document.createElement('div');
+                userCard.classList.add('card', 'mb-2', 'p-2');
+                userCard.innerHTML = `
+                <div class="card-body d-flex justify-content-between align-items-center p-0">
+                    <h6 class="mb-1">${username}</h6>
+                    <button type="button" class="btn btn-success add_user" data-user-id="${userId}">Add User</button>
+                </div>
+            `;
+                // if this is the last user removed, hide the requested users section
+                if (selectedUsers.length === 0) {
+                    document.querySelector('.requested').classList.add('hidden');
+                }
+
+                if (document.querySelectorAll('.add_user').length === 0) {
+                    $('#userList .users').find('h6').remove();
+                }
+
+                $('#userList .users').append(userCard);
+
+
+                // Re-bind the event listener for the re-added user
+                userCard.querySelector('.add_user').addEventListener('click', function () {
+                    const userId = this.getAttribute('data-user-id');
+                    const username = this.previousElementSibling.textContent;
+
+                    if (!selectedUsers.includes(userId)) {
+                        // Add user to the selected list
+                        selectedUsers.push(userId);
+                        updateSelectedUsersDisplay(username, userId);
+                        updateHiddenInput();
+
+                        // Remove user from selectable list
+                        this.closest('.card').remove();
+                    }
+                });
+            }
+        }
+
+        // Update the hidden input with the selected user IDs
+        function updateHiddenInput() {
+            selectedUsersInput.value = selectedUsers.join(',');
+        }
+
+        // Initial binding for Add User buttons
+        handleAddUserButtons();
+    });
+
+
 </script>
