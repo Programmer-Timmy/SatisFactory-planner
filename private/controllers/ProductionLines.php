@@ -14,7 +14,7 @@ class ProductionLines
 
     public static function checkProductionLineVisability(int $gameSaveId, int $userId)
     {
-        $check = Database::get("users_has_game_saves", ['*'], [], ['game_saves_id' => $gameSaveId, 'users_id' => $userId]);
+        $check = Database::get("users_has_game_saves", ['*'], [], ['game_saves_id' => $gameSaveId, 'users_id' => $userId, 'accepted' => 1]);
         if ($check) {
             return true;
         }

@@ -5,6 +5,11 @@ if (!isset($_POST['data']) || !isset($_POST['id'])) {
     exit();
 }
 
+if (empty($productLine) || !ProductionLines::checkProductionLineVisability($productLine->game_saves_id, $_SESSION['userId'])) {
+    header('Location: /');
+    exit();
+}
+
 $data = json_decode($_POST['data'], true);
 
 $importsData = [];

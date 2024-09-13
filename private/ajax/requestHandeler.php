@@ -5,6 +5,14 @@ if (!$_POST) {
 }
 
 $game_id = $_POST['gameId'];
+
+// check if user is the owner of the game
+$game = GameSaves::getSaveGameById($game_id);
+if ($game->userId != $_SESSION['userId']) {
+    header('Location: /');
+    exit();
+}
+
 $search = $_POST['search'];
 
 // Handle add, remove, and cancel requests
