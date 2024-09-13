@@ -112,47 +112,47 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             <?php if (empty($productionLines)) : ?>
                 <h4 class="text-center mt-3">No Production Lines Found</h4>
             <?php else: ?>
-            <div class="overflow-auto">
-                <table class="table table-striped">
-                    <thead class="table-dark">
-                    <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">Power Consumption</th>
-                        <th scope="col">Updated At</th>
-                        <th scope="col">Active</th>
-                        <th scope="col"></th>
-                        <th scope="col"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($productionLines as $productionLine) : ?>
+                <div class="overflow-auto">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
                         <tr>
-                            <td><?= $productionLine->name ?></td>
-                            <td><?= $productionLine->power_consumbtion ?></td>
-                            <td>
-                                <?= GlobalUtility::formatUpdatedTime($productionLine->updated_at) ?>
-                            </td>
-                            <td>
-                                <input type="checkbox" data-toggle="toggle" data-onstyle="success"
-                                       onchange="changeActiveStats(<?= $productionLine->id ?>, this)"
-                                       data-offstyle="danger" data-size="sm" data-onlabel="Yes"
-                                       data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>>
-                            </td>
-                            <td>
-                                <div>
-                                <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Open Production Line"><i
-                                            class="fa-solid fa-gears"></i></a>
-                            </td>
-                            <td>
-                                <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"  data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete Production Line"
-                                   onclick="return confirm('Are you sure you want to delete this production line?')"
-                                   class="btn btn-danger">X</a>
-                            </td>
+                            <th scope="col">Name</th>
+                            <th scope="col">Power Consumption</th>
+                            <th scope="col">Updated At</th>
+                            <th scope="col">Active</th>
+                            <th scope="col"></th>
+                            <th scope="col"></th>
                         </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($productionLines as $productionLine) : ?>
+                            <tr>
+                                <td><?= $productionLine->name ?></td>
+                                <td><?= $productionLine->power_consumbtion ?></td>
+                                <td>
+                                    <?= GlobalUtility::formatUpdatedTime($productionLine->updated_at) ?>
+                                </td>
+                                <td>
+                                    <input type="checkbox" data-toggle="toggle" data-onstyle="success"
+                                           onchange="changeActiveStats(<?= $productionLine->id ?>, this)"
+                                           data-offstyle="danger" data-size="sm" data-onlabel="Yes"
+                                           data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>>
+                                </td>
+                                <td>
+                                    <div>
+                                        <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Open Production Line"><i
+                                                    class="fa-solid fa-gears"></i></a>
+                                </td>
+                                <td>
+                                    <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"  data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete Production Line"
+                                       onclick="return confirm('Are you sure you want to delete this production line?')"
+                                       class="btn btn-danger">X</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             <?php endif; ?>
         </div>
         <div class="col-lg-4">
@@ -167,28 +167,30 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             </div>
             <div id="chart_div"></div>
             <h2>Outputs</h2>
+            <div id="output_table">
             <?php if (empty($outputs)) : ?>
                 <h4 class="text-center mt-3">No Outputs Found</h4>
             <?php else: ?>
-            <div class="overflow-auto" style="height: 40vh;">
-                <table class="table table-striped">
-                    <thead class="table-dark">
-                    <tr>
-                        <th scope="col">Item</th>
-                        <th scope="col">Amount</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($outputs as $output) : ?>
+                <div class="overflow-auto" style="max-height: 40vh;">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
                         <tr>
-                            <td><?= $output->item ?></td>
-                            <td><?= $output->ammount ?></td>
+                            <th scope="col">Item</th>
+                            <th scope="col">Amount</th>
                         </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($outputs as $output) : ?>
+                            <tr>
+                                <td><?= $output->item ?></td>
+                                <td><?= $output->ammount ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             <?php endif; ?>
+            </div>
         </div>
     </div>
 </div>
@@ -204,12 +206,22 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             },
             body: JSON.stringify({
                 id: productLineId,
-                active: active
+                active: active,
+                gameSaveId: <?= $gameSave->id ?>
             })
-        }).catch(error => {
-            console.error('Error:', error);
-        });
-        update_total_power_consumption();
+        }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let htmlString = data.html;
+                    $('#output_table').html(htmlString);
+                    update_total_power_consumption();
+                } else {
+                    console.error(data.error);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
     }
 </script>
 

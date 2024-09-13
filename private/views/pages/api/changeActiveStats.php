@@ -1,6 +1,4 @@
 <?php
-var_dump($_SERVER['REQUEST_METHOD']);
-var_dump($_POST);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $requestData = json_decode(file_get_contents('php://input'), true);
@@ -12,32 +10,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Call the function to change the active status
         ProductionLines::changeActiveStats($id, $active);
 
-        // Prepare success response
-        $response = array(
+        // Fetch updated outputs after status change
+        $outputs = Outputs::getAllOutputs($requestData['gameSaveId']);
+        $html = '';
+        if (empty($outputs)) {
+            $html .= '<h4 class="text-center mt-3">No Outputs Found</h4>';
+        } else {
+            $html .= '<div class="overflow-auto" style="max-height: 40vh;">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Item</th>
+                        <th scope="col">Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody id="output_table">';
+            foreach ($outputs as $output) {
+                $html .= '<tr>
+                            <td>' . htmlspecialchars($output->item) . '</td>
+                            <td>' . htmlspecialchars($output->ammount) . '</td>
+                        </tr>';
+            }
+            $html .= '</tbody>
+                </table>
+            </div>';
+        }
+
+        // Prepare success response with HTML content
+        $response = [
             'success' => true,
             'message' => "Active status changed for ID: $id to $active",
-        );
+            'html' => $html // Include HTML for the frontend to use
+        ];
 
         // Set response headers
         header('Content-Type: application/json');
-
-        // Return JSON response
         echo json_encode($response);
+
     } catch (Exception $e) {
         // Prepare error response
-        $response = array(
+        $response = [
             'success' => false,
             'error' => $e->getMessage()
-        );
+        ];
 
         // Set response headers
         header('Content-Type: application/json');
-
-        // Return JSON error response
         echo json_encode($response);
     }
 } else {
     // Handle invalid request method
     http_response_code(405); // Method Not Allowed
-    echo json_encode(array('error' => 'Invalid request method'));
+    echo json_encode(['error' => 'Invalid request method']);
 }
