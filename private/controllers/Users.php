@@ -14,7 +14,7 @@ class Users
 
     public static function searchUsers($search)
     {
-        return Database::query("SELECT * FROM users WHERE username LIKE ?", ["%$search%"]);
+        return Database::query("SELECT * FROM users WHERE username LIKE ? and verified = 1", ["%$search%"]);
     }
 
     public static function getUserById($id)
