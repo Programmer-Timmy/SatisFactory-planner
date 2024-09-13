@@ -63,7 +63,7 @@ $requests = GameSaves::getRequests($_SESSION['userId']);
                     </div>
                     <div id="requestsDropdown" class="dropdown-menu p-2" aria-labelledby="requests"
                          style="width: 300px;">
-                        <h5 class="">Requests</h5>
+                        <h5 class="dropdown-header">Requests</h5>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
