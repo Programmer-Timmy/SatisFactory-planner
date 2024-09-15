@@ -193,7 +193,8 @@ export class PowerTable extends Table {
         if (ClockSpeed == 100) {
             return amount * Consumption;
         }
-        return Math.pow(amount * Consumption * (ClockSpeed / 100), 1.321928).toFixed(1);
+        const clockSpeed = Math.pow(ClockSpeed / 100, 1.321928);
+        return (amount * Consumption * clockSpeed).toFixed(1);
     }
 
     private async calculateTotalConsumption() : Promise<number> {
