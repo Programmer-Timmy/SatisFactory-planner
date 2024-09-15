@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.2.6",
+    "date": "september 15, 2024",
+    "changes": [
+      "Fixed issue whit calculating the power consumption when overclocking."
+    ]
+  },
+  {
     "version": "1.2.5",
     "date": "september 13, 2024",
     "changes": [
