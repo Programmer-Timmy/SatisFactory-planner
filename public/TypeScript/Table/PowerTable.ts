@@ -190,7 +190,10 @@ export class PowerTable extends Table {
 
     private calculateConsumption(amount: number, ClockSpeed: number, Consumption: number) {
         // tot de maght van 1,321928
-        return Math.pow(amount * Consumption * (ClockSpeed / 100), 1.321928).toFixed(3);
+        if (ClockSpeed == 100) {
+            return amount * Consumption;
+        }
+        return Math.pow(amount * Consumption * (ClockSpeed / 100), 1.321928).toFixed(1);
     }
 
     private async calculateTotalConsumption() : Promise<number> {
