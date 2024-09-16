@@ -73,7 +73,7 @@ if (!empty($users) && $allUsersCount > 0) {
                                placeholder="Search for user" value="' . htmlspecialchars($search) . '">
                                  <div class="users">
                         ' .
-        Users::generateUserListHTML(array_slice($users, 0, 5), $game_id, 'btn-success send_request', 'Send request', 'addId');
+        Users::generateUserListHTML(array_slice($users, 0, 4), $game_id, 'btn-success send_request', 'Send request', 'addId');
     '</div></div>';
 } elseif ($allUsersCount > 0) {
     $combinedHTML .= '<div class="mb-3">

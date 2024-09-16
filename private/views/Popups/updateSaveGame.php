@@ -4,16 +4,12 @@ $users = Users::getAllValidatedUsers();
 $allowedUsers = GameSaves::getAllowedUsers($gameSave->id);
 $requestUsers = GameSaves::getRequestedUsers($gameSave->id);
 
-// remove users that are already allowed
-$users = array_filter($users, function ($user) use ($allowedUsers, $requestUsers) {
-    // Check if the user is in allowedUsers or requestUsers, or if it's the current session user
-    if (in_array($user->id, array_column($allowedUsers, 'users_id')) ||
-        $user->id == $_SESSION['userId'] ||
-        in_array($user->id, array_column($requestUsers, 'users_id'))) {
-        return false;
-    }
-    return true;
-});
+$data = Users::filterUsers($users, $allowedUsers, $requestUsers);
+$users = $data['users'];
+$allowedUsers = $data['allowedUsers'];
+$requestUsers = $data['requestUsers'];
+
+
 
 ?>
 <div class="modal fade" id="UpdatedSaveGame_<?= $gameSave->id ?>" tabindex="-1" aria-labelledby="popupModalLabel"
@@ -42,7 +38,6 @@ $users = array_filter($users, function ($user) use ($allowedUsers, $requestUsers
                             <div class="mb-3">
                                 <h6>Allowed users</h6>
                                 <?php foreach ($allowedUsers as $user) : ?>
-                                    <?php if ($user->users_id == $_SESSION['userId']) continue; ?>
                                     <div class="card mb-2 p-2">
                                         <div class="card-body d-flex justify-content-between align-items-center p-0">
                                             <h6 class="mb-1"><?= $user->username ?></h6>
@@ -59,7 +54,6 @@ $users = array_filter($users, function ($user) use ($allowedUsers, $requestUsers
                             <div class="mb-3">
                                 <h6>Requested users</h6>
                                 <?php foreach ($requestUsers as $user) : ?>
-                                    <?php if ($user->users_id == $_SESSION['userId']) continue; ?>
                                     <div class="card mb-2 p-2">
                                         <div class="card-body d-flex justify-content-between align-items-center p-0">
                                             <h6 class="mb-1"><?= $user->username ?></h6>
@@ -78,7 +72,7 @@ $users = array_filter($users, function ($user) use ($allowedUsers, $requestUsers
                                 <input type="text" class="form-control mb-2" id="searchUser_<?= $gameSave->id ?>"
                                        placeholder="Search for user">
                                 <div class="users">
-                                    <?php foreach (array_slice($users, 0, 5) as $user) : ?>
+                                    <?php foreach (array_slice($users, 0, 4) as $user) : ?>
                                         <div class="card mb-2 p-2">
                                             <div class="card-body d-flex justify-content-between align-items-center p-0">
                                                 <h6 class="mb-1"><?= $user->username ?></h6>
@@ -91,6 +85,11 @@ $users = array_filter($users, function ($user) use ($allowedUsers, $requestUsers
                                     <?php endforeach; ?>
                                 </div>
                             </div>
+                        <?php else: ?>
+                        <div class="mb-3">
+                            <h6>Add user</h6>
+                            <p>No users available</p>
+                        </div>
                         <?php endif; ?>
                     </div>
                 </div>

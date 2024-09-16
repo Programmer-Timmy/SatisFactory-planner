@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.2.7",
+    "date": "september 16, 2024",
+    "changes": [
+      "Fixed some issues whit requesting users to join the production line."
+    ]
+  },
+  {
     "version": "1.2.6",
     "date": "september 15, 2024",
     "changes": [

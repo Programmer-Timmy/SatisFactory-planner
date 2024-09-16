@@ -21,7 +21,7 @@ if (!isset($_POST['add'])) {
 
     if (!empty($users)) {
         // Generate user list if users are found
-        echo Users::generateUserListHTML(array_slice($users, 0, 5), $game_id, 'btn-success send_request', 'Send request', 'addId');
+        echo Users::generateUserListHTML(array_slice($users, 0, 4), $game_id, 'btn-success send_request', 'Send request', 'addId');
     } else {
         // Display "No users found" if the search result is empty
         echo '<h6 class="text-center">No users found</h6>';
