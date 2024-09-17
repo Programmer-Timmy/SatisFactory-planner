@@ -148,7 +148,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
 
 </script>
 <div class="container">
-    <h1 class="text-center pb-3">Game Save [<?= $gameSave->title ?>]</h1>
+    <h1 class="text-center pb-3">Game Save - <?= $gameSave->title ?></h1>
     <div class="row">
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center">
