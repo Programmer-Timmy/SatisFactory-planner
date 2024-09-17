@@ -28,7 +28,7 @@ export class PowerProduction {
             return;
         }
 
-        const newCard = $(this.newCard());
+        const newCard = this.newCard();
         const json = await this.applyToDatabase(ActionType.Add, element);
         if (json.hasOwnProperty('error')) {
             console.error(json.error);
@@ -44,9 +44,12 @@ export class PowerProduction {
         newCard.attr('id', newId);
 
         // Update the cloned card with new input values
-        newCard.find('.col-6 h6').text(name);
+        newCard.find('.col-5 h6').text(name);
         newCard.find('#amount').val(amount.toString());
         newCard.find('#clock_speed').val(clockSpeed);
+
+        // Apply event listeners to the new card
+        this.applyEventListenersToCard(newCard);
 
         // Append the updated card to the power production section
         this.powerProduction.append(newCard);
@@ -54,8 +57,7 @@ export class PowerProduction {
         // Reset the form for adding new power plants
         this.resetAddCard();
 
-        // Apply event listeners to the new card
-        this.applyEventListenersToCard(newCard);
+        // Calculate the new power production
         this.calculatePowerProduction();
 
     }
@@ -79,17 +81,16 @@ export class PowerProduction {
 
     async updatePowerPlant(element: HTMLElement) {
         const json = await this.applyToDatabase(ActionType.Update, element);
+
         if (json.hasOwnProperty('error')) {
             console.error(json.error);
             return;
         }
-        console.log('Updated power plant');
         this.calculatePowerProduction();
     }
 
     async calculatePowerProduction() {
         const json = await this.applyToDatabase(ActionType.Calculate, document.createElement('div'));
-        console.log(json);
         if (json.hasOwnProperty('error')) {
             console.error(json.error);
             return;
@@ -102,15 +103,20 @@ export class PowerProduction {
     applyEventListenersToCard(card: JQuery<HTMLElement>) {
         const deleteButton = card.find('.deletePowerProduction');
         const updateInputs = card.find('input');
-
-        if (deleteButton) {
+        console.log(deleteButton);
+        console.log(updateInputs);
+        if (deleteButton.length > 0) {
+            console.log('delete button');
             deleteButton.on('click', (event) => {
+                console.log('delete button clicked');
                 this.deletePowerPlant(event.currentTarget);
             });
         }
 
-        if (updateInputs) {
+        if (updateInputs.length > 0) {
+            console.log('update inputs');
             updateInputs.on('change', (event) => {
+                console.log('update inputs changed');
                 this.updatePowerPlant(event.currentTarget);
             });
         }
@@ -157,18 +163,18 @@ export class PowerProduction {
 
         // Create the content of the card
         cardBody.innerHTML = `
-        <div class="col-6">
+        <div class="col-5 col-lg-6 ps-3 pe-1">
             <h6 class="m-0"></h6>
         </div>
-        <div class="col-2">
+        <div class="col-2 px-1">
             <input type="number" class="form-control" id="amount" name="amount"
                    min="1" max="1000">
         </div>
-        <div class="col-2">
+        <div class="col-2 px-1">
             <input type="number" class="form-control" id="clock_speed"
                    name="clock_speed" min="1" max="250" step="any">
         </div>
-        <div class="col-2 text-end">
+        <div class="col-3 col-lg-2 text-end ps-1 pe-3">
             <button type="button" class="btn btn-danger deletePowerProduction">
             Delete
             </button>

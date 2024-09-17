@@ -11,5 +11,5 @@ $clockSpeed = $_POST['clockSpeed'];
 
 $powerProductionId = PowerProduction::addPowerProduction($gameSaveId, $buildingId, $amount, $clockSpeed);
 
-echo json_encode(['success' => true, 'x' => $powerProductionId]);
+echo json_encode(['success' => true, 'powerProductionId' => $powerProductionId]);
 exit;
