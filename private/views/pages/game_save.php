@@ -197,7 +197,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                                        data-bs-toggle="tooltip" data-bs-placement="top"
                                        data-bs-title="Delete Production Line"
                                        onclick="return confirm('Are you sure you want to delete this production line?')"
-                                       class="btn btn-danger">X</a>
+                                       class="btn btn-danger"><i class="fa-solid fa-x"></i></a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
