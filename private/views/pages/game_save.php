@@ -218,7 +218,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                  id="power-alert" role="alert">
                 <i class="fa-solid fa-triangle-exclamation"></i> Power Consumption is higher than available power
             </div>
-            <div id="chart_div"></div>
+            <div id="chart_div" class="d-flex justify-content-center"></div>
             <h2>Outputs</h2>
             <div id="output_table">
                 <?php if (empty($outputs)) : ?>
