@@ -90,7 +90,7 @@ class GameSaves
      */
     public static function updatePowerProduction(int $game_save_id, int $power)
     {
-        return Database::update("game_saves", ['biomass_burner', '`coal-powered_generator`', '`fuel-powered_generator`', 'nuclear_power_plant', 'total_power_production', 'alien_power_augmenter', 'boosted_alien_power_augmenter'], [0, 0, 0, 0, $power, 0, 0], ['id' => $game_save_id]);
+        return Database::update("game_saves", ['total_power_production'], [$power], ['id' => $game_save_id]);
     }
 
     /**
