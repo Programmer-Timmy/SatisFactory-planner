@@ -137,7 +137,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
         <div class="row justify-content-end align-items-center">
             <div class="col-md-3"></div>
             <div class="col-md-6 text-center">
-                <h1 id="productionLineName">Production line - <?= $productLine->title ?></h1>
+                <h1 id="productionLineName">Production Line - <?= $productLine->title ?></h1>
             </div>
             <div class="col-md-3">
                 <div class="text-md-end text-center">
