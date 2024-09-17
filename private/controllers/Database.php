@@ -2,7 +2,7 @@
 
 class Database
 {
-    private PDO $connection;
+    public PDO $connection;
     private string $host;
     private string $user;
     private string $password;

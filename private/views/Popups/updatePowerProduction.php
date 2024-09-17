@@ -1,34 +1,12 @@
 <?php
 $powerProductionBuildings = buildings::getPowerBuildings();
 global $gameSave;
-if ($_POST && isset($_POST['Biomass_Burner'])) {
-    // Assuming you've included or defined the Database class somewhere
-    $gameSaveId = $_GET['id'];
 
-    $totalProduction = 0;
-    foreach ($powerProductionBuildings as $building) {
-        if ($building->name == 'Alien Power Augmenter') {
-            $totalProduction += $_POST[str_replace(' ', '_', $building->name)] * $building->power_generation;
-            $totalProduction += $_POST['Boosted_' . str_replace(' ', '_', $building->name)] * $building->power_generation;
-        } else {
-            $totalProduction += $_POST[str_replace(' ', '_', $building->name)] * $building->power_generation;
-        }
-    }
-    $bonus_percentage = 1;
-    $bonus_percentage += 0.1 * $_POST['Alien_Power_Augmenter'];
-    $bonus_percentage += 0.3 * $_POST['Boosted_Alien_Power_Augmenter'];
-    $totalProduction *= $bonus_percentage;
-
-    GameSaves::updatePowerProduction($gameSaveId, $_POST['Biomass_Burner'], $_POST['Coal-Powered_Generator'], $_POST['Fuel-Powered_Generator'], $_POST['Nuclear_Power_Plant'], $_POST['Alien_Power_Augmenter'], $_POST['Boosted_Alien_Power_Augmenter'], $totalProduction);
-
-    echo "<script>location.href = 'game_save?id=$gameSaveId';</script>";
-    exit();
-
-}
-
+$powerProduction = PowerProduction::getPowerProduction($gameSave->id);
 ?>
 
-<div class="modal fade" id="updatePowerProduction" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
+<div class="modal fade modal-lg" id="updatePowerProduction" tabindex="-1" aria-labelledby="popupModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -37,47 +15,81 @@ if ($_POST && isset($_POST['Biomass_Burner'])) {
             </div>
             <form method="post">
                 <div class="modal-body">
+                    <div class="row px-2 pb-1">
+                        <div class="col-6">
+                            <label for="building">Building</label>
+                        </div>
+                        <div class="col-2">
+                            <label for="amount">Amount</label>
+                        </div>
+                        <div class="col-2">
+                            <label for="clock_speed">Clock Speed</label>
+                        </div>
+                        <div class="col-2">
+                        </div>
+                    </div>
+                    <div id="powerProduction">
+                        <?php if (!empty($powerProduction)) : ?>
+                            <?php foreach ($powerProduction as $power) : ?>
+                                <div class="card mb-2" id="powerProductionCard<?= $power->id ?>">
+                                    <div class="card-body p-2 row d-flex justify-content-between align-items-center">
+                                        <div class="col-6">
+                                            <h6 class="m-0"><?= $power->building_name ?></h6>
+                                        </div>
+                                        <div class="col-2">
+                                            <input type="number" class="form-control" id="amount" name="amount"
+                                                   min="1" max="1000" value="<?= $power->amount ?>">
+                                        </div>
+                                        <div class="col-2">
+                                            <input type="number" class="form-control" id="clock_speed"
+                                                   name="clock_speed" min="1" max="250" step="any"
+                                                   value="<?= $power->clock_speed ?>">
+                                        </div>
+                                        <div class="col-2 text-end">
+                                            <button type="button" class="btn btn-danger deletePowerProduction"
+                                                    data-id="<?= $power->building_id ?>">Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <h5 class="text-center mt-2">No power production buildings added yet</h5>
+                        <?php endif; ?>
+                    </div>
                     <?php if (!empty($powerProductionBuildings)) : ?>
-                        <?php foreach ($powerProductionBuildings as $building) : ?>
-                            <?php if ($building->name == 'Alien Power Augmenter') : ?>
-                                <div class="row">
-                                    <div class="form-group col-6 pe-1">
-                                        <label class="form-check-label" for="<?= $building->id ?>">
-                                            <?= $building->name ?>
-                                        </label>
-                                        <input type="number" class="form-control" min="0" required
-                                               value="<?= $gameSave->{strtolower(str_replace(' ', '_', $building->name))} ?>"
-                                               id="<?= str_replace(' ', '_', $building->name) ?>"
-                                               name="<?= str_replace(' ', '_', $building->name) ?>">
-                                    </div>
-                                    <div class="form-group col-6 ps-1">
-                                        <label class="form-check-label" for="<?= $building->id ?>">
-                                            Boosted Alien Augmenter
-                                        </label>
-                                        <input type="number" class="form-control" min="0" required
-                                               value="<?= $gameSave->{strtolower('Boosted_' . str_replace(' ', '_', $building->name))} ?>"
-                                               id=Boosted_"<?= str_replace(' ', '_', $building->name) ?>"
-                                               name="Boosted_<?= str_replace(' ', '_', $building->name) ?>">
-                                    </div>
+                        <devider class="dropdown-divider"></devider>
+                        <hr>
+                        <div class="card mb-2" id="powerProductionCardNew">
+                            <div class="card-body p-2 row ">
+                                <div class="col-6">
+                                    <select class="form-select" id="building" name="building">
+                                        <option value="" disabled selected>Select a building</option>
+                                        <?php foreach ($powerProductionBuildings as $building) : ?>
+                                            <option value="<?= $building->id ?>"><?= $building->name ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a building</div>
                                 </div>
-                            <?php else: ?>
-                                <div class="form-group">
-                                    <label class="form-check-label" for="<?= $building->id ?>">
-                                        <?= $building->name ?>
-                                    </label>
-                                    <input type="number" class="form-control" min="0" required
-                                           value="<?= $gameSave->{strtolower(str_replace(' ', '_', $building->name))} ?>"
-                                           id="<?= str_replace(' ', '_', $building->name) ?>"
-                                           name="<?= str_replace(' ', '_', $building->name) ?>">
+                                <div class="col-2">
+                                    <input type="number" class="form-control" id="amount" name="amount" min="1"
+                                           max="1000"
+                                           value="1">
+                                    <div class="invalid-feedback">Amount must be 1-1000</div>
                                 </div>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    <?php else : ?>
-                        <p>No buildings available</p>
+                                <div class="col-2">
+                                    <input type="number" class="form-control" id="clock_speed" name="clock_speed"
+                                           min="1"
+                                           max="250" step="any" value="100">
+                                    <div class="invalid-feedback">Clock speed must be 1-250</div>
+                                </div>
+                                <div class="col-2 text-end">
+                                    <button type="button" class="btn btn-primary" id="addPowerProduction">Add</button>
+                                </div>
+                            </div>
+
+                        </div>
                     <?php endif; ?>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Update Power Production</button>
                 </div>
             </form>
         </div>
@@ -89,3 +101,5 @@ if ($_POST && isset($_POST['Biomass_Burner'])) {
         updatePowerProduction.show();
     });
 </script>
+
+<script src="js/powerProduction.js"></script>

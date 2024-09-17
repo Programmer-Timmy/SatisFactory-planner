@@ -9,7 +9,7 @@ $gameSave = GameSaves::getSaveGameById($_GET['id']);
 $outputs = Outputs::getAllOutputs($_GET['id']);
 
 if (empty($gameSave)) {
-    header('Location: /');
+//    header('Location: /');
     exit();
 }
 
@@ -59,7 +59,42 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         chart.draw(data, options);
     }
 
-    function update_total_power_consumption() {
+    async function getPowerProduction() {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                type: 'POST',
+                url: 'powerProduction/get',
+                dataType: 'json',
+                data: {
+                    gameSaveId: <?= $gameSave->id ?>
+                },
+                success: function (data) {
+                    if (data.success) {
+                        resolve(data.powerProduction);
+                    } else {
+                        console.error(data.error);
+                        reject(data.error);
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        });
+    }
+
+
+    async function update_total_power_consumption() {
+        const total_power_consumption = getPowerConsumption();
+        const total_power_production= await getPowerProduction();
+
+        data.setValue(0, 1, total_power_consumption);
+        chart.draw(data, options);
+
+        checkIfPowerProductionIsHigherThanAvailablePower(total_power_consumption, total_power_production);
+    }
+
+    function getPowerConsumption() {
         let total_power_consumption = 0;
         document.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
             if (checkbox.checked) {
@@ -76,24 +111,35 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                 total_power_consumption += parseInt(textContent);
             }
         });
+        return total_power_consumption;
+    }
 
-        data.setValue(0, 1, total_power_consumption);
-        chart.draw(data, options);
-
-        var alertNode = $('#power-alert')[0];
-
-        if (total_power_consumption > <?= $gameSave->total_power_production ?>) {
-            alertNode.classList.remove('hidden');
+    function checkIfPowerProductionIsHigherThanAvailablePower(total_power_consumption, gameSaveTotalPowerProduction) {
+        if (total_power_consumption > gameSaveTotalPowerProduction) {
+            $('#power-alert').removeClass('hidden');
             sleep(200).then(() => {
-                alertNode.classList.add('show');
+                $('#power-alert').addClass('show');
             });
         } else {
-            alertNode.classList.remove('show');
+            $('#power-alert').removeClass('show');
             sleep(200).then(() => {
-                alertNode.classList.add('hidden');
+                $('#power-alert').addClass('hidden');
             });
-
         }
+    }
+
+    function updatePowerProduction(power) {
+        options.max = power;
+        options.redFrom = power * 0.9;
+        options.redTo = power;
+        options.yellowFrom = power * 0.75;
+        options.yellowTo = power * 0.9;
+
+        chart.draw(data, options);
+
+        const total_power_consumption = getPowerConsumption();
+
+        checkIfPowerProductionIsHigherThanAvailablePower(total_power_consumption, power);
     }
 
     async function sleep(ms) {
@@ -107,7 +153,8 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
-                <button id="add_product_line" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add Production Line"><i class="fa-solid fa-plus" ></i></button>
+                <button id="add_product_line" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top"
+                        data-bs-title="Add Production Line"><i class="fa-solid fa-plus"></i></button>
             </div>
             <?php if (empty($productionLines)) : ?>
                 <h4 class="text-center mt-3">No Production Lines Found</h4>
@@ -140,11 +187,15 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
                                 </td>
                                 <td>
                                     <div>
-                                        <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Open Production Line"><i
+                                        <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"
+                                           data-bs-toggle="tooltip" data-bs-placement="top"
+                                           data-bs-title="Open Production Line"><i
                                                     class="fa-solid fa-gears"></i></a>
                                 </td>
                                 <td>
-                                    <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"  data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete Production Line"
+                                    <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"
+                                       data-bs-toggle="tooltip" data-bs-placement="top"
+                                       data-bs-title="Delete Production Line"
                                        onclick="return confirm('Are you sure you want to delete this production line?')"
                                        class="btn btn-danger">X</a>
                                 </td>
@@ -158,7 +209,9 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
         <div class="col-lg-4">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Power Consumption</h2>
-                <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Update Power Production"><i class="fa-solid fa-bolt-lightning"></i>
+                <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip"
+                        data-bs-placement="top" data-bs-title="Update Power Production"><i
+                            class="fa-solid fa-bolt-lightning"></i>
                 </button>
             </div>
             <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"
@@ -168,28 +221,28 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             <div id="chart_div"></div>
             <h2>Outputs</h2>
             <div id="output_table">
-            <?php if (empty($outputs)) : ?>
-                <h4 class="text-center mt-3">No Outputs Found</h4>
-            <?php else: ?>
-                <div class="overflow-auto" style="max-height: 40vh;">
-                    <table class="table table-striped">
-                        <thead class="table-dark">
-                        <tr>
-                            <th scope="col">Item</th>
-                            <th scope="col">Amount</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($outputs as $output) : ?>
+                <?php if (empty($outputs)) : ?>
+                    <h4 class="text-center mt-3">No Outputs Found</h4>
+                <?php else: ?>
+                    <div class="overflow-auto" style="max-height: 40vh;">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
                             <tr>
-                                <td><?= $output->item ?></td>
-                                <td><?= $output->ammount ?></td>
+                                <th scope="col">Item</th>
+                                <th scope="col">Amount</th>
                             </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
+                            </thead>
+                            <tbody>
+                            <?php foreach ($outputs as $output) : ?>
+                                <tr>
+                                    <td><?= $output->item ?></td>
+                                    <td><?= $output->ammount ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -224,6 +277,7 @@ $_SESSION['lastVisitedSaveGame'] = $_GET['id'];
             });
     }
 </script>
+
 
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>
 <?php require_once '../private/views/Popups/updatePowerProduction.php'; ?>
