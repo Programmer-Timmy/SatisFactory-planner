@@ -1,7 +1,8 @@
 <?php
-$powerProductionBuildings = buildings::getPowerBuildings();
 global $gameSave;
+global $changelog;
 
+$powerProductionBuildings = buildings::getPowerBuildings();
 $powerProduction = PowerProduction::getPowerProduction($gameSave->id);
 ?>
 
@@ -102,4 +103,4 @@ $powerProduction = PowerProduction::getPowerProduction($gameSave->id);
     });
 </script>
 
-<script src="js/powerProduction.js"></script>
+<script src="js/powerProduction.js?v=<?=$changelog['version']?>"></script>
