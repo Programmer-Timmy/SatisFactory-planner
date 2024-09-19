@@ -3,7 +3,7 @@ ob_start();
 global $require;
 $lastVisitedSaveGame = '';
 if (isset($_SESSION['userId'])){
-    if ($_SESSION['userId'] != '' && $_SESSION['userId'] != null{
+    if ($_SESSION['userId'] != '' && $_SESSION['userId'] != null){
         $lastVisitedSaveGame = GameSaves::getLastVisitedSaveGame() ?? GameSaves::getSaveGamesByUser($_SESSION['userId'])[0]->id ?? null;
         if ($require === '/game_save') {
             $lastVisitedSaveGame = $_GET['id'];
