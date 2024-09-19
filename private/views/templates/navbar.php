@@ -1,10 +1,16 @@
 <?php
 ob_start();
 global $require;
-$lastVisitedSaveGame = GameSaves::getLastVisitedSaveGame() ?? GameSaves::getSaveGamesByUser($_SESSION['userId'])[0]->id ?? null;
-if ($require === '/game_save') {
-    $lastVisitedSaveGame = $_GET['id'];
+$lastVisitedSaveGame = '';
+if (isset($_SESSION['userId'])){
+    if ($_SESSION['userId'] != '' && $_SESSION['userId'] != null{
+        $lastVisitedSaveGame = GameSaves::getLastVisitedSaveGame() ?? GameSaves::getSaveGamesByUser($_SESSION['userId'])[0]->id ?? null;
+        if ($require === '/game_save') {
+            $lastVisitedSaveGame = $_GET['id'];
+        }
+    }
 }
+
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
     <div class="container-fluid">
