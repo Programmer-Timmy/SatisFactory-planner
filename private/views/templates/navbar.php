@@ -19,6 +19,9 @@ global $require;
                     <a class="nav-link <?php if ($require === '/account') echo 'active'; ?>" aria-current="page"
                        href="/account">Account</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php if ($require === '/game_save') echo 'active'; ?>" aria-current="page"
+                       href="/game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>">Game Save</a>
             </ul>
             <div class="d-flex">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
