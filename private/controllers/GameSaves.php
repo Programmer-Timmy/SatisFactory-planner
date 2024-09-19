@@ -241,5 +241,26 @@ class GameSaves
         Database::update("users_has_game_saves", ['accepted'], [1], ['id' => $requestId]);
     }
 
+    /**
+     * @param int $gameSaveId
+     * @return void
+     */
+    public static function setLastVisitedSaveGame(int $gameSaveId): void
+    {
+        $_SESSION['lastVisitedSaveGame'] = $gameSaveId;
+        Database::update("users_has_game_saves", ['last_visited'], [0], ['users_id' => $_SESSION['userId']]);
+        Database::update("users_has_game_saves", ['last_visited'], [1], ['game_saves_id' => $gameSaveId, 'users_id' => $_SESSION['userId']]);
+    }
+
+    public static function getLastVisitedSaveGame()
+    {
+        $lastVisited = Database::get("users_has_game_saves", ['game_saves_id'], ['users' => 'users.id = users_has_game_saves.users_id'], ['users_id' => $_SESSION['userId'], 'last_visited' => 1]);
+        if ($lastVisited) {
+            return $lastVisited->game_saves_id;
+        } else {
+            return null;
+        }
+    }
+
 
 }

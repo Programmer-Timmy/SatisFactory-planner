@@ -9,7 +9,7 @@ $gameSave = GameSaves::getSaveGameById($_GET['id']);
 $outputs = Outputs::getAllOutputs($_GET['id']);
 
 if (empty($gameSave)) {
-//    header('Location: /');
+    header('Location: /');
     exit();
 }
 
@@ -27,7 +27,7 @@ if (isset($_GET['productDelete'])) {
     exit();
 }
 
-$_SESSION['lastVisitedSaveGame'] = $_GET['id'];
+GameSaves::setLastVisitedSaveGame($gameSave->id);
 ?>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">

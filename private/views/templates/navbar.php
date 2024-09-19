@@ -1,6 +1,7 @@
 <?php
 ob_start();
 global $require;
+$lastVisitedSaveGame = GameSaves::getLastVisitedSaveGame() ?? GameSaves::getSaveGamesByUser($_SESSION['userId'])[0]->id ?? null;
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
     <div class="container-fluid">
@@ -21,7 +22,7 @@ global $require;
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?php if ($require === '/game_save') echo 'active'; ?>" aria-current="page"
-                       href="/game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>">Game Save</a>
+                       href="/game_save?id=<?= $lastVisitedSaveGame ?>">Game Save</a>
             </ul>
             <div class="d-flex">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
