@@ -285,6 +285,6 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
     </form>
 </div>
 
-<script type="module" src="js/bundle.js?v=<?=$changelog['version']?>"></script>
+<script type="module" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
 <?php require_once '../private/views/Popups/editProductinoLine.php'; ?>
 
