@@ -124,10 +124,10 @@ if (count($gameSaves) == 2) {
             <?php foreach ($gameSaves as $gameSave) :
                 $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
                 ?>
-                <div class="d-flex align-items-stretch <?= $class ?>">
+                <div class="d-flex align-items-stretch <?= $class ?> mt-3">
                     <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
                        class="card-link text-black text-decoration-none">
-                        <div class="card mt-3 h-100">
+                        <div class="card h-100">
                             <div class="position-relative">
                                 <img src="image/<?= $gameSave->image ?>" class="card-img-top" alt="...">
                                 <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
