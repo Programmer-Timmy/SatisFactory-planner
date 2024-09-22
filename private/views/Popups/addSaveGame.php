@@ -148,7 +148,7 @@ $users = Users::getAllValidatedUsers();
             userElement.innerHTML = `
             <div class="card-body d-flex justify-content-between align-items-center p-0">
                 <h6 class="mb-1">${username}</h6>
-                <button type="button" class="btn btn-danger remove_user" data-user-id="${userId}">Remove</button>
+                <button type="button" class="btn btn-warning remove_user" data-user-id="${userId}">Cancel request</button>
             </div>
         `;
             selectedUsersList.appendChild(userElement);
