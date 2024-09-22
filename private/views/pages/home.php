@@ -41,7 +41,15 @@ if ($_GET && isset($_GET['request'])) {
     exit();
 }
 
-$requests = GameSaves::getRequests($_SESSION['userId']);
+$Invites = GameSaves::getRequests($_SESSION['userId']);
+
+$class = 'col-md-6 col-lg-4';
+if (count($gameSaves) == 2) {
+    $class = 'col-md-6';
+} elseif (count($gameSaves) == 1) {
+    $class = 'col-md-8 offset-md-2';
+
+}
 
 
 ?>
@@ -55,27 +63,28 @@ $requests = GameSaves::getRequests($_SESSION['userId']);
             <div class="d-flex justify-content-end">
                 <div class="dropdown mega-dropdown me-2" data-bs-auto-close="outside">
                     <div class="position-relative" data-bs-toggle="dropdown" aria-expanded="false">
-                        <?php if ($requests) : ?>
+                        <?php if ($Invites) : ?>
                             <p class="pinned position-absolute translate-middle p-2 bg-danger border border-light rounded-circle"
-                               aria-hidden="true" id="request-count"><?= count($requests) ?></p>
+                               aria-hidden="true" id="request-count"><?= count($Invites) ?></p>
                         <?php endif; ?>
-                        <button id="requests" class="btn btn-secondary"><i class="fa-solid fa-envelope"></i></button>
+                        <button id="Invites" class="btn btn-secondary"><i
+                                    class="fa-solid fa-envelope"></i></button>
                     </div>
-                    <div id="requestsDropdown" class="dropdown-menu p-2 mt-2" aria-labelledby="requests"
+                    <div id="InvitesDropdown" class="dropdown-menu p-2 mt-2 fade" aria-labelledby="Invites"
                          style="width: 300px;">
-                        <h5 class="dropdown-header">Requests</h5>
+                        <h5 class="dropdown-header">Invites</h5>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <div id="requestsList">
-                            <?php if ($requests) : ?>
+                        <div id="InvitesList">
+                            <?php if ($Invites) : ?>
 
                                 <div class="d-flex justify-content-between p-1">
                                     <p class="m-0">Username</p>
                                     <p class="m-0">Game Save</p>
                                     <p class="m-0">Action</p>
                                 </div>
-                                <?php foreach ($requests as $request) : ?>
+                                <?php foreach ($Invites as $request) : ?>
                                     <div class="card">
                                         <div class="card-body d-flex justify-content-between p-2 align-items-center">
                                             <p class="m-0"><?= $request->username ?></p>
@@ -96,7 +105,7 @@ $requests = GameSaves::getRequests($_SESSION['userId']);
                                     </div>
                                 <?php endforeach; ?>
                             <?php else : ?>
-                                <h6 class="text-center">No requests found</h6>
+                                <h6 class="text-center">No Invites found</h6>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -109,19 +118,13 @@ $requests = GameSaves::getRequests($_SESSION['userId']);
 
     <?php if (empty($gameSaves)) : ?>
         <h1>No Game Saves Found</h1>
-
     <?php else : ?>
         <!--    show cards-->
         <div class="row">
-            <?php foreach ($gameSaves as $gameSave) : ?>
-                <?php
-                if (file_exists('image/' . $gameSave->image) && $gameSave->image != '' && $gameSave->image != null) {
-                    $gameSave->image = $gameSave->image;
-                } else {
-                    $gameSave->image = 'default_img.png';
-                }
+            <?php foreach ($gameSaves as $gameSave) :
+                $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
                 ?>
-                <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
+                <div class="d-flex align-items-stretch <?= $class ?>">
                     <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
                        class="card-link text-black text-decoration-none">
                         <div class="card mt-3">
@@ -130,13 +133,13 @@ $requests = GameSaves::getRequests($_SESSION['userId']);
                                 <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
                                     <a class="btn btn-danger position-absolute top-0 end-0"
                                        href="home?delete=<?= $gameSave->game_saves_id ?>"
-                                       onclick="return confirm('Are you sure you want to delete this game save?')"
-                                       data-bs-toggle="tooltip" data-bs-placement="top"
-                                       data-bs-title="Delete Game Save"><i class="fa-solid fa-trash"></i></a>
-                                    <button id="update_product_line_<?= $gameSave->id ?>"
-                                            class="btn btn-primary position-absolute top-0 start-0"
-                                            data-bs-toggle="tooltip" data-bs-placement="top"
-                                            data-bs-title="Edit Game Save"><i class="fa-solid fa-pencil"></i></button>
+                                       onclick="return confirm('Delete this game save?')"
+                                       data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><i
+                                                class="fa-solid fa-trash"></i></a>
+                                    <button class="btn btn-primary position-absolute top-0 start-0"
+                                            id="update_save_game_line_<?= $gameSave->id ?>"
+                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i
+                                                class="fa-solid fa-pencil"></i></button>
                                 <?php endif; ?>
                             </div>
                             <div class="card-body">
@@ -144,14 +147,12 @@ $requests = GameSaves::getRequests($_SESSION['userId']);
                                 <p class="card-text">Owner: <?= $gameSave->Owner ?></p>
                             </div>
                             <div class="card-footer">
-                                <small class="text-muted text-right">Created At: <?= $gameSave->created_at ?></small>
+                                <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
                             </div>
                         </div>
                     </a>
                 </div>
-                <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
-                    <?php require '../private/views/Popups/updateSaveGame.php'; ?>
-                <?php endif; ?>
+                <?php if ($gameSave->owner_id == $_SESSION['userId']) require '../private/views/Popups/updateSaveGame.php'; ?>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
@@ -159,7 +160,7 @@ $requests = GameSaves::getRequests($_SESSION['userId']);
 <?php require_once '../private/views/Popups/addSaveGame.php'; ?>
 
 <script>
-    document.getElementById('requestsDropdown').addEventListener('click', function (event) {
+    document.getElementById('InvitesDropdown').addEventListener('click', function (event) {
         event.stopPropagation();
     });
 </script>

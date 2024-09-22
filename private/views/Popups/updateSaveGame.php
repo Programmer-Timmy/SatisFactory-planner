@@ -178,7 +178,7 @@ $requestUsers = $data['requestUsers'];
 </script>
 
 <script>
-    document.getElementById('update_product_line_<?= $gameSave->id ?>').addEventListener('click', function () {
+    document.getElementById('update_save_game_line_<?= $gameSave->id ?>').addEventListener('click', function () {
         const popupModal = new bootstrap.Modal(document.getElementById('UpdatedSaveGame_<?= $gameSave->id ?>'));
         popupModal.show();
     });

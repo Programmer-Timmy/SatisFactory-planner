@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.3.3",
+    "date": "september 22, 2024",
+    "changes": [
+      "Improved the layout of the home page."
+    ]
+  },
+  {
     "version": "1.3.2",
     "date": "september 17, 2024",
     "changes": [
