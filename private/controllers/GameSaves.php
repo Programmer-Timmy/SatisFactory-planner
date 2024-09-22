@@ -41,7 +41,7 @@ class GameSaves
     public static function createSaveGame(int $user_id, string $title, array $image, array $allowedUsers)
     {
         $createdAt = date('Y-m-d H:i:s');
-        $id = Database::insert("game_saves", ['owner_id', 'title', 'created_at'], [$user_id, $title, $createdAt]);
+        $id = Database::insert("game_saves", ['owner_id', 'title', 'created_at', 'total_power_production'], [$user_id, $title, $createdAt, 0]);
         Database::insert("users_has_game_saves", ['users_id', 'game_saves_id'], [$user_id, $id]);
 
         if ($image['tmp_name'] != '') {
