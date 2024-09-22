@@ -85,7 +85,7 @@ if (count($gameSaves) == 2) {
                                     <p class="m-0">Action</p>
                                 </div>
                                 <?php foreach ($Invites as $request) : ?>
-                                    <div class="card h-100">
+                                    <div class="card">
                                         <div class="card-body d-flex justify-content-between p-2 align-items-center">
                                             <p class="m-0"><?= $request->username ?></p>
                                             <p class="m-0"><?= $request->title ?></p>
@@ -127,7 +127,7 @@ if (count($gameSaves) == 2) {
                 <div class="d-flex align-items-stretch <?= $class ?>">
                     <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
                        class="card-link text-black text-decoration-none">
-                        <div class="card mt-3">
+                        <div class="card mt-3 h-100">
                             <div class="position-relative">
                                 <img src="image/<?= $gameSave->image ?>" class="card-img-top" alt="...">
                                 <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
