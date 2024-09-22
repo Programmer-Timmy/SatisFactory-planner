@@ -143,12 +143,6 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
         const total_power_consumption = getPowerConsumption();
 
         checkIfPowerProductionIsHigherThanAvailablePower(total_power_consumption, power);
-
-        if (power === 0) {
-            $('#popover-power').popover('show');
-        } else {
-            $('#popover-power').popover('hide');
-        }
     }
 
     async function sleep(ms) {
