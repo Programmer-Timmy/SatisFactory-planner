@@ -85,7 +85,7 @@ if (count($gameSaves) == 2) {
                                     <p class="m-0">Action</p>
                                 </div>
                                 <?php foreach ($Invites as $request) : ?>
-                                    <div class="card">
+                                    <div class="card h-100">
                                         <div class="card-body d-flex justify-content-between p-2 align-items-center">
                                             <p class="m-0"><?= $request->username ?></p>
                                             <p class="m-0"><?= $request->title ?></p>
