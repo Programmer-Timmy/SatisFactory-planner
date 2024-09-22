@@ -389,7 +389,7 @@ echo $formattedDuration; // Output: 20:07:33
 
 // Usage
 try {
-    $client = new APIClient('192.168.2.11', 7777, 'ewoJInBsIjogIkFQSVRva2VuIgp9.98F7AD7A7F120D51E652C7795D8A8984A5C5F4F374C9C8E8B04BF389635FE2423E3392C1DCF2ED553C05C1848164EAEAADC14327868ECAC74493463ABDB889E9');
+    $client = new APIClient('localhost', 7777, 'your_auth_token');
     $response = $client->post('QueryServerState');
     foreach ($response['data']['serverGameState'] as $key => $value) {
         // bit of bootstrap styling
