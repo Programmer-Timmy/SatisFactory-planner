@@ -37,6 +37,13 @@ if ($_POST && isset($_POST['productionLineName'])) {
 </div>
 <script>
     document.getElementById('add_product_line').addEventListener('click', function () {
+        event.stopPropagation();
+        const popoverProduction = $('#popover-production');
+
+        $(document).ready(function () {
+            popoverProduction.popover('hide');
+            popoverProduction.attr('opened', 'true');
+        });
         const addProductionLine = new bootstrap.Modal(document.getElementById('addProductionLine'));
         addProductionLine.show();
     });
