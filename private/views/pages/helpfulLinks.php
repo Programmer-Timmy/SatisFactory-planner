@@ -82,7 +82,7 @@ if (isset($_POST['action']) && isset($_POST['link_id'])) {
     <div class="row mt-4">
         <div class="col d-flex justify-content-center align-items-center">
             <!-- Suggestion Button -->
-            <div <?= isset($_SESSION['admin']) ? 'class="me-3"' : '' ?>>
+            <div <?= !empty($unapprovedHelpfulLinks) ? 'class="me-3"' : '' ?>>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#suggestionModal">
                     Suggest a New Link
                 </button>
