@@ -3,6 +3,7 @@
         <div class="col-md-3"></div>
         <div class="col-md-6 text-center">
             <h1>Changelog</h1>
+            <h3>test</h3>
         </div>
         <div class="col-md-3">
             <div class="text-md-end text-center">
