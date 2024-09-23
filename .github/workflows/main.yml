@@ -13,7 +13,7 @@ jobs:
       - name: Prepare files for deployment
         run: |
           mkdir deploy_directory
-          rsync -av --progress C:/Users/Timva/OneDrive/Documenten/GitHub/SatisFactory-planner/ deploy_directory/ \
+          rsync -av --progress ./ deploy_directory/ \
             --exclude 'private/autoload.php' \
             --exclude 'private/config/settings.php' \
             --exclude 'public/.htaccess' \
