@@ -12,14 +12,23 @@ jobs:
 
       - name: Prepare files for deployment
         run: |
-          mkdir deploy_directory
-          rsync -av --progress ./ deploy_directory/ \
-            --exclude 'private/autoload.php' \
-            --exclude 'private/config/settings.php' \
-            --exclude 'public/.htaccess' \
-            --exclude 'public/image' \
-            --exclude 'public/index.php' \
-            --exclude 'scss'
+          mkdir -p deploy_directory/public_html
+          mkdir -p deploy_directory/private
+          mkdir -p deploy_directory/static
+
+          # Prepare public files
+          rsync -av --progress ./public/ deploy_directory/public_html/ \
+            --exclude '.htaccess' \
+            --exclude 'image' \
+            --exclude 'index.php'
+
+          # Prepare private files
+          rsync -av --progress ./private/ deploy_directory/private/ \
+            --exclude 'autoload.php' \
+            --exclude 'config/settings.php'
+
+          # Prepare static files
+          rsync -av --progress ./static/ deploy_directory/static/
 
       - name: Deploy public files
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
@@ -28,7 +37,7 @@ jobs:
           server: ${{ secrets.SFTP_SERVER }}
           port: 22
           password: ${{ secrets.SFTP_PASSWORD }}
-          local_path: deploy_directory
+          local_path: deploy_directory/public_html
           remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl/public_html
           delete_remote_files: false
           sftp_only: true
@@ -40,11 +49,10 @@ jobs:
           server: ${{ secrets.SFTP_SERVER }}
           port: 22
           password: ${{ secrets.SFTP_PASSWORD }}
-          local_path: deploy_directory
+          local_path: deploy_directory/private
           remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl/private
           delete_remote_files: false
           sftp_only: true
-
 
       - name: Deploy static files
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
@@ -53,8 +61,7 @@ jobs:
           server: ${{ secrets.SFTP_SERVER }}
           port: 22
           password: ${{ secrets.SFTP_PASSWORD }}
-          local_path: deploy_directory
+          local_path: deploy_directory/static
           remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl/static
           delete_remote_files: false
           sftp_only: true
-
