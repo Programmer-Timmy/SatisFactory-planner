@@ -1,16 +1,9 @@
 [
   {
-    "version": "1.3.4",
-    "date": "september 23, 2024",
+    "version": "1.4.0",
+    "date": "september 24 2024",
     "changes": [
-      "added table and card view for the production lines."
-    ]
-  },
-  {
-    "version": "1.3.3",
-    "date": "september 22, 2024",
-    "changes": [
-      "Added popovers to explain what the buttons do for new users. (Only on the save game page)"
+      "Added useful links page and possibility to suggest new links."
     ]
   },
   {

@@ -44,7 +44,7 @@ $site = [
 
     // Admin settings
     'admin' => [
-        'enabled' => false,
+        'enabled' => true,
         'sessionName' => 'admin', // the session name that will be used to store that the user is a admin check by isset function
         'filterInUrl' => 'admin', // empty string means no filter
     ],
@@ -94,6 +94,9 @@ $titles = [
     'game_save' => 'Game Save - ' . $site['siteName'],
     'production_line' => 'Production Line - ' . $site['siteName'],
     'login' => 'Login - ' . $site['siteName'],
+    'register' => 'Register - ' . $site['siteName'],
+    'account' => 'Account - ' . $site['siteName'],
+    'helpfulLinks' => 'Helpful Links - ' . $site['siteName'],
     '404' => '404 - Oops page not found!',
     // Add more titles as needed
 ];
