@@ -35,6 +35,8 @@ if (isset($_GET['layoutType'])) {
 //    header('Location: game_save?id=' . $_GET['id']);
 //    exit();
 }
+
+var_dump($gameSave->card_view);
 ?>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
