@@ -31,7 +31,8 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
 
 if (isset($_GET['layoutType'])) {
     GameSaves::changeCardView($_GET['id'], $_GET['layoutType']);
-//    header('Location: game_save?id=' . $_GET['id']);
+    var_dump($_GET['layoutType']);
+    header('Location: game_save?id=' . $_GET['id']);
 //    exit();
 }
 ?>
