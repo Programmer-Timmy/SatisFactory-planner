@@ -102,7 +102,7 @@ class GameSaves
      * @return bool
      * @throws ErrorException
      */
-    public static function updateSaveGame(int $game_save_id, int $owner_id, string $title, array $image, array $allowedUsers)
+    public static function updateSaveGame(int $game_save_id, int $owner_id, string $title, array $image)
     {
         if ($owner_id != $_SESSION['userId']) {
             return false;
@@ -111,10 +111,6 @@ class GameSaves
             self::uploadImage($game_save_id, $image);
         }
         Database::update("game_saves", ['title'], [$title], ['id' => $game_save_id]);
-        Database::query("DELETE FROM users_has_game_saves WHERE game_saves_id = ? and users_id != ?", [$game_save_id, $_SESSION['userId']]);
-        foreach ($allowedUsers as $user) {
-            self::addUserToSaveGame($user, $game_save_id);
-        }
         return true;
     }
 

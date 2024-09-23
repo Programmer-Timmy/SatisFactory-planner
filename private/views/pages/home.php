@@ -14,7 +14,7 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
     }
 
     // Assuming Database::insert() is a function that inserts data into the database
-    $gameSaveId = GameSaves::updateSaveGame($gameSave_id, $_SESSION['userId'], $UpdatedSaveGameName, $_FILES['UpdatedSaveGameImage'], $_POST['AllowedUsers']);
+    $gameSaveId = GameSaves::updateSaveGame($gameSave_id, $_SESSION['userId'], $UpdatedSaveGameName, $_FILES['UpdatedSaveGameImage']);
     if ($gameSaveId) {
         header('Location:/home');
         exit();
