@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.3.4",
+    "date": "september 23, 2024",
+    "changes": [
+      "added table and card view for the production lines."
+    ]
+  },
+  {
     "version": "1.3.3",
     "date": "september 22, 2024",
     "changes": [

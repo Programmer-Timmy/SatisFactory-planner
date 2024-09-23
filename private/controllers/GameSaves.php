@@ -27,7 +27,7 @@ class GameSaves
      */
     public static function getSaveGameById(int $id)
     {
-        return Database::get("users_has_game_saves", ['game_saves.*', 'users.username', 'users.id as userId'], ['game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', "users" => "game_saves.owner_id = users.id"], ['game_saves.id' => $id, 'accepted' => 1]);
+        return Database::get("users_has_game_saves", ['game_saves.*', 'users.username', 'users.id as userId', 'users_has_game_saves.card_view'], ['game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', "users" => "game_saves.owner_id = users.id"], ['game_saves.id' => $id, 'accepted' => 1]);
     }
 
     /**
@@ -260,6 +260,11 @@ class GameSaves
         } else {
             return null;
         }
+    }
+
+    public static function changeCardView(int $gameSaveId, int $cardView): void
+    {
+        Database::update("users_has_game_saves", ['card_view'], [$cardView], ['game_saves_id' => $gameSaveId, 'users_id' => $_SESSION['userId']]);
     }
 
 

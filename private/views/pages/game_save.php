@@ -28,6 +28,12 @@ if (isset($_GET['productDelete'])) {
 }
 
 GameSaves::setLastVisitedSaveGame($gameSave->id);
+
+if (isset($_GET['layoutType'])) {
+    GameSaves::changeCardView($_GET['id'], $_GET['layoutType']);
+    header('Location: game_save?id=' . $_GET['id']);
+    exit();
+}
 ?>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
@@ -156,17 +162,66 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
-                <span id="popover-production" data-bs-toggle="popover" data-bs-placement="left"
-                      opened="<?= empty($productionLines) ? 'false' : 'true' ?>"
-                      data-bs-trigger="manual"
-                      title="No Production Lines Added"
-                      data-bs-content="Add an production line to start calculating and planning your production">
-                        <button id="add_product_line" class="btn btn-primary"
+                <!--                toggle button between card and table view-->
+                <div>
+                    <button class="btn btn-secondary"
+                            onclick="location.href = 'game_save?id=<?= $gameSave->id ?>&layoutType=<?= $gameSave->card_view === 1 ? 0 : 1 ?>'"
+                            data-bs-toggle="tooltip" data-bs-placement="top"
+                            data-bs-title="<?= $gameSave->card_view === 1 ? 'Table View' : 'Card View' ?>">
+                        <i class=" <?= $gameSave->card_view === 1 ? 'fa-solid fa-table' : 'fa-regular fa-square' ?>"></i>
+                    </button>
+                    <span id="popover-production" data-bs-toggle="popover" data-bs-placement="left"
+                          opened="<?= empty($productionLines) ? 'false' : 'true' ?>"
+                          data-bs-trigger="manual"
+                          title="No Production Lines Added"
+                          data-bs-content="Add an production line to start calculating and planning your production">
+                           <button id="add_product_line" class="btn btn-primary"
                                 data-bs-title="Add Production Line"><i class="fa-solid fa-plus"></i></button>
                     </span>
+                </div>
             </div>
             <?php if (empty($productionLines)) : ?>
                 <h4 class="text-center mt-3">No Production Lines Found</h4>
+            <?php elseif ($gameSave->card_view) : ?>
+                <div class="row">
+                    <?php foreach ($productionLines as $productionLine) : ?>
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-dark text-white">
+                                    <h5 class="card-title mb-0"><?= $productionLine->name ?></h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text"><strong>Power
+                                            Consumption:</strong> <?= $productionLine->power_consumbtion ?></p>
+                                    <p class="card-text"><strong>Updated
+                                            At:</strong> <?= GlobalUtility::formatUpdatedTime($productionLine->updated_at) ?>
+                                    </p>
+                                    <div class="form-group">
+                                        <label><strong>Active:</strong></label>
+                                        <input type="checkbox" data-toggle="toggle" data-onstyle="success"
+                                               onchange="changeActiveStats(<?= $productionLine->id ?>, this)"
+                                               data-offstyle="danger" data-size="sm" data-onlabel="Yes"
+                                               data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between">
+                                    <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"
+                                       data-bs-toggle="tooltip" data-bs-placement="top"
+                                       data-bs-title="Open Production Line">
+                                        <i class="fa-solid fa-gears"></i> Open
+                                    </a>
+                                    <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"
+                                       data-bs-toggle="tooltip" data-bs-placement="top"
+                                       data-bs-title="Delete Production Line"
+                                       onclick="return confirm('Are you sure you want to delete this production line?')"
+                                       class="btn btn-danger">
+                                        <i class="fa-solid fa-x"></i> Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
             <?php else: ?>
                 <div class="overflow-auto">
                     <table class="table table-striped">
