@@ -38,7 +38,7 @@ jobs:
           port: 22
           password: ${{ secrets.SFTP_PASSWORD }}
           local_path: deploy_directory/public_html/
-          remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl/public_html
+          remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl
           delete_remote_files: false
           sftp_only: true
 
@@ -50,7 +50,7 @@ jobs:
           port: 22
           password: ${{ secrets.SFTP_PASSWORD }}
           local_path: deploy_directory/private/
-          remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl/private
+          remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl
           delete_remote_files: false
           sftp_only: true
 
@@ -62,6 +62,6 @@ jobs:
           port: 22
           password: ${{ secrets.SFTP_PASSWORD }}
           local_path: deploy_directory/static/
-          remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl/static
+          remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl
           delete_remote_files: false
           sftp_only: true
