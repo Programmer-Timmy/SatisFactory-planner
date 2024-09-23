@@ -10,6 +10,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      - name: Prepare files for deployment
+        run: |
+          mkdir deploy_directory
+          rsync -av --progress C:/Users/Timva/OneDrive/Documenten/GitHub/SatisFactory-planner/ deploy_directory/ \
+            --exclude 'private/autoload.php' \
+            --exclude 'private/config/settings.php' \
+            --exclude 'public/.htaccess' \
+            --exclude 'public/image' \
+            --exclude 'public/index.php' \
+            --exclude 'scss'
+
       - name: Deploy public files
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
@@ -17,10 +28,10 @@ jobs:
           server: ${{ secrets.SFTP_SERVER }}
           port: 22
           password: ${{ secrets.SFTP_PASSWORD }}
-          local_path: C:/Users/Timva/OneDrive/Documenten/GitHub/SatisFactory-planner/public
+          local_path: deploy_directory
           remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl/public_html
           delete_remote_files: false
-          sftpArgs: "--exclude .htaccess --exclude image --exclude index.php"
+          sftp_only: true
 
       - name: Deploy private files
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
@@ -29,10 +40,11 @@ jobs:
           server: ${{ secrets.SFTP_SERVER }}
           port: 22
           password: ${{ secrets.SFTP_PASSWORD }}
-          local_path: C:/Users/Timva/OneDrive/Documenten/GitHub/SatisFactory-planner/private
+          local_path: deploy_directory
           remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl/private
           delete_remote_files: false
-          sftpArgs: "--exclude autoload.php --exclude config/settings.php"
+          sftp_only: true
+
 
       - name: Deploy static files
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
@@ -41,7 +53,8 @@ jobs:
           server: ${{ secrets.SFTP_SERVER }}
           port: 22
           password: ${{ secrets.SFTP_PASSWORD }}
-          local_path: C:/Users/Timva/OneDrive/Documenten/GitHub/SatisFactory-planner/static
+          local_path: deploy_directory
           remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl/static
           delete_remote_files: false
-          sftpArgs: "--exclude scss"
+          sftp_only: true
+
