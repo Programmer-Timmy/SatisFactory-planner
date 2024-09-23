@@ -127,7 +127,7 @@ if (count($gameSaves) == 2) {
                 <div class="d-flex align-items-stretch <?= $class ?> mt-3">
                     <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
                        class="card-link text-black text-decoration-none">
-                        <div class="card h-100">
+                        <div class="card h-100 w-100">
                             <div class="position-relative">
                                 <img src="image/<?= $gameSave->image ?>" class="card-img-top" alt="...">
                                 <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>

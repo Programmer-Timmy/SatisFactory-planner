@@ -17,7 +17,7 @@ class AuthControler
             }
             $_SESSION[$site['accounts']['sessionName']] = $user->id;
             if ($site['admin']['enabled']) {
-                if ($user->admin = 1) {
+                if ($user->admin == 1) {
                     $_SESSION[$site['admin']['sessionName']] = $user->id;
                 }
             }
