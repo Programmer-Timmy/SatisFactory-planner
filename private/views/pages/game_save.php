@@ -107,17 +107,28 @@ if (isset($_GET['layoutType'])) {
         let total_power_consumption = 0;
         document.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
             if (checkbox.checked) {
-                const parentElement = checkbox.parentElement;
+                let textContent;
+                if (<?= $gameSave->card_view ?>) {
+                    const parentElement = $(checkbox).closest('.card-body');
 
-                const grandparentElement = parentElement.parentElement;
+                    textContent = parentElement.find('.card-text')[0].innerText
 
-                const previousSibling = grandparentElement.previousElementSibling;
+                    textContent = textContent.replace("Power Consumption: ", '');
 
-                const nextPreviousSibling = previousSibling.previousElementSibling;
+                } else {
+                    const parentElement = checkbox.parentElement;
 
-                const textContent = nextPreviousSibling.innerText;
+                    const grandparentElement = parentElement.parentElement;
+
+                    const previousSibling = grandparentElement.previousElementSibling;
+
+                    const nextPreviousSibling = previousSibling.previousElementSibling;
+
+                    textContent = nextPreviousSibling.innerText;
+                }
 
                 total_power_consumption += parseInt(textContent);
+
             }
         });
         return total_power_consumption;

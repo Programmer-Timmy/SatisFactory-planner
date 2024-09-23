@@ -7,7 +7,7 @@ if ($_POST && isset($_POST['productionLineName'])) {
     // Assuming Database::insert() is a function that inserts data into the database
     $id = ProductionLines::addProductionline($gameSaveId, $productionLineName);
     if ($id) {
-        echo "<script>location.href = 'production_line?id=$id';</script>";
+        header('Location:production_line?id=' . $id);
         exit();
     }
 }
