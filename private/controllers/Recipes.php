@@ -5,7 +5,7 @@ class Recipes
 
     public static function getAllRecipes()
     {
-        return Database::getAll("recipes", ['*'], [], [], 'LTRIM(SUBSTRING_INDEX(`name`, '(', 1)) ASC'));
+        return Database::getAll("recipes", ['*'], [], [], 'LTRIM(SUBSTRING_INDEX(`name`, "(", 1)) ASC');
     }
 
     public static function getRecipeById(int $id)
