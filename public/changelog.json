@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.4.1",
+    "date": "september 24 2024",
+    "changes": [
+      "improved the maintenance page."
+    ]
+  },
+  {
     "version": "1.4.0",
     "date": "september 24 2024",
     "changes": [
