@@ -44,10 +44,19 @@ export class ImportsTableFunctions {
     private static resetUsage(productionTableRows: ProductionTableRow[]): number[] {
         const changedRows: number[] = [];
         for (const row of productionTableRows) {
+            const rowUsage = row.Usage;
             if (row.Usage > 0) {
                 changedRows.push(productionTableRows.indexOf(row));
                 row.Usage = 0;
                 row.exportPerMin = row.quantity;
+            }
+
+            if (row.extraCells !== null) {
+                if (row.extraCells.Usage > 0) {
+                    changedRows.push(productionTableRows.indexOf(row));
+                    row.extraCells.Usage = 0;
+                    row.extraCells.ExportPerMin = row.extraCells.Quantity;
+                }
             }
         }
 
@@ -88,6 +97,9 @@ export class ImportsTableFunctions {
             // Get produced rows that match the required item
             const producedRows = productionTableRows.filter(r => r.product === requiredItem.name);
 
+            // get double export rows
+            const doubleExportRow = productionTableRows.filter(r => r.extraCells !== null && r.extraCells.Product === requiredItem.name);
+
             let totalAvailable = 0; // Track total available quantity from produced rows
             let totalUsed = 0; // Track total usage from produced rows
 
@@ -115,6 +127,35 @@ export class ImportsTableFunctions {
                     updatedIndexes.push(index);
                 }
             }
+
+            // Check each double export row
+            for (const doubleExport of doubleExportRow) {
+                if (doubleExport.extraCells === null) {
+                    continue;
+                }
+                const availableAmount = doubleExport.extraCells.ExportPerMin - doubleExport.extraCells.Usage;
+
+                // Calculate how much we can use from this row
+                const canUse = Math.min(availableAmount, amountNeeded - totalUsed);
+
+                if (canUse <= 0) {
+                    continue;
+                }
+
+                // Update usage for this produced row
+                doubleExport.extraCells.Usage += +canUse.toFixed(2);
+                doubleExport.extraCells.ExportPerMin = +(doubleExport.extraCells.ExportPerMin - doubleExport.extraCells.Usage).toFixed(2);
+
+                // Update the total used amount
+                totalUsed += canUse;
+                totalAvailable += availableAmount; // Count how much is available from this row
+
+                const index = productionTableRows.indexOf(doubleExport);
+                if (index !== -1 && !updatedIndexes.includes(index)) {
+                    updatedIndexes.push(index);
+                }
+            }
+
 
             // If there is still a need for imports after using available production
             const amountToImport = amountNeeded - totalUsed;

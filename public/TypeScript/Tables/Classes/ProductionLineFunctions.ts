@@ -17,6 +17,7 @@ export class ProductionLineFunctions {
         if (row.doubleExport && row.recipe !== null) {
             const secondExportPerMin = this.calculateSecondExportPerMin(row);
             if (secondExportPerMin !== undefined) {
+                row.extraCells.Quantity = secondExportPerMin;
                 row.extraCells.ExportPerMin = secondExportPerMin;
             }
         }
@@ -128,7 +129,7 @@ export class ProductionLineFunctions {
      * @param {ProductionTableRow} row - The row object to calculate for.
      * @returns {number | undefined} - The calculated second export per minute or undefined if not applicable.
      */
-    private static calculateSecondExportPerMin(row: ProductionTableRow): number | undefined {
+    public static calculateSecondExportPerMin(row: ProductionTableRow): number | undefined {
         if (row.recipe === null) return;
 
         const secondExportPerMin = row.recipe.export_amount_per_min2;
@@ -137,6 +138,7 @@ export class ProductionLineFunctions {
         if (secondExportPerMin === null || exportPerMin === null) return;
 
         const secondExportPerMinMultiplier = secondExportPerMin / exportPerMin;
+        console.log(row.quantity * secondExportPerMinMultiplier);
         return row.quantity * secondExportPerMinMultiplier;
     }
 }

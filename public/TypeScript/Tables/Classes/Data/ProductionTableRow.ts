@@ -1,6 +1,8 @@
 import {ExtraProductionRow} from "./ExtraProductionRow";
 import {Ajax} from "../Ajax";
 import {Recipe} from "../Types/Recipe";
+import {ProductionTable} from "../../Table/ProductionTable";
+import {ProductionLineFunctions} from "../ProductionLineFunctions";
 
 export class ProductionTableRow {
     public recipeId: number;
@@ -22,10 +24,20 @@ export class ProductionTableRow {
         this.doubleExport = doubleExport;
         this.extraCells = extraCells;
         this.recipe = null;
-        this.getRecipe(recipeId);
+        this.getRecipe(recipeId).then(r =>
+            this.saveDoubleExportQuantity()
+        );
     }
 
     public async getRecipe(recipeId: string): Promise<void> {
         this.recipe = await Ajax.getRecipe(+recipeId);
+    }
+
+    public saveDoubleExportQuantity(): void {
+        if (this.doubleExport && this.extraCells !== null) {
+            console.log(this);
+            this.extraCells.Quantity = <number>ProductionLineFunctions.calculateSecondExportPerMin(this);
+            console.log(this.extraCells);
+        }
     }
 }
