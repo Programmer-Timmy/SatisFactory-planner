@@ -135,7 +135,7 @@ export class TableHandler {
 
                     const data: [ImportsTableRow[], number[]] = ImportsTableFunctions.calculateImports(this.productionTableRows);
                     this.importsTableRows = data[0];
-                // this.UpdateOnIndex(data[1]);
+                    this.UpdateOnIndex(data[1]);
 
                 case 'power':
                     // Custom logic for power table
@@ -264,15 +264,14 @@ export class TableHandler {
     }
 
     private UpdateOnIndex(indexes: number[]) {
-        let doubleRows = 0;
+
         for (let i = 0; i < indexes.length; i++) {
             const index = indexes[i];
+            const target = $(`#recipes tbody tr:eq(${index})`);
+            const amountExtra = target.closest('tr').prevAll('.extra-output').length;
             const row = this.productionTableRows[index];
-            this.updateRowInTable('recipes', index + doubleRows, row);
+            this.updateRowInTable('recipes', index + amountExtra, row);
 
-            if (row.doubleExport) {
-                doubleRows++;
-            }
 
         }
     }
