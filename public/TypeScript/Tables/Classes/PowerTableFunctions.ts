@@ -53,10 +53,7 @@ export class PowerTableFunctions {
                     const clockSpeed = exes * 100;
                     const consumption = +PowerTableFunctions.calculateConsumption(1, clockSpeed, building.power_used);
 
-                    // if existing row add it under the existing row
-
                     powerTableRows.push(new PowerTableRow(building.id, 1, +clockSpeed.toFixed(1), consumption, false));
-
                 }
             }
         }
