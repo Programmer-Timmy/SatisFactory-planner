@@ -84,6 +84,16 @@ export class TableHandler {
         });
     }
 
+    private addSpecificEventListener(tableId: string) {
+        const inputsAndSelects = $(`#${tableId} tbody`).find('input, select');
+
+        inputsAndSelects.each((_, element) => {
+            $(element).on('change', (event) => {
+                this.handleInputChange(event, tableId);
+            });
+        });
+    }
+
     /**
      * Handles the change event for table inputs/selects.
      * @param {JQuery.ChangeEvent} event - The change event object.
@@ -92,15 +102,17 @@ export class TableHandler {
     private async handleInputChange(event: JQuery.ChangeEvent, tableId: string) {
         const target = $(event.target);
         const rowIndex = target.closest('tr').index();
+        const amountExtra = target.closest('tr').prevAll('.extra-output').length;
         const columnIndex = target.closest('td').index();
         const value = target.val();
 
         // If the last row is selected, add a new row
-        if (this.checkIfLastRow(target) && this.checkIfSelect(target)) {
+        if (this.checkIfLastRow(target, tableId) && this.checkIfSelect(target)) {
             this.addNewRow(tableId);
         }
 
-        const row = this.getRowByTableIdAndIndex(tableId, rowIndex);
+
+        const row = this.getRowByTableIdAndIndex(tableId, rowIndex - amountExtra);
 
         if (row && columnIndex >= 0) {
             this.updateRowData(row, columnIndex, value);
@@ -119,11 +131,11 @@ export class TableHandler {
                     this.updateRowInTable(tableId, rowIndex, row);
 
                     this.powerTableRows = PowerTableFunctions.calculateBuildings(this.productionTableRows);
+                    this.addSpecificEventListener('power');
 
                     const data: [ImportsTableRow[], number[]] = ImportsTableFunctions.calculateImports(this.productionTableRows);
                     this.importsTableRows = data[0];
-
-                    this.UpdateOnIndex(data[1]);
+                // this.UpdateOnIndex(data[1]);
 
                 case 'power':
                     // Custom logic for power table
@@ -132,6 +144,9 @@ export class TableHandler {
                     break;
             }
         }
+
+        console.log(this.productionTableRows);
+
     }
 
     /**
@@ -173,21 +188,21 @@ export class TableHandler {
      */
     private updateRowInTable(tableId: string, rowIndex: number, row: any) {
         const table = $(`#${tableId} tbody tr`);
-        const rowToUpdate = $(table[rowIndex]);
+        let rowToUpdate = $(table[rowIndex]);
 
         rowToUpdate.find('input, select').each((index, element) => {
             const key = Object.keys(row)[index];
             let value: any;
 
             if (row.recipe && row.recipe.hasOwnProperty(key)) {
-                // If row has a recipe, use recipe values
+                value = row.recipe[key];  // Use value from recipe
             } else {
                 value = row[key];  // Use value from row
             }
 
+
             $(element).val(value);
         });
-
         if (tableId === 'recipes') {
             ProductionLineFunctions.handleDoubleExport(row, rowToUpdate);
         }
@@ -200,7 +215,8 @@ export class TableHandler {
     private addNewRow(tableId: string) {
         const lastRow = $(`#${tableId} tbody tr:last`);
         const newRow = lastRow.clone();
-        newRow.find('input').val('');
+        newRow.find('input[type="number"]').val(0);
+        newRow.find('input[type="text"]').val('');
         newRow.find('select').prop('selectedIndex', 0);
         newRow.insertAfter(lastRow);
 
@@ -228,9 +244,13 @@ export class TableHandler {
     /**
      * Checks if the selected element is in the last row.
      * @param {JQuery} target - The target element.
+     * @param {string} tableId - The ID of the table.
      * @returns {boolean} True if the element is in the last row, false otherwise.
      */
-    private checkIfLastRow(target: JQuery): boolean {
+    private checkIfLastRow(target: JQuery, tableId: String): boolean {
+        if (tableId === 'power') {
+            return target.closest('tr').is(':nth-last-child(2)');
+        }
         return target.closest('tr').is(':last-child');
     }
 
@@ -244,10 +264,16 @@ export class TableHandler {
     }
 
     private UpdateOnIndex(indexes: number[]) {
+        let doubleRows = 0;
         for (let i = 0; i < indexes.length; i++) {
             const index = indexes[i];
             const row = this.productionTableRows[index];
-            this.updateRowInTable('recipes', index, row);
+            this.updateRowInTable('recipes', index + doubleRows, row);
+
+            if (row.doubleExport) {
+                doubleRows++;
+            }
+
         }
     }
 

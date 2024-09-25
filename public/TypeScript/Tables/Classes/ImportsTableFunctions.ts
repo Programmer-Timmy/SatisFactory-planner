@@ -1,77 +1,184 @@
 import {ProductionTableRow} from "./Data/ProductionTableRow";
 import {ImportsTableRow} from "./Data/ImportsTableRow";
-import {ProductionTable} from "../Table/ProductionTable";
 import {Resource} from "./Types/Resource";
+import {ItemOptions} from "./Data/ItemOptions";
 
 export class ImportsTableFunctions {
-
+    /**
+     * Calculates the imports required based on production table rows.
+     *
+     * @param productionTableRows - An array of production table rows.
+     * @returns A tuple containing the imports table rows and updated indexes.
+     */
     public static calculateImports(productionTableRows: ProductionTableRow[]): [ImportsTableRow[], number[]] {
-        console.log(productionTableRows);
         let importsTableRows: ImportsTableRow[] = [];
-        let updatedIndexes: number[] = []; // Array to track updated indexes
 
-        for (const row of productionTableRows) {
-            row.Usage = 0; // Reset usage
-        }
+        // Reset the usage property for all production table rows
+        let updatedIndexes: number[] = this.resetUsage(productionTableRows);
 
+        // Loop through each production row to calculate imports
         for (let i = 0; i + 1 < productionTableRows.length; i++) {
             const row: ProductionTableRow = productionTableRows[i];
             const requiredItems: Resource[] | undefined = row.recipe?.resources;
 
             // Calculate production rate based on export_amount_per_min
-            const productionRate: number = row.recipe?.export_amount_per_min ? row.quantity / row.recipe.export_amount_per_min : 0;
+            const productionRate: number = this.calculateProductionRate(row);
 
             if (requiredItems) {
-                for (const requiredItem of requiredItems) {
-                    let amountNeeded = requiredItem.importAmount * productionRate;
-                    console.log(requiredItem.name, amountNeeded);
-
-                    // Get produced rows that match the required item
-                    const producedRows = productionTableRows.filter(r => r.product === requiredItem.name);
-
-                    let totalAvailable = 0; // Track total available quantity from produced rows
-                    let totalUsed = 0; // Track total usage from produced rows
-
-                    // Check each produced row
-                    for (const producedRow of producedRows) {
-                        console.log(producedRow);
-                        const availableAmount = producedRow.quantity - producedRow.Usage;
-
-                        // Calculate how much we can use from this row
-                        const canUse = Math.min(availableAmount, amountNeeded - totalUsed);
-                        console.log('Can use:', canUse);
-
-                        // Update usage for this produced row
-                        producedRow.Usage += +canUse.toFixed(2);
-                        producedRow.exportPerMin = +(producedRow.quantity - producedRow.Usage).toFixed(2);
-
-                        // Update the total used amount
-                        totalUsed += canUse;
-                        totalAvailable += availableAmount; // Count how much is available from this row
-
-                        const index = productionTableRows.indexOf(producedRow);
-                        if (index !== -1 && !updatedIndexes.includes(index)) {
-                            updatedIndexes.push(index);
-                        }
-
-                    }
-
-                    // If there is still a need for imports after using available production
-                    const amountToImport = amountNeeded - totalUsed;
-                    console.log('Amount to import:', amountToImport);
-                    if (amountToImport > 0) {
-                        // Add to importsTableRows
-                        importsTableRows.push(new ImportsTableRow(requiredItem.itemId, amountToImport));
-                    }
-                }
+                this.processRequiredItems(requiredItems, productionRate, row, productionTableRows, importsTableRows, updatedIndexes);
             }
         }
 
-        console.log(importsTableRows);
-        console.log(updatedIndexes);
+
+        const html = this.generateImportsTableRows(importsTableRows);
+        $('#imports tbody').html(html);
 
         return [importsTableRows, updatedIndexes];
     }
 
+    /**
+     * Resets the usage property for all production table rows.
+     *
+     * @param productionTableRows - An array of production table rows.
+     */
+    private static resetUsage(productionTableRows: ProductionTableRow[]): number[] {
+        const changedRows: number[] = [];
+        for (const row of productionTableRows) {
+            if (row.Usage > 0) {
+                changedRows.push(productionTableRows.indexOf(row));
+                row.Usage = 0;
+                row.exportPerMin = row.quantity;
+            }
+        }
 
+        return changedRows;
+    }
+
+    /**
+     * Calculates the production rate based on the provided production row.
+     *
+     * @param row - The production table row to calculate the production rate for.
+     * @returns The calculated production rate.
+     */
+    private static calculateProductionRate(row: ProductionTableRow): number {
+        return row.recipe?.export_amount_per_min ? row.quantity / row.recipe.export_amount_per_min : 0;
+    }
+
+    /**
+     * Processes required items for imports based on the production table rows.
+     *
+     * @param requiredItems - An array of resources required for production.
+     * @param productionRate - The production rate of the current row.
+     * @param row - The current production table row being processed.
+     * @param productionTableRows - The complete array of production table rows.
+     * @param importsTableRows - The array of imports table rows to update.
+     * @param updatedIndexes - The array to track updated production row indexes.
+     */
+    private static processRequiredItems(
+        requiredItems: Resource[],
+        productionRate: number,
+        row: ProductionTableRow,
+        productionTableRows: ProductionTableRow[],
+        importsTableRows: ImportsTableRow[],
+        updatedIndexes: number[]
+    ): void {
+        for (const requiredItem of requiredItems) {
+            let amountNeeded = requiredItem.importAmount * productionRate;
+
+            // Get produced rows that match the required item
+            const producedRows = productionTableRows.filter(r => r.product === requiredItem.name);
+
+            let totalAvailable = 0; // Track total available quantity from produced rows
+            let totalUsed = 0; // Track total usage from produced rows
+
+            // Check each produced row
+            for (const producedRow of producedRows) {
+                const availableAmount = producedRow.quantity - producedRow.Usage;
+
+                // Calculate how much we can use from this row
+                const canUse = Math.min(availableAmount, amountNeeded - totalUsed);
+
+                if (canUse <= 0) {
+                    continue;
+                }
+
+                // Update usage for this produced row
+                producedRow.Usage += +canUse.toFixed(2);
+                producedRow.exportPerMin = +(producedRow.quantity - producedRow.Usage).toFixed(2);
+
+                // Update the total used amount
+                totalUsed += canUse;
+                totalAvailable += availableAmount; // Count how much is available from this row
+
+                const index = productionTableRows.indexOf(producedRow);
+                if (index !== -1 && !updatedIndexes.includes(index)) {
+                    updatedIndexes.push(index);
+                }
+            }
+
+            // If there is still a need for imports after using available production
+            const amountToImport = amountNeeded - totalUsed;
+            if (amountToImport > 0) {
+                this.addToImportsTable(importsTableRows, requiredItem.itemId, amountToImport);
+            }
+        }
+    }
+
+    /**
+     * Adds the required amount to the imports table rows.
+     *
+     * @param importsTableRows - The imports table rows to update.
+     * @param itemId - The ID of the item to import.
+     * @param amountToImport - The amount of the item to import.
+     */
+    private static addToImportsTable(importsTableRows: ImportsTableRow[], itemId: number, amountToImport: number): void {
+        const existingImportRow = importsTableRows.find(r => r.itemId === itemId);
+
+        if (existingImportRow) {
+            existingImportRow.quantity += amountToImport;
+        } else {
+            importsTableRows.push(new ImportsTableRow(itemId, amountToImport));
+        }
+    }
+
+    /**
+     * Generates the HTML for the imports table rows.
+     *
+     * @param importsTableRows - The array of imports table rows to generate HTML for.
+     * @returns The generated HTML string for the imports table rows.
+     */
+    private static generateImportsTableRows(importsTableRows: ImportsTableRow[]): string {
+        const rowsHTML = importsTableRows.map(row => {
+            const formattedQuantity = Number(row.quantity) % 1 === 0 ?
+                row.quantity.toFixed(0) :
+                row.quantity.toFixed(1);
+
+            return `
+            <tr>
+                <td class="m-0 p-0 w-75">
+                    <select name="imports_item_id[]" class="form-control rounded-0">
+                        ${ItemOptions.replace(`value="${row.itemId}"`, `value="${row.itemId}" selected`)}
+                    </select>
+                </td>
+                <td class="m-0 p-0 w-25">
+                    <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0" value="${formattedQuantity}" readonly>
+                </td>
+            </tr>
+        `;
+        }).join('');
+
+        const emptyRowHTML = `
+        <tr>
+            <td class="m-0 p-0 w-75">
+                <select name="imports_item_id[]" class="form-control rounded-0">
+                    ${ItemOptions.replace(/<option /, '<option selected ')} <!-- Selects the first option -->
+                </select>
+            </td>
+            <td class="m-0 p-0 w-25">
+                <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0">
+            </td>
+        </tr>`;
+
+        return rowsHTML + emptyRowHTML; // Combine the existing rows with the empty row
+    }
 }
