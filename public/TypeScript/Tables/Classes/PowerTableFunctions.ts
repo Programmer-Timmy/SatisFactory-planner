@@ -20,7 +20,7 @@ export class PowerTableFunctions {
         return userRows;
     }
 
-    public static calculateBuildings(productionTableRows: ProductionTableRow[]) {
+    public static calculateBuildings(productionTableRows: ProductionTableRow[]): PowerTableRow[] {
         let powerTableRows: PowerTableRow[] = [];
         for (let i = 0; i + 1 < productionTableRows.length; i++) {
             const row = productionTableRows[i];
@@ -66,6 +66,8 @@ export class PowerTableFunctions {
 
         const html = PowerTableFunctions.generatePowerTable(powerTableRows, buildingOptions, PowerTableFunctions.calculateTotalConsumption(powerTableRows));
         $('#power tbody').html(html);
+
+        return powerTableRows;
 
     }
 

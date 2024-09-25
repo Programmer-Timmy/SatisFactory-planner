@@ -5,6 +5,7 @@ import {ProductionLineFunctions} from "./ProductionLineFunctions";
 import {ExtraProductionRow} from "./Data/ExtraProductionRow";
 import {Ajax} from "./Ajax";
 import {PowerTableFunctions} from "./PowerTableFunctions";
+import {ImportsTableFunctions} from "./ImportsTableFunctions";
 
 /**
  * Class responsible for handling the manipulation and event handling of tables.
@@ -117,7 +118,12 @@ export class TableHandler {
 
                     this.updateRowInTable(tableId, rowIndex, row);
 
-                    PowerTableFunctions.calculateBuildings(this.productionTableRows);
+                    this.powerTableRows = PowerTableFunctions.calculateBuildings(this.productionTableRows);
+
+                    const data: [ImportsTableRow[], number[]] = ImportsTableFunctions.calculateImports(this.productionTableRows);
+                    this.importsTableRows = data[0];
+
+                    this.UpdateOnIndex(data[1]);
 
                 case 'power':
                     // Custom logic for power table
@@ -235,6 +241,14 @@ export class TableHandler {
      */
     private checkIfSelect(target: JQuery): boolean {
         return target.is('select');
+    }
+
+    private UpdateOnIndex(indexes: number[]) {
+        for (let i = 0; i < indexes.length; i++) {
+            const index = indexes[i];
+            const row = this.productionTableRows[index];
+            this.updateRowInTable('recipes', index, row);
+        }
     }
 
 }

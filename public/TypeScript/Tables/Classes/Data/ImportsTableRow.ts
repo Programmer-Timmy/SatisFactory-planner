@@ -1,8 +1,8 @@
 export class ImportsTableRow {
-    public itemId: string;
+    public itemId: number;
     public quantity: number;
 
-    constructor(itemId: string = "", quantity: number = 0) {
+    constructor(itemId: number = 0, quantity: number = 0) {
         this.itemId = itemId;
         this.quantity = quantity;
     }
