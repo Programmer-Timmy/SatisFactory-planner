@@ -2,6 +2,7 @@ import {ProductionTableRow} from "./Data/ProductionTableRow";
 import {ImportsTableRow} from "./Data/ImportsTableRow";
 import {Resource} from "./Types/Resource";
 import {ItemOptions} from "./Data/ItemOptions";
+import {HtmlGeneration} from "./HtmlGeneration";
 
 export class ImportsTableFunctions {
     /**
@@ -10,7 +11,10 @@ export class ImportsTableFunctions {
      * @param productionTableRows - An array of production table rows.
      * @returns A tuple containing the imports table rows and updated indexes.
      */
-    public static calculateImports(productionTableRows: ProductionTableRow[]): [ImportsTableRow[], number[]] {
+    public static calculateImports(productionTableRows: ProductionTableRow[]): {
+        importsTableRows: ImportsTableRow[],
+        indexes: number[]
+    } {
         let importsTableRows: ImportsTableRow[] = [];
 
         // Reset the usage property for all production table rows
@@ -30,10 +34,10 @@ export class ImportsTableFunctions {
         }
 
 
-        const html = this.generateImportsTableRows(importsTableRows);
+        const html = HtmlGeneration.generateImportsTableRows(importsTableRows);
         $('#imports tbody').html(html);
 
-        return [importsTableRows, updatedIndexes];
+        return {importsTableRows, indexes: updatedIndexes};
     }
 
     /**
@@ -104,57 +108,20 @@ export class ImportsTableFunctions {
             let totalUsed = 0; // Track total usage from produced rows
 
             // Check each produced row
-            for (const producedRow of producedRows) {
-                const availableAmount = producedRow.quantity - producedRow.Usage;
-
-                // Calculate how much we can use from this row
-                const canUse = Math.min(availableAmount, amountNeeded - totalUsed);
-
-                if (canUse <= 0) {
-                    continue;
-                }
-
-                // Update usage for this produced row
-                producedRow.Usage += +canUse.toFixed(2);
-                producedRow.exportPerMin = +(producedRow.quantity - producedRow.Usage).toFixed(2);
-
-                // Update the total used amount
-                totalUsed += canUse;
-                totalAvailable += availableAmount; // Count how much is available from this row
-
-                const index = productionTableRows.indexOf(producedRow);
-                if (index !== -1 && !updatedIndexes.includes(index)) {
-                    updatedIndexes.push(index);
-                }
-            }
+            const {
+                totalUsed: used,
+                totalAvailable: available
+            } = this.processProducedRows(producedRows, amountNeeded, totalUsed, totalAvailable, productionTableRows, updatedIndexes);
+            totalUsed = used;
+            totalAvailable = available;
 
             // Check each double export row
-            for (const doubleExport of doubleExportRow) {
-                if (doubleExport.extraCells === null) {
-                    continue;
-                }
-                const availableAmount = doubleExport.extraCells.ExportPerMin - doubleExport.extraCells.Usage;
-
-                // Calculate how much we can use from this row
-                const canUse = Math.min(availableAmount, amountNeeded - totalUsed);
-
-                if (canUse <= 0) {
-                    continue;
-                }
-
-                // Update usage for this produced row
-                doubleExport.extraCells.Usage += +canUse.toFixed(2);
-                doubleExport.extraCells.ExportPerMin = +(doubleExport.extraCells.ExportPerMin - doubleExport.extraCells.Usage).toFixed(2);
-
-                // Update the total used amount
-                totalUsed += canUse;
-                totalAvailable += availableAmount; // Count how much is available from this row
-
-                const index = productionTableRows.indexOf(doubleExport);
-                if (index !== -1 && !updatedIndexes.includes(index)) {
-                    updatedIndexes.push(index);
-                }
-            }
+            const {
+                totalUsed: used2,
+                totalAvailable: available2
+            } = this.processDoubleExportRows(doubleExportRow, amountNeeded, totalUsed, totalAvailable, productionTableRows, updatedIndexes);
+            totalUsed = used2;
+            totalAvailable = available2;
 
 
             // If there is still a need for imports after using available production
@@ -164,6 +131,94 @@ export class ImportsTableFunctions {
             }
         }
     }
+
+    /**
+     * Processes the produced rows to determine how much can be used for imports.
+     * @param producedRows - The array of produced rows to process.
+     * @param amountNeeded - The total amount needed for imports.
+     * @param totalUsed - The total amount used from produced rows.
+     * @param totalAvailable - The total amount available from produced rows.
+     * @param productionTableRows - The complete array of production table rows.
+     * @param updatedIndexes - The array to track updated production row indexes.
+     * @private
+     */
+    private static processProducedRows(
+        producedRows: ProductionTableRow[],
+        amountNeeded: number,
+        totalUsed: number,
+        totalAvailable: number,
+        productionTableRows: ProductionTableRow[],
+        updatedIndexes: number[]
+    ): { totalUsed: number; totalAvailable: number } {
+
+        for (const producedRow of producedRows) {
+            const availableAmount = producedRow.quantity - producedRow.Usage;
+
+            // Calculate how much we can use from this row
+            const canUse = Math.min(availableAmount, amountNeeded - totalUsed);
+
+            if (canUse <= 0) {
+                continue;
+            }
+
+            // Update usage for this produced row
+            producedRow.Usage += +canUse.toFixed(2);
+            producedRow.exportPerMin = +(producedRow.quantity - producedRow.Usage).toFixed(2);
+
+            // Update the total used amount
+            totalUsed += canUse;
+            totalAvailable += availableAmount; // Count how much is available from this row
+
+            const index = productionTableRows.indexOf(producedRow);
+            if (index !== -1 && !updatedIndexes.includes(index)) {
+                updatedIndexes.push(index);
+            }
+        }
+
+        return {totalUsed, totalAvailable};
+    }
+
+    private static processDoubleExportRows(
+        doubleExportRows: ProductionTableRow[],
+        amountNeeded: number,
+        totalUsed: number,
+        totalAvailable: number,
+        productionTableRows: ProductionTableRow[],
+        updatedIndexes: number[]
+    ): { totalUsed: number; totalAvailable: number } {
+
+        for (const doubleExport of doubleExportRows) {
+            if (doubleExport.extraCells === null) {
+                continue;
+            }
+
+            const availableAmount = doubleExport.extraCells.ExportPerMin - doubleExport.extraCells.Usage;
+
+            // Calculate how much we can use from this row
+            const canUse = Math.min(availableAmount, amountNeeded - totalUsed);
+
+            if (canUse <= 0) {
+                continue;
+            }
+
+            // Update usage for this extra row
+            doubleExport.extraCells.Usage += +canUse.toFixed(2);
+            doubleExport.extraCells.ExportPerMin = +(doubleExport.extraCells.ExportPerMin - doubleExport.extraCells.Usage).toFixed(2);
+
+            // Update the total used amount
+            totalUsed += canUse;
+            totalAvailable += availableAmount; // Count how much is available from this row
+
+            const index = productionTableRows.indexOf(doubleExport);
+            if (index !== -1 && !updatedIndexes.includes(index)) {
+                updatedIndexes.push(index);
+            }
+        }
+
+        return {totalUsed, totalAvailable};
+    }
+
+
 
     /**
      * Adds the required amount to the imports table rows.
@@ -182,44 +237,5 @@ export class ImportsTableFunctions {
         }
     }
 
-    /**
-     * Generates the HTML for the imports table rows.
-     *
-     * @param importsTableRows - The array of imports table rows to generate HTML for.
-     * @returns The generated HTML string for the imports table rows.
-     */
-    private static generateImportsTableRows(importsTableRows: ImportsTableRow[]): string {
-        const rowsHTML = importsTableRows.map(row => {
-            const formattedQuantity = Number(row.quantity) % 1 === 0 ?
-                row.quantity.toFixed(0) :
-                row.quantity.toFixed(1);
 
-            return `
-            <tr>
-                <td class="m-0 p-0 w-75">
-                    <select name="imports_item_id[]" class="form-control rounded-0">
-                        ${ItemOptions.replace(`value="${row.itemId}"`, `value="${row.itemId}" selected`)}
-                    </select>
-                </td>
-                <td class="m-0 p-0 w-25">
-                    <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0" value="${formattedQuantity}" readonly>
-                </td>
-            </tr>
-        `;
-        }).join('');
-
-        const emptyRowHTML = `
-        <tr>
-            <td class="m-0 p-0 w-75">
-                <select name="imports_item_id[]" class="form-control rounded-0">
-                    ${ItemOptions.replace(/<option /, '<option selected ')} <!-- Selects the first option -->
-                </select>
-            </td>
-            <td class="m-0 p-0 w-25">
-                <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0">
-            </td>
-        </tr>`;
-
-        return rowsHTML + emptyRowHTML; // Combine the existing rows with the empty row
-    }
 }

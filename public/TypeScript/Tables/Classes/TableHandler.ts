@@ -33,14 +33,24 @@ export class TableHandler {
     private readTable<T>(id: string, rowClass: { new(...args: any[]): T }): T[] {
         const table = $(`#${id} tbody tr`);
         const rows: T[] = [];
+        let lengthReduction = 0;
 
-        for (let i = 0; i < table.length; i++) {
+        if (id === 'power') {
+            lengthReduction = 1;
+        }
+
+        for (let i = 0; i < table.length - lengthReduction; i++) {
             const row = table[i];
             const values = $(row).find('input, select');
             const rowValues: any[] = [];
 
             values.each((_, value) => {
-                rowValues.push($(value).val());
+                const type = $(value).attr('type');
+                if (type === 'number') {
+                    rowValues.push(Number($(value).val()));
+                } else {
+                    rowValues.push($(value).val());
+                }
             });
 
             // Handle double export in recipes table
@@ -122,23 +132,10 @@ export class TableHandler {
                     // Custom logic for imports table
                     break;
                 case 'recipes':
-                    await ProductionLineFunctions.calculateProductionExport(row);
-
-                    if (this.checkIfSelect(target)) {
-                        await ProductionLineFunctions.updateRecipe(row, value);
-                    }
-
-                    this.updateRowInTable(tableId, rowIndex, row);
-
-                    this.powerTableRows = PowerTableFunctions.calculateBuildings(this.productionTableRows);
-                    this.addSpecificEventListener('power');
-
-                    const data: [ImportsTableRow[], number[]] = ImportsTableFunctions.calculateImports(this.productionTableRows);
-                    this.importsTableRows = data[0];
-                    this.UpdateOnIndex(data[1]);
-
+                    await this.HandleProductionTable(row, rowIndex, value, tableId, target);
+                    break;
                 case 'power':
-                    // Custom logic for power table
+                    await this.HandlePowerTable(row, rowIndex, value, tableId, target);
                     break;
                 default:
                     break;
@@ -200,7 +197,6 @@ export class TableHandler {
                 value = row[key];  // Use value from row
             }
 
-
             $(element).val(value);
         });
         if (tableId === 'recipes') {
@@ -213,10 +209,17 @@ export class TableHandler {
      * @param {string} tableId - The ID of the table.
      */
     private addNewRow(tableId: string) {
-        const lastRow = $(`#${tableId} tbody tr:last`);
+        let lastRow
+        if (tableId === 'power') {
+            lastRow = $(`#${tableId} tbody tr:nth-last-child(2)`);
+        } else {
+            lastRow = $(`#${tableId} tbody tr:last`);
+        }
+
         const newRow = lastRow.clone();
         newRow.find('input[type="number"]').val(0);
         newRow.find('input[type="text"]').val('');
+        newRow.find('input[name="power_clock_speed[]"]').val(100);
         newRow.find('select').prop('selectedIndex', 0);
         newRow.insertAfter(lastRow);
 
@@ -276,4 +279,54 @@ export class TableHandler {
         }
     }
 
+    /**
+     * Handles the change event for the power table.
+     * @param row - The row object to update.
+     * @param rowIndex - The index of the row in the table.
+     * @param value - The new value to set in the row.
+     * @param tableId - The ID of the table.
+     * @param target - The target element that triggered the event.
+     * @constructor
+     * @private
+     */
+    private async HandlePowerTable(row: PowerTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
+        if (this.checkIfSelect(target)) {
+            await PowerTableFunctions.updateBuilding(row, value);
+        } else {
+            row.Consumption = PowerTableFunctions.calculateSingleConsumption(row);
+        }
+        this.updateRowInTable(tableId, rowIndex, row);
+        PowerTableFunctions.updateTotalConsumption(this.powerTableRows);
+    }
+
+    /**
+     * Handles the change event for the production table.
+     * @param row - The row object to update.
+     * @param rowIndex - The index of the row in the table.
+     * @param value - The new value to set in the row.
+     * @param tableId - The ID of the table.
+     * @param target - The target element that triggered the event.
+     * @constructor
+     * @private
+     */
+
+    private async HandleProductionTable(row: ProductionTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
+        await ProductionLineFunctions.calculateProductionExport(row);
+
+        if (this.checkIfSelect(target)) {
+            await ProductionLineFunctions.updateRecipe(row, value);
+        }
+
+        this.updateRowInTable(tableId, rowIndex, row);
+
+        this.powerTableRows = PowerTableFunctions.calculateBuildings(this.productionTableRows, this.powerTableRows);
+        this.addSpecificEventListener('power');
+
+        const data: {
+            importsTableRows: ImportsTableRow[],
+            indexes: number[]
+        } = ImportsTableFunctions.calculateImports(this.productionTableRows);
+        this.importsTableRows = data.importsTableRows;
+        this.UpdateOnIndex(data.indexes);
+    }
 }

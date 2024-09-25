@@ -1,26 +1,18 @@
 import {PowerTableRow} from "./Data/PowerTableRow";
 import {ProductionTableRow} from "./Data/ProductionTableRow";
 import {buildingOptions} from "./Data/BuildingOptions";
+import {Ajax} from "./Ajax";
+import {HtmlGeneration} from "./HtmlGeneration";
 
 export class PowerTableFunctions {
 
-    public static deleteNonUserRows(table: PowerTableRow[]) {
-        const userRows = table.filter(row => row.userRow);
-        const nonUserRows = table.filter(row => !row.userRow);
-        const tableId = 'power';
-        const tableBody = $(`#${tableId} tbody`);
-        for (let i = 0; i < nonUserRows.length; i++) {
-            const row = nonUserRows[i];
-            const index = table.indexOf(row);
-            table.splice(index, 1);
-            tableBody.find(`tr:eq(${index})`).remove();
-            i--;
-        }
+    public static calculateBuildings(productionTableRows: ProductionTableRow[], oldPowerTableRows: PowerTableRow[]): PowerTableRow[] {
+        // get the user rows
+        const userRows = oldPowerTableRows.filter(row => row.userRow == true);
 
-        return userRows;
-    }
+        // remove the old add row
+        userRows.pop();
 
-    public static calculateBuildings(productionTableRows: ProductionTableRow[]): PowerTableRow[] {
         let powerTableRows: PowerTableRow[] = [];
         for (let i = 0; i + 1 < productionTableRows.length; i++) {
             const row = productionTableRows[i];
@@ -58,10 +50,15 @@ export class PowerTableFunctions {
             }
         }
 
-        const html = PowerTableFunctions.generatePowerTable(powerTableRows, buildingOptions, PowerTableFunctions.calculateTotalConsumption(powerTableRows));
+        // Add user rows to the power table
+        powerTableRows = powerTableRows.concat(userRows);
+
+        const html = HtmlGeneration.generatePowerTable(powerTableRows, buildingOptions, PowerTableFunctions.calculateTotalConsumption(powerTableRows));
         $('#power tbody').html(html);
 
-        return powerTableRows;
+        powerTableRows.push(new PowerTableRow());
+
+        return powerTableRows
 
     }
 
@@ -72,74 +69,34 @@ export class PowerTableFunctions {
         return (amount * Consumption * clockSpeed).toFixed(1);
     }
 
-    private static calculateTotalConsumption(table: PowerTableRow[]): number {
-        const totalConsumption = table.reduce((acc, row) => acc + row.Consumption, 0);
+    static calculateTotalConsumption(table: PowerTableRow[]): number {
+        const filteredTable = table.filter(row => row.Consumption !== 0);
+        const totalConsumption = filteredTable.reduce((acc, row) => {
+            const consumption = Number(row.Consumption) || 0; // Ensure it's a number
+            return acc + consumption;
+        }, 0);
+
+
+        console.log(totalConsumption);
         return parseFloat(totalConsumption.toFixed(3)); // Limit to 3 decimal places
     }
 
-    private static generatePowerTable(powerRows: PowerTableRow[], buildingOptions: string, totalConsumption: number): string {
-        const rowsHtml = powerRows.map((row, index) => {
-            return `
-      <tr>
-        <td class="m-0 p-0 w-50">
-          <select class="form-control rounded-0" name="power_building_id[]" min="0">
-            ${buildingOptions.replace(`<option value="${row.buildingId}">`, `<option value="${row.buildingId}" selected>`)}
-          </select>
-        </td>
-        <td class="m-0 p-0 w-25">
-          <input type="number" value="${row.quantity}" class="form-control rounded-0" name="power_amount[]" min="0" step="any" data-index="${index}" onchange="updateConsumption()">
-        </td>
-        <td class="m-0 p-0 w-25">
-          <input type="number" value="${row.clockSpeed}" class="form-control rounded-0" name="power_clock_speed[]" min="1" max="250" step="any" data-index="${index}" onchange="updateConsumption()">
-        </td>
-        <td class="m-0 p-0 w-25">
-          <input type="number" value="${row.Consumption}" class="form-control rounded-0" disabled name="power_Consumption[]" min="0" step="any">
-        </td>
-        <td class="m-0 p-0 w-25">
-          <input type="hidden" value="${row.userRow ? 1 : 0}" class="form-control rounded-0" readonly name="user[]" min="0">
-        </td>
-      </tr>
-    `;
-        }).join('');
+    public static calculateSingleConsumption(row: PowerTableRow): number {
+        console.log(row);
+        if (row.building === null) return 0;
 
-        // Add an empty row for new entries
-        const emptyRowHtml = `
-      <tr>
-        <td class="m-0 p-0 w-50">
-          <select class="form-control rounded-0" name="power_building_id[]" min="0">
-            ${buildingOptions.replace(/<option /, '<option selected ')} <!-- Selects the first option -->
-          </select>
-        </td>
-        <td class="m-0 p-0 w-25">
-          <input type="number" value="" class="form-control rounded-0" name="power_amount[]" min="0" step="any" onchange="updateConsumption()">
-        </td>
-        <td class="m-0 p-0 w-25">
-          <input type="number" value="" class="form-control rounded-0" name="power_clock_speed[]" min="1" max="250" step="any" onchange="updateConsumption()">
-        </td>
-        <td class="m-0 p-0 w-25">
-          <input type="number" value="0" class="form-control rounded-0" readonly name="power_Consumption[]" min="0" step="any">
-        </td>
-        <td class="m-0 p-0 w-25">
-          <input type="hidden" value="0" class="form-control rounded-0" readonly name="user[]" min="0">
-        </td>
-      </tr>
-    `;
-
-        // Total row
-        const totalRowHtml = `
-      <tr>
-        <td colspan="1" class="table-dark">
-          Total:
-        </td>
-        <td colspan="2"></td>
-        <td class="w-25 m-0 p-0">
-          <input type="number" name="total_consumption" readonly class="form-control rounded-0" id="totalConsumption" value="${totalConsumption}">
-        </td>
-      </tr>
-    `;
-
-        return rowsHtml + emptyRowHtml + totalRowHtml;
+        const clockSpeed = Math.pow(row.clockSpeed / 100, 1.321928);
+        return +(row.quantity * row.building.power_used * clockSpeed).toFixed(1);
     }
 
+    public static async updateBuilding(row: PowerTableRow, buildingId: number): Promise<void> {
+        row.building = await Ajax.getBuilding(buildingId);
+        row.buildingId = buildingId;
+        row.Consumption = +PowerTableFunctions.calculateSingleConsumption(row);
+    }
 
+    public static updateTotalConsumption(powerTableRows: PowerTableRow[]): void {
+        const totalConsumption = PowerTableFunctions.calculateTotalConsumption(powerTableRows);
+        $('#totalConsumption').val(totalConsumption);
+    }
 }

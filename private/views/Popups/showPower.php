@@ -54,8 +54,7 @@ global $productLine, $buildings, $powers;
                     <?php endforeach; ?>
                     <tr class="user">
                         <td class="m-0 p-0 w-50 ">
-                            <select name="power_building_id[]" class="form-control rounded-0 building-id building"
-                                    onchange="addInputRow('building-id')" oninput="calculateConsumption(this)">
+                            <select name="power_building_id[]" class="form-control rounded-0 building-id building">
                                 <option value="" disabled selected>Select a building</option>
                                 <?php foreach ($buildings as $building) : ?>
                                     <option value="<?= $building->id ?>"><?= $building->name ?></option>
@@ -63,7 +62,8 @@ global $productLine, $buildings, $powers;
                             </select>
                         </td>
                         <td class="m-0 p-0 w-25">
-                            <input min="0" type="number" name="power_amount[]" class="form-control rounded-0 quantity" value="1"
+                            <input min="0" type="number" name="power_amount[]" class="form-control rounded-0 quantity"
+                                   value="0"
                                    >
                         </td>
                         <td class="m-0 p-0 w-25">
@@ -74,7 +74,7 @@ global $productLine, $buildings, $powers;
                         <td class="w-25 m-0 p-0">
                             <input type="number" name="power_Consumption[]" disabled
                                    class="form-control rounded-0 consumption"
-                                   onchange="calculateTotalConsumption(this)">
+                                   value="0">
                         </td>
                         <td class="w-25 m-0 p-0">
                             <input type="hidden" class="user" name="user[]" value="1">
