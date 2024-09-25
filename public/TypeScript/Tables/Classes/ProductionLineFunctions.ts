@@ -10,14 +10,14 @@ export class ProductionLineFunctions {
      *
      * @param {any} row - The row object containing the production data.
      */
-    public static calculateProductionExport(row: any): void {
+    public static async calculateProductionExport(row: any): Promise<void> {
         // Calculate the primary export based on quantity and usage
         row.exportPerMin = row.quantity - row.Usage;
 
         if (row.doubleExport && row.recipe !== null) {
             const secondExportPerMin = this.calculateSecondExportPerMin(row);
             if (secondExportPerMin !== undefined) {
-                row.extraCells.exportPerMin = secondExportPerMin;
+                row.extraCells.ExportPerMin = secondExportPerMin;
             }
         }
     }
@@ -102,8 +102,11 @@ export class ProductionLineFunctions {
             } else {
                 // Update values of the existing extra row
                 const extraRow = rowToUpdate.next('.extra-output');
-                extraRow.find('input[name="production_usage2[]"]').val(row.extraCells.Usage);
-                extraRow.find('input[name="production_export2[]"]').val(row.extraCells.ExportPerMin);
+                const usage = extraRow.find('input[name="production_usage2[]"]');
+                const exportPerMin = extraRow.find('input[name="production_export2[]"]');
+                usage.val(row.extraCells.Usage);
+                exportPerMin.val(row.extraCells.ExportPerMin);
+
             }
         } else if (rowToUpdate.next('.extra-output').length) {
             // Remove the extra row if double export is no longer active

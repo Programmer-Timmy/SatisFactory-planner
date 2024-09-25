@@ -122,7 +122,7 @@ export class TableHandler {
                     // Custom logic for imports table
                     break;
                 case 'recipes':
-                    ProductionLineFunctions.calculateProductionExport(row);
+                    await ProductionLineFunctions.calculateProductionExport(row);
 
                     if (this.checkIfSelect(target)) {
                         await ProductionLineFunctions.updateRecipe(row, value);
