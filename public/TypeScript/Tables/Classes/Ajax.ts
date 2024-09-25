@@ -1,6 +1,8 @@
+import {Recipe} from "./Data/ProductionTableRow";
+
 export class Ajax {
 
-    public static getRecipe(recipe_id: number): Promise<object> {
+    public static getRecipe(recipe_id: number): Promise<Recipe> {
         return new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'GET',

@@ -69,7 +69,6 @@ export class TableHandler {
             // Attach event listeners to each input/select
             inputsAndSelects.each((index, element) => {
                 $(element).on('change', (event) => {
-                    console.log('Event triggered:', event);
                     this.handleInputChange(event, tableId);
                 });
             });
@@ -90,8 +89,6 @@ export class TableHandler {
         // Get the corresponding row based on the tableId and row index
         const row = this.getRowByTableIdAndIndex(tableId, rowIndex);
 
-        console.log('Row:', row);
-
         if (row && columnIndex >= 0) {
             // Dynamically update the property on the row object
             this.updateRowData(row, columnIndex, value);
@@ -105,7 +102,7 @@ export class TableHandler {
 
                     // if changed element is select
                     if (this.checkIfSelect(target)) {
-                        await ProductionLineFunctions.updateRecipe(row, tableId, rowIndex, value);
+                        await ProductionLineFunctions.updateRecipe(row, value);
                     }
 
                     this.updateRowInTable(tableId, rowIndex, row);
@@ -148,26 +145,45 @@ export class TableHandler {
 
         // Update the row in the table
         rowToUpdate.find('input, select').each((index, element) => {
-            const key = Object.keys(row)[index];
-            $(element).val(row[key]);
+            const key = Object.keys(row)[index];  // Get the key at this index
+
+            let value: any;
+
+            // Check if there's a recipe, and use recipe values if available
+            if (row.recipe && row.recipe.hasOwnProperty(key)) {
+            } else {
+                value = row[key];  // Use value from the row if not in recipe
+            }
+
+            // Set the value of the element
+            $(element).val(value);
         });
 
-        if (row.doubleExport) {
-            // change the first and second column to rowspawn 2 and height for the select and input to 78px
-            rowToUpdate.find('td:first').attr('rowspan', 2);
-            rowToUpdate.find('td:nth-child(2)').attr('rowspan', 2);
-            rowToUpdate.find('td:first select').css('height', '78px');
-            rowToUpdate.find('td:nth-child(2) input').css('height', '78px');
 
-            // add new row under the current row
-            const extraRow = $(`<tr class="extra-output">
+        if (row.doubleExport) {
+            if (!rowToUpdate.next('.extra-output').length) {
+                // change the first and second column to rowspawn 2 and height for the select and input to 78px
+                rowToUpdate.find('td:first').attr('rowspan', 2);
+                rowToUpdate.find('td:nth-child(2)').attr('rowspan', 2);
+                rowToUpdate.find('td:first select').css('height', '78px');
+                rowToUpdate.find('td:nth-child(2) input').css('height', '78px');
+
+                // add new row under the current row
+                const extraRow = $(`<tr class="extra-output">
                 <td class="m-0 p-0"><input type="text" name="product" value="${row.extraCells.Product}" class="form-control rounded-0" readonly></td>
                 <td class="m-0 p-0"><input type="number" name="usage" value="${row.extraCells.Usage}" class="form-control rounded-0" readonly step="any"></td>
                 <td class="m-0 p-0"><input type="number" name="exportPerMin" value="${row.extraCells.ExportPerMin}" class="form-control rounded-0" readonly step="any"></td>
             </tr>`);
 
-            extraRow.insertAfter(rowToUpdate);
-        } else {
+                extraRow.insertAfter(rowToUpdate);
+            }else{
+                // update the extra row
+                const extraRow = rowToUpdate.next('.extra-output');
+                extraRow.find('input[name="usage"]').val(row.extraCells.Usage);
+                extraRow.find('input[name="exportPerMin"]').val(row.extraCells.ExportPerMin);
+
+            }
+        } else if (!row.doubleExport && rowToUpdate.next('.extra-output').length) {
             // remove the extra row
             rowToUpdate.next('.extra-output').remove();
 
@@ -191,7 +207,6 @@ export class TableHandler {
         // Attach event listeners to the new row
         newRow.find('input, select').each((index, element) => {
             $(element).on('change', (event) => {
-                console.log('Event triggered:', event);
                 this.handleInputChange(event, tableId);
             });
         });

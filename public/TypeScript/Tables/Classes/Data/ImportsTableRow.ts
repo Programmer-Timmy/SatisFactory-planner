@@ -6,4 +6,5 @@ export class ImportsTableRow {
         this.itemId = itemId;
         this.quantity = quantity;
     }
+
 }

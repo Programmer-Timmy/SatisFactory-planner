@@ -1,41 +1,72 @@
 import {Ajax} from "./Ajax";
 import {ExtraProductionRow} from "./Data/ExtraProductionRow";
+import {ProductionTableRow} from "./Data/ProductionTableRow";
 
 export class ProductionLineFunctions {
 
-    public static calculateProductionExport(row: any) {
+    public static calculateProductionExport(row: any): void {
         // Calculate the export based on the production quantity and usage
         row.exportPerMin = row.quantity - row.Usage;
+
+        if (row.doubleExport) {
+            if (row.recipe === null) {
+                return;
+            }
+
+            const secondExportPerMin = this.calculateSecondExportPerMin(row);
+
+            if (secondExportPerMin === undefined) {
+                return;
+            }
+            row.extraCells.exportPerMin = secondExportPerMin;
+        }
     }
 
-    public static async updateRecipe(row: any, tableId: string, rowIndex: number, value: string) {
-        const recipeId = value;
-        const recipe = Ajax.getRecipe(+recipeId);
+    public static async updateRecipe(row: ProductionTableRow, value: string,): Promise<void> {
+        await this.saveRecipe(value, row);
+        const recipe: { [p: string]: any } | null = row.recipe;
 
-        // Update the row with the recipe data
-        await recipe.then((data) => {
-            console.log(data);
-            const recipeData = data as Record<string, any>;
-            row.product = recipeData.itemName;
-            row.doubleExport = recipeData.secondItemName !== null;
+        if (recipe === null) {
+            return;
+        }
 
-            if (row.doubleExport) {
-                const exportPerMin = +recipeData.export_amount_per_min;
-                const secondExportPerMin = +recipeData.export_amount_per_min2;
+        row.recipeId = recipe.id;
+        row.product = recipe.itemName;
+        row.doubleExport = recipe.secondItemName !== null;
 
-                const secondExportPerMinMultiplier = secondExportPerMin / exportPerMin;
-                const quantityPerMin = row.quantity;
+        if (row.doubleExport) {
+            const exportPerMin = +recipe.export_amount_per_min;
+            const secondExportPerMin = +recipe.export_amount_per_min2;
 
-                const extraRow = new ExtraProductionRow(
-                    recipeData.secondItemName,
-                    0,
-                    quantityPerMin * secondExportPerMinMultiplier
-                );
+            const secondExportPerMinMultiplier = secondExportPerMin / exportPerMin;
+            const quantityPerMin = row.quantity;
 
-                row.extraCells = extraRow;
-            }
-        });
+            row.extraCells = new ExtraProductionRow(
+                recipe.secondItemName,
+                0,
+                quantityPerMin * secondExportPerMinMultiplier
+            );
+        }
+    }
 
-        return row;
+    public static async saveRecipe(recipeId: string, row: ProductionTableRow) {
+        row.recipe = await Ajax.getRecipe(+recipeId);
+    }
+
+    private static calculateSecondExportPerMin(row: ProductionTableRow): number | undefined {
+        if (row.recipe === null) {
+            return;
+        }
+
+        const secondExportPerMin = row.recipe.export_amount_per_min2;
+        const exportPerMin = row.recipe.export_amount_per_min;
+
+        if (secondExportPerMin === null || exportPerMin === null) {
+            return;
+        }
+
+        const secondExportPerMinMultiplier = secondExportPerMin / exportPerMin;
+
+        return row.quantity * secondExportPerMinMultiplier;
     }
 }
