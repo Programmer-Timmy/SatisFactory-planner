@@ -1,4 +1,4 @@
-import {Recipe} from "./Data/ProductionTableRow";
+import {Recipe} from "./Types/Recipe";
 
 export class Ajax {
 
@@ -14,7 +14,6 @@ export class Ajax {
                 success: function (response) {
 
                     try {
-                        // Parse the JSON response
                         resolve(response);
                     } catch (error) {
                         reject(error);

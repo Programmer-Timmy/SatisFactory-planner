@@ -41,11 +41,11 @@ global $productLine, $buildings, $powers;
                                        
                                        value="<?= $power->clock_speed ?>">
                             </td>
+
                             <td class="w-25 m-0 p-0">
                                 <input type="number" name="power_Consumption[]"
                                        class="form-control rounded-0 consumption" disabled
-
-                                       value="<?= number_format($power->building_ammount * $power->power_used * pow($power->clock_speed / 100, 1.321928), 1) * 1 ?>">
+                                       value="<?= round($power->building_ammount * $power->power_used * pow($power->clock_speed / 100, 1.321928), 1) ?>">
                             </td>
                             <td class="w-25 m-0 p-0">
                                 <input type="hidden" class="user" name="user[]" value="<?= $power->user ?>">

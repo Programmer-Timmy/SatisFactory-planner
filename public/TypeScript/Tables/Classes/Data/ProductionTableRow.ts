@@ -1,22 +1,9 @@
 import {ExtraProductionRow} from "./ExtraProductionRow";
 import {Ajax} from "../Ajax";
-
-
-export type Recipe = {
-    buildings_id: number;
-    class_name: string;
-    export_amount_per_min: number;
-    export_amount_per_min2: number | null;
-    id: number;
-    itemName: string;
-    item_id: number;
-    item_id2: number | null;
-    name: string;
-    secondItemName: string | null;
-};
+import {Recipe} from "../Types/Recipe";
 
 export class ProductionTableRow {
-    public recipeId: string;
+    public recipeId: number;
     public quantity: number;
     public product: string;
     public Usage: number;
@@ -27,7 +14,7 @@ export class ProductionTableRow {
 
 
     constructor(recipeId: string = '', quantity: number = 0, product: string = '', Usage: number = 0, exportPerMin: number = 0, doubleExport: boolean = false, extraCells: ExtraProductionRow | null = null) {
-        this.recipeId = recipeId;
+        this.recipeId = +recipeId;
         this.quantity = quantity;
         this.product = product;
         this.Usage = Usage;
@@ -35,9 +22,10 @@ export class ProductionTableRow {
         this.doubleExport = doubleExport;
         this.extraCells = extraCells;
         this.recipe = null;
+        this.getRecipe(recipeId);
     }
 
-    public async getBuilding(recipeId: string): Promise<void> {
+    public async getRecipe(recipeId: string): Promise<void> {
         this.recipe = await Ajax.getRecipe(+recipeId);
     }
 }

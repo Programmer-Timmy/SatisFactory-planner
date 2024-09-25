@@ -4,7 +4,11 @@ import {PowerTableRow} from "./Data/PowerTableRow";
 import {ProductionLineFunctions} from "./ProductionLineFunctions";
 import {ExtraProductionRow} from "./Data/ExtraProductionRow";
 import {Ajax} from "./Ajax";
+import {PowerTableFunctions} from "./PowerTableFunctions";
 
+/**
+ * Class responsible for handling the manipulation and event handling of tables.
+ */
 export class TableHandler {
 
     public importsTableRows: ImportsTableRow[];
@@ -19,9 +23,13 @@ export class TableHandler {
         this.addEventListeners();
     }
 
-    // Generic method to read tables
+    /**
+     * Generic method to read tables and convert rows into class instances.
+     * @param {string} id - The ID of the table.
+     * @param {new(...args: any[]) => T} rowClass - The class constructor for the table rows.
+     * @returns {T[]} An array of instances of the specified row class.
+     */
     private readTable<T>(id: string, rowClass: { new(...args: any[]): T }): T[] {
-        // Retrieve table rows from the DOM
         const table = $(`#${id} tbody tr`);
         const rows: T[] = [];
 
@@ -30,12 +38,11 @@ export class TableHandler {
             const values = $(row).find('input, select');
             const rowValues: any[] = [];
 
-            for (let j = 0; j < values.length; j++) {
-                const value = values[j];
+            values.each((_, value) => {
                 rowValues.push($(value).val());
-            }
+            });
 
-            // Handle dubble export
+            // Handle double export in recipes table
             if (id === 'recipes' && table[i + 1]?.classList.contains('extra-output')) {
                 const extraRow = table[i + 1];
                 const extraRowValues = $(extraRow).find('input, select').map((_, el) => $(el).val()).get();
@@ -43,8 +50,8 @@ export class TableHandler {
                 // Create instance of ExtraProductionRow
                 const extraRowInstance = new ExtraProductionRow(
                     extraRowValues[0] as string,          // Product
-                    Number(extraRowValues[1]),            // Usage (number)
-                    Number(extraRowValues[2])             // ExportPerMin (number)
+                    Number(extraRowValues[1]),            // Usage
+                    Number(extraRowValues[2])             // ExportPerMin
                 );
 
                 // Append extraRowInstance to rowValues
@@ -53,21 +60,22 @@ export class TableHandler {
                 // Skip the extra row in the next iteration
                 i++;
             }
+
             rows.push(new rowClass(...rowValues));
         }
         return rows;
     }
 
+    /**
+     * Adds event listeners for change events on all inputs and selects within tables.
+     */
     private addEventListeners() {
-        // Iterate through each table row
         const tables = ['imports', 'recipes', 'power'];
 
         tables.forEach((tableId) => {
-            // Select all input and select elements for the given table
             const inputsAndSelects = $(`#${tableId} tbody`).find('input, select');
 
-            // Attach event listeners to each input/select
-            inputsAndSelects.each((index, element) => {
+            inputsAndSelects.each((_, element) => {
                 $(element).on('change', (event) => {
                     this.handleInputChange(event, tableId);
                 });
@@ -75,50 +83,57 @@ export class TableHandler {
         });
     }
 
+    /**
+     * Handles the change event for table inputs/selects.
+     * @param {JQuery.ChangeEvent} event - The change event object.
+     * @param {string} tableId - The ID of the table where the event occurred.
+     */
     private async handleInputChange(event: JQuery.ChangeEvent, tableId: string) {
         const target = $(event.target);
         const rowIndex = target.closest('tr').index();
         const columnIndex = target.closest('td').index();
         const value = target.val();
 
-        // if last row and select is selected add a new row
+        // If the last row is selected, add a new row
         if (this.checkIfLastRow(target) && this.checkIfSelect(target)) {
             this.addNewRow(tableId);
         }
 
-        // Get the corresponding row based on the tableId and row index
         const row = this.getRowByTableIdAndIndex(tableId, rowIndex);
 
         if (row && columnIndex >= 0) {
-            // Dynamically update the property on the row object
             this.updateRowData(row, columnIndex, value);
 
             switch (tableId) {
                 case 'imports':
-                    // Do something with the imports table
+                    // Custom logic for imports table
                     break;
                 case 'recipes':
                     ProductionLineFunctions.calculateProductionExport(row);
 
-                    // if changed element is select
                     if (this.checkIfSelect(target)) {
                         await ProductionLineFunctions.updateRecipe(row, value);
                     }
 
                     this.updateRowInTable(tableId, rowIndex, row);
 
-                    break;
+                    PowerTableFunctions.calculateBuildings(this.productionTableRows);
+
                 case 'power':
-                    // Do something with the power table
+                    // Custom logic for power table
                     break;
                 default:
                     break;
             }
-
         }
     }
 
-// Helper function to get the correct row from the corresponding table
+    /**
+     * Retrieves the row from the corresponding table by tableId and rowIndex.
+     * @param {string} tableId - The ID of the table.
+     * @param {number} rowIndex - The index of the row to retrieve.
+     * @returns {any} The row object.
+     */
     private getRowByTableIdAndIndex(tableId: string, rowIndex: number): any {
         switch (tableId) {
             case 'imports':
@@ -132,86 +147,63 @@ export class TableHandler {
         }
     }
 
-// Function to update specific data in the row object based on column name
+    /**
+     * Updates the row object with new data based on the column index.
+     * @param {any} row - The row object to update.
+     * @param {number} columnIndex - The index of the column.
+     * @param {any} value - The new value to set in the row.
+     */
     private updateRowData(row: any, columnIndex: number, value: any) {
         const rowKeys = Object.keys(row);
         const key = rowKeys[columnIndex];
         row[key] = value;
     }
 
+    /**
+     * Updates the visual representation of the row in the table.
+     * @param {string} tableId - The ID of the table.
+     * @param {number} rowIndex - The index of the row to update.
+     * @param {any} row - The updated row object.
+     */
     private updateRowInTable(tableId: string, rowIndex: number, row: any) {
         const table = $(`#${tableId} tbody tr`);
         const rowToUpdate = $(table[rowIndex]);
 
-        // Update the row in the table
         rowToUpdate.find('input, select').each((index, element) => {
-            const key = Object.keys(row)[index];  // Get the key at this index
-
+            const key = Object.keys(row)[index];
             let value: any;
 
-            // Check if there's a recipe, and use recipe values if available
             if (row.recipe && row.recipe.hasOwnProperty(key)) {
+                // If row has a recipe, use recipe values
             } else {
-                value = row[key];  // Use value from the row if not in recipe
+                value = row[key];  // Use value from row
             }
 
-            // Set the value of the element
             $(element).val(value);
         });
 
-
-        if (row.doubleExport) {
-            if (!rowToUpdate.next('.extra-output').length) {
-                // change the first and second column to rowspawn 2 and height for the select and input to 78px
-                rowToUpdate.find('td:first').attr('rowspan', 2);
-                rowToUpdate.find('td:nth-child(2)').attr('rowspan', 2);
-                rowToUpdate.find('td:first select').css('height', '78px');
-                rowToUpdate.find('td:nth-child(2) input').css('height', '78px');
-
-                // add new row under the current row
-                const extraRow = $(`<tr class="extra-output">
-                <td class="m-0 p-0"><input type="text" name="product" value="${row.extraCells.Product}" class="form-control rounded-0" readonly></td>
-                <td class="m-0 p-0"><input type="number" name="usage" value="${row.extraCells.Usage}" class="form-control rounded-0" readonly step="any"></td>
-                <td class="m-0 p-0"><input type="number" name="exportPerMin" value="${row.extraCells.ExportPerMin}" class="form-control rounded-0" readonly step="any"></td>
-            </tr>`);
-
-                extraRow.insertAfter(rowToUpdate);
-            }else{
-                // update the extra row
-                const extraRow = rowToUpdate.next('.extra-output');
-                extraRow.find('input[name="usage"]').val(row.extraCells.Usage);
-                extraRow.find('input[name="exportPerMin"]').val(row.extraCells.ExportPerMin);
-
-            }
-        } else if (!row.doubleExport && rowToUpdate.next('.extra-output').length) {
-            // remove the extra row
-            rowToUpdate.next('.extra-output').remove();
-
-            // reset the first and second column to rowspawn 1 and remove height for the select and input
-            rowToUpdate.find('td:first').attr('rowspan', 1);
-            rowToUpdate.find('td:nth-child(2)').attr('rowspan', 1);
-            rowToUpdate.find('td:first select').css('height', '');
-            rowToUpdate.find('td:nth-child(2) input').css('height', '');
-
+        if (tableId === 'recipes') {
+            ProductionLineFunctions.handleDoubleExport(row, rowToUpdate);
         }
     }
 
+    /**
+     * Adds a new row to the table when the last row is modified.
+     * @param {string} tableId - The ID of the table.
+     */
     private addNewRow(tableId: string) {
         const lastRow = $(`#${tableId} tbody tr:last`);
         const newRow = lastRow.clone();
         newRow.find('input').val('');
         newRow.find('select').prop('selectedIndex', 0);
-
         newRow.insertAfter(lastRow);
 
-        // Attach event listeners to the new row
-        newRow.find('input, select').each((index, element) => {
+        newRow.find('input, select').each((_, element) => {
             $(element).on('change', (event) => {
                 this.handleInputChange(event, tableId);
             });
         });
 
-        // Add new row to the corresponding tableRows array
         switch (tableId) {
             case 'imports':
                 this.importsTableRows.push(new ImportsTableRow());
@@ -227,13 +219,22 @@ export class TableHandler {
         }
     }
 
-    private checkIfLastRow(target: JQuery) {
+    /**
+     * Checks if the selected element is in the last row.
+     * @param {JQuery} target - The target element.
+     * @returns {boolean} True if the element is in the last row, false otherwise.
+     */
+    private checkIfLastRow(target: JQuery): boolean {
         return target.closest('tr').is(':last-child');
     }
 
-    private checkIfSelect(target: JQuery) {
+    /**
+     * Checks if the selected element is a <select> element.
+     * @param {JQuery} target - The target element.
+     * @returns {boolean} True if the element is a <select>, false otherwise.
+     */
+    private checkIfSelect(target: JQuery): boolean {
         return target.is('select');
     }
-
 
 }

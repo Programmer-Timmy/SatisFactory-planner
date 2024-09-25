@@ -197,7 +197,7 @@ if (isset($_GET['layoutType'])) {
                 <div class="row">
                     <?php foreach ($productionLines as $productionLine) : ?>
                         <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card">
+                            <div class="card h-100">
                                 <div class="card-header bg-dark text-white">
                                     <h5 class="card-title mb-0"><?= $productionLine->name ?></h5>
                                 </div>
