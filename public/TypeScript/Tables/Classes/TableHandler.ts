@@ -25,7 +25,6 @@ export class TableHandler {
         this.powerTableRows = this.readTable<PowerTableRow>('power', PowerTableRow);
 
         this.addEventListeners();
-        console.log(this.settings);
     }
 
     /**
@@ -56,11 +55,6 @@ export class TableHandler {
                     rowValues.push($(value).val());
                 }
             });
-
-            // if its a user input row get the building
-            if (id === 'power' && rowValues[rowValues.length - 1] == '1' && rowValues[0] !== null) {
-                rowValues.push(true);
-            }
 
             // Handle double export in recipes table
             if (id === 'recipes' && table[i + 1]?.classList.contains('extra-output')) {
@@ -150,9 +144,6 @@ export class TableHandler {
                     break;
             }
         }
-
-        console.log(this.productionTableRows);
-
     }
 
     /**

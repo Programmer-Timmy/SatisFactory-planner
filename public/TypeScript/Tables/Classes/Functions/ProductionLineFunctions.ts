@@ -138,7 +138,6 @@ export class ProductionLineFunctions {
         if (secondExportPerMin === null || exportPerMin === null) return;
 
         const secondExportPerMinMultiplier = secondExportPerMin / exportPerMin;
-        console.log(row.quantity * secondExportPerMinMultiplier);
         return row.quantity * secondExportPerMinMultiplier;
     }
 }

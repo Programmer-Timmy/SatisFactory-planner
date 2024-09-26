@@ -37,15 +37,14 @@ export class PowerTableFunctions {
                     existingRow.quantity += amountOfBuilding;
                     existingRow.Consumption = +PowerTableFunctions.calculateConsumption(existingRow.quantity, 100, building.power_used);
                 } else {
-                    powerTableRows.push(new PowerTableRow(building.id, amountOfBuilding, 100, consumption, false));
+                    powerTableRows.push(new PowerTableRow(building.id, amountOfBuilding, 100, consumption, false, building));
 
                 }
 
                 if (exes > 0) {
                     const clockSpeed = exes * 100;
                     const consumption = +PowerTableFunctions.calculateConsumption(1, clockSpeed, building.power_used);
-
-                    powerTableRows.push(new PowerTableRow(building.id, 1, +clockSpeed.toFixed(1), consumption, false));
+                    powerTableRows.push(new PowerTableRow(building.id, 1, +clockSpeed.toFixed(1), consumption, false, building));
                 }
             }
         }
@@ -76,13 +75,10 @@ export class PowerTableFunctions {
             return acc + consumption;
         }, 0);
 
-
-        console.log(totalConsumption);
         return parseFloat(totalConsumption.toFixed(3)); // Limit to 3 decimal places
     }
 
     public static calculateSingleConsumption(row: PowerTableRow): number {
-        console.log(row);
         if (row.building === null) return 0;
 
         const clockSpeed = Math.pow(row.clockSpeed / 100, 1.321928);

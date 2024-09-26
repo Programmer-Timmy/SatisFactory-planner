@@ -34,9 +34,7 @@ export class ProductionTableRow {
 
     public saveDoubleExportQuantity(): void {
         if (this.doubleExport && this.extraCells !== null) {
-            console.log(this);
             this.extraCells.Quantity = <number>ProductionLineFunctions.calculateSecondExportPerMin(this);
-            console.log(this.extraCells);
         }
     }
 }
