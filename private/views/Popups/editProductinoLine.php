@@ -13,10 +13,7 @@ if ($_POST && isset($_POST['productionLineName'])) {
     }
 }
 
-$productionLineSettings = ProductionLineSettings::getProductionLineSettings(intval($_GET['id']), $_SESSION['userId']);
-if (!$productionLineSettings) {
-    $productionLineSettings = ProductionLineSettings::addProductionLineSettings(intval($_GET['id']), $_SESSION['userId']);
-}
+$productionLineSettings = ProductionLineSettings::getProductionLineSettings(intval($_GET['id']));
 ?>
 
 <div class="modal fade" id="editProductionLine" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">

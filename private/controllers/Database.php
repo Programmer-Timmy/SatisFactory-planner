@@ -49,11 +49,11 @@ class Database
      * @param string $table
      * @param array $columns
      * @param array $values
-     * @return void
+     * @return string
      *
      * @throws ErrorException
      */
-    public static function insert(string $table, array $columns, array $values, $connection = (new Database))
+    public static function insert(string $table, array $columns, array $values, $connection = (new Database)) : string
     {
         $sql = "INSERT INTO $table (";
         foreach ($columns as $column) {
