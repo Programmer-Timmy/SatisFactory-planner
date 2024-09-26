@@ -71,7 +71,7 @@ function getKeywords()
     return $pageKeywords;
 }
 
-$url = strtok($_SERVER["REQUEST_URI"], '?');
+$url = $_SERVER['REQUEST_URI'];
 if ($url == '/login') {
     $url = $_SESSION['redirect'];
 }
