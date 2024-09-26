@@ -101,6 +101,38 @@ $titles = [
     // Add more titles as needed
 ];
 
+$description = [
+    'default' => 'Satisfactory Planner is a site that helps you plan and organize your factories in the game Satisfactory.',
+    'maintenance' => 'The site is currently under maintenance, please check back later.',
+    'home' => 'Satisfactory Planner is a site that helps you plan and organize your factories in the game Satisfactory.',
+    'about' => 'Learn more about Satisfactory Planner and the team behind it.',
+    'contact' => 'Contact the team behind Satisfactory Planner.',
+    'game_save' => 'View and edit your game saves.',
+    'production_line' => 'View and edit your production lines.',
+    'login' => 'Login to your account.',
+    'register' => 'Register for an account.',
+    'account' => 'View and edit your account settings.',
+    'helpfulLinks' => 'A collection of helpful links for Satisfactory.',
+    '404' => 'Oops page not found!',
+    // Add more descriptions as needed
+];
+
+$keyWords = [
+    'default' => 'Satisfactory, Satisfactory Planner, Factory Planner, Automation Game, Base Building, Simulation Game',
+    'home' => 'Satisfactory Planner Home, Factory Management, Satisfactory Guide, Satisfactory Planning Tools',
+    'about' => 'About Satisfactory Planner, Factory Simulation, Game Planning Tools, Base Building Guide',
+    'contact' => 'Contact Satisfactory Planner, Game Support, Factory Planning Assistance, Community Help',
+    'game_save' => 'Satisfactory Game Save, Factory Save Manager, Save Game Edit, Game Save Management',
+    'production_line' => 'Satisfactory Production Line, Factory Efficiency, Production Planning, Resource Management',
+    'login' => 'Satisfactory Planner Login, Access Factory Planner, Game Save Login, Satisfactory Account',
+    'register' => 'Register Satisfactory Planner, Create Account, Join Factory Planner, Sign Up',
+    'account' => 'Account Settings, Satisfactory Planner Account, Manage Satisfactory Profile, Game Save Preferences',
+    'helpfulLinks' => 'Satisfactory Resources, Game Links, Factory Planning Guides, Satisfactory Tutorials',
+    '404' => 'Page Not Found, Satisfactory Planner Error, Factory Planner 404, Broken Link',
+    // Add more specific keywords for other pages
+];
+
+
 // Disable errors if debug is set to false
 if (!$site['debug']) {
     error_reporting(0);

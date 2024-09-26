@@ -23,13 +23,63 @@ if (isset($_COOKIE['theme'])) {
     $theme = $_COOKIE['theme'] === 'dark' ? 'styles-dark' : 'styles-light';
 }
 
+function getDescription()
+{
+    global $description;
+    $url = $_SERVER['REQUEST_URI'];
+
+    $pageDescription = $description;
+
+    // Find the corresponding title based on URL
+    foreach ($pageDescription as $urlPattern => $title) {
+        if (strpos($url, $urlPattern) !== false) {
+            $description = $title;
+            break;
+        }
+    }
+    return $description;
+}
+
+function getKeywords()
+{
+    global $keywords;
+    $url = $_SERVER['REQUEST_URI'];
+
+    $pageKeywords = $keywords;
+
+    // Find the corresponding title based on URL
+    foreach ($pageKeywords as $urlPattern => $title) {
+        if (strpos($url, $urlPattern) !== false) {
+            $keywords = $title;
+            break;
+        }
+    }
+    return $keywords;
+}
+
+$url = strtok($_SERVER["REQUEST_URI"], '?');
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Satisfactory Planner">
+    <meta name="description" content="<?= getDescription() ?>">
+    <meta name="keywords" content="<?= getKeywords() ?>">
+
+
+    <!-- og tags -->
+    <meta property="og:title" content="<?= getPageTitle() ?>">
+    <meta property="og:description" content="<?= getDescription() ?>">
+    <meta property="og:image" content="image/favicons/android-chrome-192x192.png">
+    <meta property="og:url" content="https://satisfactoryplanner.timmygamer.nl<?= $url ?>">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Satisfactory Planner">
+
     <!-- icon -->
     <link rel="apple-touch-icon" sizes="57x57" href="image/favicons/apple-touch-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="image/favicons/apple-touch-icon-60x60.png">

@@ -163,4 +163,6 @@ if (count($gameSaves) == 2) {
     document.getElementById('InvitesDropdown').addEventListener('click', function (event) {
         event.stopPropagation();
     });
+
 </script>
+
