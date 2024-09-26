@@ -1,8 +1,16 @@
 <?php
 // A function to generate a responsive title based on the URL
+$url = $_SERVER['REQUEST_URI'];
+if ($url == '/login') {
+    $url = $_SESSION['redirect'];
+}
+
 function getPageTitle() {
     global $titles;
     $url = $_SERVER['REQUEST_URI'];
+    if ($url == '/login') {
+        $url = $_SESSION['redirect'];
+    }
 
     $pageTitle = ucfirst($titles['default']);
 
@@ -27,6 +35,9 @@ function getDescription()
 {
     global $description;
     $url = $_SERVER['REQUEST_URI'];
+    if ($url == '/login') {
+        $url = $_SESSION['redirect'];
+    }
 
     $pageDescription = $description['default'];
 
@@ -44,6 +55,9 @@ function getKeywords()
 {
     global $keywords;
     $url = $_SERVER['REQUEST_URI'];
+    if ($url == '/login') {
+        $url = $_SESSION['redirect'];
+    }
 
     $pageKeywords = $keywords['default'];
 
@@ -70,6 +84,8 @@ $url = strtok($_SERVER["REQUEST_URI"], '?');
     <meta name="author" content="Satisfactory Planner">
     <meta name="description" content="<?= getDescription() ?>">
     <meta name="keywords" content="<?= getKeywords() ?>">
+    <meta name="theme-color" content="#343a40">
+    <link rel="canonical" href="https://satisfactoryplanner.timmygamer.nl<?= $url ?>">
 
 
     <!-- og tags -->
@@ -79,6 +95,9 @@ $url = strtok($_SERVER["REQUEST_URI"], '?');
     <meta property="og:url" content="https://satisfactoryplanner.timmygamer.nl<?= $url ?>">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Satisfactory Planner">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:image:width" content="192">
+    <meta property="og:image:height" content="192">
 
     <!-- icon -->
     <link rel="apple-touch-icon" sizes="57x57" href="image/favicons/apple-touch-icon-57x57.png">
