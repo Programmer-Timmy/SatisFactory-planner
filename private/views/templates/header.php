@@ -1,9 +1,5 @@
 <?php
 // A function to generate a responsive title based on the URL
-$url = $_SERVER['REQUEST_URI'];
-if ($url == '/login') {
-    $url = $_SESSION['redirect'];
-}
 
 function getPageTitle() {
     global $titles;
