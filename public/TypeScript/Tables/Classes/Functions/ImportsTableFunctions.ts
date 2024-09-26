@@ -1,8 +1,8 @@
-import {ProductionTableRow} from "./Data/ProductionTableRow";
-import {ImportsTableRow} from "./Data/ImportsTableRow";
-import {Resource} from "./Types/Resource";
-import {ItemOptions} from "./Data/ItemOptions";
+import {ProductionTableRow} from "../Data/ProductionTableRow";
+import {ImportsTableRow} from "../Data/ImportsTableRow";
+import {Resource} from "../Types/Resource";
 import {HtmlGeneration} from "./HtmlGeneration";
+
 
 export class ImportsTableFunctions {
     /**

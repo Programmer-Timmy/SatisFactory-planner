@@ -1,8 +1,7 @@
 import {ExtraProductionRow} from "./ExtraProductionRow";
-import {Ajax} from "../Ajax";
 import {Recipe} from "../Types/Recipe";
-import {ProductionTable} from "../../Table/ProductionTable";
-import {ProductionLineFunctions} from "../ProductionLineFunctions";
+import {Ajax} from "../Functions/Ajax";
+import {ProductionLineFunctions} from "../Functions/ProductionLineFunctions";
 
 export class ProductionTableRow {
     public recipeId: number;

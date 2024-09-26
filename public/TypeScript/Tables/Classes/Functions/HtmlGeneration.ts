@@ -1,6 +1,6 @@
-import {PowerTableRow} from "./Data/PowerTableRow";
-import {ImportsTableRow} from "./Data/ImportsTableRow";
-import {ItemOptions} from "./Data/ItemOptions";
+import {PowerTableRow} from "../Data/PowerTableRow";
+import {ImportsTableRow} from "../Data/ImportsTableRow";
+import {ItemOptions} from "../Data/ItemOptions";
 
 export class HtmlGeneration {
 

@@ -1,6 +1,6 @@
 import {Ajax} from "./Ajax";
-import {ExtraProductionRow} from "./Data/ExtraProductionRow";
-import {ProductionTableRow} from "./Data/ProductionTableRow";
+import {ProductionTableRow} from "../Data/ProductionTableRow";
+import {ExtraProductionRow} from "../Data/ExtraProductionRow";
 
 export class ProductionLineFunctions {
 

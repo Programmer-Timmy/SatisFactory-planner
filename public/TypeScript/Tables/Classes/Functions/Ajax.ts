@@ -1,5 +1,6 @@
-import {Recipe} from "./Types/Recipe";
-import {Building} from "./Types/Building";
+import {Recipe} from "../Types/Recipe";
+import {Building} from "../Types/Building";
+
 
 export class Ajax {
 
@@ -56,6 +57,32 @@ export class Ajax {
                 error: function (xhr, status, error) {
                     reject(error);
                 }
+            });
+        });
+    }
+
+    /**
+     * Save the production line data.
+     *
+     * @param data - The data to save.
+     * @param id - The ID of the production line.
+     * @returns The response from the server.
+     */
+    public static async saveData(data: Record<string, any>, id: number): Promise<Record<string, any>> {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                type: 'POST',
+                url: 'saveProductionLine',
+                data: {
+                    data: JSON.stringify(data),
+                    id: id
+                },
+                success: function (response) {
+                    resolve(JSON.parse(response));
+                },
+                error: function (xhr, status, error) {
+                    reject(error);
+                },
             });
         });
     }

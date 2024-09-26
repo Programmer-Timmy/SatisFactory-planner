@@ -1,8 +1,8 @@
-import {PowerTableRow} from "./Data/PowerTableRow";
-import {ProductionTableRow} from "./Data/ProductionTableRow";
-import {buildingOptions} from "./Data/BuildingOptions";
-import {Ajax} from "./Ajax";
+import {ProductionTableRow} from "../Data/ProductionTableRow";
+import {PowerTableRow} from "../Data/PowerTableRow";
+import {buildingOptions} from "../Data/BuildingOptions";
 import {HtmlGeneration} from "./HtmlGeneration";
+import {Ajax} from "./Ajax";
 
 export class PowerTableFunctions {
 

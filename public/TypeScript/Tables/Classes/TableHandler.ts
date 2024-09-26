@@ -1,11 +1,12 @@
 import {ImportsTableRow} from "./Data/ImportsTableRow";
 import {ProductionTableRow} from "./Data/ProductionTableRow";
 import {PowerTableRow} from "./Data/PowerTableRow";
-import {ProductionLineFunctions} from "./ProductionLineFunctions";
 import {ExtraProductionRow} from "./Data/ExtraProductionRow";
-import {Ajax} from "./Ajax";
-import {PowerTableFunctions} from "./PowerTableFunctions";
-import {ImportsTableFunctions} from "./ImportsTableFunctions";
+import {ProductionLineFunctions} from "./Functions/ProductionLineFunctions";
+import {PowerTableFunctions} from "./Functions/PowerTableFunctions";
+import {ImportsTableFunctions} from "./Functions/ImportsTableFunctions";
+import {Ajax} from "./Functions/Ajax";
+
 
 /**
  * Class responsible for handling the manipulation and event handling of tables.
@@ -52,6 +53,11 @@ export class TableHandler {
                     rowValues.push($(value).val());
                 }
             });
+
+            // if its a user input row get the building
+            if (id === 'power' && rowValues[rowValues.length - 1] == '1' && rowValues[0] !== null) {
+                rowValues.push(true);
+            }
 
             // Handle double export in recipes table
             if (id === 'recipes' && table[i + 1]?.classList.contains('extra-output')) {
@@ -309,7 +315,6 @@ export class TableHandler {
      * @constructor
      * @private
      */
-
     private async HandleProductionTable(row: ProductionTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
         await ProductionLineFunctions.calculateProductionExport(row);
 
@@ -329,4 +334,7 @@ export class TableHandler {
         this.importsTableRows = data.importsTableRows;
         this.UpdateOnIndex(data.indexes);
     }
+
+
 }
+
