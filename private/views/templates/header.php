@@ -86,6 +86,8 @@ if ($url == '/login') {
     <meta name="keywords" content="<?= getKeywords() ?>">
     <meta name="theme-color" content="#343a40">
     <link rel="canonical" href="https://satisfactoryplanner.timmygamer.nl<?= $url ?>">
+    <!-- no index -->
+    <meta name="robots" content="noindex, nofollow">
 
 
     <!-- og tags -->
