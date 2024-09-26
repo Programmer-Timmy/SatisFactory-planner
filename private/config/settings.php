@@ -40,7 +40,7 @@ $site = [
     // Auth settings
     'user-adminTable' => 'users', // the table name that will be used to check if the user/admin exists
     'saveUrl' => true, // save the url in the session, so you can redirect the user back to the page he was before he logged in
-    'redirect' => 'login', // redirect to this page if the user is not logged in
+    'redirect' => '/login', // redirect to this page if the user is not logged in
 
     // Admin settings
     'admin' => [
