@@ -134,7 +134,8 @@ export class ImportExport {
     private static generateFileName(): string {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const dateTimestamp = new Date().toLocaleString('en-GB', {timeZone: timezone}).replace(/[\/\s,:]/g, '_');
-        const productionLineName = $('#productionLineName').text().replace(/\s/g, '_');
+        let productionLineName = $('#productionLineName').text().replace('Production Line - ', '');
+        productionLineName = productionLineName.replace(/\s/g, '_');
 
         return `${productionLineName}_data_${dateTimestamp}.json`;
     }
