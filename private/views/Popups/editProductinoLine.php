@@ -53,16 +53,6 @@ if (!$productionLineSettings) {
                                    data-toggle="toggle" <?= $productionLineSettings->auto_power_machine ? 'checked' : '' ?>>
                         </div>
                     </div>
-                    <div class="col-6 py-2">
-                        <div class="d-flex align-items-center justify-content-between" data-bs-toggle="tooltip"
-                             data-bs-placement="top" data-bs-html="true"
-                             title="This will automatically save the production line every 5 minutes.">
-                            <label for="auto_save" class="form-label me-2">Auto Save</label>
-                            <input type="checkbox" id="auto_save" class="from-control" data-onstyle="success"
-                                   data-offstyle="danger"
-                                   data-toggle="toggle" <?= $productionLineSettings->auto_save ? 'checked' : '' ?>>
-                        </div>
-                    </div>
                 </div>
                 <form method="post" id="editProductionLineForm" class="row">
                     <h5>Production Line</h5>

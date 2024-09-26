@@ -6,6 +6,7 @@ import {ProductionLineFunctions} from "./Functions/ProductionLineFunctions";
 import {PowerTableFunctions} from "./Functions/PowerTableFunctions";
 import {ImportsTableFunctions} from "./Functions/ImportsTableFunctions";
 import {Ajax} from "./Functions/Ajax";
+import {Settings} from "./Settings";
 
 
 /**
@@ -16,6 +17,7 @@ export class TableHandler {
     public importsTableRows: ImportsTableRow[];
     public productionTableRows: ProductionTableRow[];
     public powerTableRows: PowerTableRow[];
+    public settings: Settings = new Settings();
 
     constructor() {
         this.importsTableRows = this.readTable<ImportsTableRow>('imports', ImportsTableRow);
@@ -23,6 +25,7 @@ export class TableHandler {
         this.powerTableRows = this.readTable<PowerTableRow>('power', PowerTableRow);
 
         this.addEventListeners();
+        console.log(this.settings);
     }
 
     /**
@@ -324,15 +327,20 @@ export class TableHandler {
 
         this.updateRowInTable(tableId, rowIndex, row);
 
-        this.powerTableRows = PowerTableFunctions.calculateBuildings(this.productionTableRows, this.powerTableRows);
-        this.addSpecificEventListener('power');
+        if (this.settings.autoImportExport) {
+            const data: {
+                importsTableRows: ImportsTableRow[],
+                indexes: number[]
+            } = ImportsTableFunctions.calculateImports(this.productionTableRows);
+            this.importsTableRows = data.importsTableRows;
+            this.UpdateOnIndex(data.indexes);
+        }
 
-        const data: {
-            importsTableRows: ImportsTableRow[],
-            indexes: number[]
-        } = ImportsTableFunctions.calculateImports(this.productionTableRows);
-        this.importsTableRows = data.importsTableRows;
-        this.UpdateOnIndex(data.indexes);
+        if (this.settings.autoPowerMachine) {
+            this.powerTableRows = PowerTableFunctions.calculateBuildings(this.productionTableRows, this.powerTableRows);
+            this.addSpecificEventListener('power');
+        }
+
     }
 
 

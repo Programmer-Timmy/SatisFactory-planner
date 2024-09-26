@@ -11,5 +11,6 @@ saveButton.on("click", (event: JQuery.ClickEvent) => {
         SaveFunctions.saveProductionLine(SaveFunctions.prepareSaveData(tableHandler.productionTableRows, tableHandler.powerTableRows, tableHandler.importsTableRows));
 
         saveButton.tooltip('hide');
+        saveButton.blur();
     }
 })
