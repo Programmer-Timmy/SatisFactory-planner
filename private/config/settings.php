@@ -117,7 +117,7 @@ $description = [
     // Add more descriptions as needed
 ];
 
-$keyWords = [
+$keywords = [
     'default' => 'Satisfactory, Satisfactory Planner, Factory Planner, Automation Game, Base Building, Simulation Game',
     'home' => 'Satisfactory Planner Home, Factory Management, Satisfactory Guide, Satisfactory Planning Tools',
     'about' => 'About Satisfactory Planner, Factory Simulation, Game Planning Tools, Base Building Guide',

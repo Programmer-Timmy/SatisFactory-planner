@@ -28,16 +28,16 @@ function getDescription()
     global $description;
     $url = $_SERVER['REQUEST_URI'];
 
-    $pageDescription = $description;
+    $pageDescription = $description['default'];
 
     // Find the corresponding title based on URL
-    foreach ($pageDescription as $urlPattern => $title) {
+    foreach ($description as $urlPattern => $title) {
         if (strpos($url, $urlPattern) !== false) {
-            $description = $title;
+            $pageDescription = $title;
             break;
         }
     }
-    return $description;
+    return $pageDescription;
 }
 
 function getKeywords()
@@ -45,16 +45,16 @@ function getKeywords()
     global $keywords;
     $url = $_SERVER['REQUEST_URI'];
 
-    $pageKeywords = $keywords;
+    $pageKeywords = $keywords['default'];
 
     // Find the corresponding title based on URL
-    foreach ($pageKeywords as $urlPattern => $title) {
+    foreach ($keywords as $urlPattern => $title) {
         if (strpos($url, $urlPattern) !== false) {
-            $keywords = $title;
+            $pageKeywords = $title;
             break;
         }
     }
-    return $keywords;
+    return $pageKeywords;
 }
 
 $url = strtok($_SERVER["REQUEST_URI"], '?');
