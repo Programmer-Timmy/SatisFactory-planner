@@ -173,7 +173,6 @@ if (isset($_GET['layoutType'])) {
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
-                <!--                toggle button between card and table view-->
                 <div>
                     <button class="btn btn-secondary"
                             onclick="location.href = 'game_save?id=<?= $gameSave->id ?>&layoutType=<?= $gameSave->card_view === 1 ? 0 : 1 ?>'"
@@ -196,8 +195,8 @@ if (isset($_GET['layoutType'])) {
             <?php elseif ($gameSave->card_view) : ?>
                 <div class="row">
                     <?php foreach ($productionLines as $productionLine) : ?>
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card">
+                        <div class="col-md-6 col-xl-4 mb-4">
+                            <div class="card h-100">
                                 <div class="card-header bg-dark text-white">
                                     <h5 class="card-title mb-0"><?= $productionLine->name ?></h5>
                                 </div>

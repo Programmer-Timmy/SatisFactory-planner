@@ -1,4 +1,3 @@
-import {ImportExport} from "./ImportExport";
 
 export class Settings {
     public autoImportExport: boolean = true;
@@ -7,6 +6,7 @@ export class Settings {
 
 
     constructor() {
+        this.addEventListeners();
         this.applyChanges();
     }
 
@@ -16,7 +16,6 @@ export class Settings {
 
         const autoImportExportCheckbox: HTMLInputElement = document.getElementById('auto_import_export') as HTMLInputElement;
         const autoPowerMachineCheckbox: HTMLInputElement = document.getElementById('auto_power_machine') as HTMLInputElement;
-        const autoSaveCheckbox: HTMLInputElement = document.getElementById('auto_save') as HTMLInputElement;
 
         if (autoImportExportCheckbox) {
             this.autoImportExport = autoImportExportCheckbox.checked;
@@ -26,17 +25,12 @@ export class Settings {
             this.autoPowerMachine = autoPowerMachineCheckbox.checked;
         }
 
-        if (autoSaveCheckbox) {
-            this.autoSave = autoSaveCheckbox.checked;
-        }
-
         this.saveSettings(productionLineId);
     }
 
     public addEventListeners() {
         const autoImportExportCheckbox: HTMLInputElement = document.getElementById('auto_import_export') as HTMLInputElement;
         const autoPowerMachineCheckbox: HTMLInputElement = document.getElementById('auto_power_machine') as HTMLInputElement;
-        const autoSaveCheckbox: HTMLInputElement = document.getElementById('auto_save') as HTMLInputElement;
 
         if (autoImportExportCheckbox) {
             // when on click give the element
@@ -50,15 +44,6 @@ export class Settings {
             autoPowerMachineCheckbox.addEventListener('change', () => {
                 $('#auto_power_machine').parent().parent().tooltip('hide');
                 this.applyChanges();
-            });
-        }
-
-        if (autoSaveCheckbox) {
-            autoSaveCheckbox.addEventListener('change', () => {
-                $('#auto_save').parent().parent().tooltip('hide');
-                ImportExport.autoSave();
-                this.applyChanges();
-
             });
         }
     }

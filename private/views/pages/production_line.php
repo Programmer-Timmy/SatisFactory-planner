@@ -227,7 +227,8 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                                        value="<?= $product->item_name_1 ?>">
                             </td>
                             <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_usage[]" step="any" required class="form-control rounded-0 usage-amount"
+                                <input min="0" type="number" name="production_usage[]" step="any" required readonly
+                                       class="form-control rounded-0 usage-amount"
                                        value="<?= $product->local_usage ?>">
                             </td>
                             <td class="m-0 p-0">
@@ -243,7 +244,8 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                                        value="<?= $product->item_name_2 ?>">
                             </td>
                             <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_usage2[]" step="any" required class="form-control rounded-0 usage-amount" "
+                                <input min="0" type="number" name="production_usage2[]" step="any" required readonly
+                                       class="form-control rounded-0 usage-amount" "
                                        value="<?= $product->local_usage2 ?>">
                             </td>
                             <td class="m-0 p-0">
@@ -269,11 +271,12 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                             <input type="text" readonly class="form-control rounded-0 product-name">
                         </td>
                         <td class="m-0 p-0">
-                            <input min="0" type="number" step="any" name="production_usage[]" value="0" required class="form-control rounded-0 usage-amount"
-                                   >
+                            <input min="0" type="number" step="any" name="production_usage[]" value="0" required
+                                   readonly class="form-control rounded-0 usage-amount">
                         </td>
                         <td class="m-0 p-0">
-                            <input min="0" type="number" step="any" name="production_export[]" value="0" required class="form-control rounded-0 export-amount">
+                            <input min="0" type="number" step="any" name="production_export[]" value="0" required
+                                   readonly class="form-control rounded-0 export-amount">
                         </td>
                     </tr>
                     </tbody>
