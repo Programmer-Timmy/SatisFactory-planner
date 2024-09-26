@@ -195,7 +195,7 @@ if (isset($_GET['layoutType'])) {
             <?php elseif ($gameSave->card_view) : ?>
                 <div class="row">
                     <?php foreach ($productionLines as $productionLine) : ?>
-                        <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="col-md-6 col-xl-4 mb-4">
                             <div class="card h-100">
                                 <div class="card-header bg-dark text-white">
                                     <h5 class="card-title mb-0"><?= $productionLine->name ?></h5>

@@ -7,6 +7,8 @@ import {PowerTableFunctions} from "./Functions/PowerTableFunctions";
 import {ImportsTableFunctions} from "./Functions/ImportsTableFunctions";
 import {Ajax} from "./Functions/Ajax";
 import {Settings} from "./Settings";
+import {HtmlGeneration} from "./Functions/HtmlGeneration";
+import {buildingOptions} from "./Data/BuildingOptions";
 
 
 /**
@@ -119,6 +121,7 @@ export class TableHandler {
         const columnIndex = target.closest('td').index();
         const value = target.val();
 
+        console.log(this)
         // If the last row is selected, add a new row
         if (this.checkIfLastRow(target, tableId) && this.checkIfSelect(target)) {
             this.addNewRow(tableId);
@@ -332,6 +335,28 @@ export class TableHandler {
             this.addSpecificEventListener('power');
         }
 
+    }
+
+    public saveData(productionTable: ProductionTableRow[], powerTable: PowerTableRow[], importTable: ImportsTableRow[]) {
+        this.productionTableRows = productionTable.pop() ? productionTable : productionTable;
+        this.powerTableRows = powerTable.pop() ? powerTable : powerTable;
+        this.importsTableRows = importTable.pop() ? importTable : importTable;
+
+        console.log('Data saved.');
+        console.log(this)
+        this.generateTables();
+
+        this.powerTableRows.push(new PowerTableRow());
+        this.productionTableRows.push(new ProductionTableRow());
+        this.importsTableRows.push(new ImportsTableRow());
+    }
+
+    private generateTables() {
+        $('#power tbody').html(HtmlGeneration.generatePowerTable(this.powerTableRows, buildingOptions, PowerTableFunctions.calculateTotalConsumption(this.powerTableRows)));
+        $('#imports tbody').html(HtmlGeneration.generateImportsTableRows(this.importsTableRows));
+        $('#recipes tbody').html(HtmlGeneration.generateProductionTableRows(this.productionTableRows));
+
+        this.addEventListeners();
     }
 
 

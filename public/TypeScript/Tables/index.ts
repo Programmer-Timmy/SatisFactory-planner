@@ -1,8 +1,8 @@
 import {TableHandler} from "./Classes/TableHandler";
 import {SaveFunctions} from "./Classes/Functions/SaveFunctions";
+import {ImportExport} from "./Classes/Functions/ImportExport";
 
 const tableHandler = new TableHandler();
-
 
 const saveButton = $("#save_button");
 saveButton.on("click", (event: JQuery.ClickEvent) => {
@@ -14,3 +14,14 @@ saveButton.on("click", (event: JQuery.ClickEvent) => {
         saveButton.blur();
     }
 })
+
+const exportButton = $("#exportButton");
+const importButton = $("#importButton");
+exportButton.on("click", () => {
+    ImportExport.exportData(tableHandler);
+});
+
+importButton.on("click", (event: JQuery.ClickEvent) => {
+    event.preventDefault();
+    ImportExport.importData(tableHandler);
+});

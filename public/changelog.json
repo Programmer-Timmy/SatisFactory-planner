@@ -10,7 +10,8 @@
       "Fixed issues where calculations would overwrite user inputs.",
       "Removed the auto-save option, as it is no longer necessary.",
       "Resolved issues with settings not saving correctly.",
-      "Made production line globally for production line and not based on user."
+      "Made production line globally for production line and not based on user.",
+      "Improvement to sizing of production line cards."
     ]
   },
   {

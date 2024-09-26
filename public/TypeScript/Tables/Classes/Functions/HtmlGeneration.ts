@@ -1,6 +1,8 @@
 import {PowerTableRow} from "../Data/PowerTableRow";
 import {ImportsTableRow} from "../Data/ImportsTableRow";
 import {ItemOptions} from "../Data/ItemOptions";
+import {RecipeOptions} from "../Data/RecipeOptions";
+import {ProductionTableRow} from "../Data/ProductionTableRow";
 
 export class HtmlGeneration {
 
@@ -113,6 +115,82 @@ export class HtmlGeneration {
                 <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0">
             </td>
         </tr>`;
+
+        return rowsHTML + emptyRowHTML; // Combine the existing rows with the empty row
+    }
+
+    /**
+     * Generates the HTML for the production table rows.
+     *
+     * @param productionTableRows - The array of production table rows to generate HTML for.
+     * @returns The generated HTML string for the production table rows.
+     */
+    public static generateProductionTableRows(productionTableRows: ProductionTableRow[]): string {
+        const rowsHTML = productionTableRows.map(row => {
+            let style = '';
+            let doubleExport = '';
+            let rowSpan = '';
+            if (row.doubleExport) {
+                style = 'style="height: 78px"';
+                rowSpan = 'rowspan="2"';
+                doubleExport = `
+            <tr class="extra-output">
+                <td class="m-0 p-0">
+                    <input type="text" readonly class="form-control rounded-0 product-name" value="${row.extraCells?.Product}">
+                </td>
+                <td class="m-0 p-0">
+                    <input min="0" type="number" step="any" name="production_usage2[]" value="${row.extraCells?.Usage}" required readonly class="form-control rounded-0 usage-amount">
+                </td>
+                <td class="m-0 p-0">
+                    <input min="0" type="number" step="any" name="production_export2[]" value="${row.extraCells?.Quantity}" required readonly class="form-control rounded-0 export-amount">
+                </td>
+            </tr>
+            `;
+            }
+            return ` <tr>
+          <td class="m-0 p-0" ${rowSpan}>
+            <select name="production_recipe_id[]" class="form-control rounded-0 item-recipe-id recipe" ${style}>
+              ${RecipeOptions.replace(`value="${row.recipeId}"`, `value="${row.recipeId}" selected`)}
+            </select>
+          </td>
+          <td class="m-0 p-0" ${rowSpan}>
+            <input min="0" type="number" step="any" name="production_quantity[]" value="${row.quantity}" required class="form-control rounded-0 production-quantity" ${style}>
+          </td>
+          <td class="m-0 p-0">
+            <input type="text" readonly class="form-control rounded-0 product-name" value="${row.product}">
+          </td>
+          <td class="m-0 p-0">
+            <input min="0" type="number" step="any" name="production_usage[]" value="${row.Usage}" required readonly class="form-control rounded-0 usage-amount">
+          </td>
+          <td class="m-0 p-0">
+            <input min="0" type="number" step="any" name="production_export[]" value="${row.exportPerMin}" required readonly class="form-control rounded-0 export-amount">
+          </td>
+        </tr>
+        ${doubleExport}
+        `}).join('');
+
+
+        const emptyRowHTML = `
+        <tr>
+            <td class="m-0 p-0">
+                <select name="production_recipe_id[]" class="form-control rounded-0 item-recipe-id recipe">
+                    ${RecipeOptions.replace(/<option /, '<option selected ')}
+                </select>
+            </td>
+            <td class="m-0 p-0">
+                <input min="0" type="number" value="0" step="any" name="production_quantity[]" required class="form-control rounded-0 production-quantity">
+            </td>
+            <td class="m-0 p-0">
+                <input type="text" readonly class="form-control rounded-0 product-name">
+            </td>
+            <td class="m-0 p-0">
+                <input min="0" type="number" value="0" step="any" name="production_usage[]" required readonly class="form-control rounded-0 usage-amount">
+            </td>
+            <td class="m-0 p-0">
+                <input min="0" type="number" value="0" step="any" name="production_export[]" required readonly class="form-control rounded-0 export-amount">
+            </td>
+        </tr>
+    `;
 
         return rowsHTML + emptyRowHTML; // Combine the existing rows with the empty row
     }
