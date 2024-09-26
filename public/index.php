@@ -56,6 +56,7 @@ if ($site['admin']['enabled']) {
                     $_SESSION['redirect'] = $requestedPage;
                 }
                 header('Location:' . $admin['redirect']);
+                exit();
             }
         }
     }
@@ -77,6 +78,7 @@ if ($site['accounts']['enabled']) {
                 }
 
                 header('Location:' . $site['redirect']);
+                exit();
             }
         }
     }
