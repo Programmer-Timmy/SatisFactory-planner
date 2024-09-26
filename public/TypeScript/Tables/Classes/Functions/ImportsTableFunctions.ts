@@ -37,6 +37,8 @@ export class ImportsTableFunctions {
         const html = HtmlGeneration.generateImportsTableRows(importsTableRows);
         $('#imports tbody').html(html);
 
+        importsTableRows.push(new ImportsTableRow());
+
         return {importsTableRows, indexes: updatedIndexes};
     }
 

@@ -67,7 +67,7 @@ class ProductionLines
                 }
             }
             foreach ($power as $pow) {
-                Database::insert("power", ['production_lines_id', 'buildings_id', 'building_ammount', 'clock_speed', 'power_used', 'user'], [$id, $pow->buildings_id, $pow->building_ammount, $pow->clock_speed, $pow->power_used, $pow->user], $database);
+                Database::insert("power", ['production_lines_id', 'buildings_id', 'building_ammount', 'clock_speed', 'power_used', 'user'], [$id, $pow->buildings_id, $pow->building_ammount, $pow->clock_speed, $pow->power_used, $pow->user ? 1 : 0], $database);
             }
             Database::commit($database);
 
@@ -75,7 +75,6 @@ class ProductionLines
         } catch (Exception $e) {
             Database::rollBack($database);
             return false;
-
         }
     }
 

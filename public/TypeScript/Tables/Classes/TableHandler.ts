@@ -355,7 +355,6 @@ export class TableHandler {
         $('#power tbody').html(HtmlGeneration.generatePowerTable(this.powerTableRows, buildingOptions, PowerTableFunctions.calculateTotalConsumption(this.powerTableRows)));
         $('#imports tbody').html(HtmlGeneration.generateImportsTableRows(this.importsTableRows));
         $('#recipes tbody').html(HtmlGeneration.generateProductionTableRows(this.productionTableRows));
-
         this.addEventListeners();
     }
 
