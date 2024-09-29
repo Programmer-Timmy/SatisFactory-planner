@@ -1,8 +1,18 @@
 <?php
 
-// Usage
+if (!isset($_POST)) {
+    die(json_encode(['status' => 'error', 'message' => 'Invalid request']));
+}
+
+if (!isset($_POST['saveGameId'])) {
+    die(json_encode(['status' => 'error', 'message' => 'Invalid request']));
+}
+
+$saveGameId = $_POST['saveGameId'];
+$serverToken = GameSaves::getServerToken($saveGameId);
+
 try {
-    $client = new APIClient('192.168.2.11', 7777, 'YOUR_API_TOKEN_HERE');
+    $client = new APIClient('192.168.2.11', 7777, $serverToken);
     $response = $client->post('HealthCheck', ['ClientCustomData' => '']);
 
     // Assuming 'HealthCheck' has some specific response format

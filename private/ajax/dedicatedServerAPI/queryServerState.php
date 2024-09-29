@@ -10,7 +10,7 @@ function secondsToHMS($seconds)
 
 // Usage
 try {
-    $client = new APIClient('192.168.2.11', 7777, 'YOUR_API_TOKEN_HERE');
+    $client = new APIClient('192.168.2.11', 7777, 'ewoJInBsIjogIkFQSVRva2VuIgp9.98F7AD7A7F120D51E652C7795D8A8984A5C5F4F374C9C8E8B04BF389635FE2423E3392C1DCF2ED553C05C1848164EAEAADC14327868ECAC74493463ABDB889E9');
     $response = $client->post('QueryServerState');
 
     $output = '';

@@ -262,5 +262,38 @@ class GameSaves
         }
     }
 
+    public static function saveServerToken(int $gameSaveId, string $token)
+    {
+        $key = getenv('SERVER_TOKEN_KEY');
+        $encryptedToken = openssl_encrypt($token, 'aes-256-cbc', $key, 0, $key);
 
+        $database = new Database();
+        $database->connection->beginTransaction();
+        try {
+            $existingToken = $database->get("game_saves", ['server_token'], ['id' => $gameSaveId]);
+            if ($existingToken) {
+                $database->update("game_saves", ['server_token'], [$encryptedToken], ['id' => $gameSaveId], database: $database);
+            } else {
+                $database->insert("game_saves", ['server_token'], [$encryptedToken]);
+            }
+
+            $database->connection->commit();
+        } catch (Exception $e) {
+            $database->connection->rollBack();
+            throw new ErrorException($e->getMessage());
+        }
+
+    }
+
+    public static function getServerToken(int $gameSaveId)
+    {
+        $key = getenv('SERVER_TOKEN_KEY');
+        $database = new Database();
+        $encryptedToken = $database->get("game_saves", ['server_token'], ['id' => $gameSaveId]);
+        if ($encryptedToken) {
+            return openssl_decrypt($encryptedToken->server_token, 'aes-256-cbc', $key, 0, $key);
+        } else {
+            return null;
+        }
+    }
 }

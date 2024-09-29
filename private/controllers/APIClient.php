@@ -1,10 +1,277 @@
 <?php
 
+
 class APIClient
 {
     private $host;
     private $port;
     private $authToken;
+
+    private $apiFunctions = [
+        'HealthCheck' => [
+            'requires_auth' => false,
+            'parameters' => [
+                'ClientCustomData' => [
+                    'type' => 'string',
+                    'required' => false,
+                    'default' => ''
+                ]
+            ],
+            'multipart' => false
+        ],
+        'VerifyAuthenticationToken' => [
+            'requires_auth' => false,
+            'parameters' => [],
+            'multipart' => false
+        ],
+        'PasswordlessLogin' => [
+            'requires_auth' => false,
+            'parameters' => [
+                'MinimumPrivilegeLevel' => [
+                    'type' => 'enum',
+                    'options' => ['NotAuthenticated', 'Client', 'Administrator', 'InitialAdmin', 'APIToken'],
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'PasswordLogin' => [
+            'requires_auth' => false,
+            'parameters' => [
+                'MinimumPrivilegeLevel' => [
+                    'type' => 'enum',
+                    'options' => ['NotAuthenticated', 'Client', 'Administrator', 'InitialAdmin', 'APIToken'],
+                    'required' => true
+                ],
+                'Password' => [
+                    'type' => 'password',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'QueryServerState' => [
+            'requires_auth' => true,
+            'parameters' => [],
+            'multipart' => false
+        ],
+        'GetServerOptions' => [
+            'requires_auth' => true,
+            'parameters' => [],
+            'multipart' => false
+        ],
+        'GetAdvancedGameSettings' => [
+            'requires_auth' => true,
+            'parameters' => [],
+            'multipart' => false
+        ],
+        'ApplyAdvancedGameSettings' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'AppliedAdvancedGameSettings' => [
+                    'type' => 'dict',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'ClaimServer' => [
+            'requires_auth' => false,
+            'parameters' => [
+                'ServerName' => [
+                    'type' => 'string',
+                    'required' => true
+                ],
+                'AdminPassword' => [
+                    'type' => 'password',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'RenameServer' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'ServerName' => [
+                    'type' => 'string',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'SetClientPassword' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'Password' => [
+                    'type' => 'password',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'SetAdminPassword' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'Password' => [
+                    'type' => 'password',
+                    'required' => true
+                ],
+                'AuthenticationToken' => [
+                    'type' => 'string',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'SetAutoLoadSessionName' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'SessionName' => [
+                    'type' => 'string',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'RunCommand' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'Command' => [
+                    'type' => 'string',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'Shutdown' => [
+            'requires_auth' => true,
+            'parameters' => [],
+            'multipart' => false
+        ],
+        'ApplyServerOptions' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'UpdatedServerOptions' => [
+                    'type' => 'dict',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'CreateNewGame' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'NewGameData' => [
+                    'type' => 'dict',
+                    'required' => true,
+                    'schema' => [
+                        'SessionName' => [
+                            'type' => 'string',
+                            'required' => true
+                        ],
+                        'MapName' => [
+                            'type' => 'string',
+                            'required' => false
+                        ],
+                        'StartingLocation' => [
+                            'type' => 'string',
+                            'required' => false
+                        ],
+                        'SkipOnboarding' => [
+                            'type' => 'boolean',
+                            'required' => false
+                        ],
+                        'AdvancedGameSettings' => [
+                            'type' => 'dict',
+                            'required' => false
+                        ],
+                        'CustomOptionsOnlyForModding' => [
+                            'type' => 'dict',
+                            'required' => false
+                        ]
+                    ]
+                ]
+            ],
+            'multipart' => false
+        ],
+        'SaveGame' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'SaveName' => [
+                    'type' => 'string',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'DeleteSaveFile' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'SaveName' => [
+                    'type' => 'string',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'DeleteSaveSession' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'SessionName' => [
+                    'type' => 'string',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ],
+        'EnumerateSessions' => [
+            'requires_auth' => true,
+            'parameters' => [],
+            'multipart' => false
+        ],
+        'LoadGame' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'SaveName' => [
+                    'type' => 'string',
+                    'required' => true
+                ],
+                'EnableAdvancedGameSettings' => [
+                    'type' => 'boolean',
+                    'required' => false
+                ]
+            ],
+            'multipart' => false
+        ],
+        'UploadSaveGame' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'SaveName' => [
+                    'type' => 'string',
+                    'required' => true
+                ],
+                'LoadSaveGame' => [
+                    'type' => 'boolean',
+                    'required' => false
+                ],
+                'EnableAdvancedGameSettings' => [
+                    'type' => 'boolean',
+                    'required' => false
+                ]
+            ],
+            'multipart' => true
+        ],
+        'DownloadSaveGame' => [
+            'requires_auth' => true,
+            'parameters' => [
+                'SaveName' => [
+                    'type' => 'string',
+                    'required' => true
+                ]
+            ],
+            'multipart' => false
+        ]
+    ];
 
     public function __construct($host, $port = 7777, $authToken = null)
     {
@@ -15,8 +282,8 @@ class APIClient
 
     public function post($function, $data = [], $files = [])
     {
+        $apiFunctions = $this->apiFunctions;
         // Define API functions and required parameters
-        global $apiFunctions;
         if (!isset($apiFunctions[$function])) {
             throw new Exception("Unknown API function: $function");
         }
@@ -101,4 +368,5 @@ class APIClient
             ];
         }
     }
+
 }
