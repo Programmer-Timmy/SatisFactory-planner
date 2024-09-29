@@ -28,6 +28,12 @@ if (isset($_GET['productDelete'])) {
 }
 
 GameSaves::setLastVisitedSaveGame($gameSave->id);
+
+if (isset($_GET['layoutType'])) {
+    GameSaves::changeCardView($_GET['id'], $_GET['layoutType']);
+    header('Location: game_save?id=' . $_GET['id']);
+    exit();
+}
 ?>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
@@ -57,6 +63,10 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
         chart = new google.visualization.Gauge(document.getElementById('chart_div'));
 
         chart.draw(data, options);
+
+        if (available_power === 0) {
+            $('#popover-power').popover('show');
+        }
     }
 
     async function getPowerProduction() {
@@ -83,7 +93,6 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
         });
     }
 
-
     async function update_total_power_consumption() {
         const total_power_consumption = getPowerConsumption();
         const total_power_production= await getPowerProduction();
@@ -98,17 +107,28 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
         let total_power_consumption = 0;
         document.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
             if (checkbox.checked) {
-                const parentElement = checkbox.parentElement;
+                let textContent;
+                if (<?= $gameSave->card_view ?>) {
+                    const parentElement = $(checkbox).closest('.card-body');
 
-                const grandparentElement = parentElement.parentElement;
+                    textContent = parentElement.find('.card-text')[0].innerText
 
-                const previousSibling = grandparentElement.previousElementSibling;
+                    textContent = textContent.replace("Power Consumption: ", '');
 
-                const nextPreviousSibling = previousSibling.previousElementSibling;
+                } else {
+                    const parentElement = checkbox.parentElement;
 
-                const textContent = nextPreviousSibling.innerText;
+                    const grandparentElement = parentElement.parentElement;
+
+                    const previousSibling = grandparentElement.previousElementSibling;
+
+                    const nextPreviousSibling = previousSibling.previousElementSibling;
+
+                    textContent = nextPreviousSibling.innerText;
+                }
 
                 total_power_consumption += parseInt(textContent);
+
             }
         });
         return total_power_consumption;
@@ -153,11 +173,65 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
-                <button id="add_product_line" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top"
-                        data-bs-title="Add Production Line"><i class="fa-solid fa-plus"></i></button>
+                <div>
+                    <button class="btn btn-secondary"
+                            onclick="location.href = 'game_save?id=<?= $gameSave->id ?>&layoutType=<?= $gameSave->card_view === 1 ? 0 : 1 ?>'"
+                            data-bs-toggle="tooltip" data-bs-placement="top"
+                            data-bs-title="<?= $gameSave->card_view === 1 ? 'Table View' : 'Card View' ?>">
+                        <i class=" <?= $gameSave->card_view === 1 ? 'fa-solid fa-table' : 'fa-regular fa-square' ?>"></i>
+                    </button>
+                    <span id="popover-production" data-bs-toggle="popover" data-bs-placement="left"
+                          opened="<?= empty($productionLines) ? 'false' : 'true' ?>"
+                          data-bs-trigger="manual"
+                          title="No Production Lines Added"
+                          data-bs-content="Add an production line to start calculating and planning your production">
+                           <button id="add_product_line" class="btn btn-primary"
+                                data-bs-title="Add Production Line"><i class="fa-solid fa-plus"></i></button>
+                    </span>
+                </div>
             </div>
             <?php if (empty($productionLines)) : ?>
                 <h4 class="text-center mt-3">No Production Lines Found</h4>
+            <?php elseif ($gameSave->card_view) : ?>
+                <div class="row">
+                    <?php foreach ($productionLines as $productionLine) : ?>
+                        <div class="col-md-6 col-xl-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-dark text-white">
+                                    <h5 class="card-title mb-0"><?= $productionLine->name ?></h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text"><strong>Power
+                                            Consumption:</strong> <?= $productionLine->power_consumbtion ?></p>
+                                    <p class="card-text"><strong>Updated
+                                            At:</strong> <?= GlobalUtility::formatUpdatedTime($productionLine->updated_at) ?>
+                                    </p>
+                                    <div class="form-group">
+                                        <label><strong>Active:</strong></label>
+                                        <input type="checkbox" data-toggle="toggle" data-onstyle="success"
+                                               onchange="changeActiveStats(<?= $productionLine->id ?>, this)"
+                                               data-offstyle="danger" data-size="sm" data-onlabel="Yes"
+                                               data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between">
+                                    <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"
+                                       data-bs-toggle="tooltip" data-bs-placement="top"
+                                       data-bs-title="Open Production Line">
+                                        <i class="fa-solid fa-gears"></i> Open
+                                    </a>
+                                    <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"
+                                       data-bs-toggle="tooltip" data-bs-placement="top"
+                                       data-bs-title="Delete Production Line"
+                                       onclick="return confirm('Are you sure you want to delete this production line?')"
+                                       class="btn btn-danger">
+                                        <i class="fa-solid fa-x"></i> Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
             <?php else: ?>
                 <div class="overflow-auto">
                     <table class="table table-striped">
@@ -209,10 +283,16 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
         <div class="col-lg-4">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Power Consumption</h2>
-                <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip"
-                        data-bs-placement="top" data-bs-title="Update Power Production"><i
-                            class="fa-solid fa-bolt-lightning"></i>
-                </button>
+                <!--                popover when no power production is added-->
+                <span id="popover-power" data-bs-toggle="popover" data-bs-placement="top"
+                      title="No Power Production Added"
+                      data-bs-trigger="manual"
+                      data-bs-content="Add Power Production to have an prediction over your power capacity">
+                    <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" data-bs-title="Update Power Production"><i
+                                class="fa-solid fa-bolt-lightning"></i>
+                    </button>
+                </span>
             </div>
             <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"
                  id="power-alert" role="alert">
@@ -277,6 +357,12 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
             });
     }
 </script>
+
+<?php
+if (empty($productionLines)) {
+    echo '<script>$(document).ready(function(){$(\'#popover-production\').popover(\'show\');});</script>';
+}
+?>
 
 
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>

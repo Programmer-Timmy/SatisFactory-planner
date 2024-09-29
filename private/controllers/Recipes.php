@@ -5,12 +5,21 @@ class Recipes
 
     public static function getAllRecipes()
     {
-        return Database::getAll("recipes", ['*'], [], [], 'name ASC');
+        return Database::getAll("recipes", ['*'], [], [], 'LTRIM(SUBSTRING_INDEX(`name`, "(", 1)) ASC');
     }
 
     public static function getRecipeById(int $id)
     {
         return Database::get("recipes", ['recipes.*', 'items.name as itemName', 'items2.name as secondItemName'], ['items' => 'items.id = recipes.item_id left join items as items2 on items2.id = recipes.item_id2'], ['recipes.id' => $id]);
+    }
+
+    public static function getRecipeByIdAjax(int $id)
+    {
+        return Database::get(
+            "recipes",
+            ['recipes.*', 'items.name as itemName', 'items2.name as secondItemName'],
+            ['items' => 'items.id = recipes.item_id left join items as items2 on items2.id = recipes.item_id2'],
+            ['recipes.id' => $id]);
     }
 
     public static function checkIfMultiOutput(int $id)

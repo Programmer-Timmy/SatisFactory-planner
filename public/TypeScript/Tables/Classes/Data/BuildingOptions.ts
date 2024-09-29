@@ -1,0 +1,21 @@
+export const buildingOptions = `
+  <option value="" disabled>Select a building</option>
+  <option value="16">Assembler</option>
+  <option value="17">Blender</option>
+  <option value="19">Constructor</option>
+  <option value="6">Converter</option>
+  <option value="13">Foundry</option>
+  <option value="21">Main Portal</option>
+  <option value="15">Manufacturer</option>
+  <option value="10">Miner Mk.1</option>
+  <option value="9">Miner Mk.2</option>
+  <option value="11">Miner Mk.3</option>
+  <option value="8">Oil Extractor</option>
+  <option value="14">Packager</option>
+  <option value="7">Particle Accelerator</option>
+  <option value="5">Quantum Encoder</option>
+  <option value="12">Refinery</option>
+  <option value="22">Satellite Portal</option>
+  <option value="18">Smelter</option>
+  <option value="4">Water Extractor</option>
+`;

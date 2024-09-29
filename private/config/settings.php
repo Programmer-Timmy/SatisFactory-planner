@@ -40,11 +40,11 @@ $site = [
     // Auth settings
     'user-adminTable' => 'users', // the table name that will be used to check if the user/admin exists
     'saveUrl' => true, // save the url in the session, so you can redirect the user back to the page he was before he logged in
-    'redirect' => 'login', // redirect to this page if the user is not logged in
+    'redirect' => '/login', // redirect to this page if the user is not logged in
 
     // Admin settings
     'admin' => [
-        'enabled' => false,
+        'enabled' => true,
         'sessionName' => 'admin', // the session name that will be used to store that the user is a admin check by isset function
         'filterInUrl' => 'admin', // empty string means no filter
     ],
@@ -94,9 +94,44 @@ $titles = [
     'game_save' => 'Game Save - ' . $site['siteName'],
     'production_line' => 'Production Line - ' . $site['siteName'],
     'login' => 'Login - ' . $site['siteName'],
+    'register' => 'Register - ' . $site['siteName'],
+    'account' => 'Account - ' . $site['siteName'],
+    'helpfulLinks' => 'Helpful Links - ' . $site['siteName'],
     '404' => '404 - Oops page not found!',
     // Add more titles as needed
 ];
+
+$description = [
+    'default' => 'Satisfactory Planner is a site that helps you plan and organize your factories in the game Satisfactory.',
+    'maintenance' => 'The site is currently under maintenance, please check back later.',
+    'home' => 'Satisfactory Planner is a site that helps you plan and organize your factories in the game Satisfactory.',
+    'about' => 'Learn more about Satisfactory Planner and the team behind it.',
+    'contact' => 'Contact the team behind Satisfactory Planner.',
+    'game_save' => 'View and edit your game saves.',
+    'production_line' => 'View and edit your production lines.',
+    'login' => 'Login to your account.',
+    'register' => 'Register for an account.',
+    'account' => 'View and edit your account settings.',
+    'helpfulLinks' => 'A collection of helpful links for Satisfactory.',
+    '404' => 'Oops page not found!',
+    // Add more descriptions as needed
+];
+
+$keywords = [
+    'default' => 'Satisfactory, Satisfactory Planner, Factory Planner, Automation Game, Base Building, Simulation Game',
+    'home' => 'Satisfactory Planner Home, Factory Management, Satisfactory Guide, Satisfactory Planning Tools',
+    'about' => 'About Satisfactory Planner, Factory Simulation, Game Planning Tools, Base Building Guide',
+    'contact' => 'Contact Satisfactory Planner, Game Support, Factory Planning Assistance, Community Help',
+    'game_save' => 'Satisfactory Game Save, Factory Save Manager, Save Game Edit, Game Save Management',
+    'production_line' => 'Satisfactory Production Line, Factory Efficiency, Production Planning, Resource Management',
+    'login' => 'Satisfactory Planner Login, Access Factory Planner, Game Save Login, Satisfactory Account',
+    'register' => 'Register Satisfactory Planner, Create Account, Join Factory Planner, Sign Up',
+    'account' => 'Account Settings, Satisfactory Planner Account, Manage Satisfactory Profile, Game Save Preferences',
+    'helpfulLinks' => 'Satisfactory Resources, Game Links, Factory Planning Guides, Satisfactory Tutorials',
+    '404' => 'Page Not Found, Satisfactory Planner Error, Factory Planner 404, Broken Link',
+    // Add more specific keywords for other pages
+];
+
 
 // Disable errors if debug is set to false
 if (!$site['debug']) {

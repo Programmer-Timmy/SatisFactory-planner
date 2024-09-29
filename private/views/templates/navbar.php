@@ -11,6 +11,13 @@ if (isset($_SESSION['userId'])){
     }
 }
 
+$navItems = [
+    '/home' => 'Home',
+    '/game_save?id=' . urlencode($lastVisitedSaveGame) => 'Game Save',
+    '/account' => 'Account',
+    '/helpfulLinks' => 'Helpful Links'
+];
+
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
     <div class="container-fluid">
@@ -21,17 +28,15 @@ if (isset($_SESSION['userId'])){
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link <?php if ($require === '/home') echo 'active'; ?>" aria-current="page"
-                       href="/home">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php if ($require === '/account') echo 'active'; ?>" aria-current="page"
-                       href="/account">Account</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php if ($require === '/game_save') echo 'active'; ?>" aria-current="page"
-                       href="/game_save?id=<?= $lastVisitedSaveGame ?>">Game Save</a>
+                <?php foreach ($navItems as $url => $label) :?>
+
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo ($require === explode('?', $url)[0]
+                        ) ? 'active' : ''; ?>" aria-current="page" href="<?= $url ?>">
+                            <?= $label ?>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
             </ul>
             <div class="d-flex">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">

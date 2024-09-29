@@ -14,7 +14,7 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
     }
 
     // Assuming Database::insert() is a function that inserts data into the database
-    $gameSaveId = GameSaves::updateSaveGame($gameSave_id, $_SESSION['userId'], $UpdatedSaveGameName, $_FILES['UpdatedSaveGameImage'], $_POST['AllowedUsers']);
+    $gameSaveId = GameSaves::updateSaveGame($gameSave_id, $_SESSION['userId'], $UpdatedSaveGameName, $_FILES['UpdatedSaveGameImage']);
     if ($gameSaveId) {
         header('Location:/home');
         exit();
@@ -124,10 +124,10 @@ if (count($gameSaves) == 2) {
             <?php foreach ($gameSaves as $gameSave) :
                 $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
                 ?>
-                <div class="d-flex align-items-stretch <?= $class ?>">
+                <div class="d-flex align-items-stretch <?= $class ?> mt-3">
                     <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
                        class="card-link text-black text-decoration-none">
-                        <div class="card mt-3">
+                        <div class="card h-100 w-100">
                             <div class="position-relative">
                                 <img src="image/<?= $gameSave->image ?>" class="card-img-top" alt="...">
                                 <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
@@ -163,4 +163,6 @@ if (count($gameSaves) == 2) {
     document.getElementById('InvitesDropdown').addEventListener('click', function (event) {
         event.stopPropagation();
     });
+
 </script>
+

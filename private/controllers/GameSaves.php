@@ -27,7 +27,7 @@ class GameSaves
      */
     public static function getSaveGameById(int $id)
     {
-        return Database::get("users_has_game_saves", ['game_saves.*', 'users.username', 'users.id as userId'], ['game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', "users" => "game_saves.owner_id = users.id"], ['game_saves.id' => $id, 'accepted' => 1]);
+        return Database::get("users_has_game_saves", ['game_saves.*', 'users.username', 'users.id as userId', 'users_has_game_saves.card_view'], ['game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', "users" => "game_saves.owner_id = users.id"], ['game_saves.id' => $id, 'accepted' => 1, 'users_has_game_saves.users_id' => $_SESSION['userId']]);
     }
 
     /**
@@ -41,7 +41,7 @@ class GameSaves
     public static function createSaveGame(int $user_id, string $title, array $image, array $allowedUsers)
     {
         $createdAt = date('Y-m-d H:i:s');
-        $id = Database::insert("game_saves", ['owner_id', 'title', 'created_at'], [$user_id, $title, $createdAt]);
+        $id = Database::insert("game_saves", ['owner_id', 'title', 'created_at', 'total_power_production'], [$user_id, $title, $createdAt, 0]);
         Database::insert("users_has_game_saves", ['users_id', 'game_saves_id'], [$user_id, $id]);
 
         if ($image['tmp_name'] != '') {
@@ -102,7 +102,7 @@ class GameSaves
      * @return bool
      * @throws ErrorException
      */
-    public static function updateSaveGame(int $game_save_id, int $owner_id, string $title, array $image, array $allowedUsers)
+    public static function updateSaveGame(int $game_save_id, int $owner_id, string $title, array $image)
     {
         if ($owner_id != $_SESSION['userId']) {
             return false;
@@ -111,10 +111,6 @@ class GameSaves
             self::uploadImage($game_save_id, $image);
         }
         Database::update("game_saves", ['title'], [$title], ['id' => $game_save_id]);
-        Database::query("DELETE FROM users_has_game_saves WHERE game_saves_id = ? and users_id != ?", [$game_save_id, $_SESSION['userId']]);
-        foreach ($allowedUsers as $user) {
-            self::addUserToSaveGame($user, $game_save_id);
-        }
         return true;
     }
 
@@ -260,6 +256,11 @@ class GameSaves
         } else {
             return null;
         }
+    }
+
+    public static function changeCardView(int $gameSaveId, int $cardView): void
+    {
+        Database::update("users_has_game_saves", ['card_view'], [$cardView], ['game_saves_id' => $gameSaveId, 'users_id' => $_SESSION['userId']]);
     }
 
     public static function saveServerToken(int $gameSaveId, string $token)

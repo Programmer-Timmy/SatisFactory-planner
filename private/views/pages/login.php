@@ -26,7 +26,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     }
 }
 
-if (isset($_GET['verify'])) {
+if (isset($_GET['verify']) && strtok($_SERVER['REQUEST_URI'], '?') == '/login') {
     if (Users::verifyUser($_GET['verify'])) {
         $success = 'Email verified';
     } else {
@@ -82,6 +82,9 @@ if (isset($_GET['verify'])) {
         </div>
     </div>
 </div>
-<script>const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
-    window.history.replaceState({path: url}, "", url);
-</script>
+<?php if (strtok($_SERVER['REQUEST_URI'], '?') == '/login'): ?>
+    <script>
+        const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.replaceState({path: url}, "", url);
+    </script>
+<?php endif; ?>

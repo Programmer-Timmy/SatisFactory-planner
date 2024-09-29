@@ -98,8 +98,22 @@ $powerProduction = PowerProduction::getPowerProduction($gameSave->id);
 </div>
 <script>
     document.getElementById('update_power_production').addEventListener('click', function () {
-        const updatePowerProduction = new bootstrap.Modal(document.getElementById('updatePowerProduction'));
-        updatePowerProduction.show();
+        const popoverProduction = $('#popover-production');
+
+        event.stopPropagation();
+        $(document).ready(function () {
+            $('#popover-production').popover('hide');
+            $('#popover-power').popover('hide');
+        });
+        const updatePowerProduction = document.getElementById('updatePowerProduction');
+        new bootstrap.Modal(updatePowerProduction).show();
+        updatePowerProduction.addEventListener('hide.bs.modal', function () {
+            console.log(popoverProduction.attr('opened'));
+            if (popoverProduction.attr('opened') === 'false') {
+                $('#popover-production').popover('show');
+            }
+            this.removeEventListener('hide.bs.modal', arguments.callee);
+        });
     });
 </script>
 

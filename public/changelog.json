@@ -1,5 +1,34 @@
 [
   {
+    "version": "1.5.0",
+    "date": "september 26 2024",
+    "changes": [
+      "Completely overhauled the automatic calculations for better performance.",
+      "Significantly improved calculation speed and efficiency.",
+      "Enhanced calculation accuracy and reliability.",
+      "Reduced the likelihood of calculation errors and overrides.",
+      "Fixed issues where calculations would overwrite user inputs.",
+      "Removed the auto-save option, as it is no longer necessary.",
+      "Resolved issues with settings not saving correctly.",
+      "Made production line globally for production line and not based on user.",
+      "Improvement to sizing of production line cards."
+    ]
+  },
+  {
+    "version": "1.4.1",
+    "date": "september 24 2024",
+    "changes": [
+      "improved the maintenance page."
+    ]
+  },
+  {
+    "version": "1.4.0",
+    "date": "september 24 2024",
+    "changes": [
+      "Added useful links page and possibility to suggest new links."
+    ]
+  },
+  {
     "version": "1.3.3",
     "date": "september 22, 2024",
     "changes": [

@@ -6,12 +6,11 @@ if (!isset($_POST['data']) || !isset($_POST['id'])) {
 }
 
 if (!ProductionLines::checkProductionLineVisability($_SESSION['lastVisitedSaveGame'], $_SESSION['userId'])) {
-//    header('Location: /');
+    echo json_encode(['error' => 'You do not have permission to edit this production line']);
     exit();
 }
 
 $data = json_decode($_POST['data'], true);
-
 $importsData = [];
 $productionData = [];
 $powerData = [];
@@ -19,48 +18,47 @@ $totalPower = 0;
 
 $productionLineId = $_POST['id'];
 
-$importRows = $data['importTable']['tableRows'];
-for ($i = 0; $i < count($data['importTable']['tableRows']); $i++) {
-    if ($importRows[$i]['cells'][0] == null || $importRows[$i]['cells'][1] == '') {
+$importRows = $data['importsTableRows'];
+foreach ($importRows as $row) {
+    if ($row['itemId'] == null || $row['quantity'] == 0 || $row['quantity'] == '') {
         continue;
     }
     $importsData[] = (object)[
-        'id' => $importRows[$i]['cells'][0],
-        'ammount' => $importRows[$i]['cells'][1]
+        'id' => intval($row['itemId']),
+        'ammount' => $row['quantity']
     ];
 }
+$productionRows = $data['productionTableRows'];
 
-$productionRows = $data['productionTable']['tableRows'];
-for ($i = 0; $i < count($data['productionTable']['tableRows']); $i++) {
-    if ($productionRows[$i]['cells'][0] == null || $productionRows[$i]['cells'][1] == 0 || $productionRows[$i]['cells'][1] == '') {
+foreach ($productionRows as $row) {
+    if ($row['recipeId'] == null || $row['recipeId'] == 0 || $row['quantity'] == 0 || $row['quantity'] == '') {
         continue;
     }
-    $secondUsage = $productionRows[$i]['doubleExport'] == 'true' ? $productionRows[$i]['extraCells'][1] : null;
-    $secondExport = $productionRows[$i]['doubleExport'] == 'true' ? $productionRows[$i]['extraCells'][2] : null;
+    $secondUsage = $row['doubleExport'] == 'true' ? $row['extraCells']['Usage'] : null;
+    $secondExport = $row['doubleExport'] == 'true' ? $row['extraCells']['ExportPerMin'] : null;
     $productionData[] = (object)[
-        'recipe_id' => $productionRows[$i]['cells'][0],
-        'product_quantity' => $productionRows[$i]['cells'][1],
-        'usage' => $productionRows[$i]['cells'][3],
-        'export_amount_per_min' => $productionRows[$i]['cells'][4],
+        'recipe_id' => $row['recipeId'],
+        'product_quantity' => $row['quantity'],
+        'usage' => $row['Usage'],
+        'export_amount_per_min' => $row['exportPerMin'],
         'local_usage2' => $secondUsage,
         'export_ammount_per_min2' => $secondExport
     ];
 }
 
-$powerRows = $data['powerTable']['tableRows'];
-for ($i = 0; $i < count($data['powerTable']['tableRows']); $i++) {
-    if ($powerRows[$i]['cells'][0] == null || $powerRows[$i]['cells'][3] == '') {
+$powerRows = $data['powerTableRows'];
+foreach ($powerRows as $row) {
+    if ($row['buildingId'] == null || $row['quantity'] == 0 || $row['quantity'] == '') {
         continue;
     }
-
     $powerData[] = (object)[
-        'buildings_id' => $powerRows[$i]['cells'][0],
-        'building_ammount' => $powerRows[$i]['cells'][1],
-        'clock_speed' => $powerRows[$i]['cells'][2],
-        'power_used' => $powerRows[$i]['cells'][3],
-        'user' => $powerRows[$i]['cells'][4]
+        'buildings_id' => $row['buildingId'],
+        'building_ammount' => $row['quantity'],
+        'clock_speed' => $row['clockSpeed'],
+        'power_used' => $row['Consumption'],
+        'user' => $row['userRow']
     ];
-    $totalPower += $powerRows[$i]['cells'][3];
+    $totalPower += $row['Consumption'];
 }
 
 if (ProductionLines::saveProductionLine($importsData, $productionData, $powerData, $totalPower, $productionLineId)) {
@@ -69,3 +67,4 @@ if (ProductionLines::saveProductionLine($importsData, $productionData, $powerDat
 }
 
 echo json_encode(['error' => 'Failed to update production line']);
+exit();

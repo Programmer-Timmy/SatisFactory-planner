@@ -1,5 +1,5 @@
 <div class="container text-center mt-5">
-    <h1 class="display-4">Under Maintenance</h1>
-    <p class="lead">We're performing some scheduled maintenance.</p>
-    <p>Please check back soon.</p>
+    <h1>Under Maintenance</h1>
+    <p>Sorry for the inconvenience, we are currently under maintenance. Please check back later.</p>
+    <img src="image/maintenance.png" alt="maintenance" class="img-fluid">
 </div>

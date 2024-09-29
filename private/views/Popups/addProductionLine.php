@@ -7,7 +7,7 @@ if ($_POST && isset($_POST['productionLineName'])) {
     // Assuming Database::insert() is a function that inserts data into the database
     $id = ProductionLines::addProductionline($gameSaveId, $productionLineName);
     if ($id) {
-        echo "<script>location.href = 'production_line?id=$id';</script>";
+        header('Location:production_line?id=' . $id);
         exit();
     }
 }
@@ -37,6 +37,13 @@ if ($_POST && isset($_POST['productionLineName'])) {
 </div>
 <script>
     document.getElementById('add_product_line').addEventListener('click', function () {
+        event.stopPropagation();
+        const popoverProduction = $('#popover-production');
+
+        $(document).ready(function () {
+            popoverProduction.popover('hide');
+            popoverProduction.attr('opened', 'true');
+        });
         const addProductionLine = new bootstrap.Modal(document.getElementById('addProductionLine'));
         addProductionLine.show();
     });

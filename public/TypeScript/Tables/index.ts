@@ -1,52 +1,27 @@
-import {ProductionTable} from "./Table/ProductionTable";
-import {ImportExport} from "./Table/Utils/ImportExport";
-import {PowerTable} from "./Table/PowerTable";
-import {ImportsTable} from "./Table/ImportsTable";
-import {Settings} from "./Table/Utils/Settings";
+import {TableHandler} from "./Classes/TableHandler";
+import {SaveFunctions} from "./Classes/Functions/SaveFunctions";
+import {ImportExport} from "./Classes/Functions/ImportExport";
 
-let productionTable = new ProductionTable('recipes', true);
+const tableHandler = new TableHandler();
 
-productionTable.renderTable();
+const saveButton = $("#save_button");
+saveButton.on("click", (event: JQuery.ClickEvent) => {
+    if (event.shiftKey) {
+        event.preventDefault();
+        SaveFunctions.saveProductionLine(SaveFunctions.prepareSaveData(tableHandler.productionTableRows, tableHandler.powerTableRows, tableHandler.importsTableRows));
 
-let powerTable = new PowerTable('power', productionTable, true);
-
-powerTable.renderTable();
-
-let importsTable = new ImportsTable('imports', productionTable, true);
-
-importsTable.renderTable();
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const importButton = document.getElementById('importButton');
-    const exportButton = document.getElementById('exportButton');
-    const saveButton = document.getElementById('save_button');
-
-    if (importButton) {
-        importButton.addEventListener('click', () => ImportExport.importData());
+        saveButton.tooltip('hide');
+        saveButton.blur();
     }
+})
 
-    if (exportButton) {
-        exportButton.addEventListener('click', () => ImportExport.exportData());
-    }
-
-    if (saveButton) {
-        saveButton.addEventListener('click', (event: MouseEvent) => {
-            if (event.shiftKey) {
-                event.preventDefault();
-                ImportExport.saveProductionLine();
-            }
-
-            $('#save_button').tooltip('hide')
-            $('#save_button').blur();
-
-        });
-    }
+const exportButton = $("#exportButton");
+const importButton = $("#importButton");
+exportButton.on("click", () => {
+    ImportExport.exportData(tableHandler);
 });
 
-const settings = new Settings();
-
-settings.addEventListeners();
-if (settings.autoSave) {
-    ImportExport.autoSave();
-}
+importButton.on("click", (event: JQuery.ClickEvent) => {
+    event.preventDefault();
+    ImportExport.importData(tableHandler);
+});
