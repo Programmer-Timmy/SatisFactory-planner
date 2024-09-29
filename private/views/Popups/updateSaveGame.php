@@ -10,7 +10,6 @@ $allowedUsers = $data['allowedUsers'];
 $requestUsers = $data['requestUsers'];
 
 
-
 ?>
 <div class="modal fade" id="UpdatedSaveGame_<?= $gameSave->id ?>" tabindex="-1" aria-labelledby="popupModalLabel"
      aria-hidden="true">
@@ -20,9 +19,10 @@ $requestUsers = $data['requestUsers'];
                 <h5 class="modal-title" id="popupModalLabel">Update save game</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" enctype="multipart/form-data">
-                <input type="hidden" name="id" value="<?= $gameSave->id ?>">
-                <div class="modal-body">
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="id" value="<?= $gameSave->id ?>">
+
                     <div class="mb-3">
                         <label for="UpdatedSaveGameName" class="form-label">Production Line Name</label>
                         <input type="text" class="form-control" id="UpdatedSaveGameName" name="UpdatedSaveGameName"
@@ -86,17 +86,30 @@ $requestUsers = $data['requestUsers'];
                                 </div>
                             </div>
                         <?php else: ?>
-                        <div class="mb-3">
-                            <h6>Add user</h6>
-                            <p>No users available</p>
-                        </div>
+                            <div class="mb-3">
+                                <h6>Add user</h6>
+                                <p>No users available</p>
+                            </div>
                         <?php endif; ?>
                     </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Update save game</button>
+                    </div>
+                </form>
+                <!--            server api section-->
+
+                <div class="mb-3">
+                    <h6>Server API</h6>
+                    <button type="button" class="btn btn-primary" id="update_save_game_line_<?= $gameSave->id ?>">Update
+                        save game line
+                    </button>
+                    <div id="apiResponse_<?= $gameSave->id ?>" class="mt-3">
+                        <!-- API response will be displayed here -->
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Update save game</button>
-                </div>
-            </form>
+            </div>
+
+
         </div>
     </div>
 </div>

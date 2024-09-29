@@ -271,13 +271,7 @@ class GameSaves
         $database = new Database();
         $database->connection->beginTransaction();
         try {
-            $existingToken = $database->get("game_saves", ['server_token'], ['id' => $gameSaveId]);
-            if ($existingToken) {
-                $database->update("game_saves", ['server_token'], [$encryptedToken], ['id' => $gameSaveId], database: $database);
-            } else {
-                $database->insert("game_saves", ['server_token'], [$encryptedToken]);
-            }
-
+            $database->update("game_saves", ['server_token'], [$encryptedToken], ['id' => $gameSaveId]);
             $database->connection->commit();
         } catch (Exception $e) {
             $database->connection->rollBack();
@@ -297,4 +291,21 @@ class GameSaves
             return null;
         }
     }
+
+    public static function saveServerIP(int $gameSaveId, string $serverIP)
+    {
+        Database::update("game_saves", ['server_ip'], [$serverIP], ['id' => $gameSaveId]);
+    }
+
+    public static function getServerIP(int $gameSaveId)
+    {
+        $serverIP = Database::get("game_saves", ['server_ip'], ['id' => $gameSaveId]);
+        if ($serverIP) {
+            return $serverIP->server_ip;
+        } else {
+            return null;
+        }
+    }
+
+
 }

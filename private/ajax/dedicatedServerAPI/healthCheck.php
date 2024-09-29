@@ -10,9 +10,11 @@ if (!isset($_POST['saveGameId'])) {
 
 $saveGameId = $_POST['saveGameId'];
 $serverToken = GameSaves::getServerToken($saveGameId);
+$serverIP = GameSaves::getServerIP($saveGameId);
+$serverPort = GameSaves::getServerPort($saveGameId);
 
 try {
-    $client = new APIClient('192.168.2.11', 7777, $serverToken);
+    $client = new APIClient($serverIP, 7777, $serverToken);
     $response = $client->post('HealthCheck', ['ClientCustomData' => '']);
 
     // Assuming 'HealthCheck' has some specific response format
