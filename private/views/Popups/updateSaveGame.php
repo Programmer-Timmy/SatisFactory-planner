@@ -139,13 +139,10 @@ if (isset($_GET['dedicatedServerId'])) {
                                                aria-describedby="passwordHelp"
                                                aria-required="false">
                                         <button class="btn btn-outline-secondary" type="button" id="togglePassword"
-                                                aria-label="Toggle password visibility" style="width: 45px">
+                                                aria-label="Toggle password visibility" style="width: 45px"
+                                                autocomplete="off">
                                             <i class="fas fa-eye" id="eyeIcon"></i>
                                         </button>
-                                    </div>
-                                    <div class="invalid-feedback">
-                                        Your password must be at least 8 characters long and include a number and a
-                                        special character.
                                     </div>
                                 </div>
 
