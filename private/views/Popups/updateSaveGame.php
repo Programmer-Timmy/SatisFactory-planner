@@ -11,7 +11,16 @@ $requestUsers = $data['requestUsers'];
 
 $dedicatedServer = DedicatedServer::getBySaveGameId($gameSave->id);
 
+if (isset($_GET['dedicatedServerId'])) {
+    if (!GameSaves::checkecsess($_GET['dedicatedServerId'])) {
+        header('Location:/home');
+        exit();
+    }
 
+    DedicatedServer::deleteServer($_GET['dedicatedServerId']);
+    header('Location:/home');
+    exit();
+}
 ?>
 <div class="modal fade" id="UpdatedSaveGame_<?= $gameSave->id ?>" tabindex="-1" aria-labelledby="popupModalLabel"
      aria-hidden="true">
@@ -121,6 +130,10 @@ $dedicatedServer = DedicatedServer::getBySaveGameId($gameSave->id);
                                            name="dedicatedServerToken">
 
                                 </div>
+                                <?php if ($dedicatedServer): ?>
+                                    <a href="home?dedicatedServerId=<?= $gameSave->id ?>"
+                                       class="btn btn-danger">Remove dedicated server</a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

@@ -4,8 +4,12 @@ $gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
 
 if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
     // Assuming you've included or defined the Database class somewhere
+    if (!GameSaves::checkecsess($_POST['id'])) {
+        header('Location:/home');
+        exit();
+    }
+
     $UpdatedSaveGameName = $_POST['UpdatedSaveGameName'];
-    var_dump($_POST);
 
     $gameSave_id = $_POST['id'];
 
@@ -26,6 +30,10 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
 
 if ($_GET && isset($_GET['delete'])) {
     $gameSaveId = $_GET['delete'];
+    if (GameSaves::checkecsess($gameSaveId)) {
+        header('Location:/home');
+        exit();
+    }
     GameSaves::deleteSaveGame($gameSaveId);
     header('Location:/home');
     exit();
