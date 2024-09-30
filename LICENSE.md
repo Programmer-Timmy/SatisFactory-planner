@@ -1,6 +1,6 @@
 # SatisFactory Planner License
 
-**Copyright © 2024 TimmyGamer**
+**Copyright © 2024 Programmer Timmy**
 
 ### 1. License Grant
 SatisFactory Planner is provided as a web-based tool for personal, non-commercial use. Users are granted the right to access and use the software hosted on the official website.
