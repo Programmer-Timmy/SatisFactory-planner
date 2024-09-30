@@ -326,6 +326,7 @@ class APIClient
 
         $response = curl_exec($ch);
 
+
         if (curl_errno($ch)) {
             $error = curl_error($ch);
             curl_close($ch);
@@ -334,7 +335,12 @@ class APIClient
 
         curl_close($ch);
 
-        return $this->handleResponse($response);
+        $responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $response = $this->handleResponse($response);
+        return [
+            'response_code' => $responseCode,
+            'data' => $response['data']
+        ];
     }
 
     private function validateParameters($apiFunction, $data)
@@ -359,7 +365,6 @@ class APIClient
     private function handleResponse($response)
     {
         $decoded = json_decode($response, true);
-
         if (json_last_error() === JSON_ERROR_NONE) {
             return $decoded;
         } else {

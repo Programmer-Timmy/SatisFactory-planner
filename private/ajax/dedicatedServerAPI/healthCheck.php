@@ -18,11 +18,11 @@ try {
     $client = new APIClient($dedicatedServer->server_ip, $dedicatedServer->server_port, $dedicatedServer->server_token);
     $response = $client->post('HealthCheck', ['ClientCustomData' => '']);
 
-    // Assuming 'HealthCheck' has some specific response format
-    $output = '';
-    foreach ($response['data'] as $key => $value) {
-        $output .= "<div class='row'><div class='col-6'>$key</div><div class='col-6'>$value</div></div>";
+    if ($response['response_code'] !== 200) {
+        die(json_encode(['status' => 'error', 'message' => 'Failed to query server state']));
     }
+
+    $output = $response['data'];
 
     echo json_encode(['status' => 'success', 'data' => $output]);
 } catch (Exception $e) {

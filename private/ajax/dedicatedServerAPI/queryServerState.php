@@ -27,15 +27,17 @@ if (!$dedicatedServer) {
 try {
     $client = new APIClient($dedicatedServer->server_ip, $dedicatedServer->server_port, $dedicatedServer->server_token);
     $response = $client->post('QueryServerState');
-    $output = '';
-    foreach ($response['data']['serverGameState'] as $key => $value) {
-        if ($key === 'totalGameDuration') {
-            $value = secondsToHMS($value);
-        }
-        $output .= "<div class='row'><div class='col-6'>$key</div><div class='col-6'>$value</div></div>";
+
+    if ($response['response_code'] !== 200) {
+        die(json_encode(['status' => 'error', 'message' => 'Failed to query server state']));
     }
 
-    echo json_encode(['status' => 'success', 'data' => $output]);
+
+    $serverState = $response['data'];
+
+    $serverState['serverGameState']['totalGameDuration'] = secondsToHMS($serverState['serverGameState']['totalGameDuration']);
+
+    echo json_encode(['status' => 'success', 'data' => $serverState]);
 } catch (Exception $e) {
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 }
