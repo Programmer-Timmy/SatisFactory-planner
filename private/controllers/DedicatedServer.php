@@ -11,7 +11,6 @@ class DedicatedServer
      */
     public static function saveServer(int $saveGameId, string $ip, int $port, string $apiKey): void
     {
-        var_dump($saveGameId);
         $existingServer = self::getBySaveGameId($saveGameId);
 
         $serverTokenKey = getenv('SERVER_TOKEN_KEY');

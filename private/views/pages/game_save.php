@@ -365,7 +365,7 @@ if (empty($productionLines)) {
 ?>
 <?php
 if (DedicatedServer::getBySaveGameId($gameSave->id)) : ?>
-    <script src="js/DedicatedServer.js"></script>
+    <script src="js/dedicatedServer.js"></script>
     <script>
         new DedicatedServer(<?= $gameSave->id ?>);
     </script>

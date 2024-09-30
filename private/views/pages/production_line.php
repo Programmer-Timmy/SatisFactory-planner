@@ -289,7 +289,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
 </div>
 <?php
 if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
-    <script src="js/DedicatedServer.js"></script>
+    <script src="js/dedicatedServer.js"></script>
     <script>
         new DedicatedServer(<?= $_SESSION['lastVisitedSaveGame'] ?>);
     </script>
