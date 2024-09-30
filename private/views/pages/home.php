@@ -20,10 +20,10 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
     // Assuming Database::insert() is a function that inserts data into the database
     $gameSaveId = GameSaves::updateSaveGame($gameSave_id, $_SESSION['userId'], $UpdatedSaveGameName, $_FILES['UpdatedSaveGameImage']);
     DedicatedServer::saveServer($gameSave_id, $_POST['dedicatedServerIp'], $_POST['dedicatedServerPort'], $_POST['dedicatedServerToken']);
-    if ($gameSaveId) {
-        header('Location:/home');
-        exit();
-    }
+
+    header('Location:/home');
+    exit();
+
 
 
 }

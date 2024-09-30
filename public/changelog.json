@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.6.0",
+    "date": "september 30 2024",
+    "changes": [
+      "added support for the dedicated server api for satisfactory."
+    ]
+  },
+  {
     "version": "1.5.0",
     "date": "september 26 2024",
     "changes": [
