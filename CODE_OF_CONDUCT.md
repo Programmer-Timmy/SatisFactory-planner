@@ -20,7 +20,7 @@ The following behaviors are unacceptable:
 
 ## 3. Reporting Issues
 
-If you witness or experience any unacceptable behavior, please report it to the project maintainers at [email@example.com] (or through the platform's reporting system). All reports will be handled confidentially.
+If you witness or experience any unacceptable behavior, please report it to the project maintainers at through the platform's reporting system. All reports will be handled confidentially.
 
 ## 4. Consequences
 
