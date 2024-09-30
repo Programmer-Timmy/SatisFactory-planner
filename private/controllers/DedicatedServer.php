@@ -69,5 +69,14 @@ class DedicatedServer
         return $server;
     }
 
+    /**
+     * @param int $saveGameId
+     * @return void
+     */
+    public static function deleteServer(int $saveGameId): void
+    {
+        Database::delete(table: 'dedicated_server', where: ['game_saves_id' => $saveGameId]);
+    }
+
 
 }
