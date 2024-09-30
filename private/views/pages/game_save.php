@@ -364,8 +364,9 @@ if (empty($productionLines)) {
 }
 ?>
 <?php
+global $changelog;
 if (DedicatedServer::getBySaveGameId($gameSave->id)) : ?>
-    <script src="js/dedicatedServer.js"></script>
+    <script src="js/dedicatedServer.js?v=<?= $changelog['version'] ?>"></script>
     <script>
         new DedicatedServer(<?= $gameSave->id ?>);
     </script>
