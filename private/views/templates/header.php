@@ -22,7 +22,6 @@ function getPageTitle($skipCheck = false)
 }
 
 $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
-
 $theme = 'styles-light';
 if (isset($_COOKIE['theme'])) {
     $theme = $_COOKIE['theme'] === 'dark' ? 'styles-dark' : 'styles-light';
