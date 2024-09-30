@@ -9,12 +9,13 @@ if (!isset($_POST['saveGameId'])) {
 }
 
 $saveGameId = $_POST['saveGameId'];
-$serverToken = GameSaves::getServerToken($saveGameId);
-$serverIP = GameSaves::getServerIP($saveGameId);
-$serverPort = GameSaves::getServerPort($saveGameId);
+$dedicatedServer = DedicatedServer::getBySaveGameId($saveGameId);
 
+if (!$dedicatedServer) {
+    die(json_encode(['status' => 'error', 'message' => 'Dedicated server not found']));
+}
 try {
-    $client = new APIClient($serverIP, 7777, $serverToken);
+    $client = new APIClient($dedicatedServer->server_ip, $dedicatedServer->server_port, $dedicatedServer->server_token);
     $response = $client->post('HealthCheck', ['ClientCustomData' => '']);
 
     // Assuming 'HealthCheck' has some specific response format

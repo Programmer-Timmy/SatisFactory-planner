@@ -279,33 +279,4 @@ class GameSaves
         }
 
     }
-
-    public static function getServerToken(int $gameSaveId)
-    {
-        $key = getenv('SERVER_TOKEN_KEY');
-        $database = new Database();
-        $encryptedToken = $database->get("game_saves", ['server_token'], ['id' => $gameSaveId]);
-        if ($encryptedToken) {
-            return openssl_decrypt($encryptedToken->server_token, 'aes-256-cbc', $key, 0, $key);
-        } else {
-            return null;
-        }
-    }
-
-    public static function saveServerIP(int $gameSaveId, string $serverIP)
-    {
-        Database::update("game_saves", ['server_ip'], [$serverIP], ['id' => $gameSaveId]);
-    }
-
-    public static function getServerIP(int $gameSaveId)
-    {
-        $serverIP = Database::get("game_saves", ['server_ip'], ['id' => $gameSaveId]);
-        if ($serverIP) {
-            return $serverIP->server_ip;
-        } else {
-            return null;
-        }
-    }
-
-
 }

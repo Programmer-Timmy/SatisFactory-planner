@@ -4,21 +4,23 @@ $gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
 
 if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
     // Assuming you've included or defined the Database class somewhere
-
     $UpdatedSaveGameName = $_POST['UpdatedSaveGameName'];
+    var_dump($_POST);
 
     $gameSave_id = $_POST['id'];
 
-    if ($_POST['AllowedUsers'] == null) {
+    if (!isset($_POST['AllowedUsers'])) {
         $_POST['AllowedUsers'] = [];
     }
 
     // Assuming Database::insert() is a function that inserts data into the database
     $gameSaveId = GameSaves::updateSaveGame($gameSave_id, $_SESSION['userId'], $UpdatedSaveGameName, $_FILES['UpdatedSaveGameImage']);
+    DedicatedServer::saveServer($gameSave_id, $_POST['dedicatedServerIp'], $_POST['dedicatedServerPort'], $_POST['dedicatedServerToken']);
     if ($gameSaveId) {
         header('Location:/home');
         exit();
     }
+
 
 }
 

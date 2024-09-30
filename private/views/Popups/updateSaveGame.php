@@ -9,18 +9,20 @@ $users = $data['users'];
 $allowedUsers = $data['allowedUsers'];
 $requestUsers = $data['requestUsers'];
 
+$dedicatedServer = DedicatedServer::getBySaveGameId($gameSave->id);
+
 
 ?>
 <div class="modal fade" id="UpdatedSaveGame_<?= $gameSave->id ?>" tabindex="-1" aria-labelledby="popupModalLabel"
      aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="popupModalLabel">Update save game</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" id="updateSaveGameForm_<?= $gameSave->id ?>">
                     <input type="hidden" name="id" value="<?= $gameSave->id ?>">
 
                     <div class="mb-3">
@@ -92,24 +94,43 @@ $requestUsers = $data['requestUsers'];
                             </div>
                         <?php endif; ?>
                     </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Update save game</button>
+                    <!--                    Collapse dedicated server section-->
+                    <div class="mb-3">
+                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#dedicatedServerCollapse" aria-expanded="false"
+                                aria-controls="dedicatedServerCollapse">
+                            Dedicated Server
+                        </button>
+                        <div class="collapse mt-2" id="dedicatedServerCollapse">
+                            <div class="card card-body">
+                                <div class="mb-3">
+                                    <label for="dedicatedServerIp" class="form-label">Server IP</label>
+                                    <input type="text" class="form-control" id="dedicatedServerIp"
+                                           name="dedicatedServerIp"
+                                           value="<?= $dedicatedServer ? $dedicatedServer->server_ip : '' ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dedicatedServerPort" class="form-label">Server Port</label>
+                                    <input type="text" class="form-control" id="dedicatedServerPort"
+                                           name="dedicatedServerPort"
+                                           value="<?= $dedicatedServer ? $dedicatedServer->server_port : '7777' ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dedicatedServerToken" class="form-label">Server Token</label>
+                                    <input type="text" class="form-control" id="dedicatedServerToken"
+                                           name="dedicatedServerToken">
+
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </form>
-                <!--            server api section-->
-
-                <div class="mb-3">
-                    <h6>Server API</h6>
-                    <button type="button" class="btn btn-primary" id="update_save_game_line_<?= $gameSave->id ?>">Update
-                        save game line
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" form="updateSaveGameForm_<?= $gameSave->id ?>">Update
+                        Save Game
                     </button>
-                    <div id="apiResponse_<?= $gameSave->id ?>" class="mt-3">
-                        <!-- API response will be displayed here -->
-                    </div>
                 </div>
             </div>
-
-
         </div>
     </div>
 </div>

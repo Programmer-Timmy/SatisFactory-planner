@@ -27,7 +27,9 @@
             $.ajax({
                 url: 'dedicatedServerAPI/healthCheck', // Replace with your actual PHP file path
                 type: 'POST',
-                data: {action: 'HealthCheck'},
+                data: {
+                    saveGameId: 3 // Replace with the actual save game ID
+                },
                 success: function (response) {
                     displayResponse(response);
                 },
@@ -42,7 +44,9 @@
             $.ajax({
                 url: 'dedicatedServerAPI/queryServerState', // Replace with your actual PHP file path
                 type: 'POST',
-                data: {action: 'QueryServerState'},
+                data: {
+                    saveGameId: 3 // Replace with the actual save game ID
+                },
                 success: function (response) {
                     displayResponse(response);
                 },
@@ -70,13 +74,3 @@
 
 </body>
 </html>
-
-<?php
-function generateRandomToken($length = 64)
-{
-    return bin2hex(random_bytes($length / 2));
-}
-
-// Example usage
-$token = generateRandomToken();
-echo $token; // Outputs a secure random token

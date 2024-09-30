@@ -1,4 +1,13 @@
 <?php
+
+if (!isset($_POST)) {
+    die(json_encode(['status' => 'error', 'message' => 'Invalid request']));
+}
+
+if (!isset($_POST['saveGameId'])) {
+    die(json_encode(['status' => 'error', 'message' => 'Invalid request']));
+}
+
 function secondsToHMS($seconds)
 {
     $hours = floor($seconds / 3600);
@@ -8,11 +17,16 @@ function secondsToHMS($seconds)
     return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
 }
 
+$saveGameId = $_POST['saveGameId'];
+$dedicatedServer = DedicatedServer::getBySaveGameId($saveGameId);
+
+if (!$dedicatedServer) {
+    die(json_encode(['status' => 'error', 'message' => 'Dedicated server not found']));
+}
 // Usage
 try {
-    $client = new APIClient('192.168.2.11', 7777, 'ewoJInBsIjogIkFQSVRva2VuIgp9.98F7AD7A7F120D51E652C7795D8A8984A5C5F4F374C9C8E8B04BF389635FE2423E3392C1DCF2ED553C05C1848164EAEAADC14327868ECAC74493463ABDB889E9');
+    $client = new APIClient($dedicatedServer->server_ip, $dedicatedServer->server_port, $dedicatedServer->server_token);
     $response = $client->post('QueryServerState');
-
     $output = '';
     foreach ($response['data']['serverGameState'] as $key => $value) {
         if ($key === 'totalGameDuration') {
