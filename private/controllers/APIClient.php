@@ -339,7 +339,7 @@ class APIClient
         $response = $this->handleResponse($response);
         return [
             'response_code' => $responseCode,
-            'data' => $response['data']
+            'data' => $response['data'] ?? [],
         ];
     }
 

@@ -266,8 +266,6 @@ class GameSaves
     public static function checkecsess($gameSaveId)
     {
         $gameSave = self::getSaveGameById($gameSaveId);
-        var_dump($gameSave);
-        var_dump($_SESSION['userId']);
         if ($gameSave->owner_id != $_SESSION['userId']) {
             return false;
         }
