@@ -363,7 +363,12 @@ if (empty($productionLines)) {
     echo '<script>$(document).ready(function(){$(\'#popover-production\').popover(\'show\');});</script>';
 }
 ?>
-
-
+<?php
+if (DedicatedServer::getBySaveGameId($gameSave->id)) : ?>
+    <script src="js/DedicatedServer.js"></script>
+    <script>
+        new DedicatedServer(<?= $gameSave->id ?>);
+    </script>
+<?php endif; ?>
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>
 <?php require_once '../private/views/Popups/updatePowerProduction.php'; ?>

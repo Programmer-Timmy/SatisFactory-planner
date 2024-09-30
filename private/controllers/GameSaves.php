@@ -263,5 +263,20 @@ class GameSaves
         Database::update("users_has_game_saves", ['card_view'], [$cardView], ['game_saves_id' => $gameSaveId, 'users_id' => $_SESSION['userId']]);
     }
 
+    public static function saveServerToken(int $gameSaveId, string $token)
+    {
+        $key = getenv('SERVER_TOKEN_KEY');
+        $encryptedToken = openssl_encrypt($token, 'aes-256-cbc', $key, 0, $key);
 
+        $database = new Database();
+        $database->connection->beginTransaction();
+        try {
+            $database->update("game_saves", ['server_token'], [$encryptedToken], ['id' => $gameSaveId]);
+            $database->connection->commit();
+        } catch (Exception $e) {
+            $database->connection->rollBack();
+            throw new ErrorException($e->getMessage());
+        }
+
+    }
 }
