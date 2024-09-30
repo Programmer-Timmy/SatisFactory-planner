@@ -115,19 +115,19 @@ if (isset($_GET['dedicatedServerId'])) {
                                 <div class="mb-3">
                                     <label for="dedicatedServerIp" class="form-label">Server IP</label>
                                     <input type="text" class="form-control" id="dedicatedServerIp"
-                                           name="dedicatedServerIp"
+                                           name="dedicatedServerIp" autocomplete="off"
                                            value="<?= $dedicatedServer ? $dedicatedServer->server_ip : '' ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="dedicatedServerPort" class="form-label">Server Port</label>
                                     <input type="text" class="form-control" id="dedicatedServerPort"
-                                           name="dedicatedServerPort"
+                                           name="dedicatedServerPort" autocomplete="off"
                                            value="<?= $dedicatedServer ? $dedicatedServer->server_port : '7777' ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="dedicatedServerToken" class="form-label">Server Token</label>
                                     <input type="text" class="form-control" id="dedicatedServerToken"
-                                           name="dedicatedServerToken">
+                                           name="dedicatedServerToken" autocomplete="off"
 
                                 </div>
                                 <?php if ($dedicatedServer): ?>
