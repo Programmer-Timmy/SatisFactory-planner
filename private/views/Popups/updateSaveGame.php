@@ -125,11 +125,45 @@ if (isset($_GET['dedicatedServerId'])) {
                                            value="<?= $dedicatedServer ? $dedicatedServer->server_port : '7777' ?>">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="dedicatedServerToken" class="form-label">Server Token</label>
-                                    <input type="text" class="form-control" id="dedicatedServerToken"
-                                           name="dedicatedServerToken" autocomplete="off">
-
+                                    <label for="dedicatedServerPassword" class="form-label mb-0">Server Client
+                                        Password</label><br>
+                                    <small class="text-muted mb-2" id="passwordHelp">Leave empty if no password is
+                                        set.</small>
+                                    <div class="input-group">
+                                        <input type="password"
+                                               class="form-control"
+                                               id="dedicatedServerPassword"
+                                               name="dedicatedServerPassword"
+                                               placeholder="Enter your password"
+                                               autocomplete="off"
+                                               aria-describedby="passwordHelp"
+                                               aria-required="false">
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword"
+                                                aria-label="Toggle password visibility" style="width: 45px">
+                                            <i class="fas fa-eye" id="eyeIcon"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Your password must be at least 8 characters long and include a number and a
+                                        special character.
+                                    </div>
                                 </div>
+
+                                <script>
+                                    const togglePassword = document.getElementById('togglePassword');
+                                    const passwordInput = document.getElementById('dedicatedServerPassword');
+                                    const eyeIcon = document.getElementById('eyeIcon');
+
+                                    togglePassword.addEventListener('click', () => {
+                                        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                                        passwordInput.setAttribute('type', type);
+                                        eyeIcon.classList.toggle('fa-eye-slash');
+                                        eyeIcon.classList.toggle('fa-eye');
+
+
+                                    });
+                                </script>
+
                                 <?php if ($dedicatedServer): ?>
                                     <a href="home?dedicatedServerId=<?= $gameSave->id ?>"
                                        class="btn btn-danger">Remove dedicated server</a>
@@ -148,8 +182,6 @@ if (isset($_GET['dedicatedServerId'])) {
     </div>
 </div>
 <script>
-    console.log('add event listeners');
-
     // Function to handle AJAX requests
     function handleRequest(buttonId, requestData) {
         // preventing default

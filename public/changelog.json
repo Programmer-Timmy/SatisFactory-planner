@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.6.1",
+    "date": "september 30 2024",
+    "changes": [
+      "changed from api key to password for the dedicated server api for satisfactory. More user-friendly and secure."
+      "updated the styling of the dedicated server api page."
+    ]
+  },
+  {
     "version": "1.6.0",
     "date": "september 30 2024",
     "changes": [
