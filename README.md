@@ -17,7 +17,16 @@ To begin using SatisFactory Planner, visit our [website](https://satisfactorypla
 
 ## Contributing
 
-Want to contribute to the development of SatisFactory Planner? You can fork the repository, make improvements, and submit a pull request. Additionally, feel free to report any bugs or suggest new features by opening an issue on the project page.
+Thank you for your interest in contributing to SatisFactory Planner! We welcome contributions from everyone, whether you’re a seasoned developer or just starting out. Here’s how you can get involved:
+
+1. **Fork the Repository**: Create your own copy of the repository to make changes and improvements.
+2. **Make Improvements**: Implement your features, bug fixes, or enhancements. Please ensure your code follows the project's guidelines and maintains consistency.
+3. **Submit a Pull Request**: Once you’ve made your changes, submit a pull request. Describe the changes you made and why they are beneficial.
+4. **Report Issues**: If you encounter bugs or have suggestions for new features, feel free to open an issue on the project page. Your feedback helps us improve!
+
+Before contributing, please take a moment to review our [Code of Conduct](CODE_OF_CONDUCT.md). It outlines our expectations for community behavior and helps create a welcoming environment for all contributors.
+
+Thank you for helping us make SatisFactory Planner better!
 
 ## License
 
