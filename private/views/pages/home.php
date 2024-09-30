@@ -167,7 +167,7 @@ if (count($gameSaves) == 2) {
                        class="card-link text-black text-decoration-none">
                         <div class="card h-100 w-100">
                             <div class="position-relative">
-                                <img src="image/<?= $gameSave->image ?>" class="card-img-top" alt="...">
+                                <img src="image/<?= $gameSave->image ?>" class="card-img-top" alt="..." loading="lazy">
                                 <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
                                     <a class="btn btn-danger position-absolute top-0 end-0"
                                        href="home?delete=<?= $gameSave->game_saves_id ?>"

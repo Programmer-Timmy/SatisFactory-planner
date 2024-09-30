@@ -1,6 +1,8 @@
 const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');  // Import TerserPlugin
 
 module.exports = {
+    mode: 'production',  // Set the mode to production to enable optimizations
     entry: {
         tables: './public/TypeScript/Tables/index.ts',          // Entry point for Tables
         powerProduction: './public/TypeScript/PowerProduction/index.ts',  // Entry point for Power Production
@@ -28,8 +30,9 @@ module.exports = {
             },
         ],
     },
-    // Only expose DedicatedServer globally
     optimization: {
+        minimize: true,  // Enable minimization (compression)
+        minimizer: [new TerserPlugin()],  // Use Terser for minification
         splitChunks: {
             cacheGroups: {
                 dedicatedServer: {
