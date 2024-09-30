@@ -127,7 +127,7 @@ if (isset($_GET['dedicatedServerId'])) {
                                 <div class="mb-3">
                                     <label for="dedicatedServerToken" class="form-label">Server Token</label>
                                     <input type="text" class="form-control" id="dedicatedServerToken"
-                                           name="dedicatedServerToken" autocomplete="off"
+                                           name="dedicatedServerToken" autocomplete="off">
 
                                 </div>
                                 <?php if ($dedicatedServer): ?>
