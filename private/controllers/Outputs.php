@@ -36,7 +36,6 @@ class Outputs
         foreach ($outputArray as $lineTitle => &$outputs) {
             foreach ($outputs as $outputItem) {
                 if (isset($importArray[$outputItem->items_id])) {
-                    var_dump($outputItem->item);
                     $outputItem->ammount -= $importArray[$outputItem->items_id]->ammount;
                 }
             }
