@@ -307,17 +307,18 @@ if (isset($_GET['layoutType'])) {
                     <div class="accordion" id="productionLinesAccordion">
                         <?php foreach ($outputs as $lineTitle => $lineOutputs) : ?>
                             <div class="accordion-item">
-                                <h2 class="accordion-header" id="heading-<?= htmlspecialchars($lineTitle) ?>">
+                                <h2 class="accordion-header"
+                                    id="heading-<?= preg_replace('/\s+/', '_', htmlspecialchars($lineTitle)) ?>">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#collapse-<?= htmlspecialchars($lineTitle) ?>"
+                                            data-bs-target="#collapse-<?= preg_replace('/\s+/', '_', htmlspecialchars($lineTitle)) ?>"
                                             aria-expanded="false"
-                                            aria-controls="collapse-<?= htmlspecialchars($lineTitle) ?>">
+                                            aria-controls="collapse-<?= preg_replace('/\s+/', '_', htmlspecialchars($lineTitle)) ?>">
                                         <?= htmlspecialchars($lineTitle) ?>
                                     </button>
                                 </h2>
-                                <div id="collapse-<?= htmlspecialchars($lineTitle) ?>"
+                                <div id="collapse-<?= preg_replace('/\s+/', '_', htmlspecialchars($lineTitle)) ?>"
                                      class="accordion-collapse collapse"
-                                     aria-labelledby="heading-<?= htmlspecialchars($lineTitle) ?>"
+                                     aria-labelledby="heading-<?= preg_replace('/\s+/', '_', htmlspecialchars($lineTitle)) ?>"
                                      data-bs-parent="#productionLinesAccordion">
                                     <div class="accordion-body p-0">
                                         <?php if (empty($lineOutputs)) : ?>
