@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.6.2",
+    "date": "october 5 2024",
+    "changes": [
+      "Improved the imports display on the game save page."
+    ]
+  },
+  {
     "version": "1.6.1",
     "date": "september 30 2024",
     "changes": [
