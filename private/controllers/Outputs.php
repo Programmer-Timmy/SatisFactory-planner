@@ -4,20 +4,25 @@ class Outputs
 {
     public static function getAllOutputs($id)
     {
-        $productionLines = Database::getAll("production_lines", ['id'], [], ['game_saves_id' => $id, 'active' => 1]);
+        $productionLines = Database::getAll("production_lines", ['id', 'title'], [], ['game_saves_id' => $id, 'active' => 1]);
         $outputArray = [];
         $importArray = [];
+
+        // Gather all outputs and imports per production line
         foreach ($productionLines as $productionLine) {
             $outputs = Database::getAll("output", ['output.*', 'items.name as item'], ['items' => 'items.id = output.items_id where output.ammount > 0 and production_lines_id = ' . $productionLine->id], [], 'items.name ASC');
             $imports = Database::getAll("input", ['input.*', 'items.name as item'], ['items' => 'items.id = input.items_id where input.ammount > 0 and production_lines_id = ' . $productionLine->id], [], 'items.name ASC');
+
+            // Accumulate outputs per production line
             foreach ($outputs as $output) {
-                if (isset($outputArray[$output->items_id])) {
-                    $outputArray[$output->items_id]->ammount += $output->ammount;
+                if (isset($outputArray[$productionLine->title][$output->items_id])) {
+                    $outputArray[$productionLine->title][$output->items_id]->ammount += $output->ammount;
                 } else {
-                    $outputArray[$output->items_id] = $output;
+                    $outputArray[$productionLine->title][$output->items_id] = $output;
                 }
             }
 
+            // Accumulate imports globally
             foreach ($imports as $import) {
                 if (isset($importArray[$import->items_id])) {
                     $importArray[$import->items_id]->ammount += $import->ammount;
@@ -27,41 +32,27 @@ class Outputs
             }
         }
 
-        // Combine amounts of the same item ID
-        $newOutputArray = [];
-        foreach ($outputArray as $output) {
-            if (isset($newOutputArray[$output->items_id])) {
-                $newOutputArray[$output->items_id]->ammount += $output->ammount;
-            } else {
-                $newOutputArray[$output->items_id] = $output;
-            }
-        }
-
-        $newImportArray = [];
-        foreach ($importArray as $import) {
-            if (isset($newImportArray[$import->items_id])) {
-                $newImportArray[$import->items_id]->ammount += $import->ammount;
-            } else {
-                $newImportArray[$import->items_id] = $import;
-            }
-        }
-
-
-        foreach ($outputArray as $output) {
-            foreach ($importArray as $import) {
-                if ($output->items_id == $import->items_id) {
-                    $output->ammount -= $import->ammount;
-
-                    if ($output->ammount <= 0) {
-                        unset($outputArray[$output->items_id]);
-                    }
+        // Subtract the global imports from the outputs of each production line
+        foreach ($outputArray as $lineTitle => &$outputs) {
+            foreach ($outputs as $outputItem) {
+                if (isset($importArray[$outputItem->items_id])) {
+                    var_dump($outputItem->item);
+                    $outputItem->ammount -= $importArray[$outputItem->items_id]->ammount;
                 }
             }
+
+            // Filter out items with zero or negative output
+            $outputs = array_filter($outputs, function ($outputItem) {
+                return $outputItem->ammount > 0;
+            });
+
+            // Sort outputs by item name for each line
+            usort($outputs, function ($a, $b) {
+                return strcmp($a->item, $b->item);
+            });
         }
 
-        //sort the array by item name
         return $outputArray;
-
-
     }
 }
+
