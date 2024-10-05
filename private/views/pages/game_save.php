@@ -304,23 +304,46 @@ if (isset($_GET['layoutType'])) {
                 <?php if (empty($outputs)) : ?>
                     <h4 class="text-center mt-3">No Outputs Found</h4>
                 <?php else: ?>
-                    <div class="overflow-auto" style="max-height: 40vh;">
-                        <table class="table table-striped">
-                            <thead class="table-dark">
-                            <tr>
-                                <th scope="col">Item</th>
-                                <th scope="col">Amount</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <?php foreach ($outputs as $output) : ?>
-                                <tr>
-                                    <td><?= $output->item ?></td>
-                                    <td><?= $output->ammount ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                    <div class="accordion" id="productionLinesAccordion">
+                        <?php foreach ($outputs as $lineTitle => $lineOutputs) : ?>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading-<?= htmlspecialchars($lineTitle) ?>">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapse-<?= htmlspecialchars($lineTitle) ?>"
+                                            aria-expanded="false"
+                                            aria-controls="collapse-<?= htmlspecialchars($lineTitle) ?>">
+                                        <?= htmlspecialchars($lineTitle) ?>
+                                    </button>
+                                </h2>
+                                <div id="collapse-<?= htmlspecialchars($lineTitle) ?>"
+                                     class="accordion-collapse collapse"
+                                     aria-labelledby="heading-<?= htmlspecialchars($lineTitle) ?>"
+                                     data-bs-parent="#productionLinesAccordion">
+                                    <div class="accordion-body p-0">
+                                        <?php if (empty($lineOutputs)) : ?>
+                                            <p>No Outputs for this line.</p>
+                                        <?php else: ?>
+                                            <table class="table table-striped m-0">
+                                                <thead class="table-dark">
+                                                <tr>
+                                                    <th scope="col">Item</th>
+                                                    <th scope="col">Amount</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <?php foreach ($lineOutputs as $output) : ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($output->item) ?></td>
+                                                        <td><?= htmlspecialchars($output->ammount) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
             </div>
