@@ -3,7 +3,8 @@
     "version": "1.6.4",
     "date": "october 9 2024",
     "changes": [
-      "Fixed issue not able to close all the accordions on the SaveGame page."
+      "Fixed issue not able to close all the accordions on the SaveGame page.",
+      "Fixed issue when changing active status of the production line showing the old table of outputs."
     ]
   },
   {
