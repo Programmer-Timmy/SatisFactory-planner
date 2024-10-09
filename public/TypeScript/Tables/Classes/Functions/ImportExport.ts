@@ -35,8 +35,6 @@ export class ImportExport {
             importTable: importTableData
         }
 
-        console.log(tableHandler);
-
         const bytes = new TextEncoder().encode(JSON.stringify(dataToExport));
         const blob = new Blob([bytes], {type: 'application/json'});
         const url = URL.createObjectURL(blob);

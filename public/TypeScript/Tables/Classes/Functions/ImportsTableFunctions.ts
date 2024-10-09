@@ -33,7 +33,6 @@ export class ImportsTableFunctions {
             }
         }
 
-
         const html = HtmlGeneration.generateImportsTableRows(importsTableRows);
         $('#imports tbody').html(html);
 
@@ -59,7 +58,10 @@ export class ImportsTableFunctions {
 
             if (row.extraCells !== null) {
                 if (row.extraCells.Usage > 0) {
-                    changedRows.push(productionTableRows.indexOf(row));
+                    let rowIndex = productionTableRows.indexOf(row);
+                    if (rowIndex !== -1 && !changedRows.includes(rowIndex)) {
+                        changedRows.push(rowIndex);
+                    }
                     row.extraCells.Usage = 0;
                     row.extraCells.ExportPerMin = row.extraCells.Quantity;
                 }
