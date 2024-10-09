@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.6.4",
+    "date": "october 9 2024",
+    "changes": [
+      "Fixed issue not able to close all the accordions on the SaveGame page."
+    ]
+  },
+  {
     "version": "1.6.3",
     "date": "october 9 2024",
     "changes": [
