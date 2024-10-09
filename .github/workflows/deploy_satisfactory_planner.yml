@@ -4,7 +4,7 @@ on:
       - main
 
 jobs:
-  my_job:
+  deploy_satisfactory_planner:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
