@@ -305,20 +305,21 @@ if (isset($_GET['layoutType'])) {
                     <h4 class="text-center mt-3">No Outputs Found</h4>
                 <?php else: ?>
                     <div class="accordion" id="productionLinesAccordion">
-                        <?php foreach ($outputs as $lineTitle => $lineOutputs) : ?>
+                        <?php foreach ($outputs as $lineTitle => $lineOutputs) :
+                            $lineTitle = htmlspecialchars($lineTitle);
+                            $lineId = preg_replace('/\s+/', '_', $lineTitle);
+                            ?>
                             <div class="accordion-item">
-                                <h2 class="accordion-header"
-                                    id="heading-<?= preg_replace('/\s+/', '_', htmlspecialchars($lineTitle)) ?>">
+                                <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#collapse-<?= preg_replace('/\s+/', '_', htmlspecialchars($lineTitle)) ?>"
+                                            data-bs-target="#collapse-<?= $lineId ?>"
                                             aria-expanded="false"
-                                            aria-controls="collapse-<?= preg_replace('/\s+/', '_', htmlspecialchars($lineTitle)) ?>">
+                                            aria-controls="collapse-<?= $lineId ?>">
                                         <?= htmlspecialchars($lineTitle) ?>
                                     </button>
                                 </h2>
-                                <div id="collapse-<?= preg_replace('/\s+/', '_', htmlspecialchars($lineTitle)) ?>"
+                                <div id="collapse-<?= $lineId ?>"
                                      class="accordion-collapse collapse"
-                                     aria-labelledby="heading-<?= preg_replace('/\s+/', '_', htmlspecialchars($lineTitle)) ?>"
                                      data-bs-parent="#productionLinesAccordion">
                                     <div class="accordion-body p-0">
                                         <?php if (empty($lineOutputs)) : ?>
@@ -393,6 +394,15 @@ if (DedicatedServer::getBySaveGameId($gameSave->id)) : ?>
     <script src="js/dedicatedServer.js?v=<?= $changelog['version'] ?>"></script>
     <script>
         new DedicatedServer(<?= $gameSave->id ?>);
+    </script>
+
+    <script>
+        document.querySelectorAll('.accordion-button').forEach(button => {
+            button.addEventListener('click', function () {
+                console.log(this.getAttribute('aria-expanded'));
+            });
+        });
+
     </script>
 <?php endif; ?>
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>
