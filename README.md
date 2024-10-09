@@ -1,3 +1,6 @@
+[![Published Status](https://github.com/Programmer-Timmy/SatisFactory-planner/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/Programmer-Timmy/SatisFactory-planner/actions/workflows/publish.yml)<br>
+**Published Status:** This badge indicates the current publication status of the SatisFactory Planner project. Click the
+badge for detailed information.
 # Welcome to SatisFactory Planner
 
 SatisFactory Planner is a powerful tool designed to help you plan and manage your Satisfactory factories efficiently. Running directly in your browser, it requires no installation and provides an intuitive visual representation of your factory layout, making complex production lines easy to design and maintain.
