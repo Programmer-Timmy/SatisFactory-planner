@@ -16,24 +16,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($outputs)) {
             $html .= '<h4 class="text-center mt-3">No Outputs Found</h4>';
         } else {
-            $html .= '<div class="overflow-auto" style="max-height: 40vh;">
-                <table class="table table-striped">
-                    <thead class="table-dark">
-                    <tr>
-                        <th scope="col">Item</th>
-                        <th scope="col">Amount</th>
-                    </tr>
-                    </thead>
-                    <tbody id="output_table">';
-            foreach ($outputs as $output) {
-                $html .= '<tr>
-                            <td>' . htmlspecialchars($output->item) . '</td>
-                            <td>' . htmlspecialchars($output->ammount) . '</td>
-                        </tr>';
-            }
-            $html .= '</tbody>
-                </table>
-            </div>';
+            $html .= '<div class="accordion" id="productionLinesAccordion">';
+            foreach ($outputs as $lineTitle => $lineOutputs) :
+                $lineTitle = htmlspecialchars($lineTitle);
+                $lineId = preg_replace('/\s+/', '_', $lineTitle);
+                $html .= '
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapse-' . $lineId . '"
+                                            aria-expanded="false"
+                                            aria-controls="collapse-' . $lineId . '"> ' .
+                    htmlspecialchars($lineTitle) . '
+                                    </button>
+                                </h2>
+                                <div id="collapse-' . $lineId . '"
+                                     class="accordion-collapse collapse"
+                                     data-bs-parent="#productionLinesAccordion">
+                                    <div class="accordion-body p-0"> ';
+                if (empty($lineOutputs)) {
+                    $html .= '<p>No Outputs for this line.</p>';
+                } else {
+                    $html .= '<table class="table table-striped m-0">
+                                                <thead class="table-dark">
+                                                <tr>
+                                                    <th scope="col">Item</th>
+                                                    <th scope="col">Amount</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>';
+                    foreach ($lineOutputs as $output) {
+                        $html .= '<tr>
+                                                        <td>' . htmlspecialchars($output->item) . '</td>
+                                                        <td>' . htmlspecialchars($output->ammount) . '</td>
+                                                    </tr>';
+                    }
+                    $html .= '</tbody>
+                                            </table>';
+                }
+                $html .= '
+                                    </div>
+                                </div>
+                            </div>';
+            endforeach;
+            $html .= '</div>';
+
         }
 
         // Prepare success response with HTML content
