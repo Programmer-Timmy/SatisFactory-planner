@@ -1,4 +1,4 @@
-[![Published Status](https://github.com/Programmer-Timmy/SatisFactory-planner/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/Programmer-Timmy/SatisFactory-planner/actions/workflows/publish.yml)<br>
+[![Published Status](https://github.com/Programmer-Timmy/SatisFactory-planner/actions/workflows/deploy_satisfactory_planner.yml/badge.svg?branch=main)](https://github.com/Programmer-Timmy/SatisFactory-planner/actions/workflows/deploy_satisfactory_planner.yml)<br>
 **Published Status:** This badge indicates the current publication status of the SatisFactory Planner project. Click the
 badge for detailed information.
 # Welcome to SatisFactory Planner
