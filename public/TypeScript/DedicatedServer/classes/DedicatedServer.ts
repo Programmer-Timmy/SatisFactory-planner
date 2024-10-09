@@ -50,7 +50,6 @@ export class DedicatedServer {
             if (response.data.health === 'healthy') {
                 this.fillColor = '#57e389';
                 this.AjaxQueryServer().then((response) => {
-                    console.log(response);
                     let message = '';
                     message += `<div class="text-success mb-2 fw-bold">Status: Healthy</div>`;
                     message += `<div><strong>Session Name:</strong> ${response.data.serverGameState.activeSessionName}</div>`;
@@ -75,7 +74,6 @@ export class DedicatedServer {
 
 
     public AjaxHealthCheck(gameSaveId: number = this.gameSaveId): Promise<HealthCheck> {
-        console.log('AjaxHealthCheck');
         return new Promise(function (resolve, reject) {
             $.ajax({
                 url: 'dedicatedServerAPI/healthCheck', // Replace with your actual PHP file path

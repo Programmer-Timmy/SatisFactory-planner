@@ -64,7 +64,6 @@ export class PowerProduction {
 
     async deletePowerPlant(element: HTMLElement) {
         const json = await this.applyToDatabase(ActionType.Delete, element);
-        console.log(json);
         if (json.hasOwnProperty('error')) {
             console.error(json.error);
             return;
@@ -75,7 +74,6 @@ export class PowerProduction {
         if (this.powerProduction.find('.card').length === 0) {
             this.powerProduction.append('<h5 class="text-center mt-2">No power production buildings added yet</h5>');
         }
-        console.log('Deleted power plant');
         this.calculatePowerProduction();
     }
 
@@ -103,20 +101,14 @@ export class PowerProduction {
     applyEventListenersToCard(card: JQuery<HTMLElement>) {
         const deleteButton = card.find('.deletePowerProduction');
         const updateInputs = card.find('input');
-        console.log(deleteButton);
-        console.log(updateInputs);
         if (deleteButton.length > 0) {
-            console.log('delete button');
             deleteButton.on('click', (event) => {
-                console.log('delete button clicked');
                 this.deletePowerPlant(event.currentTarget);
             });
         }
 
         if (updateInputs.length > 0) {
-            console.log('update inputs');
             updateInputs.on('change', (event) => {
-                console.log('update inputs changed');
                 this.updatePowerPlant(event.currentTarget);
             });
         }
@@ -287,7 +279,6 @@ export class PowerProduction {
                             clockSpeed: clockSpeed1
                         },
                         success: function (data) {
-                            console.log(data);
                             resolve(data)
                         }
                     });

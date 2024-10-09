@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.6.3",
+    "date": "october 9 2024",
+    "changes": [
+      "Fixed issues whit displaying the tables"
+    ]
+  },
+  {
     "version": "1.6.2",
     "date": "october 5 2024",
     "changes": [

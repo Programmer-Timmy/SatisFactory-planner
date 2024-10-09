@@ -108,7 +108,6 @@ $powerProduction = PowerProduction::getPowerProduction($gameSave->id);
         const updatePowerProduction = document.getElementById('updatePowerProduction');
         new bootstrap.Modal(updatePowerProduction).show();
         updatePowerProduction.addEventListener('hide.bs.modal', function () {
-            console.log(popoverProduction.attr('opened'));
             if (popoverProduction.attr('opened') === 'false') {
                 $('#popover-production').popover('show');
             }
