@@ -1,0 +1,20 @@
+# Check if TypeScript files are newer than built JS files
+needs_build=false
+
+for ts_file in $(git diff --cached --name-only | grep '\.ts$'); do
+  js_file="${ts_file%.ts}.js"
+  if [ ! -f "$js_file" ] || [ "$ts_file" -nt "$js_file" ]; then
+    needs_build=true
+    break
+  fi
+done
+
+if [ "$needs_build" = true ]; then
+  echo "Detected changes in TypeScript files that require a build."
+  npm run build-check || exit 1
+
+  # Stage the newly built files for commit
+  git add public/js
+else
+  echo "Build is up-to-date. No need to run Webpack."
+fi
