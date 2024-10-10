@@ -42,7 +42,7 @@ export class DedicatedServer {
         $('#DedicatedServerStatus .toast-header svg rect').attr('fill', this.fillColor);
         $('#DedicatedServerStatus .toast-body').html(this.toastMessage);
 
-        if ($('#DedicatedServerStatus').hasClass('hide')) {
+        if (!$('#DedicatedServerStatus').hasClass('show')) {
             this.toast.show();
         }
     }
