@@ -41,8 +41,10 @@ export class DedicatedServer {
     public ShowToast(): void {
         $('#DedicatedServerStatus .toast-header svg rect').attr('fill', this.fillColor);
         $('#DedicatedServerStatus .toast-body').html(this.toastMessage);
-        this.toast.show();
 
+        if ($('#DedicatedServerStatus').hasClass('hide')) {
+            this.toast.show();
+        }
     }
 
     public HealthCheck(): void {
