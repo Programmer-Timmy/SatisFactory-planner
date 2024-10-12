@@ -1,5 +1,42 @@
 [
   {
+    "version": "1.6.4",
+    "date": "october 9 2024",
+    "changes": [
+      "Fixed issue not able to close all the accordions on the SaveGame page.",
+      "Fixed issue when changing active status of the production line showing the old table of outputs."
+    ]
+  },
+  {
+    "version": "1.6.3",
+    "date": "october 9 2024",
+    "changes": [
+      "Fixed issues whit displaying the tables"
+    ]
+  },
+  {
+    "version": "1.6.2",
+    "date": "october 5 2024",
+    "changes": [
+      "Improved the imports display on the game save page."
+    ]
+  },
+  {
+    "version": "1.6.1",
+    "date": "september 30 2024",
+    "changes": [
+      "changed from api key to password for the dedicated server api for satisfactory. More user-friendly and secure.",
+      "updated the styling of the dedicated server api page."
+    ]
+  },
+  {
+    "version": "1.6.0",
+    "date": "september 30 2024",
+    "changes": [
+      "added support for the dedicated server api for satisfactory."
+    ]
+  },
+  {
     "version": "1.5.0",
     "date": "september 26 2024",
     "changes": [

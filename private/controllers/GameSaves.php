@@ -263,5 +263,15 @@ class GameSaves
         Database::update("users_has_game_saves", ['card_view'], [$cardView], ['game_saves_id' => $gameSaveId, 'users_id' => $_SESSION['userId']]);
     }
 
+    public static function checkecsess($gameSaveId)
+    {
+        $gameSave = self::getSaveGameById($gameSaveId);
+        if ($gameSave->owner_id != $_SESSION['userId']) {
+            return false;
+        }
+        return true;
+
+    }
+
 
 }

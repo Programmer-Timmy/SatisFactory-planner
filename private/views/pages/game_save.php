@@ -304,23 +304,48 @@ if (isset($_GET['layoutType'])) {
                 <?php if (empty($outputs)) : ?>
                     <h4 class="text-center mt-3">No Outputs Found</h4>
                 <?php else: ?>
-                    <div class="overflow-auto" style="max-height: 40vh;">
-                        <table class="table table-striped">
-                            <thead class="table-dark">
-                            <tr>
-                                <th scope="col">Item</th>
-                                <th scope="col">Amount</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <?php foreach ($outputs as $output) : ?>
-                                <tr>
-                                    <td><?= $output->item ?></td>
-                                    <td><?= $output->ammount ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                    <div class="accordion" id="productionLinesAccordion">
+                        <?php foreach ($outputs as $lineTitle => $lineOutputs) :
+                            $lineTitle = htmlspecialchars($lineTitle);
+                            $lineId = preg_replace('/\s+/', '_', $lineTitle);
+                            ?>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapse-<?= $lineId ?>"
+                                            aria-expanded="false"
+                                            aria-controls="collapse-<?= $lineId ?>">
+                                        <?= htmlspecialchars($lineTitle) ?>
+                                    </button>
+                                </h2>
+                                <div id="collapse-<?= $lineId ?>"
+                                     class="accordion-collapse collapse"
+                                     data-bs-parent="#productionLinesAccordion">
+                                    <div class="accordion-body p-0">
+                                        <?php if (empty($lineOutputs)) : ?>
+                                            <p>No Outputs for this line.</p>
+                                        <?php else: ?>
+                                            <table class="table table-striped m-0">
+                                                <thead class="table-dark">
+                                                <tr>
+                                                    <th scope="col">Item</th>
+                                                    <th scope="col">Amount</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <?php foreach ($lineOutputs as $output) : ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($output->item) ?></td>
+                                                        <td><?= htmlspecialchars($output->ammount) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -363,7 +388,22 @@ if (empty($productionLines)) {
     echo '<script>$(document).ready(function(){$(\'#popover-production\').popover(\'show\');});</script>';
 }
 ?>
+<?php
+global $changelog;
+if (DedicatedServer::getBySaveGameId($gameSave->id)) : ?>
+    <script src="js/dedicatedServer.js?v=<?= $changelog['version'] ?>"></script>
+    <script>
+        new DedicatedServer(<?= $gameSave->id ?>);
+    </script>
 
+    <script>
+        document.querySelectorAll('.accordion-button').forEach(button => {
+            button.addEventListener('click', function () {
+                console.log(this.getAttribute('aria-expanded'));
+            });
+        });
 
+    </script>
+<?php endif; ?>
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>
 <?php require_once '../private/views/Popups/updatePowerProduction.php'; ?>

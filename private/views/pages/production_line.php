@@ -287,7 +287,13 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
         <?php require_once '../private/views/Popups/showPower.php'; ?>
     </form>
 </div>
-
+<?php
+if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
+    <script src="js/dedicatedServer.js"></script>
+    <script>
+        new DedicatedServer(<?= $_SESSION['lastVisitedSaveGame'] ?>);
+    </script>
+<?php endif; ?>
 <script type="module" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
 <?php require_once '../private/views/Popups/editProductinoLine.php'; ?>
 

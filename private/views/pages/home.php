@@ -1,29 +1,44 @@
 <?php
 ob_start();
 $gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
-
+$error = '';
+$success = '';
 if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
     // Assuming you've included or defined the Database class somewhere
+    if (!GameSaves::checkecsess($_POST['id'])) {
+        header('Location:/home');
+        exit();
+    }
 
     $UpdatedSaveGameName = $_POST['UpdatedSaveGameName'];
 
     $gameSave_id = $_POST['id'];
 
-    if ($_POST['AllowedUsers'] == null) {
+    if (!isset($_POST['AllowedUsers'])) {
         $_POST['AllowedUsers'] = [];
     }
 
     // Assuming Database::insert() is a function that inserts data into the database
     $gameSaveId = GameSaves::updateSaveGame($gameSave_id, $_SESSION['userId'], $UpdatedSaveGameName, $_FILES['UpdatedSaveGameImage']);
-    if ($gameSaveId) {
-        header('Location:/home');
-        exit();
+//    check if dedicated server is set and updated
+    if ($_POST['dedicatedServerIp'] && $_POST['dedicatedServerPort']) {
+        $data = DedicatedServer::saveServer($gameSave_id, $_POST['dedicatedServerIp'], $_POST['dedicatedServerPort'], $_POST['dedicatedServerPassword']);
+        if ($data) {
+            if ($data['status'] === 'error') {
+                $error = $data['message'];
+            } else {
+                $success = $data['message'];
+            }
+        }
     }
-
 }
 
 if ($_GET && isset($_GET['delete'])) {
     $gameSaveId = $_GET['delete'];
+    if (GameSaves::checkecsess($gameSaveId)) {
+        header('Location:/home');
+        exit();
+    }
     GameSaves::deleteSaveGame($gameSaveId);
     header('Location:/home');
     exit();
@@ -115,7 +130,30 @@ if (count($gameSaves) == 2) {
             </div>
         </div>
     </div>
+    <?php if ($error) : ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" id="error">
+            <?= $error ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <script>
+                setTimeout(() => {
+                    $('#error').remove();
+                }, 5000);
+            </script>
+        </div>
 
+    <?php endif; ?>
+    <?php if ($success) : ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert" id="success">
+            <?= $success ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <script>
+                setTimeout(() => {
+                    // fade out after 5 seconds
+                    $('#success').remove();
+                }, 5000);
+            </script>
+        </div>
+    <?php endif; ?>
     <?php if (empty($gameSaves)) : ?>
         <h1>No Game Saves Found</h1>
     <?php else : ?>

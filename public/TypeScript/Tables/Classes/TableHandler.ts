@@ -121,14 +121,13 @@ export class TableHandler {
         const columnIndex = target.closest('td').index();
         const value = target.val();
 
-        console.log(this)
         // If the last row is selected, add a new row
         if (this.checkIfLastRow(target, tableId) && this.checkIfSelect(target)) {
             this.addNewRow(tableId);
         }
 
-
         const row = this.getRowByTableIdAndIndex(tableId, rowIndex - amountExtra);
+
 
         if (row && columnIndex >= 0) {
             this.updateRowData(row, columnIndex, value);
@@ -273,12 +272,12 @@ export class TableHandler {
 
         for (let i = 0; i < indexes.length; i++) {
             const index = indexes[i];
-            const target = $(`#recipes tbody tr:eq(${index})`);
-            const amountExtra = target.closest('tr').prevAll('.extra-output').length;
+            const target = this.productionTableRows[index];
+            const checkAbleRows = this.productionTableRows.slice(0, index);
+            const amountExtra = checkAbleRows.filter(row => row.doubleExport).length;
             const row = this.productionTableRows[index];
             this.updateRowInTable('recipes', index + amountExtra, row);
-
-
+            // break;
         }
     }
 
@@ -341,9 +340,6 @@ export class TableHandler {
         this.productionTableRows = productionTable.pop() ? productionTable : productionTable;
         this.powerTableRows = powerTable.pop() ? powerTable : powerTable;
         this.importsTableRows = importTable.pop() ? importTable : importTable;
-
-        console.log('Data saved.');
-        console.log(this)
         this.generateTables();
 
         this.powerTableRows.push(new PowerTableRow());

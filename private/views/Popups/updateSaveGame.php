@@ -9,20 +9,31 @@ $users = $data['users'];
 $allowedUsers = $data['allowedUsers'];
 $requestUsers = $data['requestUsers'];
 
+$dedicatedServer = DedicatedServer::getBySaveGameId($gameSave->id);
 
+if (isset($_GET['dedicatedServerId'])) {
+    if (!GameSaves::checkecsess($_GET['dedicatedServerId'])) {
+        header('Location:/home');
+        exit();
+    }
 
+    DedicatedServer::deleteServer($_GET['dedicatedServerId']);
+    header('Location:/home');
+    exit();
+}
 ?>
 <div class="modal fade" id="UpdatedSaveGame_<?= $gameSave->id ?>" tabindex="-1" aria-labelledby="popupModalLabel"
      aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="popupModalLabel">Update save game</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" enctype="multipart/form-data">
-                <input type="hidden" name="id" value="<?= $gameSave->id ?>">
-                <div class="modal-body">
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data" id="updateSaveGameForm_<?= $gameSave->id ?>">
+                    <input type="hidden" name="id" value="<?= $gameSave->id ?>">
+
                     <div class="mb-3">
                         <label for="UpdatedSaveGameName" class="form-label">Production Line Name</label>
                         <input type="text" class="form-control" id="UpdatedSaveGameName" name="UpdatedSaveGameName"
@@ -86,23 +97,88 @@ $requestUsers = $data['requestUsers'];
                                 </div>
                             </div>
                         <?php else: ?>
-                        <div class="mb-3">
-                            <h6>Add user</h6>
-                            <p>No users available</p>
-                        </div>
+                            <div class="mb-3">
+                                <h6>Add user</h6>
+                                <p>No users available</p>
+                            </div>
                         <?php endif; ?>
                     </div>
-                </div>
+                    <!--                    Collapse dedicated server section-->
+                    <div class="mb-3">
+                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#dedicatedServerCollapse" aria-expanded="false"
+                                aria-controls="dedicatedServerCollapse">
+                            Dedicated Server
+                        </button>
+                        <div class="collapse mt-2" id="dedicatedServerCollapse">
+                            <div class="card card-body">
+                                <div class="mb-3">
+                                    <label for="dedicatedServerIp" class="form-label">Server IP</label>
+                                    <input type="text" class="form-control" id="dedicatedServerIp"
+                                           name="dedicatedServerIp" autocomplete="off"
+                                           value="<?= $dedicatedServer ? $dedicatedServer->server_ip : '' ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dedicatedServerPort" class="form-label">Server Port</label>
+                                    <input type="text" class="form-control" id="dedicatedServerPort"
+                                           name="dedicatedServerPort" autocomplete="off"
+                                           value="<?= $dedicatedServer ? $dedicatedServer->server_port : '7777' ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dedicatedServerPassword" class="form-label mb-0">Server Client
+                                        Password</label><br>
+                                    <small class="text-muted mb-2" id="passwordHelp">Leave empty if no password is
+                                        set.</small>
+                                    <div class="input-group">
+                                        <input type="password"
+                                               class="form-control"
+                                               id="dedicatedServerPassword"
+                                               name="dedicatedServerPassword"
+                                               placeholder="Enter your password"
+                                               autocomplete="off"
+                                               aria-describedby="passwordHelp"
+                                               aria-required="false">
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword"
+                                                aria-label="Toggle password visibility" style="width: 45px"
+                                                autocomplete="off">
+                                            <i class="fas fa-eye" id="eyeIcon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    const togglePassword = document.getElementById('togglePassword');
+                                    const passwordInput = document.getElementById('dedicatedServerPassword');
+                                    const eyeIcon = document.getElementById('eyeIcon');
+
+                                    togglePassword.addEventListener('click', () => {
+                                        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                                        passwordInput.setAttribute('type', type);
+                                        eyeIcon.classList.toggle('fa-eye-slash');
+                                        eyeIcon.classList.toggle('fa-eye');
+
+
+                                    });
+                                </script>
+
+                                <?php if ($dedicatedServer): ?>
+                                    <a href="home?dedicatedServerId=<?= $gameSave->id ?>"
+                                       class="btn btn-danger">Remove dedicated server</a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </form>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Update save game</button>
+                    <button type="submit" class="btn btn-primary" form="updateSaveGameForm_<?= $gameSave->id ?>">Update
+                        Save Game
+                    </button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 <script>
-    console.log('add event listeners');
-
     // Function to handle AJAX requests
     function handleRequest(buttonId, requestData) {
         // preventing default
