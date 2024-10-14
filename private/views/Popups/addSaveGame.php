@@ -49,7 +49,7 @@ $users = Users::getAllValidatedUsers();
                         <div class="mb-3">
                             <h6>Add Users</h6>
                             <input type="text" class="form-control mb-2" id="addSearchUser"
-                                   placeholder="Search for user">
+                                   placeholder="Search for user" autocomplete="off" value="">
                             <div class="users">
                                 <!--                                max of 5-->
                                 <?php foreach (array_slice($users, 0, 5) as $user) : ?>
