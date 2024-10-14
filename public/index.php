@@ -58,7 +58,6 @@ if (str_contains($require, '/api')) {
 if ($site['admin']['enabled']) {
     $admin = $site['admin'];
     $pageTemplate = __DIR__ . "/../private/Views/pages$require.php";
-
     if (file_exists($pageTemplate)) {
         if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && $require !== '/404' && $require !== '/maintenance' && $require !== '/changelog') {
             if (!isset($_SESSION[$admin['sessionName']])) {
