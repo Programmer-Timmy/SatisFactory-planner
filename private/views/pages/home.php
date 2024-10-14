@@ -35,14 +35,9 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
 
 if ($_GET && isset($_GET['delete'])) {
     $gameSaveId = $_GET['delete'];
-    if (GameSaves::checkecsess($gameSaveId)) {
-        header('Location:/home');
-        exit();
-    }
     GameSaves::deleteSaveGame($gameSaveId);
     header('Location:/home');
     exit();
-
 }
 
 if ($_GET && isset($_GET['request'])) {
