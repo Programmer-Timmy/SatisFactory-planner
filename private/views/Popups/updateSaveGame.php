@@ -169,8 +169,9 @@ if (isset($_GET['dedicatedServerId'])) {
                         </div>
                     </div>
                 </form>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary" form="updateSaveGameForm_<?= $gameSave->id ?>">Update
+                <div class="modal-footer pb-0 px-0">
+                    <button type="submit" class="btn btn-primary me-0" form="updateSaveGameForm_<?= $gameSave->id ?>">
+                        Update
                         Save Game
                     </button>
                 </div>
@@ -249,7 +250,6 @@ if (isset($_GET['dedicatedServerId'])) {
             });
         });
     }
-
     handleSearch();
 </script>
 
