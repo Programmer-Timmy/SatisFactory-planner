@@ -68,6 +68,50 @@ $users = Users::getAllValidatedUsers();
                         <!-- Hidden input to store selected user IDs -->
                         <input type="hidden" name="selectedUsers" id="selectedUsersInput">
                     </div>
+                    <div class="mb-3">
+                        <button class="btn btn-primary w-100 dedicatedServerButton" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#dedicatedServerCollapse" aria-expanded="false"
+                                aria-controls="dedicatedServerCollapse">
+                            <i class="fas fa-server"></i>
+                            Edit dedicated server credentials
+                        </button>
+                        <div class="collapse" id="dedicatedServerCollapse">
+                            <div class="card card-body rounded-top-0">
+                                <div class="mb-3">
+                                    <label for="dedicatedServerIp" class="form-label">Server IP</label>
+                                    <input type="text" class="form-control"
+                                           name="dedicatedServerIp" autocomplete="off">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dedicatedServerPort" class="form-label">Server Port</label>
+                                    <input type="text" class="form-control"
+                                           name="dedicatedServerPort" autocomplete="off">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dedicatedServerPassword" class="form-label mb-0">Server Client
+                                        Password</label><br>
+                                    <small class="text-muted mb-2" id="passwordHelp">Leave empty if no password is
+                                        set.</small>
+                                    <div class="input-group">
+                                        <input type="password"
+                                               class="form-control dedicatedServerPassword"
+                                               name="dedicatedServerPassword"
+                                               placeholder="Enter your password"
+                                               autocomplete="off"
+                                               aria-describedby="passwordHelp"
+                                               aria-required="false">
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword"
+                                                aria-label="Toggle password visibility" style="width: 45px"
+                                                autocomplete="off">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Create Save Game</button>

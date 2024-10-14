@@ -104,23 +104,24 @@ if (isset($_GET['dedicatedServerId'])) {
                         <?php endif; ?>
                     </div>
                     <div class="mb-3">
-                        <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#dedicatedServerCollapse" aria-expanded="false"
-                                aria-controls="dedicatedServerCollapse" id="dedicatedServerButton">
+                        <button class="btn btn-primary w-100 dedicatedServerButton" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#dedicatedServerCollapse<?= $gameSave->id ?>" aria-expanded="false"
+                                aria-controls="dedicatedServerCollapse<?= $gameSave->id ?>">
                             <i class="fas fa-server"></i>
                             Edit dedicated server credentials
                         </button>
-                        <div class="collapse" id="dedicatedServerCollapse">
+                        <div class="collapse" id="dedicatedServerCollapse<?= $gameSave->id ?>">
                             <div class="card card-body rounded-top-0">
                                 <div class="mb-3">
                                     <label for="dedicatedServerIp" class="form-label">Server IP</label>
-                                    <input type="text" class="form-control" id="dedicatedServerIp"
+                                    <input type="text" class="form-control"
                                            name="dedicatedServerIp" autocomplete="off"
                                            value="<?= $dedicatedServer ? $dedicatedServer->server_ip : '' ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="dedicatedServerPort" class="form-label">Server Port</label>
-                                    <input type="text" class="form-control" id="dedicatedServerPort"
+                                    <input type="text" class="form-control"
                                            name="dedicatedServerPort" autocomplete="off"
                                            value="<?= $dedicatedServer ? $dedicatedServer->server_port : '7777' ?>">
                                 </div>
@@ -131,35 +132,19 @@ if (isset($_GET['dedicatedServerId'])) {
                                         set.</small>
                                     <div class="input-group">
                                         <input type="password"
-                                               class="form-control"
-                                               id="dedicatedServerPassword"
+                                               class="form-control passwordInput"
                                                name="dedicatedServerPassword"
                                                placeholder="Enter your password"
                                                autocomplete="off"
                                                aria-describedby="passwordHelp"
                                                aria-required="false">
-                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword"
+                                        <button class="btn btn-outline-secondary togglePassword" type="button"
                                                 aria-label="Toggle password visibility" style="width: 45px"
                                                 autocomplete="off">
-                                            <i class="fas fa-eye" id="eyeIcon"></i>
+                                            <i class="fas fa-eye"></i>
                                         </button>
                                     </div>
                                 </div>
-
-                                <script>
-                                    const togglePassword = document.getElementById('togglePassword');
-                                    const passwordInput = document.getElementById('dedicatedServerPassword');
-                                    const eyeIcon = document.getElementById('eyeIcon');
-
-                                    togglePassword.addEventListener('click', () => {
-                                        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                                        passwordInput.setAttribute('type', type);
-                                        eyeIcon.classList.toggle('fa-eye-slash');
-                                        eyeIcon.classList.toggle('fa-eye');
-
-
-                                    });
-                                </script>
 
                                 <?php if ($dedicatedServer): ?>
                                     <a href="home?dedicatedServerId=<?= $gameSave->id ?>"
@@ -257,11 +242,6 @@ if (isset($_GET['dedicatedServerId'])) {
     document.getElementById('update_save_game_line_<?= $gameSave->id ?>').addEventListener('click', function () {
         const popupModal = new bootstrap.Modal(document.getElementById('UpdatedSaveGame_<?= $gameSave->id ?>'));
         popupModal.show();
-    });
-</script>
-<script>
-    $('#dedicatedServerButton').on('click', function () {
-        this.classList.toggle('rounded-bottom-0');
     });
 </script>
 
