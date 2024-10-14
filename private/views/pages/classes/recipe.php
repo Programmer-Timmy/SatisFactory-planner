@@ -13,7 +13,7 @@ class recipe
     public $ingredients; // Array of RecipeIngredient instances
 
     // Constructor to initialize properties
-    public function __construct($id, $name, $class_name, Building $buildingId, Item $itemId, Item $secondItemId, $exportAmountPerMin, $secondExportAmountPerMin, array $ingredients)
+    public function __construct($id, $name, $class_name, Building $buildingId, Item $itemId, Item|null $secondItemId, $exportAmountPerMin, $secondExportAmountPerMin, array $ingredients)
     {
         $this->id = $id;
         $this->name = $name;
