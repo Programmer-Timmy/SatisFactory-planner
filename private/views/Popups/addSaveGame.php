@@ -61,7 +61,7 @@ $users = Users::getAllValidatedUsers();
                     <div id="userList">
                         <div class="mb-3">
                             <h6>Add Users</h6>
-                            <input type="text" class="form-control mb-2" id="addSearchUser"
+                            <input type="search" class="form-control mb-2" id="addSearchUser"
                                    placeholder="Search for user" autocomplete="off" value="">
                             <div class="users">
                                 <!--                                max of 5-->
@@ -94,12 +94,13 @@ $users = Users::getAllValidatedUsers();
                                 <div class="mb-3">
                                     <label for="dedicatedServerIp" class="form-label">Server IP</label>
                                     <input type="text" class="form-control"
-                                           name="dedicatedServerIp" autocomplete="off">
+                                           name="dedicatedServerIp" autocomplete="off"
+                                           placeholder="Enter your server IP">
                                 </div>
                                 <div class="mb-3">
                                     <label for="dedicatedServerPort" class="form-label">Server Port</label>
                                     <input type="text" class="form-control"
-                                           name="dedicatedServerPort" autocomplete="off">
+                                           name="dedicatedServerPort" autocomplete="off" value="7777"
                                 </div>
                                 <div class="mb-3">
                                     <label for="dedicatedServerPassword" class="form-label mb-0">Server Client

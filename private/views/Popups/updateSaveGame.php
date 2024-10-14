@@ -80,7 +80,7 @@ if (isset($_GET['dedicatedServerId'])) {
                         <?php if ($users): ?>
                             <div class="mb-3">
                                 <h6>Add user</h6>
-                                <input type="text" class="form-control mb-2" id="searchUser_<?= $gameSave->id ?>"
+                                <input type="search" class="form-control mb-2" id="searchUser_<?= $gameSave->id ?>"
                                        placeholder="Search for user" autocomplete="off" value="">
                                 <div class="users">
                                     <?php foreach (array_slice($users, 0, 4) as $user) : ?>
