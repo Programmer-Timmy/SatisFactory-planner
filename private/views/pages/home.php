@@ -208,9 +208,8 @@ if (count($gameSaves) == 2) {
     });
 </script>
 <script>
-    const togglePassword = document.querySelector('.togglePassword');
-
-    $(togglePassword).on('click', function () {
+    const togglePassword = $('.togglePassword');
+    togglePassword.on('click', function () {
         const passwordInput = $(this).prev();
         const eyeIcon = $(this).find('i');
 

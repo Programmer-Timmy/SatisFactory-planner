@@ -10,10 +10,23 @@ if ($_POST && isset($_POST['saveGameName'])) {
     }
 
     $gameSaveId = GameSaves::createSaveGame($_SESSION['userId'], $saveGameName, $_FILES['saveGameImage'], $_POST['selectedUsers']);
+
+    if ($_POST['dedicatedServerIp'] && $_POST['dedicatedServerPort']) {
+        $data = DedicatedServer::saveServer($gameSaveId, $_POST['dedicatedServerIp'], $_POST['dedicatedServerPort'], $_POST['dedicatedServerPassword']);
+        if ($data) {
+            if ($data['status'] === 'error') {
+                $error = $data['message'];
+            } else {
+                $success = $data['message'];
+            }
+        }
+    }
+
     if ($gameSaveId) {
         header('Location:/game_save?id=' . $gameSaveId);
         exit();
     }
+
 
 }
 $users = Users::getAllValidatedUsers();
@@ -69,12 +82,12 @@ $users = Users::getAllValidatedUsers();
                         <input type="hidden" name="selectedUsers" id="selectedUsersInput">
                     </div>
                     <div class="mb-3">
-                        <button class="btn btn-primary w-100 dedicatedServerButton" type="button"
+                        <button class="btn btn-success w-100 dedicatedServerButton" type="button"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#dedicatedServerCollapse" aria-expanded="false"
                                 aria-controls="dedicatedServerCollapse">
                             <i class="fas fa-server"></i>
-                            Edit dedicated server credentials
+                            Add Dedicated Server Credentials
                         </button>
                         <div class="collapse" id="dedicatedServerCollapse">
                             <div class="card card-body rounded-top-0">
@@ -101,8 +114,9 @@ $users = Users::getAllValidatedUsers();
                                                autocomplete="off"
                                                aria-describedby="passwordHelp"
                                                aria-required="false">
-                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword"
-                                                aria-label="Toggle password visibility" style="width: 45px"
+                                        <button class="btn btn-outline-secondary togglePassword" type="button"
+                                                id="togglePassword"
+                                                aria-label="Toggle password visibility " style="width: 45px"
                                                 autocomplete="off">
                                             <i class="fas fa-eye"></i>
                                         </button>
