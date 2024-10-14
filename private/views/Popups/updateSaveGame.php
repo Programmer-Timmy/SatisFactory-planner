@@ -103,15 +103,15 @@ if (isset($_GET['dedicatedServerId'])) {
                             </div>
                         <?php endif; ?>
                     </div>
-                    <!--                    Collapse dedicated server section-->
                     <div class="mb-3">
-                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#dedicatedServerCollapse" aria-expanded="false"
-                                aria-controls="dedicatedServerCollapse">
-                            Dedicated Server
+                                aria-controls="dedicatedServerCollapse" id="dedicatedServerButton">
+                            <i class="fas fa-server"></i>
+                            Edit dedicated server credentials
                         </button>
-                        <div class="collapse mt-2" id="dedicatedServerCollapse">
-                            <div class="card card-body">
+                        <div class="collapse" id="dedicatedServerCollapse">
+                            <div class="card card-body rounded-top-0">
                                 <div class="mb-3">
                                     <label for="dedicatedServerIp" class="form-label">Server IP</label>
                                     <input type="text" class="form-control" id="dedicatedServerIp"
@@ -257,6 +257,11 @@ if (isset($_GET['dedicatedServerId'])) {
     document.getElementById('update_save_game_line_<?= $gameSave->id ?>').addEventListener('click', function () {
         const popupModal = new bootstrap.Modal(document.getElementById('UpdatedSaveGame_<?= $gameSave->id ?>'));
         popupModal.show();
+    });
+</script>
+<script>
+    $('#dedicatedServerButton').on('click', function () {
+        this.classList.toggle('rounded-bottom-0');
     });
 </script>
 
