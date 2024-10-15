@@ -12,6 +12,7 @@ if (isset($_GET['resent'])) {
         }
     }
 }
+$username = '';
 
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
@@ -57,6 +58,7 @@ if (isset($_GET['verify']) && strtok($_SERVER['REQUEST_URI'], '?') == '/login') 
                 </div>
             <?php endif; ?>
             <?php if (isset($_GET['registered'])) : ?>
+                <?php $username = $_GET['registered'] ?>
                 <div class="alert alert-success" role="alert">
                     You have successfully registered! Please check your email to verify your account. If you don't see
                     the email, check your spam folder. Didn't receive it? <a href='?resent=<?= $username ?>'>Resend the
