@@ -31,6 +31,9 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
             }
         }
     }
+
+    header('Location:/home');
+    exit();
 }
 
 if ($_GET && isset($_GET['delete'])) {

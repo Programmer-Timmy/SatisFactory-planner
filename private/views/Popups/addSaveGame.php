@@ -37,21 +37,20 @@ $users = Users::getAllValidatedUsers();
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="popupModalLabel">Add production line</h5>
+                <h5 class="modal-title" id="popupModalLabel">Add Save Game</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <!-- Other form fields for the save game -->
                     <div class="mb-3">
-                        <label for="saveGameName" class="form-label">Production Line Name</label>
+                        <label for="saveGameName" class="form-label">Save Game Name</label>
                         <input type="text" class="form-control" id="saveGameName" name="saveGameName" required>
                     </div>
                     <div class="mb-3">
-                        <label for="saveGameImage" class="form-label">Production Line Image</label>
+                        <label for="saveGameImage" class="form-label">Save Game Image</label>
                         <input type="file" class="form-control" id="saveGameImage" name="saveGameImage">
                     </div>
-
                     <div id="selectedUsers" class="mt-3">
                         <h6 class="requested hidden">Requested Users</h6>
                         <div class="selected-users-list">
@@ -100,7 +99,7 @@ $users = Users::getAllValidatedUsers();
                                 <div class="mb-3">
                                     <label for="dedicatedServerPort" class="form-label">Server Port</label>
                                     <input type="text" class="form-control"
-                                           name="dedicatedServerPort" autocomplete="off" value="7777"
+                                           name="dedicatedServerPort" autocomplete="off" value="7777">
                                 </div>
                                 <div class="mb-3">
                                     <label for="dedicatedServerPassword" class="form-label mb-0">Server Client

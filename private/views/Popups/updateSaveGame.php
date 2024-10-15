@@ -35,13 +35,13 @@ if (isset($_GET['dedicatedServerId'])) {
                     <input type="hidden" name="id" value="<?= $gameSave->id ?>">
 
                     <div class="mb-3">
-                        <label for="UpdatedSaveGameName" class="form-label">Production Line Name</label>
+                        <label for="UpdatedSaveGameName" class="form-label">Save Game Name</label>
                         <input type="text" class="form-control" name="UpdatedSaveGameName"
                                value="<?= $gameSave->title ?>"
                                required>
                     </div>
                     <div class="mb-3">
-                        <label for="UpdatedSaveGameImage" class="form-label">Production Line Image</label>
+                        <label for="UpdatedSaveGameImage" class="form-label">Save Game Image</label>
                         <input type="file" class="form-control" name="UpdatedSaveGameImage">
                     </div>
                     <div id="userList_<?= $gameSave->id ?>">
