@@ -31,9 +31,6 @@ function getDescription()
 {
     global $description;
     $url = $_SERVER['REQUEST_URI'];
-    if ($url == '/login') {
-        $url = $_SESSION['redirect'];
-    }
 
     $pageDescription = $description['default'];
 
