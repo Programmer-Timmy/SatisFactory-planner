@@ -5,9 +5,9 @@ class DocsData {
     public array $recipes = [];
     public array $buildings = [];
     public array $items = [];
-    public array $added_stuff = [];
-    public array $updated_stuff = [];
-    public array $deleted_stuff = [];
+    public array $added_stuff = ['items' => [], 'buildings' => [], 'recipes' => []];
+    public array $updated_stuff = ['items' => [], 'buildings' => [], 'recipes' => []];
+    public array $deleted_stuff = ['items' => [], 'buildings' => [], 'recipes' => []];
 
     // Private properties
     private mixed $jsonData;
@@ -184,10 +184,14 @@ class DocsData {
 
         $exportPerMin = $this->calculateExportPerMin($producedItems, $duration, 0);
         $secondExportPerMin = $this->calculateExportPerMin($producedItems, $duration, 1);
-
+        $display_name = $recipeData['mDisplayName'];
+        // if in display name is `Alternate: ` remove it and place at the end `(Alternate)`
+        if (strpos($display_name, 'Alternate: ') === 0) {
+            $display_name = substr($display_name, 11) . ' (Alternate)';
+        }
         $this->recipes[] = new Recipe(
             $this->recipeI,
-            $recipeData['mDisplayName'],
+            $display_name,
             $recipeData['ClassName'],
             $this->buildings[array_search($buildingClass, $this->buildingClasses)],
             $producedItems[0][0],
@@ -230,7 +234,7 @@ class DocsData {
                 $amount /= 1000;
             }
 
-            $recipeIngredientsList[] = new recipeIngredient(
+            $recipeIngredientsList[] = new RecipeIngredient(
                 $this->recipeIngredientI,
                 $this->recipeI,
                 $ingredient[0]->class_name,
@@ -278,14 +282,14 @@ class DocsData {
                         values:  [$item->name, $item->form, $item->class_name],
                         where:   ['id' => $existing->id],
                     );
-                    $this->updated_stuff[] = ['type' => 'item', 'name' => $item->name];
+                    $this->updated_stuff['items'][] = ['name' => $item->name];
                 } else {
                     $this->database->insert(
                         table:   'items',
                         columns: ['name', 'form', 'class_name'],
                         values:  [$item->name, $item->form, $item->class_name],
                     );
-                    $this->added_stuff[] = ['type' => 'item', 'name' => $item->name];
+                    $this->added_stuff['items'][] = ['name' => $item->name];
                 }
             }
 
@@ -303,7 +307,7 @@ class DocsData {
                     table: 'items',
                     where: ['class_name' => $class_name],
                 );
-                $this->deleted_stuff[] = ['type' => 'item', 'name' => $class_name];
+                $this->deleted_stuff['items'][] = ['name' => $class_name];
             }
 
             $this->database->commit();
@@ -333,14 +337,14 @@ class DocsData {
                         values:  [$building->name, $building->class_name, $building->power_used, $building->power_produced],
                         where:   ['id' => $existing->id],
                     );
-                    $this->updated_stuff[] = ['type' => 'building', 'name' => $building->name];
+                    $this->updated_stuff['buildings'][] = ['name' => $building->name];
                 } else {
                     $this->database->insert(
                         table:   'buildings',
                         columns: ['name', 'class_name', 'power_used', 'power_generation'],
                         values:  [$building->name, $building->class_name, $building->power_used, $building->power_produced],
                     );
-                    $this->added_stuff[] = ['type' => 'building', 'name' => $building->name];
+                    $this->added_stuff['buildings'][] = ['name' => $building->name];
                 }
             }
 
@@ -356,7 +360,7 @@ class DocsData {
                     table: 'buildings',
                     where: ['class_name' => $class_name],
                 );
-                $this->deleted_stuff[] = ['type' => 'building', 'name' => $class_name];
+                $this->deleted_stuff['buildings'][] = ['name' => $class_name];
             }
 
             $this->database->commit();
@@ -394,7 +398,7 @@ class DocsData {
                         values:  [$recipe->name, $recipe->class_name, $buildingId->id, $itemId->id, $secondItemId, $recipe->exportAmountPerMin, $recipe->secondExportAmountPerMin],
                         where:   ['id' => $existing->id],
                     );
-                    $this->updated_stuff[] = ['type' => 'recipe', 'name' => $recipe->name];
+                    $this->updated_stuff['recipes'][] = ['name' => $recipe->name];
                     $recipeId = $existing->id;
                 } else {
                     $this->database->insert(
@@ -402,7 +406,7 @@ class DocsData {
                         columns: ['name', 'class_name', 'buildings_id', 'item_id', 'item_id2', 'export_amount_per_min', 'export_amount_per_min2'],
                         values:  [$recipe->name, $recipe->class_name, $buildingId->id, $itemId->id, $secondItemId, $recipe->exportAmountPerMin, $recipe->secondExportAmountPerMin],
                     );
-                    $this->added_stuff[] = ['type' => 'recipe', 'name' => $recipe->name];
+                    $this->added_stuff['recipes'][] = ['name' => $recipe->name];
                     $recipeId = $this->database->lastInsertId();
                 }
 
@@ -431,7 +435,7 @@ class DocsData {
                     table: 'recipes',
                     where: ['class_name' => $class_name],
                 );
-                $this->deleted_stuff[] = ['type' => 'recipe', 'name' => $class_name];
+                $this->deleted_stuff['recipes'][] = ['name' => $class_name];
             }
 
             $this->database->commit();

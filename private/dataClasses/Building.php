@@ -1,6 +1,6 @@
 <?php
 
-class building
+class Building
 {
     public $id;
     public $name;

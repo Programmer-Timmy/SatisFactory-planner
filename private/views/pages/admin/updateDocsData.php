@@ -50,48 +50,79 @@
     $deleted_stuff = $docsData->deleted_stuff;
     $updated_stuff = $docsData->updated_stuff;
     ?>
-    <?php if (!empty($added_stuff)): ?>
+    <?php if (!empty($added_stuff['items'] || $added_stuff['buildings'] || $added_stuff['recipes'])): ?>
         <div class='card mb-4'>
-            <div class='card-header bg-info '>Added</div>
-            <div class='card-body'>
-                <ul class='list-group'>
-                    <?php foreach ($added_stuff as $stuff) : ?>
-                        <li class='list-group-item d-flex justify-content-between align-items-center'>
-                            <span class='badge badge-primary badge-pill text-black'><?= $stuff['name'] ?></span>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
+            <div class='card-header bg-info text-black '>Added</div>
+            <?php foreach ($added_stuff as $typeName => $type) : ?>
+            <?php if (empty($type)) continue; ?>
+                <div class='card-body row'>
+                    <div class='col-lg-12'>
+                        <div class='card mb-3'>
+                            <div class='card-header'><?= $typeName ?></div>
+                            <div class='card-body row'>
+                                <?php foreach ($type as $stuff) : ?>
+                                    <div class="col-lg-4">
+                                        <div class="card mb-3">
+                                            <div class="card-header"><?= $stuff['name'] ?></div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
-    <?php if (!empty($deleted_stuff)): ?>
+    <?php if (!empty($deleted_stuff['items'] || $deleted_stuff['buildings'] || $deleted_stuff['recipes'])): ?>
         <div class='card mb-4'>
-            <div class='card-header bg-dange'>Deleted</div>
-            <div class='card-body'>
-                <ul class='list-group'>
-                    <?php foreach ($deleted_stuff as $stuff) : ?>
-                        <li class='list-group item d-flex justify-content-between align-items-center'>
-                            <span class='badge badge-primary badge-pill text-black'><?= $stuff['name'] ?></span>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
+            <div class='card-header bg-danger text-black '>Deleted</div>
+            <?php foreach ($deleted_stuff as $typeName => $type) : ?>
+            <?php if (empty($type)) continue; ?>
+                <div class='card-body row'>
+                    <div class='col-lg-12'>
+                        <div class='card mb-3'>
+                            <div class='card-header'><?= $typeName ?></div>
+                            <div class='card-body row'>
+                                <?php foreach ($type as $stuff) : ?>
+                                    <div class="col-lg-4">
+                                        <div class="card mb-3">
+                                            <div class="card-header"><?= $stuff['name'] ?></div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
-    <?php if (!empty($updated_stuff)): ?>
+    <?php if (!empty($updated_stuff['items'] || $updated_stuff['buildings'] || $updated_stuff['recipes'])): ?>
         <div class='card mb-4'>
-            <div class='card-header bg-warning '>Updated</div>
-            <div class='card-body'>
-                <ul class='list-group'>
-                    <?php foreach ($updated_stuff as $stuff) : ?>
-                        <li class='list-group item d-flex justify-content-between align-items-center'>
-                            <span class='badge badge-primary badge-pill text-black'><?= $stuff['name'] ?></span>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
+            <div class='card-header bg-warning text-black '>Updated</div>
+            <?php foreach ($updated_stuff as $typeName => $type) : ?>
+            <?php if (empty($type)) continue; ?>
+                <div class='card-body row'>
+                    <div class='col-lg-12'>
+                        <div class='card mb-3'>
+                            <div class='card-header'><?= $typeName ?></div>
+                            <div class='card-body row'>
+                                <?php foreach ($type as $stuff) : ?>
+                                    <div class="col-lg-4">
+                                        <div class="card mb-3">
+                                            <div class="card-header"><?= $stuff['name'] ?></div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
+
     <a href="/admin" class="btn btn-primary w-100">Return to admin page</a>
 </div>
 
