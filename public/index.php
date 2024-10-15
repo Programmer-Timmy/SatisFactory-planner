@@ -61,6 +61,12 @@ if ($site['admin']['enabled']) {
     if (file_exists($pageTemplate)) {
         if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && $require !== '/404' && $require !== '/maintenance' && $require !== '/changelog') {
             if (!isset($_SESSION[$admin['sessionName']])) {
+//                if already logged in show the 403 page
+                if (isset($_SESSION[$site['accounts']['sessionName']])) {
+                    header('Location: /403');
+                    exit();
+                }
+
                 if ($site['saveUrl']) {
                     $_SESSION['redirect'] = $requestedPage;
                 }
