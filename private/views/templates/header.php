@@ -5,9 +5,6 @@ function getPageTitle($skipCheck = false)
 {
     global $titles;
     $url = $_SERVER['REQUEST_URI'];
-    if ($url == '/login' && !$skipCheck) {
-        $url = $_SESSION['redirect'];
-    }
 
     $pageTitle = ucfirst($titles['default']);
 
