@@ -12,6 +12,7 @@ if (isset($_GET['resent'])) {
         }
     }
 }
+$username = '';
 
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
