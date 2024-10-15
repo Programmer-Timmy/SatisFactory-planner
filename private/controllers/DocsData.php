@@ -234,7 +234,7 @@ class DocsData {
                 $amount /= 1000;
             }
 
-            $recipeIngredientsList[] = new recipeIngredient(
+            $recipeIngredientsList[] = new RecipeIngredient(
                 $this->recipeIngredientI,
                 $this->recipeI,
                 $ingredient[0]->class_name,
