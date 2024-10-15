@@ -185,7 +185,7 @@ class DocsData {
         $exportPerMin = $this->calculateExportPerMin($producedItems, $duration, 0);
         $secondExportPerMin = $this->calculateExportPerMin($producedItems, $duration, 1);
 
-        $this->recipes[] = new recipe(
+        $this->recipes[] = new Recipe(
             $this->recipeI,
             $recipeData['mDisplayName'],
             $recipeData['ClassName'],
