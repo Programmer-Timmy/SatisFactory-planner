@@ -4,7 +4,7 @@ $error = '';
 global $changelog;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['username'])) {
+    if ($_POST['username'] && isset($_POST['email']) !== null) {
         if (Users::getUserByEmail($_POST['email']) && $_POST['email'] != $user->email) {
             $error = 'Email already in use';
         } elseif (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
@@ -69,11 +69,13 @@ if (isset($_GET['delete'])) {
                         <h5 class="card-title">Change User Info</h5>
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" value="<?= $user->username ?>" required>
+                            <input type="text" class="form-control" id="username" name="username"
+                                   value="<?= $user->username ?>" required autocomplete="username">
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="<?= $user->email ?>" required>
+                            <input type="email" class="form-control" id="email" name="email" value="<?= $user->email ?>"
+                                   required autocomplete="email">
                         </div>
                         <div class="mb-3">
                             <label class="form-label me-2" for="updates">Recieve updates</label>
@@ -97,11 +99,13 @@ if (isset($_GET['delete'])) {
                         <h5 class="card-title">Change Password</h5>
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <input type="password" class="form-control" id="password" name="password" required
+                                   autocomplete="new-password">
                         </div>
                         <div class="mb-3">
                             <label for="password2" class="form-label">Repeat Password</label>
-                            <input type="password" class="form-control" id="password2" name="password2" required>
+                            <input type="password" class="form-control" id="password2" name="password2" required
+                                   autocomplete="off">
                         </div>
                         <button type="submit" class="btn btn-primary">Change Password</button>
                     </div>

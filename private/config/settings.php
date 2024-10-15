@@ -47,6 +47,7 @@ $site = [
         'enabled' => true,
         'sessionName' => 'admin', // the session name that will be used to store that the user is a admin check by isset function
         'filterInUrl' => 'admin', // empty string means no filter
+        'redirect' => '/login', // redirect to this page if the user is not a admin
     ],
 
     // Accounts settings

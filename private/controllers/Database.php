@@ -1,14 +1,13 @@
 <?php
 
-class Database
-{
+class Database {
     public PDO $connection;
     private string $host;
     private string $user;
     private string $password;
     private string $database;
-    function __construct()
-    {
+
+    function __construct() {
         global $database;
         $this->host = $database['host'];
         $this->user = $database['user'];
@@ -25,8 +24,7 @@ class Database
      * @param $database
      * @return void
      */
-    function connect($host, $user, $password, $database): void
-    {
+    function connect($host, $user, $password, $database): void {
         $this->connection = new PDO("mysql:host=$host;dbname=$database", $user, $password);
     }
 
@@ -34,13 +32,11 @@ class Database
      * @param $sql
      * @return mixed
      */
-    function prepare($sql)
-    {
+    function prepare($sql) {
         return $this->connection->prepare($sql);
     }
 
-    function lastInsertId()
-    {
+    function lastInsertId() {
         return $this->connection->lastInsertId();
     }
 
@@ -53,8 +49,7 @@ class Database
      *
      * @throws ErrorException
      */
-    public static function insert(string $table, array $columns, array $values, $connection = (new Database)) : string
-    {
+    public static function insert(string $table, array $columns, array $values, $connection = (new Database)): string {
         $sql = "INSERT INTO $table (";
         foreach ($columns as $column) {
             $sql .= "$column, ";
@@ -89,10 +84,16 @@ class Database
      * @param array $join
      * @param array $where
      * @param string $orderBy
+     * @param int $fetchStyle PDO::FETCH_OBJ or any PDO fetch style like: PDO::FETCH_ASSOC
      * @return mixed
      */
-    public static function getAll(string $table, array $columns = ['*'],$join = [], array $where = [], string $orderBy = '')
-    {
+    public static function getAll(
+        string $table,
+        array  $columns = ['*'], $join = [],
+        array  $where = [],
+        string $orderBy = '',
+        int    $fetchStyle = PDO::FETCH_OBJ
+    ) {
         $sql = "SELECT ";
         foreach ($columns as $column) {
             $sql .= "$column,";
@@ -114,7 +115,7 @@ class Database
         }
         $stmt = (new Database)->prepare($sql);
         $stmt->execute(array_values($where));
-        return $stmt->fetchAll(PDO::FETCH_OBJ);
+        return $stmt->fetchAll($fetchStyle);
     }
 
     /**
@@ -125,8 +126,7 @@ class Database
      * @param string $orderBy
      * @return mixed
      */
-    public static function get(string $table, array $columns = ['*'],$join = [], array $where = [], string $orderBy = '')
-    {
+    public static function get(string $table, array $columns = ['*'], $join = [], array $where = [], string $orderBy = '') {
         $sql = "SELECT ";
         foreach ($columns as $column) {
             $sql .= "$column,";
@@ -158,8 +158,7 @@ class Database
      * @param array $where
      * @return void
      */
-    public static function update(string $table, array $columns, array $values, array $where, Database $database = new Database)
-    {
+    public static function update(string $table, array $columns, array $values, array $where, Database $database = new Database) {
         $sql = "UPDATE $table SET ";
         foreach ($columns as $column) {
             $sql .= "$column = ?,";
@@ -180,8 +179,7 @@ class Database
      * @param array $where
      * @return void
      */
-    public static function delete(string $table, array $where, Database $database = new Database)
-    {
+    public static function delete(string $table, array $where, Database $database = new Database) {
         $sql = "DELETE FROM $table WHERE ";
         foreach ($where as $column => $value) {
             $sql .= "$column = ? AND ";
@@ -197,28 +195,24 @@ class Database
      * @param array $values
      * @return mixed
      */
-    public static function query(string $query, array $values = [], Database $database = new Database)
-    {
+    public static function query(string $query, array $values = [], Database $database = new Database) {
         $stmt = $database->prepare($query);
         $stmt->execute($values);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
-    public static function beginTransaction()
-    {
+    public static function beginTransaction() {
         $database = new Database;
         $database->connection->beginTransaction();
 
         return $database;
     }
 
-    public static function commit(Database $database)
-    {
+    public static function commit(Database $database) {
         $database->connection->commit();
     }
 
-    public static function rollBack(Database $database)
-    {
+    public static function rollBack(Database $database) {
         $database->connection->rollBack();
     }
 }
