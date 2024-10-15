@@ -14,7 +14,7 @@ if ($_POST) {
             if (Users::createUser($username, $password, $email)) {
                 $_SESSION['userId'] = null;
                 $_SESSION['redirect'] = '/account';
-                header('Location: /login?registered=true');
+                header("Location: /login?registered=$username");
             } else {
                 $error = 'Error creating user';
             }

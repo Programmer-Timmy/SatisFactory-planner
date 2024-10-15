@@ -1,6 +1,6 @@
 <?php
 
-class recipe
+class Recipe
 {
     public $id;
     public $name;

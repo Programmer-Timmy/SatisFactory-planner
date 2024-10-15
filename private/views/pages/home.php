@@ -35,14 +35,9 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
 
 if ($_GET && isset($_GET['delete'])) {
     $gameSaveId = $_GET['delete'];
-    if (GameSaves::checkecsess($gameSaveId)) {
-        header('Location:/home');
-        exit();
-    }
     GameSaves::deleteSaveGame($gameSaveId);
     header('Location:/home');
     exit();
-
 }
 
 if ($_GET && isset($_GET['request'])) {
@@ -201,6 +196,21 @@ if (count($gameSaves) == 2) {
     document.getElementById('InvitesDropdown').addEventListener('click', function (event) {
         event.stopPropagation();
     });
-
 </script>
+<script>
+    $('.dedicatedServerButton').on('click', function () {
+        this.classList.toggle('rounded-bottom-0');
+    });
+</script>
+<script>
+    const togglePassword = $('.togglePassword');
+    togglePassword.on('click', function () {
+        const passwordInput = $(this).prev();
+        const eyeIcon = $(this).find('i');
 
+        const type = passwordInput.attr('type') === 'password' ? 'text' : 'password';
+        passwordInput.attr('type', type);
+        eyeIcon.toggleClass('fa-eye-slash');
+        eyeIcon.toggleClass('fa-eye');
+    });
+</script>

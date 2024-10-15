@@ -2,13 +2,17 @@
 $error = '';
 $success = '';
 if (isset($_GET['resent'])) {
-    if (Users::resendVerificationEmail($_GET['resent'])) {
-        header('Location: /login');
-        $success = 'Verification email resent';
+    if (Users::checkIfValidated($_GET['resent'])) {
+        $error = 'Email already verified';
     } else {
-        $error = 'Error resending verification email';
+        if (Users::resendVerificationEmail($_GET['resent'])) {
+            $success = 'Verification email resent';
+        } else {
+            $error = 'Error resending verification email';
+        }
     }
 }
+$username = '';
 
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
@@ -54,8 +58,11 @@ if (isset($_GET['verify']) && strtok($_SERVER['REQUEST_URI'], '?') == '/login') 
                 </div>
             <?php endif; ?>
             <?php if (isset($_GET['registered'])) : ?>
+                <?php $username = $_GET['registered'] ?>
                 <div class="alert alert-success" role="alert">
-                    You have successfully registered. Please login.
+                    You have successfully registered! Please check your email to verify your account. If you don't see
+                    the email, check your spam folder. Didn't receive it? <a href='?resent=<?= $username ?>'>Resend the
+                        verification email</a>.
                 </div>
             <?php endif; ?>
             <?php if (isset($_GET['logout'])) : ?>

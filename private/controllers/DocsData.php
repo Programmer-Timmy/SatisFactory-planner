@@ -189,7 +189,7 @@ class DocsData {
         if (strpos($display_name, 'Alternate: ') === 0) {
             $display_name = substr($display_name, 11) . ' (Alternate)';
         }
-        $this->recipes[] = new recipe(
+        $this->recipes[] = new Recipe(
             $this->recipeI,
             $display_name,
             $recipeData['ClassName'],
