@@ -351,17 +351,17 @@ class DocsData {
             if (empty($processedBuildingClassNames)) {
                 return;
             }
-
-            $existingBuildings = $this->database->getAll(table: 'buildings', columns: ['class_name'], fetchStyle: PDO::FETCH_COLUMN);
-            $buildingsToDelete = array_diff($existingBuildings, $processedBuildingClassNames);
-
-            foreach ($buildingsToDelete as $class_name) {
-                $this->database->delete(
-                    table: 'buildings',
-                    where: ['class_name' => $class_name],
-                );
-                $this->deleted_stuff['buildings'][] = ['name' => $class_name];
-            }
+//
+//            $existingBuildings = $this->database->getAll(table: 'buildings', columns: ['class_name'], fetchStyle: PDO::FETCH_COLUMN);
+//            $buildingsToDelete = array_diff($existingBuildings, $processedBuildingClassNames);
+//
+//            foreach ($buildingsToDelete as $class_name) {
+//                $this->database->delete(
+//                    table: 'buildings',
+//                    where: ['class_name' => $class_name],
+//                );
+//                $this->deleted_stuff['buildings'][] = ['name' => $class_name];
+//            }
 
             $this->database->commit();
         } catch (Exception $e) {
