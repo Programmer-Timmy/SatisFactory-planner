@@ -68,7 +68,7 @@ global $allowedIPs;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Satisfactory Planner">
-    <?php if (!$site['maintenance'] && in_array($_SERVER['REMOTE_ADDR'], $allowedIPs)) : ?>
+    <?php if (!$site['maintenance']) : ?>
 
         <meta name="description" content="<?= getDescription() ?>">
         <meta name="keywords" content="<?= getKeywords() ?>">
