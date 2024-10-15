@@ -13,10 +13,15 @@ if (isset($_SESSION['userId'])){
 
 $navItems = [
     '/home' => 'Home',
-    '/game_save?id=' . urlencode($lastVisitedSaveGame) => 'Game Save',
-    '/account' => 'Account',
-    '/helpfulLinks' => 'Helpful Links'
 ];
+
+if ($lastVisitedSaveGame != '') {
+    $navItems['/game_save?id=' . $lastVisitedSaveGame] = 'Game Save';
+}
+
+$navItems['/account'] = 'Account';
+$navItems['/helpfulLinks'] = 'Helpful Links';
+
 
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
