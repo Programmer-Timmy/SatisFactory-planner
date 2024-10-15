@@ -45,9 +45,7 @@ function getKeywords()
 {
     global $keywords;
     $url = $_SERVER['REQUEST_URI'];
-    if ($url == '/login') {
-        $url = $_SESSION['redirect'];
-    }
+
 
     $pageKeywords = $keywords['default'];
 
@@ -62,9 +60,6 @@ function getKeywords()
 }
 
 $url = $_SERVER['REQUEST_URI'];
-if ($url == '/login') {
-    $url = $_SESSION['redirect'];
-}
 
 ?>
 
