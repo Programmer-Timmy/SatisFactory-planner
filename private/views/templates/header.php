@@ -1,8 +1,7 @@
 <?php
 // A function to generate a responsive title based on the URL
 
-function getPageTitle($skipCheck = false)
-{
+function getPageTitle($skipCheck = false) {
     global $titles;
     $url = $_SERVER['REQUEST_URI'];
 
@@ -24,8 +23,7 @@ if (isset($_COOKIE['theme'])) {
     $theme = $_COOKIE['theme'] === 'dark' ? 'styles-dark' : 'styles-light';
 }
 
-function getDescription()
-{
+function getDescription() {
     global $description;
     $url = $_SERVER['REQUEST_URI'];
 
@@ -41,8 +39,7 @@ function getDescription()
     return $pageDescription;
 }
 
-function getKeywords()
-{
+function getKeywords() {
     global $keywords;
     $url = $_SERVER['REQUEST_URI'];
 
@@ -60,7 +57,8 @@ function getKeywords()
 }
 
 $url = $_SERVER['REQUEST_URI'];
-
+global $site;
+global $allowedIPs;
 ?>
 
 <!DOCTYPE html>
@@ -70,19 +68,22 @@ $url = $_SERVER['REQUEST_URI'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Satisfactory Planner">
-    <meta name="description" content="<?= getDescription() ?>">
-    <meta name="keywords" content="<?= getKeywords() ?>">
-    <meta name="theme-color" content="#343a40">
-    <link rel="canonical" href="https://satisfactoryplanner.timmygamer.nl<?= $url ?>">
-    <!-- no index -->
-    <meta name="robots" content="noindex, nofollow">
+    <?php if (!$site['maintenance'] && in_array($_SERVER['REMOTE_ADDR'], $allowedIPs)) : ?>
+
+        <meta name="description" content="<?= getDescription() ?>">
+        <meta name="keywords" content="<?= getKeywords() ?>">
+        <meta name="theme-color" content="#343a40">
+        <link rel="canonical" href="https://satisfactoryplanner.timmygamer.nl<?= $url ?>">
+        <!-- no index -->
+        <meta name="robots" content="noindex, nofollow">
 
 
-    <!-- og tags -->
-    <meta property="og:title" content="<?= getPageTitle() ?>">
-    <meta property="og:description" content="<?= getDescription() ?>">
-    <meta property="og:image" content="image/favicons/android-chrome-192x192.png">
-    <meta property="og:url" content="https://satisfactoryplanner.timmygamer.nl<?= $url ?>">
+        <!-- og tags -->
+        <meta property="og:title" content="<?= getPageTitle() ?>">
+        <meta property="og:description" content="<?= getDescription() ?>">
+        <meta property="og:image" content="image/favicons/android-chrome-192x192.png">
+        <meta property="og:url" content="https://satisfactoryplanner.timmygamer.nl<?= $url ?>">
+    <?php endif; ?>
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Satisfactory Planner">
     <meta property="og:locale" content="en_US">
@@ -119,7 +120,8 @@ $url = $_SERVER['REQUEST_URI'];
     <!-- font awasome -->
     <script src="https://kit.fontawesome.com/65416f0144.js" crossorigin="anonymous"></script>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 </head>
 <body>
 
