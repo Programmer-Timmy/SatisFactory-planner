@@ -35,8 +35,8 @@ export class PowerProduction {
             return;
         }
 
-        if (this.powerProduction.find('h5').length > 0) {
-            this.powerProduction.find('h5').remove();
+        if (this.powerProduction.find('#noPowerBuildings').length > 0) {
+            this.powerProduction.find('#noPowerBuildings').remove();
         }
 
         // update id to be unique
@@ -72,7 +72,9 @@ export class PowerProduction {
         card.remove();
 
         if (this.powerProduction.find('.card').length === 0) {
-            this.powerProduction.append('<h5 class="text-center mt-2">No power production buildings added yet</h5>');
+            this.powerProduction.append('<div class="alert alert-warning text-center" id="noPowerBuildings" role="alert">\n' +
+                '                                Oh no! You don\'t have any power production buildings yet. Add some down below.\n' +
+                '                            </div>');
         }
         this.calculatePowerProduction();
     }

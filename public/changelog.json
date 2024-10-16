@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.6.10",
+    "date": "october 14 2024",
+    "changes": [
+      "Improved error handling on multiple pages."
+    ]
+  },
+  {
     "version": "1.6.9",
     "date": "october 14 2024",
     "changes": [

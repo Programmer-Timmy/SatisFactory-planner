@@ -55,7 +55,9 @@ $powerProduction = PowerProduction::getPowerProduction($gameSave->id);
                                 </div>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <h5 class="text-center mt-2">No power production buildings added yet</h5>
+                            <div class="alert alert-warning text-center" id="noPowerBuildings" role="alert">
+                                Oh no! You don't have any power production buildings yet. Add some down below.
+                            </div>
                         <?php endif; ?>
                     </div>
                     <?php if (!empty($powerProductionBuildings)) : ?>

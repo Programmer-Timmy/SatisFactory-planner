@@ -4,7 +4,7 @@ $error = '';
 global $changelog;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if ($_POST['username'] && isset($_POST['email']) !== null) {
+    if (isset($_POST['username']) && isset($_POST['email']) !== null) {
         if (Users::getUserByEmail($_POST['email']) && $_POST['email'] != $user->email) {
             $error = 'Email already in use';
         } elseif (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
