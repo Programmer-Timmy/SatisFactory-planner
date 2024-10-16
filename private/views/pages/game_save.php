@@ -95,7 +95,7 @@ if (isset($_GET['layoutType'])) {
 
     async function update_total_power_consumption() {
         const total_power_consumption = getPowerConsumption();
-        const total_power_production= await getPowerProduction();
+        const total_power_production = await getPowerProduction();
 
         data.setValue(0, 1, total_power_consumption);
         chart.draw(data, options);
@@ -173,20 +173,22 @@ if (isset($_GET['layoutType'])) {
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Production Lines</h2>
-                <div>
-                    <button class="btn btn-secondary"
+                <div class="d-flex flex-nowrap">
+                    <button class="btn btn-secondary me-2"
                             onclick="location.href = 'game_save?id=<?= $gameSave->id ?>&layoutType=<?= $gameSave->card_view === 1 ? 0 : 1 ?>'"
                             data-bs-toggle="tooltip" data-bs-placement="top"
                             data-bs-title="<?= $gameSave->card_view === 1 ? 'Table View' : 'Card View' ?>">
                         <i class=" <?= $gameSave->card_view === 1 ? 'fa-solid fa-table' : 'fa-regular fa-square' ?>"></i>
                     </button>
-                    <span id="popover-production" data-bs-toggle="popover" data-bs-placement="left"
+                    <span id="popover-production" data-bs-toggle="popover" data-bs-placement="bottom"
                           opened="<?= empty($productionLines) ? 'false' : 'true' ?>"
                           data-bs-trigger="manual"
                           title="No Production Lines Added"
                           data-bs-content="Add an production line to start calculating and planning your production">
+                        <div style="width: 40px; height: 38px;">
                            <button id="add_product_line" class="btn btn-primary"
-                                data-bs-title="Add Production Line"><i class="fa-solid fa-plus"></i></button>
+                                   data-bs-title="Add Production Line"><i class="fa-solid fa-plus"></i></button>
+                        </div>
                     </span>
                 </div>
             </div>
@@ -288,10 +290,12 @@ if (isset($_GET['layoutType'])) {
                       title="No Power Production Added"
                       data-bs-trigger="manual"
                       data-bs-content="Add Power Production to have an prediction over your power capacity">
-                    <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" data-bs-title="Update Power Production"><i
-                                class="fa-solid fa-bolt-lightning"></i>
-                    </button>
+                    <div style="width: 40px; height: 38px;">
+                        <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip"
+                                data-bs-placement="top" data-bs-title="Update Power Production"><i
+                                    class="fa-solid fa-bolt-lightning"></i>
+                        </button>
+                    </div>
                 </span>
             </div>
             <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"
