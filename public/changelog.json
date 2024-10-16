@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.6.12",
+    "date": "october 16 2024",
+    "changes": [
+      "Fixed a bug in calculating the imports."
+    ]
+  },
+  {
     "version": "1.6.11",
     "date": "october 16 2024",
     "changes": [

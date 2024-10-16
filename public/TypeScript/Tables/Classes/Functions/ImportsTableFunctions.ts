@@ -196,7 +196,7 @@ export class ImportsTableFunctions {
                 continue;
             }
 
-            const availableAmount = doubleExport.extraCells.ExportPerMin - doubleExport.extraCells.Usage;
+            const availableAmount = doubleExport.extraCells.Quantity - doubleExport.extraCells.Usage;
 
             // Calculate how much we can use from this row
             const canUse = Math.min(availableAmount, amountNeeded - totalUsed);
@@ -207,7 +207,7 @@ export class ImportsTableFunctions {
 
             // Update usage for this extra row
             doubleExport.extraCells.Usage += +canUse.toFixed(2);
-            doubleExport.extraCells.ExportPerMin = +(doubleExport.extraCells.ExportPerMin - doubleExport.extraCells.Usage).toFixed(2);
+            doubleExport.extraCells.ExportPerMin = +(doubleExport.extraCells.Quantity - doubleExport.extraCells.Usage).toFixed(2);
 
             // Update the total used amount
             totalUsed += canUse;
