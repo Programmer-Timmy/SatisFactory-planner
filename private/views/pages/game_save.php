@@ -193,7 +193,9 @@ if (isset($_GET['layoutType'])) {
                 </div>
             </div>
             <?php if (empty($productionLines)) : ?>
-                <h4 class="text-center mt-3">No Production Lines Found</h4>
+                <div class="alert alert-warning text-center" role="alert">
+                    Oh no! You don't have any production lines yet.
+                </div>
             <?php elseif ($gameSave->card_view) : ?>
                 <div class="row">
                     <?php foreach ($productionLines as $productionLine) : ?>
@@ -305,8 +307,14 @@ if (isset($_GET['layoutType'])) {
             <div id="chart_div" class="d-flex justify-content-center"></div>
             <h2>Outputs</h2>
             <div id="output_table">
-                <?php if (empty($outputs)) : ?>
-                    <h4 class="text-center mt-3">No Outputs Found</h4>
+                <?php if (empty($outputs) && empty($productionLines)) : ?>
+                    <div class="alert alert-warning" role="alert">
+                        No Outputs Found. Add a production line to start calculating and planning your production.
+                    </div>
+                <?php elseif (empty($outputs)) : ?>
+                    <div class="alert alert-info" role="alert">
+                        No Outputs Found. Your production lines are not producing any outputs.
+                    </div>
                 <?php else: ?>
                     <div class="accordion" id="productionLinesAccordion">
                         <?php foreach ($outputs as $lineTitle => $lineOutputs) :
