@@ -147,7 +147,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                     <button type="button" id="edit_product_line" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit the production line"><i class="fa-solid fa-pencil"></i></button>
                     <button type="button" id="showPower" class="btn btn-info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show power consumption"><i class="fa-solid fa-bolt"></i></button>
                     <button type="button" id="showHelp" class="btn btn-info " data-bs-toggle="tooltip"
-                            data-bs-placement="top" data-bs-title="Need help? Click here for guidance."><i
+                            data-bs-placement="top" data-bs-title="Need help? Click here!"><i
                                 class="fa-regular fa-question-circle"></i></button>
                     <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i class="fa-solid fa-arrow-left"></i></a>
                 </div>

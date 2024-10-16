@@ -138,7 +138,6 @@ class Users
     }
 
     public static function checkIfFirstProduction($user_id) {
-        Database::update("users", ['first_production'], [0], ['id' => $user_id]);
         $user = Database::get("users", ['*'], [], ['id' => $user_id]);
         if ($user) {
             if ($user->first_production === 0) {
