@@ -14,6 +14,8 @@ if (empty($productLine) || !ProductionLines::checkProductionLineVisability($prod
     exit();
 }
 
+$firstProduction = Users::checkIfFirstProduction($_SESSION['userId']);
+
 $imports = ProductionLines::getImportsByProductionLine($productLine->id);
 $production = ProductionLines::getProductionByProductionLine($productLine->id);
 $powers = ProductionLines::getPowerByProductionLine($productLine->id);
@@ -144,6 +146,9 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                     <button type="submit" id="save_button" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" data-bs-title="Save production line.<br> <small>Hold <b>Shift</b> to save without returning to the save game.</small>"><i class="fa-solid fa-save"></i></button>
                     <button type="button" id="edit_product_line" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit the production line"><i class="fa-solid fa-pencil"></i></button>
                     <button type="button" id="showPower" class="btn btn-info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show power consumption"><i class="fa-solid fa-bolt"></i></button>
+                    <button type="button" id="showHelp" class="btn btn-info " data-bs-toggle="tooltip"
+                            data-bs-placement="top" data-bs-title="Need help? Click here!"><i
+                                class="fa-regular fa-question-circle"></i></button>
                     <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i class="fa-solid fa-arrow-left"></i></a>
                 </div>
             </div>
@@ -297,3 +302,14 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
 <script type="module" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
 <?php require_once '../private/views/Popups/editProductinoLine.php'; ?>
 
+<!-- Help Modal -->
+<?php require_once '../private/views/Popups/help.php'; ?>
+
+<?php if ($firstProduction) : ?>
+    <script>
+        jQuery(function () {
+            const popupModal = new bootstrap.Modal(document.getElementById('helpModal'));
+            popupModal.show();
+        });
+    </script>
+<?php endif; ?>

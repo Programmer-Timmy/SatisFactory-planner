@@ -135,9 +135,11 @@ $users = Users::getAllValidatedUsers();
     </div>
 </div>
 <script>
-    document.getElementById('add_product_line').addEventListener('click', function () {
+    document.getElementById('add_game_save').addEventListener('click', function () {
         const popupModal = new bootstrap.Modal(document.getElementById('popupModal'));
         popupModal.show();
+        $('#popover_add_game_save').popover('hide');
+        $('#popover_add_game_save').attr('show')
     });
 
     document.addEventListener('DOMContentLoaded', function () {

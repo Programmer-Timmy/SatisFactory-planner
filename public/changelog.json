@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.6.9",
+    "date": "october 14 2024",
+    "changes": [
+      "Added more info on how to use the site.",
+      "Added a guid for the production line page.",
+      "fixed popovers not in the right place."
+    ]
+  },
+  {
     "version": "1.6.8",
     "date": "october 14 2024",
     "changes": [
