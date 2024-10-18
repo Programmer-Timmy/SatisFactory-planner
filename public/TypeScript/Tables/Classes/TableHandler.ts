@@ -334,6 +334,8 @@ export class TableHandler {
             this.addSpecificEventListener('power');
         }
 
+        console.log(this)
+
     }
 
     public saveData(productionTable: ProductionTableRow[], powerTable: PowerTableRow[], importTable: ImportsTableRow[]) {

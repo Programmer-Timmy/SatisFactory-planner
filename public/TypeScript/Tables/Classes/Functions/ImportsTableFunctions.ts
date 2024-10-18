@@ -2,6 +2,7 @@ import {ProductionTableRow} from "../Data/ProductionTableRow";
 import {ImportsTableRow} from "../Data/ImportsTableRow";
 import {Resource} from "../Types/Resource";
 import {HtmlGeneration} from "./HtmlGeneration";
+import {Import} from "../Data/Import";
 
 
 export class ImportsTableFunctions {
@@ -49,11 +50,12 @@ export class ImportsTableFunctions {
     private static resetUsage(productionTableRows: ProductionTableRow[]): number[] {
         const changedRows: number[] = [];
         for (const row of productionTableRows) {
-            const rowUsage = row.Usage;
+
             if (row.Usage > 0) {
                 changedRows.push(productionTableRows.indexOf(row));
                 row.Usage = 0;
                 row.exportPerMin = row.quantity;
+                row.productionImport = [];
             }
 
             if (row.extraCells !== null) {
@@ -115,7 +117,7 @@ export class ImportsTableFunctions {
             const {
                 totalUsed: used,
                 totalAvailable: available
-            } = this.processProducedRows(producedRows, amountNeeded, totalUsed, totalAvailable, productionTableRows, updatedIndexes);
+            } = this.processProducedRows(producedRows, amountNeeded, totalUsed, totalAvailable, productionTableRows, updatedIndexes, row);
             totalUsed = used;
             totalAvailable = available;
 
@@ -123,7 +125,7 @@ export class ImportsTableFunctions {
             const {
                 totalUsed: used2,
                 totalAvailable: available2
-            } = this.processDoubleExportRows(doubleExportRow, amountNeeded, totalUsed, totalAvailable, productionTableRows, updatedIndexes);
+            } = this.processDoubleExportRows(doubleExportRow, amountNeeded, totalUsed, totalAvailable, productionTableRows, updatedIndexes, row);
             totalUsed = used2;
             totalAvailable = available2;
 
@@ -131,7 +133,7 @@ export class ImportsTableFunctions {
             // If there is still a need for imports after using available production
             const amountToImport = amountNeeded - totalUsed;
             if (amountToImport > 0) {
-                this.addToImportsTable(importsTableRows, requiredItem.itemId, amountToImport);
+                this.addToImportsTable(importsTableRows, requiredItem.itemId, amountToImport, row);
             }
         }
     }
@@ -152,7 +154,8 @@ export class ImportsTableFunctions {
         totalUsed: number,
         totalAvailable: number,
         productionTableRows: ProductionTableRow[],
-        updatedIndexes: number[]
+        updatedIndexes: number[],
+        row: ProductionTableRow
     ): { totalUsed: number; totalAvailable: number } {
 
         for (const producedRow of producedRows) {
@@ -169,11 +172,14 @@ export class ImportsTableFunctions {
             producedRow.Usage += +canUse.toFixed(2);
             producedRow.exportPerMin = +(producedRow.quantity - producedRow.Usage).toFixed(2);
 
+
             // Update the total used amount
             totalUsed += canUse;
             totalAvailable += availableAmount; // Count how much is available from this row
 
             const index = productionTableRows.indexOf(producedRow);
+            row.productionImport.push(new Import(index, canUse));
+
             if (index !== -1 && !updatedIndexes.includes(index)) {
                 updatedIndexes.push(index);
             }
@@ -188,18 +194,20 @@ export class ImportsTableFunctions {
         totalUsed: number,
         totalAvailable: number,
         productionTableRows: ProductionTableRow[],
-        updatedIndexes: number[]
+        updatedIndexes: number[],
+        row: ProductionTableRow
     ): { totalUsed: number; totalAvailable: number } {
-
         for (const doubleExport of doubleExportRows) {
             if (doubleExport.extraCells === null) {
                 continue;
             }
+            console.log(doubleExport.extraCells);
 
             const availableAmount = doubleExport.extraCells.Quantity - doubleExport.extraCells.Usage;
 
             // Calculate how much we can use from this row
             const canUse = Math.min(availableAmount, amountNeeded - totalUsed);
+            console.log(canUse);
 
             if (canUse <= 0) {
                 continue;
@@ -214,6 +222,7 @@ export class ImportsTableFunctions {
             totalAvailable += availableAmount; // Count how much is available from this row
 
             const index = productionTableRows.indexOf(doubleExport);
+            row.productionImport.push(new Import(index, canUse, true));
             if (index !== -1 && !updatedIndexes.includes(index)) {
                 updatedIndexes.push(index);
             }
@@ -231,13 +240,15 @@ export class ImportsTableFunctions {
      * @param itemId - The ID of the item to import.
      * @param amountToImport - The amount of the item to import.
      */
-    private static addToImportsTable(importsTableRows: ImportsTableRow[], itemId: number, amountToImport: number): void {
+    private static addToImportsTable(importsTableRows: ImportsTableRow[], itemId: number, amountToImport: number, row: ProductionTableRow): void {
         const existingImportRow = importsTableRows.find(r => r.itemId === itemId);
 
         if (existingImportRow) {
             existingImportRow.quantity += amountToImport;
+            row.import = new Import(importsTableRows.indexOf(existingImportRow), amountToImport);
         } else {
             importsTableRows.push(new ImportsTableRow(itemId, amountToImport));
+            row.import = new Import(importsTableRows.length - 1, amountToImport);
         }
     }
 
