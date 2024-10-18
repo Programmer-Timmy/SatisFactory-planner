@@ -29,7 +29,9 @@ export class TableHandler {
 
         this.addEventListeners();
 
+        console.log('TableHandler initialized');
         $(document).on('keydown', (e: { key: string; ctrlKey: any; preventDefault: () => void; }) => {
+            console.log(e.key);
             if (e.key === 'v' && e.ctrlKey) {
                 e.preventDefault();
                 this.showVisualization();

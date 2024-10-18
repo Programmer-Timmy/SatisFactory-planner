@@ -11,7 +11,9 @@
     "ts-loader": "^9.5.1",
     "typescript": "^5.5.4",
     "webpack": "^5.93.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "@types/d3": "^7.4.3",
+    "d3": "^7.9.0"
   },
   "scripts": {
     "clean": "rmdir /s /q public\\js",
@@ -19,5 +21,8 @@
     "watch": "webpack --watch --mode development",
     "prepare": "husky",
     "build-check": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "d3": "^7.9.0"
   }
 }
