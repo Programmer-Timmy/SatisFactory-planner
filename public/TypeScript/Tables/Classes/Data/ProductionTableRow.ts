@@ -13,8 +13,8 @@ export class ProductionTableRow {
     public doubleExport: boolean;
     public extraCells: ExtraProductionRow | null;
     public recipe: Recipe | null;
-    public import: Import | null;
-    public productionImport: Import[];
+    public imports: Import[];
+    public productionImports: Import[];
 
     constructor(recipeId: string = '', quantity: number = 0, product: string = '', Usage: number = 0, exportPerMin: number = 0, doubleExport: boolean = false, extraCells: ExtraProductionRow | null = null) {
         this.recipeId = +recipeId;
@@ -25,8 +25,8 @@ export class ProductionTableRow {
         this.doubleExport = doubleExport;
         this.extraCells = extraCells;
         this.recipe = null;
-        this.import = null;
-        this.productionImport = [];
+        this.imports = [];
+        this.productionImports = [];
         this.getRecipe(recipeId).then(r =>
             this.saveDoubleExportQuantity()
         );

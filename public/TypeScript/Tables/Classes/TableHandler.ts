@@ -5,10 +5,11 @@ import {ExtraProductionRow} from "./Data/ExtraProductionRow";
 import {ProductionLineFunctions} from "./Functions/ProductionLineFunctions";
 import {PowerTableFunctions} from "./Functions/PowerTableFunctions";
 import {ImportsTableFunctions} from "./Functions/ImportsTableFunctions";
-import {Ajax} from "./Functions/Ajax";
 import {Settings} from "./Settings";
 import {HtmlGeneration} from "./Functions/HtmlGeneration";
 import {buildingOptions} from "./Data/BuildingOptions";
+import {Visualization} from "./Visualization";
+import {SaveFunctions} from "./Functions/SaveFunctions";
 
 
 /**
@@ -27,6 +28,18 @@ export class TableHandler {
         this.powerTableRows = this.readTable<PowerTableRow>('power', PowerTableRow);
 
         this.addEventListeners();
+
+        $(document).on('keydown', (e: { key: string; ctrlKey: any; preventDefault: () => void; }) => {
+            if (e.key === 'v' && e.ctrlKey) {
+                e.preventDefault();
+                this.showVisualization();
+            }
+
+            if (e.key === 's' && e.ctrlKey) {
+                e.preventDefault();
+                SaveFunctions.saveProductionLine(SaveFunctions.prepareSaveData(this.productionTableRows, this.powerTableRows, this.importsTableRows));
+            }
+        });
     }
 
     /**
@@ -354,6 +367,17 @@ export class TableHandler {
         $('#imports tbody').html(HtmlGeneration.generateImportsTableRows(this.importsTableRows));
         $('#recipes tbody').html(HtmlGeneration.generateProductionTableRows(this.productionTableRows));
         this.addEventListeners();
+    }
+
+    public showVisualization() {
+        const data: {
+            importsTableRows: ImportsTableRow[],
+            indexes: number[]
+        } = ImportsTableFunctions.calculateImports(this.productionTableRows);
+        this.importsTableRows = data.importsTableRows;
+
+        new Visualization(this);
+
     }
 
 
