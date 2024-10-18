@@ -55,7 +55,7 @@
                 <hr>
 
 
-                <div class="card mb-3 border-0 bg-light">
+                <div class="card mb-3 border-0">
                     <div class="card-body">
                         <h4 class="card-title text-primary" id="importSection"><i
                                     class="fa-solid fa-arrow-up-right-dots"></i> Import Section</h4>
@@ -71,7 +71,7 @@
                     </div>
                 </div>
 
-                <div class="card mb-3 border-0 bg-light">
+                <div class="card mb-3 border-0">
                     <div class="card-body">
                         <h4 class="card-title text-primary" id="productionSection"><i class="fa-solid fa-cogs"></i>
                             Production Section</h4>
@@ -90,7 +90,7 @@
                     </div>
                 </div>
 
-                <div class="card mb-3 border-0 bg-light">
+                <div class="card mb-3 border-0">
                     <div class="card-body">
                         <h4 class="card-title text-primary" id="powerSection"><i class="fa-solid fa-bolt"></i> Power
                             Section</h4>
@@ -116,7 +116,7 @@
                     </div>
                 </div>
 
-                <div class="card mb-3 border-0 bg-light">
+                <div class="card mb-3 border-0">
                     <div class="card-body">
                         <h4 class="card-title text-primary" id="editSection"><i class="fa-solid fa-edit"></i> Edit
                             Screen</h4>
@@ -154,7 +154,7 @@
                     </div>
                 </div>
 
-                <div class="card mb-3 border-0 bg-light">
+                <div class="card mb-3 border-0">
                     <div class="card-body">
                         <h4 class="card-title text-primary" id="toolbar"><i class="fa-solid fa-tools"></i> Toolbar</h4>
                         <p>
@@ -180,7 +180,7 @@
                     </div>
                 </div>
 
-                <div class="card mb-3 border-0 bg-light">
+                <div class="card mb-3 border-0">
                     <div class="card-body">
                         <h4 class="card-title text-primary" id="shortcuts"><i class="fa-solid fa-keyboard"></i>
                             Shortcuts</h4>
