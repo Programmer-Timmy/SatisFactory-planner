@@ -61,7 +61,7 @@ export class Visualization {
 
         this.getPosition().then(() => {
             this.positionImportNodes()
-            this.positionExportNodes()
+            // this.positionExportNodes()
             this.createVisualization()
         });
 
