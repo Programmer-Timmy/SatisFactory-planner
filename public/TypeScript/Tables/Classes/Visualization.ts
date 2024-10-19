@@ -264,41 +264,7 @@ export class Visualization {
         }
     }
 
-    async getPosition(): Promise<void> {
-        const levels: Map<number, number[]> = new Map(); // Level -> List of Y positions
 
-        // Helper function to position nodes recursively (now async)
-        const positionNode = async (nodeId: number, level: number): Promise<void> => {
-            if (!levels.has(level)) {
-                levels.set(level, []);
-            }
-
-            const currentNode = this.productionNodes[nodeId];
-
-            // If the node has already been positioned, return early
-            if (currentNode.Y) {
-                return;
-            }
-
-            const yPosition = (levels.get(level)?.length || 0) * ROW_SPACING + START_Y;
-            levels.get(level)?.push(yPosition);
-
-            // Position the current node
-            currentNode.X = START_X + level * COLUMN_SPACING;
-            currentNode.Y = yPosition;
-
-            // Get child nodes and position them recursively
-            const childConnections = this.productionConnections.filter(conn => conn.sourceId === nodeId);
-            await Promise.all(childConnections.map(conn => positionNode(conn.targetId, level + 1)));
-        };
-
-        // Get root nodes (nodes with no incoming connections)
-        const rootNodes = this.productionNodes.filter(node =>
-            !this.productionConnections.some(conn => conn.targetId === node.id));
-
-        // Position root nodes asynchronously
-        await Promise.all(rootNodes.map(rootNode => positionNode(rootNode.id, 0)));
-    }
 
     /**
      * Get all import nodes from the import table and add them to the import nodes array
@@ -338,6 +304,43 @@ export class Visualization {
             }
 
         }
+    }
+
+    async getPosition(): Promise<void> {
+        const levels: Map<number, number[]> = new Map(); // Level -> List of Y positions
+
+
+        // Helper function to position nodes recursively (now async)
+        const positionNode = async (nodeId: number, level: number): Promise<void> => {
+            if (!levels.has(level)) {
+                levels.set(level, []);
+            }
+
+            const currentNode = this.productionNodes[nodeId];
+
+            // // If the node has already been positioned, return early
+            // if (currentNode.X) {
+            //     return;
+            // }
+
+            let yPosition = (levels.get(level)?.length || 0) * ROW_SPACING + START_Y;
+            levels.get(level)?.push(yPosition);
+
+            currentNode.X = START_X + level * COLUMN_SPACING;
+            currentNode.Y = yPosition;
+
+
+            // Get child nodes and position them recursively
+            const childConnections = this.productionConnections.filter(conn => conn.sourceId === nodeId);
+            await Promise.all(childConnections.map(conn => positionNode(conn.targetId, level + 1)));
+        };
+
+        // Get root nodes (nodes with no incoming connections)
+        const rootNodes = this.productionNodes.filter(node =>
+            !this.productionConnections.some(conn => conn.targetId === node.id));
+
+        // Position root nodes asynchronously
+        await Promise.all(rootNodes.map(rootNode => positionNode(rootNode.id, 0)));
     }
 
     private positionImportNodes(): void {
