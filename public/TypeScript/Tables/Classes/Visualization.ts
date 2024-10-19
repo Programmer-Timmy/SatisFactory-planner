@@ -127,7 +127,6 @@ export class Visualization {
 
 
         // Export Links (if needed, you can uncomment and use this)
-        /*
         const exportLinks = container.append('g')
             .attr('class', 'links')
             .selectAll('line')
@@ -135,8 +134,7 @@ export class Visualization {
             .enter().append('line')
             .attr('stroke', 'red')
             .attr('stroke-width', 2)
-            .attr('stroke-dasharray', '5,5');
-        */
+            .attr('marker-end', 'url(#arrow)'); // Ensure this is correct
 
         // Import Nodes
         const importNodes = container.append('g')
@@ -154,6 +152,13 @@ export class Visualization {
             .enter().append('g')
             .attr('transform', (d: any) => `translate(${d.X}, ${d.Y})`);
 
+        const exportNodes = container.append('g')
+            .attr('class', 'nodes')
+            .selectAll('g')
+            .data(this.exportNodes)
+            .enter().append('g')
+            .attr('transform', (d: any) => `translate(${d.X}, ${d.Y})`);
+
         // Draw circles for the nodes
         importNodes.append('circle')
             .attr('r', INNER_NODE_SIZE)
@@ -162,6 +167,10 @@ export class Visualization {
         productionNodes.append('circle')
             .attr('r', INNER_NODE_SIZE)
             .attr('fill', 'green');
+
+        exportNodes.append('circle')
+            .attr('r', INNER_NODE_SIZE)
+            .attr('fill', 'red');
 
         // Add text labels
         importNodes.append('text')
@@ -176,6 +185,15 @@ export class Visualization {
             .attr('font-size', TEXT_SIZE)
             .text((d: any) => d.product);
 
+        exportNodes.append('text')
+            .attr('x', INNER_NODE_SIZE + 5)
+            .attr('y', -20)
+            .attr('font-size', TEXT_SIZE)
+            .text((d: any) => d.product);
+
+        // Export Nodes
+
+
         // Set link positions
         importLinks
             .attr('x1', (d: any) => this.importNodes[d.sourceId].X)
@@ -188,6 +206,12 @@ export class Visualization {
             .attr('y1', (d: any) => this.productionNodes[d.sourceId].Y)
             .attr('x2', (d: any) => this.productionNodes[d.targetId].X)
             .attr('y2', (d: any) => this.productionNodes[d.targetId].Y);
+
+        exportLinks
+            .attr('x1', (d: any) => this.productionNodes[d.sourceId].X)
+            .attr('y1', (d: any) => this.productionNodes[d.sourceId].Y)
+            .attr('x2', (d: any) => this.exportNodes[d.targetId].X)
+            .attr('y2', (d: any) => this.exportNodes[d.targetId].Y);
 
         const nodes = container.selectAll('.nodes g');
         const bounds = nodes.nodes().reduce((acc, node) => {
@@ -263,13 +287,9 @@ export class Visualization {
             currentNode.X = START_X + level * COLUMN_SPACING;
             currentNode.Y = yPosition;
 
-            //
-
-
             // Get child nodes and position them recursively
             const childConnections = this.productionConnections.filter(conn => conn.sourceId === nodeId);
             await Promise.all(childConnections.map(conn => positionNode(conn.targetId, level + 1)));
-            console.log('completed', nodeId);
         };
 
         // Get root nodes (nodes with no incoming connections)
@@ -361,11 +381,41 @@ export class Visualization {
     }
 
     private positionExportNodes(): void {
-        const ROW_SPACING = 50;
-        const exportX = 600; // Column for exports
         for (let i = 0; i < this.exportNodes.length; i++) {
-            this.exportNodes[i].X = exportX;
-            this.exportNodes[i].Y = 100 + i * ROW_SPACING; // Stack export nodes vertically
+            const connection = this.exportConnections.filter(conn => conn.sourceId === i);
+            console.log(connection);
+            if (connection && connection.length > 1) {
+                const ConnectionAmount = connection.length;
+
+                // grab the middle connection if not even move it to the middle of the connections
+                const middleConnection = connection[Math.floor(ConnectionAmount / 2)];
+                const X = this.productionNodes[middleConnection.sourceId].X;
+                let Y = this.productionNodes[middleConnection.sourceId].Y;
+
+                if (X > START_X) {
+                    Y -= INSIDE_IMPORT_COLUMN_SPACING;
+                }
+
+                this.exportNodes[i].X = X;
+                this.exportNodes[i].Y = Y;
+            } else if (connection && connection.length === 1) {
+                const samePosition = this.exportNodes.filter(node => node.X === this.productionNodes[connection[0].sourceId].X + IMPORT_ROW_SPACING && node.Y === this.productionNodes[connection[0].sourceId].Y);
+                const X = this.productionNodes[connection[0].sourceId].X;
+                let Y = this.productionNodes[connection[0].sourceId].Y;
+
+                if (X >= START_X) {
+                    Y -= INSIDE_IMPORT_COLUMN_SPACING;
+                }
+
+                if (samePosition.length > 0) {
+                    this.exportNodes[i].X = X + IMPORT_ROW_SPACING;
+                    this.exportNodes[i].Y = Y;
+                    samePosition[0].X = X - IMPORT_ROW_SPACING;
+                } else {
+                    this.exportNodes[i].X = X;
+                    this.exportNodes[i].Y = Y;
+                }
+            }
         }
     }
 }
