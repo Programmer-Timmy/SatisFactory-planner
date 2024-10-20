@@ -78,7 +78,7 @@ if (!empty($users) && $allUsersCount > 0) {
 } elseif ($allUsersCount > 0) {
     $combinedHTML .= '<div class="mb-3">
                         <h6>Add user</h6>
-                        <input type="text" name="SearchUser1232" class="form-control mb-2" id="searchUser_' . htmlspecialchars($game_id) . '"
+                        <input type="text" name="Search1232" class="form-control mb-2" id="search_' . htmlspecialchars($game_id) . '"
                                placeholder="Search for user" value="' . htmlspecialchars($search) . '" autocomplete="off">
                                <div class="users">
                         <h6 class="text-center">No users found</h6>

@@ -60,7 +60,7 @@ $users = Users::getAllValidatedUsers();
                     <div id="userList">
                         <div class="mb-3">
                             <h6>Add Users</h6>
-                            <input type="search" name="SearchUser1232" class="form-control mb-2" id="addSearchUser"
+                            <input type="search" name="Search1232" class="form-control mb-2" id="addSearch"
                                    placeholder="Search for user" autocomplete="off">
                             <div class="users">
                                 <!--                                max of 5-->
@@ -145,7 +145,7 @@ $users = Users::getAllValidatedUsers();
         const selectedUsersInput = document.getElementById('selectedUsersInput');
 
         // Handle user search input
-        document.getElementById('addSearchUser').addEventListener('input', function () {
+        document.getElementById('addSearch').addEventListener('input', function () {
             const search = this.value;
             // AJAX call to search for users
             $.ajax({

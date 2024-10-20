@@ -81,8 +81,8 @@ if (isset($_GET['dedicatedServerId'])) {
                         <?php if ($users): ?>
                             <div class="mb-3">
                                 <h6>Add user</h6>
-                                <input type="search" name="SearchUser1232" class="form-control mb-2"
-                                       id="searchUser_<?= $gameSave->id ?>"
+                                <input type="search" name="Search345" class="form-control mb-2"
+                                       id="search_<?= $gameSave->id ?>"
                                        placeholder="Search for user" autocomplete="SearchUser1232">
                                 <div class="users">
                                     <?php foreach (array_slice($users, 0, 4) as $user) : ?>
@@ -177,8 +177,8 @@ if (isset($_GET['dedicatedServerId'])) {
             if (button) {  // Check if the button exists
                 button.addEventListener('click', function () {
                     // Get the search value if it exists or set it to an empty string
-                    const search = document.getElementById('searchUser_<?= $gameSave->id ?>')
-                        ? document.getElementById('searchUser_<?= $gameSave->id ?>').value
+                    const search = document.getElementById('search_<?= $gameSave->id ?>')
+                        ? document.getElementById('search_<?= $gameSave->id ?>').value
                         : '';
 
                     const userId = this.getAttribute('user-id');
@@ -215,7 +215,7 @@ if (isset($_GET['dedicatedServerId'])) {
 
     function handleSearch() {
         // add search event listener
-        const input = document.getElementById('searchUser_<?= $gameSave->id ?>')
+        const input = document.getElementById('search_<?= $gameSave->id ?>')
         // Check if the input exists
         if (!input) return;
 
