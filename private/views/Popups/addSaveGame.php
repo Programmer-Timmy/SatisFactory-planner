@@ -40,7 +40,7 @@ $users = Users::getAllValidatedUsers();
                 <h5 class="modal-title" id="popupModalLabel">Add Save Game</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" autocomplete="off">
                 <div class="modal-body">
                     <!-- Other form fields for the save game -->
                     <div class="mb-3">
