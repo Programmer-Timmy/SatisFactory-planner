@@ -69,8 +69,8 @@ if (!empty($requestUsers)) {
 if (!empty($users) && $allUsersCount > 0) {
     $combinedHTML .= '<div class="mb-3">
                         <h6>Add user</h6>
-                        <input type="text" class="form-control mb-2" id="searchUser_' . htmlspecialchars($game_id) . '"
-                               placeholder="Search for user" value="' . htmlspecialchars($search) . '">
+                        <input type="text" name="Search1232" class="form-control mb-2" id="search_' . htmlspecialchars($game_id) . '"
+                               placeholder="Search for user" value="' . htmlspecialchars($search) . '" autocomplete="off">
                                  <div class="users">
                         ' .
         Users::generateUserListHTML(array_slice($users, 0, 4), $game_id, 'btn-success send_request', 'Send request', 'addId');
