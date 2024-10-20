@@ -52,6 +52,7 @@ if (!isset($_POST['add'])) {
         foreach ($users as $user) {
             if ($user->id != $_SESSION['userId']) {
                 echo '<div class="card mb-2 p-2">
+                <input type="text" style="display:none">
                 <div class="card-body d-flex justify-content-between align-items-center p-0">
                     <h6 class="mb-1">' . $user->username . '</h6>
                     <button type="button" class="btn btn-success add_user" data-user-id="' . $user->id . '">Add User</button>

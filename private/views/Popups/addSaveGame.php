@@ -60,6 +60,7 @@ $users = Users::getAllValidatedUsers();
                     <div id="userList">
                         <div class="mb-3">
                             <h6>Add Users</h6>
+                            <input type="text" style="display:none">
                             <input type="search" name="Search1232" class="form-control mb-2" id="addSearch"
                                    placeholder="Search for user" autocomplete="off">
                             <div class="users">
