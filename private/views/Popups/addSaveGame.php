@@ -60,8 +60,8 @@ $users = Users::getAllValidatedUsers();
                     <div id="userList">
                         <div class="mb-3">
                             <h6>Add Users</h6>
-                            <input type="search" class="form-control mb-2" id="addSearchUser"
-                                   placeholder="Search for user" autocomplete="off" value="">
+                            <input type="search" name="SearchUser1232" class="form-control mb-2" id="addSearchUser"
+                                   placeholder="Search for user" autocomplete="off">
                             <div class="users">
                                 <!--                                max of 5-->
                                 <?php foreach (array_slice($users, 0, 5) as $user) : ?>
