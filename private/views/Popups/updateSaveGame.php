@@ -81,6 +81,7 @@ if (isset($_GET['dedicatedServerId'])) {
                         <?php if ($users): ?>
                             <div class="mb-3">
                                 <h6>Add user</h6>
+                                <input type="text" style="display:none">
                                 <input type="search" name="Search345" class="form-control mb-2"
                                        id="search_<?= $gameSave->id ?>"
                                        placeholder="Search for user" autocomplete="SearchUser1232">
