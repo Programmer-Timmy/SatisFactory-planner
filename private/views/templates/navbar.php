@@ -25,6 +25,17 @@ $navItems['/helpfulLinks'] = 'Helpful Links';
 
 
 ?>
+<style>
+    .toggle-group .btn-dark {
+        background-color: var(--bs-btn-active-bg);
+        color: white;
+    }
+
+    .toggle-group .btn-light {
+        background-color: white;
+        color: black;
+    }
+</style>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
     <div class="container-fluid">
         <a class="navbar-brand" href="/home">Satisfactroy Planner</a>
