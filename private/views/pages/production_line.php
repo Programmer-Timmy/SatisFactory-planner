@@ -303,7 +303,7 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
 <?php require_once '../private/views/Popups/editProductinoLine.php'; ?>
 
 <!-- Help Modal -->
-<?php require_once '../private/views/Popups/help.php'; ?>
+<?php require_once '../private/views/Popups/helpProductionLine.php'; ?>
 
 <?php if ($firstProduction) : ?>
     <script>

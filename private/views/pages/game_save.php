@@ -287,18 +287,23 @@ if (isset($_GET['layoutType'])) {
         <div class="col-lg-4">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Power Consumption</h2>
-                <!--                popover when no power production is added-->
-                <span id="popover-power" data-bs-toggle="popover" data-bs-placement="top"
-                      title="No Power Production Added"
-                      data-bs-trigger="manual"
-                      data-bs-content="Add Power Production to have an prediction over your power capacity">
-                    <div style="width: 40px; height: 38px;">
-                        <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip"
-                                data-bs-placement="top" data-bs-title="Update Power Production"><i
-                                    class="fa-solid fa-bolt-lightning"></i>
-                        </button>
-                    </div>
-                </span>
+                <!--                show help button-->
+                <div class="d-flex flex-nowrap">
+                    <button type="button" id="showPowerHelp" class="btn btn-info me-2" data-bs-toggle="tooltip"
+                            data-bs-placement="top" data-bs-title="Need help? Click here!"><i
+                                class="fa-regular fa-question-circle" aria-hidden="true"></i></button>
+                    <span id="popover-power" data-bs-toggle="popover" data-bs-placement="top"
+                          title="No Power Production Added"
+                          data-bs-trigger="manual"
+                          data-bs-content="Add Power Production to have an prediction over your power capacity">
+                        <div style="width: 40px; height: 38px;">
+                            <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-title="Update Power Production"><i
+                                        class="fa-solid fa-bolt-lightning"></i>
+                            </button>
+                        </div>
+                    </span>
+                </div>
             </div>
             <div class="alert alert-danger fade show <?php if ($total_power_consumption <= $gameSave->total_power_production) echo 'hidden'; ?>"
                  id="power-alert" role="alert">
@@ -419,3 +424,4 @@ if (DedicatedServer::getBySaveGameId($gameSave->id)) : ?>
 <?php endif; ?>
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>
 <?php require_once '../private/views/Popups/updatePowerProduction.php'; ?>
+<?php require_once '../private/views/Popups/helpPowerProduction.php'; ?>

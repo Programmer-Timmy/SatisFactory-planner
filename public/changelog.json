@@ -3,7 +3,8 @@
     "version": "1.6.14",
     "date": "october 22 2024",
     "changes": [
-      "Moved change theme to the navbar instead of the account page."
+      "Moved change theme to the navbar instead of the account page.",
+      "Added a guid for power management."
 
     ]
   },
