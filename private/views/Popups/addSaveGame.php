@@ -40,7 +40,7 @@ $users = Users::getAllValidatedUsers();
                 <h5 class="modal-title" id="popupModalLabel">Add Save Game</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" autocomplete="off">
                 <div class="modal-body">
                     <!-- Other form fields for the save game -->
                     <div class="mb-3">
@@ -60,8 +60,9 @@ $users = Users::getAllValidatedUsers();
                     <div id="userList">
                         <div class="mb-3">
                             <h6>Add Users</h6>
-                            <input type="search" class="form-control mb-2" id="addSearchUser"
-                                   placeholder="Search for user" autocomplete="off" value="">
+                            <input type="text" style="display:none">
+                            <input type="search" name="Search1232" class="form-control mb-2" id="addSearch"
+                                   placeholder="Search for user" autocomplete="off">
                             <div class="users">
                                 <!--                                max of 5-->
                                 <?php foreach (array_slice($users, 0, 5) as $user) : ?>
@@ -145,7 +146,7 @@ $users = Users::getAllValidatedUsers();
         const selectedUsersInput = document.getElementById('selectedUsersInput');
 
         // Handle user search input
-        document.getElementById('addSearchUser').addEventListener('input', function () {
+        document.getElementById('addSearch').addEventListener('input', function () {
             const search = this.value;
             // AJAX call to search for users
             $.ajax({

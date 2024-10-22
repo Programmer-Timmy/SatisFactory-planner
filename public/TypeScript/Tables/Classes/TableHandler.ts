@@ -9,6 +9,8 @@ import {Ajax} from "./Functions/Ajax";
 import {Settings} from "./Settings";
 import {HtmlGeneration} from "./Functions/HtmlGeneration";
 import {buildingOptions} from "./Data/BuildingOptions";
+import {SaveFunctions} from "./Functions/SaveFunctions";
+import {Modal} from "bootstrap";
 
 
 /**
@@ -27,6 +29,7 @@ export class TableHandler {
         this.powerTableRows = this.readTable<PowerTableRow>('power', PowerTableRow);
 
         this.addEventListeners();
+        this.addShortcuts();
     }
 
     /**
@@ -355,5 +358,65 @@ export class TableHandler {
     }
 
 
+    private addShortcuts() {
+        document.addEventListener('keydown', (event) => {
+            const powerModal = $('#showPowerModal');
+            const editModal = $('#editProductionLine');
+            const helpModal = $('#helpModal');
+
+            function closeModals() {
+                powerModal.modal('hide');
+                editModal.modal('hide');
+                helpModal.modal('hide');
+            }
+
+            // Save production line
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault();
+                SaveFunctions.saveProductionLine(SaveFunctions.prepareSaveData(this.productionTableRows, this.powerTableRows, this.importsTableRows));
+            }
+
+            // Open power modal
+            if (event.ctrlKey && event.key === 'p') {
+                event.preventDefault();
+                if (powerModal.is(':hidden')) {
+                    closeModals();
+                    powerModal.modal('show');
+                } else {
+                    powerModal.modal('hide');
+                }
+            }
+
+            // Open edit / settings modal
+            if (event.ctrlKey && event.key === 'e') {
+                event.preventDefault();
+                closeModals();
+                if (editModal.is(':hidden')) {
+                    closeModals();
+                    editModal.modal('show');
+                } else {
+                    editModal.modal('hide');
+                }
+            }
+
+            // help modal
+            if (event.ctrlKey && event.key === 'h') {
+                event.preventDefault();
+                if (helpModal.is(':hidden')) {
+                    closeModals();
+                    helpModal.find('#welcome').hide();
+                    helpModal.modal('show');
+                } else {
+                    helpModal.modal('hide');
+                }
+            }
+
+            // go back
+            if (event.ctrlKey && event.key === 'q') {
+                event.preventDefault();
+                window.history.back();
+            }
+        });
+    }
 }
 

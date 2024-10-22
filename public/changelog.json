@@ -1,14 +1,36 @@
 [
   {
+    "version": "1.6.13",
+    "date": "october 18 2024",
+    "changes": [
+      "Added shortcuts to the production line page.",
+      "Updated the guide for the production line page."
+    ]
+  },
+  {
+    "version": "1.6.12",
+    "date": "october 16 2024",
+    "changes": [
+      "Fixed a bug in calculating the imports."
+    ]
+  },
+  {
+    "version": "1.6.11",
+    "date": "october 16 2024",
+    "changes": [
+      "PAGE LOST IN THE FACTORY"
+    ]
+  },
+  {
     "version": "1.6.10",
-    "date": "october 14 2024",
+    "date": "october 16 2024",
     "changes": [
       "Improved error handling on multiple pages."
     ]
   },
   {
     "version": "1.6.9",
-    "date": "october 14 2024",
+    "date": "october 15 2024",
     "changes": [
       "Added more info on how to use the site.",
       "Added a guid for the production line page.",
