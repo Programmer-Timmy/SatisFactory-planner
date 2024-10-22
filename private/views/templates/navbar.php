@@ -1,4 +1,5 @@
 <?php
+global $theme, $changelog;
 ob_start();
 global $require;
 $lastVisitedSaveGame = '';
@@ -53,6 +54,13 @@ $navItems['/helpfulLinks'] = 'Helpful Links';
                         <a class="btn btn-success" aria-current="page" target="_blank"
                            href="https://forms.gle/fAd5LrGRATYwFHzr7">Leave Feedback</a>
                     </li>
+                    <li class="nav-item me-lg-2 mt-lg-0 mt-2 d-flex align-items-center" style="font-size: 1.5rem;">
+                        <input type="checkbox" data-toggle="toggle" data-onstyle="dark" data-offstyle="light"
+                               data-on="<i class='fa-solid fa-moon'></i>" data-off="<i class='fa-solid fa-sun'></i>"
+                               data-bs-size="sm" data-style="ios" data-theme="dark" id="themeToggle"
+                            <?php if ($theme === 'styles-dark') echo 'checked'; ?>>
+
+                    </li>
                     <li class="nav-item mt-lg-0 mt-2">
                         <a class="btn btn-danger" aria-current="page" href="/logout"><i
                                     class="fa-solid fa-sign-out"></i></a>
@@ -62,3 +70,19 @@ $navItems['/helpfulLinks'] = 'Helpful Links';
         </div>
     </div>
 </nav>
+
+
+<script>
+    $('#themeToggle').change(function () {
+        let theme = $('#theme').attr('href');
+        if (theme.includes('light')) {
+            $('#theme').attr('href', '/css/styles-dark.css?v=<?= $changelog['version'] ?>');
+            document.cookie = 'theme=dark; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+        } else {
+            $('#theme').attr('href', '/css/styles-light.css?v=<?= $changelog['version'] ?>');
+            document.cookie = 'theme=light; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+        }
+    });
+</script>

@@ -116,23 +116,7 @@ if (isset($_GET['delete'])) {
     <!-- Delete Account button -->
     <div class="row">
         <div class="col-12">
-            <button id="theme-toggle" class="btn btn-primary mt-3">Switch Theme</button>
             <a href="/account?delete" class="btn btn-danger mt-3" onclick="return confirm('Are you sure you want to delete your account?')">Delete Account</a>
         </div>
     </div>
 </div>
-
-<script>
-    $('#theme-toggle').click(function () {
-        let theme = $('#theme').attr('href');
-        if (theme.includes('light')) {
-            $('#theme').attr('href', '/css/styles-dark.css?v=<?= $changelog['version'] ?>');
-            document.cookie = 'theme=dark; expires=Fri, 31 Dec 9999 23:59:59 GMT';
-            document.documentElement.setAttribute('data-bs-theme', 'dark');
-        } else {
-            $('#theme').attr('href', '/css/styles-light.css?v=<?= $changelog['version'] ?>');
-            document.cookie = 'theme=light; expires=Fri, 31 Dec 9999 23:59:59 GMT';
-            document.documentElement.setAttribute('data-bs-theme', 'light');
-        }
-    });
-</script>
