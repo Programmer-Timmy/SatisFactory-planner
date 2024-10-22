@@ -57,9 +57,8 @@ export class Visualization {
 
         this.getImportConnection();
 
-        console.log(this);
-
         this.getPosition().then(() => {
+            this.removeCrossingConnections();
             this.positionImportNodes()
             // this.positionExportNodes()
             this.createVisualization()
@@ -126,15 +125,15 @@ export class Visualization {
             .attr('marker-end', 'url(#arrow)'); // Ensure this is correct
 
 
-        // Export Links (if needed, you can uncomment and use this)
-        const exportLinks = container.append('g')
-            .attr('class', 'links')
-            .selectAll('line')
-            .data(this.exportConnections)
-            .enter().append('line')
-            .attr('stroke', 'red')
-            .attr('stroke-width', 2)
-            .attr('marker-end', 'url(#arrow)'); // Ensure this is correct
+        // // Export Links (if needed, you can uncomment and use this)
+        // const exportLinks = container.append('g')
+        //     .attr('class', 'links')
+        //     .selectAll('line')
+        //     .data(this.exportConnections)
+        //     .enter().append('line')
+        //     .attr('stroke', 'red')
+        //     .attr('stroke-width', 2)
+        //     .attr('marker-end', 'url(#arrow)'); // Ensure this is correct
 
         // Import Nodes
         const importNodes = container.append('g')
@@ -152,12 +151,12 @@ export class Visualization {
             .enter().append('g')
             .attr('transform', (d: any) => `translate(${d.X}, ${d.Y})`);
 
-        const exportNodes = container.append('g')
-            .attr('class', 'nodes')
-            .selectAll('g')
-            .data(this.exportNodes)
-            .enter().append('g')
-            .attr('transform', (d: any) => `translate(${d.X}, ${d.Y})`);
+        // const exportNodes = container.append('g')
+        //     .attr('class', 'nodes')
+        //     .selectAll('g')
+        //     .data(this.exportNodes)
+        //     .enter().append('g')
+        //     .attr('transform', (d: any) => `translate(${d.X}, ${d.Y})`);
 
         // Draw circles for the nodes
         importNodes.append('circle')
@@ -168,9 +167,9 @@ export class Visualization {
             .attr('r', INNER_NODE_SIZE)
             .attr('fill', 'green');
 
-        exportNodes.append('circle')
-            .attr('r', INNER_NODE_SIZE)
-            .attr('fill', 'red');
+        // exportNodes.append('circle')
+        //     .attr('r', INNER_NODE_SIZE)
+        //     .attr('fill', 'red');
 
         // Add text labels
         importNodes.append('text')
@@ -185,11 +184,11 @@ export class Visualization {
             .attr('font-size', TEXT_SIZE)
             .text((d: any) => d.product);
 
-        exportNodes.append('text')
-            .attr('x', INNER_NODE_SIZE + 5)
-            .attr('y', -20)
-            .attr('font-size', TEXT_SIZE)
-            .text((d: any) => d.product);
+        // exportNodes.append('text')
+        //     .attr('x', INNER_NODE_SIZE + 5)
+        //     .attr('y', -20)
+        //     .attr('font-size', TEXT_SIZE)
+        //     .text((d: any) => d.product);
 
         // Export Nodes
 
@@ -207,11 +206,11 @@ export class Visualization {
             .attr('x2', (d: any) => this.productionNodes[d.targetId].X)
             .attr('y2', (d: any) => this.productionNodes[d.targetId].Y);
 
-        exportLinks
-            .attr('x1', (d: any) => this.productionNodes[d.sourceId].X)
-            .attr('y1', (d: any) => this.productionNodes[d.sourceId].Y)
-            .attr('x2', (d: any) => this.exportNodes[d.targetId].X)
-            .attr('y2', (d: any) => this.exportNodes[d.targetId].Y);
+        // exportLinks
+        //     .attr('x1', (d: any) => this.productionNodes[d.sourceId].X)
+        //     .attr('y1', (d: any) => this.productionNodes[d.sourceId].Y)
+        //     .attr('x2', (d: any) => this.exportNodes[d.targetId].X)
+        //     .attr('y2', (d: any) => this.exportNodes[d.targetId].Y);
 
         const nodes = container.selectAll('.nodes g');
         const bounds = nodes.nodes().reduce((acc, node) => {
@@ -307,10 +306,11 @@ export class Visualization {
     }
 
     async getPosition(): Promise<void> {
-        const levels: Map<number, number[]> = new Map(); // Level -> List of Y positions
+        const levels: Map<number, number[]> = new Map();
+        const positions: Map<number, { X: number, Y: number }> = new Map();
+        const SHIFT_AMOUNT = ROW_SPACING;  // Amount to shift nodes down
 
-
-        // Helper function to position nodes recursively (now async)
+        // Helper function for node positioning
         const positionNode = async (nodeId: number, level: number): Promise<void> => {
             if (!levels.has(level)) {
                 levels.set(level, []);
@@ -318,30 +318,92 @@ export class Visualization {
 
             const currentNode = this.productionNodes[nodeId];
 
-            // // If the node has already been positioned, return early
-            // if (currentNode.X) {
-            //     return;
-            // }
+            if (positions.has(nodeId)) {
+                return;
+            }
 
+            // Set initial Y position
             let yPosition = (levels.get(level)?.length || 0) * ROW_SPACING + START_Y;
-            levels.get(level)?.push(yPosition);
+            levels.get(level)?.push(nodeId);
 
-            currentNode.X = START_X + level * COLUMN_SPACING;
-            currentNode.Y = yPosition;
+            positions.set(nodeId, {
+                X: START_X + level * COLUMN_SPACING,
+                Y: yPosition
+            });
 
-
-            // Get child nodes and position them recursively
+            // Process child nodes recursively
             const childConnections = this.productionConnections.filter(conn => conn.sourceId === nodeId);
             await Promise.all(childConnections.map(conn => positionNode(conn.targetId, level + 1)));
         };
 
-        // Get root nodes (nodes with no incoming connections)
+        // Position root nodes (no incoming connections)
         const rootNodes = this.productionNodes.filter(node =>
-            !this.productionConnections.some(conn => conn.targetId === node.id));
+            !this.productionConnections.some(conn => conn.targetId === node.id)
+        );
 
-        // Position root nodes asynchronously
-        await Promise.all(rootNodes.map(rootNode => positionNode(rootNode.id, 0)));
+        await Promise.all(rootNodes.map(node => positionNode(node.id, 0)));
+
+        // Remove crossing connections
+
+        // Apply final positions
+        levels.forEach((nodes, level) => {
+            nodes.forEach((nodeId, index) => {
+                const {X, Y} = positions.get(nodeId)!;
+                this.productionNodes[nodeId].X = X;
+                this.productionNodes[nodeId].Y = Y;
+            });
+        });
     }
+
+    private removeCrossingConnections(): void {
+        let counter = 0;
+        //     check if one of the nodes connection is crossing another connection or node. if so try moving it to the row under the node it needs to connect to
+        for (let i = 0; i < this.productionConnections.length; i++) {
+            const connection = this.productionConnections[i];
+            for (let j = 0; j < this.productionConnections.length; j++) {
+                const otherConnection = this.productionConnections[j];
+                if (connection.sourceId === otherConnection.sourceId || connection.targetId === otherConnection.targetId) {
+                    continue;
+                }
+
+                const sourceNode = this.productionNodes[connection.sourceId];
+                const targetNode = this.productionNodes[connection.targetId];
+                const otherSourceNode = this.productionNodes[otherConnection.sourceId];
+                const otherTargetNode = this.productionNodes[otherConnection.targetId];
+
+                // add a litle bit of padding to the nodes
+                const padding = 20;
+                if (this.checkLineIntersection(sourceNode.X + padding, sourceNode.Y + padding, targetNode.X - padding, targetNode.Y - padding, otherSourceNode.X + padding, otherSourceNode.Y + padding, otherTargetNode.X - padding, otherTargetNode.Y - padding)) {
+                    counter++;
+                    console.log('Crossing connection detected');
+                    // Move the source node to the row under the target node
+                    sourceNode.Y = targetNode.Y + ROW_SPACING;
+                    // move all the connection under the source node one row down
+                    for (let k = 0; k < this.productionConnections.length; k++) {
+                        if (this.productionConnections[k].sourceId === sourceNode.id) {
+                            this.productionNodes[this.productionConnections[k].targetId].Y += ROW_SPACING;
+                        }
+                    }
+                }
+            }
+        }
+        // if (counter > 0) {
+        //     this.removeCrossingConnections();
+        // }
+    }
+
+    private checkLineIntersection(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): boolean {
+        const det = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+        if (det === 0) {
+            return false;
+        }
+
+        const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / det;
+        const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / det;
+
+        return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+    }
+
 
     private positionImportNodes(): void {
         for (let i = 0; i < this.importNodes.length; i++) {
@@ -386,7 +448,6 @@ export class Visualization {
     private positionExportNodes(): void {
         for (let i = 0; i < this.exportNodes.length; i++) {
             const connection = this.exportConnections.filter(conn => conn.sourceId === i);
-            console.log(connection);
             if (connection && connection.length > 1) {
                 const ConnectionAmount = connection.length;
 
