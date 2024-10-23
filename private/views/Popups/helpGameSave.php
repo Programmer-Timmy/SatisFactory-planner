@@ -34,6 +34,7 @@
                         <a href="#manegingPowerGenerators" class="list-group-item list-group-item-action">Maneging Power
                             Generators</a>
                         <a href="#output" class="list-group-item list-group-item-action">Output</a>
+                        <a href="#buttonOverview" class="list-group-item list-group-item-action">Button Overview</a>
                     </div>
                 </div>
                 <div class="card mb-3 border-0">
@@ -122,7 +123,7 @@
                 </div>
                 <div class="card mb-3 border-0">
                     <div class="card-body">
-                        <h3 class="text-primary">Button Overview</h3>
+                        <h3 class="text-primary" id="buttonOverview">Button Overview</h3>
                         <p>Below is a quick guide to the various buttons used in the interface. These buttons help you
                             manage production lines, generators, and more.</p>
                         <ul class="list-unstyled">
