@@ -429,3 +429,11 @@ if (DedicatedServer::getBySaveGameId($gameSave->id)) : ?>
 <?php require_once '../private/views/Popups/addProductionLine.php'; ?>
 <?php require_once '../private/views/Popups/updatePowerProduction.php'; ?>
 <?php require_once '../private/views/Popups/helpGameSave.php'; ?>
+
+<?php if(Users::checkIfFirstProduction($_SESSION['userId'])): ?>
+    <script>
+        $(document).ready(function() {
+            $('#showSaveGameHelp').tooltip('show');
+        });
+    </script>
+<?php endif; ?>

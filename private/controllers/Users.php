@@ -137,11 +137,22 @@ class Users
         return false;
     }
 
-    public static function checkIfFirstProduction($user_id) {
-        $user = Database::get("users", ['*'], [], ['id' => $user_id]);
+    public static function checkIfFirstProduction($user_id): bool {
+        $user = Database::get("users", ['first_production'], [], ['id' => $user_id]);
         if ($user) {
-            if ($user->first_production === 0) {
-                Database::update("users", ['first_production'], [1], ['id' => $user_id]);
+            if ($user->first_production === 1) {
+                Database::update("users", ['first_production'], [0], ['id' => $user_id]);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function checkIfFirstSaveGame($user_id): bool {
+        $user = Database::get("users", ['first_save_game'], [], ['id' => $user_id]);
+        if ($user) {
+            if ($user->first_save_game === 1) {
+                Database::update("users", ['first_save_game'], [0], ['id' => $user_id]);
                 return true;
             }
         }

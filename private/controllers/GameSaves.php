@@ -120,6 +120,7 @@ class GameSaves
      */
     public static function deleteSaveGame(int $game_save_id)
     {
+
         if (Database::get("game_saves", ['id'], [], ['id' => $game_save_id, 'owner_id' => $_SESSION['userId']]) == false) {
             return false;
         }
