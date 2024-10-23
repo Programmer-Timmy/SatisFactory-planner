@@ -4,8 +4,7 @@
     "date": "october 22 2024",
     "changes": [
       "Moved change theme to the navbar instead of the account page.",
-      "Added a guid for power management."
-
+      "Added a guide for the game save page."
     ]
   },
   {
