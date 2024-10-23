@@ -92,7 +92,7 @@
                     <div class="card-body">
                         <h3 class="text-primary" id="manegingPowerGenerators">Maneging Power Generators</h3>
                         <p>
-                            To add a power generator to your production line you can click on the <kbd
+                            To manage your power generators you can click on the <kbd
                                     class="bg-primary text-dark"><i class="fa-solid fa-bolt-lightning"></i></kbd>
                             button. This will open a popup where you can manage your power generators. You can add, edit
                             or delete a power generator. You can set the clocks peed of the generator and the amount of
@@ -118,6 +118,40 @@
                             </p>
                         </div>
 
+                    </div>
+                </div>
+                <div class="card mb-3 border-0">
+                    <div class="card-body">
+                        <h3 class="text-primary">Button Overview</h3>
+                        <p>Below is a quick guide to the various buttons used in the interface. These buttons help you
+                            manage production lines, generators, and more.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <kbd class="bg-info text-black"><i class="fa-regular fa-question-circle"></i></kbd> Open
+                                the help guide
+                            </li>
+                            <li class="mb-2">
+                                <kbd class="bg-primary text-dark"><i class="fa-solid fa-bolt"></i></kbd> Open the power
+                                generator manager
+                            </li>
+                            <li class="mb-2">
+                                <kbd class="bg-primary text-dark"><i class="fa-solid fa-plus"></i></kbd> Add a
+                                production line
+                            </li>
+                            <li class="mb-2">
+                                <kbd class="bg-secondary text-dark"><i class="fa-solid fa-table"></i></kbd> or
+                                <kbd class="bg-secondary text-dark"><i class="fa-regular fa-square"></i></kbd> Change
+                                the view of the production lines
+                            </li>
+                            <li class="mb-2">
+                                <kbd class="bg-primary text-dark"><i class="fa-solid fa-gears"></i></kbd> Open a
+                                production line
+                            </li>
+                            <li>
+                                <kbd class="bg-danger text-dark"><i class="fa-solid fa-x"></i></kbd> Delete a production
+                                line
+                            </li>
+                        </ul>
                     </div>
                 </div>
                 <p class="text-muted text-center">
