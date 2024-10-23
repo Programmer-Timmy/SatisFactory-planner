@@ -104,7 +104,7 @@ class GameSaves
      */
     public static function updateSaveGame(int $game_save_id, int $owner_id, string $title, array $image)
     {
-        if ($owner_id != $_SESSION['userId']) {
+       if ($owner_id != $_SESSION['userId']) {
             return false;
         }
         if ($image['tmp_name'] != '') {
@@ -120,6 +120,7 @@ class GameSaves
      */
     public static function deleteSaveGame(int $game_save_id)
     {
+
         if (Database::get("game_saves", ['id'], [], ['id' => $game_save_id, 'owner_id' => $_SESSION['userId']]) == false) {
             return false;
         }
@@ -141,16 +142,22 @@ class GameSaves
     /**
      * @param int $game_save_id
      * @param array $image
-     * @return false|null
+     * @return bool
      */
     private static function uploadImage(int $game_save_id, array $image)
     {
         self::deleteImage($game_save_id);
-        $imagePath = 'image/' . $game_save_id . '.' . pathinfo($image['name'], PATHINFO_EXTENSION);
+        $name = 'save_game/' . $game_save_id . '/' . uniqid(). '.' . pathinfo($image['name'], PATHINFO_EXTENSION);
+        $imagePath = 'image/' . $name;
+        // check if the directory exists
+        if (!file_exists('../public/image/save_game/' . $game_save_id)) {
+            mkdir('../public/image/save_game/' . $game_save_id, 0777, true);
+        }
         if (!move_uploaded_file($image['tmp_name'], $imagePath)) {
             return false;
         }
-        return Database::update("game_saves", ['image'], [$game_save_id . '.' . pathinfo($image['name'], PATHINFO_EXTENSION)], ['id' => $game_save_id]);
+        Database::update("game_saves", ['image'], [$name], ['id' => $game_save_id]);
+        return true;
     }
 
     /**
@@ -161,7 +168,7 @@ class GameSaves
     {
         $gameSave = self::getSaveGameById($game_save_id);
         if ($gameSave->image != 'default_img.png' && file_exists('../public/image/' . $gameSave->image) && $gameSave->image != '' && $gameSave->image != null) {
-            unlink('/image/' . $gameSave->image);
+            unlink('../public/image/' . $gameSave->image);
         }
     }
 
