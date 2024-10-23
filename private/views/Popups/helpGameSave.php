@@ -48,7 +48,11 @@
                             You can add a production line by clicking on the <kbd class="bg-primary text-dark"><i class="fa-solid fa-plus"></i></kbd> button. This will open a popup where you can add a production line. You can set the name of the production line. When you add a production line you can manage your production line. You can add, edit or delete a production line. See the guide on that page for more info.
                         <h6 class="text-primary">Enable or disable a production line</h6>
                         <p>
-                            You can enable or disable a production line by clicking on the <kbd class="bg-primary text-dark"><i class="fa-solid fa-toggle-on"></i></kbd> button. This will disable the production line and it will not be calculated in the total power consumption and production in the <a href="#powerOverview">Power Overview</a> section. Also it wil be removed form the <a href="#output">Output</a> section.
+                            You can enable or disable a production line by clicking on the <kbd
+                                    class="bg-primary text-dark"><i class="fa-solid fa-toggle-on"></i></kbd> button.
+                            This will disable the production line, and it will not be calculated in the total power
+                            consumption and production in the <a href="#powerOverview">Power Overview</a> section. Also
+                            it wil be removed from the <a href="#output">Output</a> section.
                         </p>
                         <h6 class="text-primary">Edit a production line</h6>
                         <p>
