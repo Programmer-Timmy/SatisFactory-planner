@@ -26,14 +26,19 @@ $navItems['/helpfulLinks'] = 'Helpful Links';
 
 ?>
 <style>
-    .toggle-group .btn-dark {
+    .navbar-collapse .toggle-group .btn-dark {
         background-color: var(--bs-btn-active-bg);
         color: white;
     }
 
-    .toggle-group .btn-light {
+    .navbar-collapse .toggle-group .btn-light {
         background-color: white;
         color: black;
+    }
+
+    .navbar-collapse .toggle {
+        height: 38px !important;
+        width: 55px !important;
     }
 </style>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
