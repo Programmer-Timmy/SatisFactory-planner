@@ -111,7 +111,13 @@ if (isset($_GET['layoutType'])) {
                 if (<?= $gameSave->card_view ?>) {
                     const parentElement = $(checkbox).closest('.card-body');
 
-                    textContent = parentElement.find('.card-text')[0].innerText
+                    textContent = parentElement.find('.card-text')
+
+                    if (textContent.length === 0) {
+                        textContent = '0';
+                    } else {
+                        textContent = textContent[0].innerText;
+                    }
 
                     textContent = textContent.replace("Power Consumption: ", '');
 
