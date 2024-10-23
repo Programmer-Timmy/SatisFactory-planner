@@ -95,13 +95,13 @@
                 </div>
                 <div class="card mb-3 border-0">
                     <div class="card-body">
-                        <h3 class="text-primary" id="manegingPowerGenerators">Maneging Power Generators</h3>
+                        <h3 class="text-primary" id="manegingPowerGenerators">Managing Power Generators</h3>
                         <p>
                             To manage your power generators you can click on the <kbd
                                     class="bg-primary text-dark"><i class="fa-solid fa-bolt-lightning"></i></kbd>
                             button. This will open a popup where you can manage your power generators. You can add, edit
-                            or delete a power generator. You can set the clocks peed of the generator and the amount of
-                            generators you have with that clocks peed.
+                            or delete a power generator. You can set the clock speed of the generator and the amount of
+                            generators you have with that clock speed.
                         </p>
                         <p class="mb-0">
                             All the changes you make will instantly be calculated and displayed in the <a
@@ -114,7 +114,9 @@
                         <h3 class="text-primary" id="output">Output</h3>
                         <p>
                             This section shows you the output of your production lines. You can see the amount of items
-                            you produce per minute for each production line. You can find this on the right side of the screen under the <a href="#powerOverview">Power Overview</a> section. All the inputs wil be subtracted from the output. So you can see the real output of your production line.
+                            you produce per minute for each production line. You can find this on the right side of the
+                            screen under the <a href="#powerOverview">Power Overview</a> section. All the inputs will be
+                            subtracted from the output. So you can see the real output of your production line.
                         </p>
                         <div class="alert alert-warning mb-0" role="alert">
                             <h4 class="alert-heading">Note</h4>
