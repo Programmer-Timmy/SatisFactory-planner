@@ -345,7 +345,7 @@ export class Visualization {
 
             for (let j = 0; j < row.imports.length; j++) {
                 const importRow = row.imports[j];
-                this.importConnections.push(new Connection(index, importRow.index, i, importRow.amount, importRow.product));
+                this.importConnections.push(new Connection(index, importRow.index, i, +importRow.amount.toFixed(3), importRow.product));
                 index++;
             }
         }
@@ -372,7 +372,7 @@ export class Visualization {
 
             for (let j = 0; j < row.productionImports.length; j++) {
                 const importRow = row.productionImports[j];
-                this.productionConnections.push(new Connection(i, importRow.index, i, importRow.amount, importRow.product));
+                this.productionConnections.push(new Connection(i, importRow.index, i, +importRow.amount.toFixed(3), importRow.product));
             }
         }
     }
