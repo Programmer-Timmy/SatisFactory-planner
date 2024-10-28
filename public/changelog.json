@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.6.16",
+    "date": "october 28 2024",
+    "changes": [
+      "Added visualisation of the production line. (This is in early development expect bugs and missing features.) To use this feature press CTRL + V on the production line page."
+    ]
+  },
+  {
     "version": "1.6.15",
     "date": "october 28 2024",
     "changes": [
