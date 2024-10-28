@@ -395,8 +395,8 @@ export class TableHandler {
             indexes: number[]
         } = ImportsTableFunctions.calculateImports(this.productionTableRows);
         this.importsTableRows = data.importsTableRows;
-
         new Visualization(this);
+        $('#showVisualization').modal('show');
 
     }
 
@@ -470,7 +470,13 @@ export class TableHandler {
                 // show visualization
                 if (event.key === 'v' && event.ctrlKey) {
                     event.preventDefault();
-                    tableHandler.showVisualization();
+                    const modal = $('#showVisualization');
+                    if (modal.is(':hidden')) {
+                        closeModals();
+                        tableHandler.showVisualization();
+                    } else {
+                        modal.modal('hide');
+                    }
                 }
             });
         });

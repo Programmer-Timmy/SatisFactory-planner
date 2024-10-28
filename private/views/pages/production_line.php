@@ -335,6 +335,8 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
 <!-- Help Modal -->
 <?php require_once '../private/views/Popups/helpProductionLine.php'; ?>
 
+<?php require_once '../private/views/Popups/showVisualization.php'; ?>
+
 <?php if ($firstProduction) : ?>
     <script>
         jQuery(function () {
@@ -343,5 +345,3 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
         });
     </script>
 <?php endif; ?>
-
-<svg id="graph" width="100%" height="800"></svg>

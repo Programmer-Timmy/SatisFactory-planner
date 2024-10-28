@@ -140,7 +140,7 @@ export class Visualization {
         });
 
 //         reset the text to the middle of the line
-        importLinkLabels.attr('x', 0)
+        importLinkLabels.attr('x', ARROW_SIZE + 5)
             .attr('y', -5);
 
         importLinkLabels.append('title')
@@ -168,7 +168,6 @@ export class Visualization {
             .append('text')
             .attr('text-anchor', 'middle') // Center the text horizontally
             .attr('font-size', TEXT_SIZE / 1.5)
-            .attr('fill', 'black')
             .text((d: any) => `${d.product} (${d.quantity})`);
 
         productionLinkLabels.attr('transform', (d: any) => {
@@ -178,7 +177,7 @@ export class Visualization {
             return `translate(${x}, ${y}) rotate(${angle})`;
         });
 
-        productionLinkLabels.attr('x', 0)
+        productionLinkLabels.attr('x', ARROW_SIZE + 5)
             .attr('y', -5);
 
         productionLinkLabels.append('title')
