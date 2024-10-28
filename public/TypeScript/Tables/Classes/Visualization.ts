@@ -7,16 +7,18 @@ import * as d3 from 'd3';
 
 // global variables
 const NODE_SIZE = 50;
-const INNER_NODE_SIZE = 40;
+const INNER_NODE_SIZE = 60;
 const ROW_SPACING = 200;
-const COLUMN_SPACING = 400;
-const IMPORT_ROW_SPACING = 200;
+const COLUMN_SPACING = 500;
+const IMPORT_ROW_SPACING = 300;
 const INSIDE_IMPORT_COLUMN_SPACING = 100;
 const START_X = 200;
 const START_Y = 100;
-const TEXT_SIZE = 20;
-const DOUBLE_OFFSET = 50;
+const TEXT_SIZE = 25;
+const DOUBLE_OFFSET = 100;
 const ARROW_SIZE = 10;
+const LINE_WIDTH = 3;
+
 
 /**
  * Visualization class
@@ -60,7 +62,6 @@ export class Visualization {
         this.getPosition().then(() => {
             this.removeCrossingConnections();
             this.positionImportNodes()
-            // this.positionExportNodes()
             this.createVisualization()
         });
 
@@ -70,6 +71,7 @@ export class Visualization {
      * Create the visualization of the production line
      */
     public createVisualization(): void {
+        console.log('Creating visualization');
         const svg = d3.select('#graph');
         svg.selectAll('*').remove();
 
@@ -95,7 +97,7 @@ export class Visualization {
         svg.append('defs').append('marker')
             .attr('id', 'arrow')
             .attr('viewBox', '0 -5 10 10')
-            .attr('refX', INNER_NODE_SIZE / 2 + ARROW_SIZE)
+            .attr('refX', INNER_NODE_SIZE / LINE_WIDTH + ARROW_SIZE)
             .attr('refY', 0)
             .attr('markerWidth', ARROW_SIZE)
             .attr('markerHeight', ARROW_SIZE)
@@ -107,12 +109,46 @@ export class Visualization {
 // Import Links
         const importLinks = container.append('g')
             .attr('class', 'links')
+            .attr('id', 'importLinks')
             .selectAll('line')
             .data(this.importConnections)
             .enter().append('line')
             .attr('stroke', 'blue')
-            .attr('stroke-width', 2)
-            .attr('marker-end', 'url(#arrow)'); // Ensure this is correct
+            .attr('stroke-width', LINE_WIDTH)
+            .attr('marker-end', 'url(#arrow)')
+            .attr('marker-mid', 'url(#connectionText)'); // Ensure this is correct
+
+        importLinks.append('title')
+            .text((d: any) => d.product + ' ' + d.quantity);
+
+        const importLinkLabels = container.append('g')
+            .attr('class', 'link-labels')
+            .selectAll('text')
+            .data(this.importConnections)
+            .enter()
+            .append('text')
+            .attr('text-anchor', 'middle') // Center the text horizontally
+            .attr('font-size', TEXT_SIZE / 1.5)
+            .attr('fill', 'black')
+            .text((d: any) => `${d.product} (${d.quantity})`);
+//         set the rotaiton of the text based on the line
+        importLinkLabels.attr('transform', (d: any) => {
+            const x = (this.importNodes[d.sourceId].X + this.productionNodes[d.targetId].X) / 2;
+            const y = (this.importNodes[d.sourceId].Y + this.productionNodes[d.targetId].Y) / 2;
+            const angle = Math.atan2(this.productionNodes[d.targetId].Y - this.importNodes[d.sourceId].Y, this.productionNodes[d.targetId].X - this.importNodes[d.sourceId].X) * 180 / Math.PI;
+            return `translate(${x}, ${y}) rotate(${angle})`;
+        });
+
+//         reset the text to the middle of the line
+        importLinkLabels.attr('x', 0)
+            .attr('y', -5);
+
+        importLinkLabels.append('title')
+            .text((d: any) => d.product + ' ' + d.quantity);
+
+
+
+
 
 // Production Links
         const productionLinks = container.append('g')
@@ -121,8 +157,36 @@ export class Visualization {
             .data(this.productionConnections)
             .enter().append('line')
             .attr('stroke', 'green')
-            .attr('stroke-width', 2)
+            .attr('stroke-width', LINE_WIDTH)
             .attr('marker-end', 'url(#arrow)'); // Ensure this is correct
+
+        const productionLinkLabels = container.append('g')
+            .attr('class', 'link-labels')
+            .selectAll('text')
+            .data(this.productionConnections)
+            .enter()
+            .append('text')
+            .attr('text-anchor', 'middle') // Center the text horizontally
+            .attr('font-size', TEXT_SIZE / 1.5)
+            .attr('fill', 'black')
+            .text((d: any) => `${d.product} (${d.quantity})`);
+
+        productionLinkLabels.attr('transform', (d: any) => {
+            const x = (this.productionNodes[d.sourceId].X + this.productionNodes[d.targetId].X) / 2;
+            const y = (this.productionNodes[d.sourceId].Y + this.productionNodes[d.targetId].Y) / 2;
+            const angle = Math.atan2(this.productionNodes[d.targetId].Y - this.productionNodes[d.sourceId].Y, this.productionNodes[d.targetId].X - this.productionNodes[d.sourceId].X) * 180 / Math.PI;
+            return `translate(${x}, ${y}) rotate(${angle})`;
+        });
+
+        productionLinkLabels.attr('x', 0)
+            .attr('y', -5);
+
+        productionLinkLabels.append('title')
+            .text((d: any) => d.product + ' ' + d.quantity);
+
+        productionLinks.append('title')
+            .text((d: any) => d.product + ' ' + d.quantity);
+
 
 
         // // Export Links (if needed, you can uncomment and use this)
@@ -143,6 +207,9 @@ export class Visualization {
             .enter().append('g')
             .attr('transform', (d: any) => `translate(${d.X}, ${d.Y})`);
 
+        importNodes.append('title')
+            .text((d: any) => d.product + ' ' + d.quantity);
+
         // Production Nodes
         const productionNodes = container.append('g')
             .attr('class', 'nodes')
@@ -150,6 +217,14 @@ export class Visualization {
             .data(this.productionNodes)
             .enter().append('g')
             .attr('transform', (d: any) => `translate(${d.X}, ${d.Y})`);
+
+        productionNodes.append('title')
+            .text((d: any) =>
+                `${d.buildingAmount} ${d.building}\n` +   // Line 1: Building amount and name
+                `Quantity: ${d.quantity}\n` +              // Line 2: Quantity label and value
+                `Recipe: ${d.product}`                    // Line 3: Product label and value
+            );
+
 
         // const exportNodes = container.append('g')
         //     .attr('class', 'nodes')
@@ -173,16 +248,41 @@ export class Visualization {
 
         // Add text labels
         importNodes.append('text')
-            .attr('x', INNER_NODE_SIZE + 5)
-            .attr('y', -20)
+            .attr('text-anchor', 'middle') // Center horizontally
+            .attr('x', 0) // Center horizontally with the circle
+            .attr('y', -INNER_NODE_SIZE - 5)
             .attr('font-size', TEXT_SIZE)
             .text((d: any) => d.product);
 
+        importNodes.append('text')
+            .attr('text-anchor', 'middle') // Center horizontally
+            .attr('x', 0) // Center horizontally with the circle
+            .attr('y', 10) // Center vertically based on font size
+            .attr('fill', 'white')
+            .attr('font-size', `${INNER_NODE_SIZE / 2}px`) // Scale font size based on circle radius
+            .text((d: any) => d.quantity); // Truncate if too long
+
+
+        // 2 tspan
         productionNodes.append('text')
-            .attr('x', INNER_NODE_SIZE + 5)
-            .attr('y', -20)
+            .attr('text-anchor', 'middle') // Center horizontally
+            .attr('x', 0) // Center horizontally with the circle
+            .attr('y', 0) // Center vertically based on font size
+            .attr('font-size', `${INNER_NODE_SIZE / 3}px`) // Scale font size based on circle radius
+            // .attr('textLength', INNER_NODE_SIZE * 1.5) // Limit text width to 1.5 times the radius
+            .text((d: any) => d.building.length > 10 ? d.building.slice(0, 10) + '...' : d.building) // Truncate if too long
+            .append('tspan')
+            .attr('x', 0) // Center horizontally for the second line
+            .attr('dy', `${INNER_NODE_SIZE / 3}px`) // Position below the first line with scaled spacing
+            .text((d: any) => d.buildingAmount);
+
+
+        productionNodes.append('text')
+            .attr('text-anchor', 'middle') // Center horizontally
+            .attr('x', 0) // Center horizontally with the circle
+            .attr('y', -INNER_NODE_SIZE - 5)
             .attr('font-size', TEXT_SIZE)
-            .text((d: any) => d.product);
+            .text((d: any) => d.quantity + ' ' + d.product);
 
         // exportNodes.append('text')
         //     .attr('x', INNER_NODE_SIZE + 5)
@@ -223,7 +323,17 @@ export class Visualization {
                 height: Math.max(acc.height, bbox.height + (bbox.y - acc.y)),
             };
         }, {x: Infinity, y: Infinity, width: 0, height: 0});
+
+        // use a algorithm to center the graph
+        const xOffset = (width - bounds.width) / 2 - bounds.x;
+        const yOffset = (height - bounds.height) / 2 - bounds.y;
+        container.attr('transform', `translate(${xOffset}, ${yOffset})`);
+
+        // make it fit in the svg
+
+
     }
+
 
     /**
      * Get all import connections from the production table and add them to the import connections array
@@ -251,9 +361,14 @@ export class Visualization {
             const row = this.TableHandler.productionTableRows[i];
 
             const building = row.recipe?.building;
+            const amount = row.quantity;
+            const recipe = row.recipe;
+            // @ts-ignore
+            let amountOfBuilding = (amount / recipe.export_amount_per_min).toFixed(3);
 
-            if (building) {
-                this.productionNodes.push(new ProductionNodes(i, row.product, row.quantity, building.name, building.id));
+            if (building && recipe) {
+                this.productionNodes.push(new ProductionNodes(i, recipe.name, row.quantity, building.name, building.id, +amountOfBuilding));
+
             }
 
             for (let j = 0; j < row.productionImports.length; j++) {
@@ -375,15 +490,7 @@ export class Visualization {
                 const padding = 20;
                 if (this.checkLineIntersection(sourceNode.X + padding, sourceNode.Y + padding, targetNode.X - padding, targetNode.Y - padding, otherSourceNode.X + padding, otherSourceNode.Y + padding, otherTargetNode.X - padding, otherTargetNode.Y - padding)) {
                     counter++;
-                    console.log('Crossing connection detected');
-                    // Move the source node to the row under the target node
-                    sourceNode.Y = targetNode.Y + ROW_SPACING;
-                    // move all the connection under the source node one row down
-                    for (let k = 0; k < this.productionConnections.length; k++) {
-                        if (this.productionConnections[k].sourceId === sourceNode.id) {
-                            this.productionNodes[this.productionConnections[k].targetId].Y += ROW_SPACING;
-                        }
-                    }
+
                 }
             }
         }

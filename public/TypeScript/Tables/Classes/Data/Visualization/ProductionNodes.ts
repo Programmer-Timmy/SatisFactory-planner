@@ -28,16 +28,18 @@ export class ProductionNodes {
     public quantity: number;
     public building: string;
     public buildingId: number;
+    public buildingAmount: number;
     public X: number;
     public Y: number;
 
 
-    constructor(id: number, product: string, quantity: number, building: string, buildingId: number) {
+    constructor(id: number, product: string, quantity: number, building: string, buildingId: number, buildingAmount: number) {
         this.id = id;
         this.product = product;
         this.quantity = quantity;
         this.building = building;
         this.buildingId = buildingId;
+        this.buildingAmount = buildingAmount;
         this.X = 0;
         this.Y = 0;
     }
