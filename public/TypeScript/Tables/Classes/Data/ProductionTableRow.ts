@@ -2,6 +2,7 @@ import {ExtraProductionRow} from "./ExtraProductionRow";
 import {Recipe} from "../Types/Recipe";
 import {Ajax} from "../Functions/Ajax";
 import {ProductionLineFunctions} from "../Functions/ProductionLineFunctions";
+import {Import} from "./Import";
 
 export class ProductionTableRow {
     public recipeId: number;
@@ -12,7 +13,8 @@ export class ProductionTableRow {
     public doubleExport: boolean;
     public extraCells: ExtraProductionRow | null;
     public recipe: Recipe | null;
-
+    public imports: Import[];
+    public productionImports: Import[];
 
     constructor(recipeId: string = '', quantity: number = 0, product: string = '', Usage: number = 0, exportPerMin: number = 0, doubleExport: boolean = false, extraCells: ExtraProductionRow | null = null) {
         this.recipeId = +recipeId;
@@ -23,9 +25,12 @@ export class ProductionTableRow {
         this.doubleExport = doubleExport;
         this.extraCells = extraCells;
         this.recipe = null;
+        this.imports = [];
+        this.productionImports = [];
         this.getRecipe(recipeId).then(r =>
             this.saveDoubleExportQuantity()
         );
+
     }
 
     public async getRecipe(recipeId: string): Promise<void> {

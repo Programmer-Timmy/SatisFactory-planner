@@ -8,6 +8,7 @@ import {ImportsTableFunctions} from "./Functions/ImportsTableFunctions";
 import {Settings} from "./Settings";
 import {HtmlGeneration} from "./Functions/HtmlGeneration";
 import {buildingOptions} from "./Data/BuildingOptions";
+import {Visualization} from "./Visualization";
 import {SaveFunctions} from "./Functions/SaveFunctions";
 
 
@@ -388,6 +389,17 @@ export class TableHandler {
         $('#showPower').prop('disabled', false);
     }
 
+    public showVisualization() {
+        const data: {
+            importsTableRows: ImportsTableRow[],
+            indexes: number[]
+        } = ImportsTableFunctions.calculateImports(this.productionTableRows);
+        this.importsTableRows = data.importsTableRows;
+        new Visualization(this);
+        $('#showVisualization').modal('show');
+
+    }
+
     private async addShortcuts() {
         const tableHandler = this;
         document.addEventListener("DOMContentLoaded", function () {
@@ -453,6 +465,18 @@ export class TableHandler {
                 if (event.ctrlKey && event.key === 'q') {
                     event.preventDefault();
                     window.history.back();
+                }
+
+                // show visualization
+                if (event.key === 'v' && event.ctrlKey) {
+                    event.preventDefault();
+                    const modal = $('#showVisualization');
+                    if (modal.is(':hidden')) {
+                        closeModals();
+                        tableHandler.showVisualization();
+                    } else {
+                        modal.modal('hide');
+                    }
                 }
             });
         });

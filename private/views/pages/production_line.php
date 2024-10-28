@@ -125,6 +125,29 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
     }
 
 </style>
+<style>
+    svg {
+        border: 1px solid #ccc;
+    }
+
+    .node circle {
+        stroke: #fff;
+        stroke-width: 1.5px;
+    }
+
+    .link {
+        stroke: #999;
+        stroke-opacity: 0.6;
+        stroke-width: 2; /* Make the link thicker */
+    }
+
+    .node text {
+        font-size: 10px;
+        fill: black;
+        /*    make them more visiable*/
+        background-color: white;
+    }
+</style>
 
 <div class="px-3 px-lg-5">
     <form method="post" onkeydown="return event.key != 'Enter';">
@@ -311,6 +334,8 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
 
 <!-- Help Modal -->
 <?php require_once '../private/views/Popups/helpProductionLine.php'; ?>
+
+<?php require_once '../private/views/Popups/showVisualization.php'; ?>
 
 <?php if ($firstProduction) : ?>
     <script>
