@@ -5,12 +5,10 @@ import {ExtraProductionRow} from "./Data/ExtraProductionRow";
 import {ProductionLineFunctions} from "./Functions/ProductionLineFunctions";
 import {PowerTableFunctions} from "./Functions/PowerTableFunctions";
 import {ImportsTableFunctions} from "./Functions/ImportsTableFunctions";
-import {Ajax} from "./Functions/Ajax";
 import {Settings} from "./Settings";
 import {HtmlGeneration} from "./Functions/HtmlGeneration";
 import {buildingOptions} from "./Data/BuildingOptions";
 import {SaveFunctions} from "./Functions/SaveFunctions";
-import {Modal} from "bootstrap";
 
 
 /**
@@ -18,18 +16,32 @@ import {Modal} from "bootstrap";
  */
 export class TableHandler {
 
-    public importsTableRows: ImportsTableRow[];
-    public productionTableRows: ProductionTableRow[];
-    public powerTableRows: PowerTableRow[];
+    public importsTableRows: ImportsTableRow[] = [];
+    public productionTableRows: ProductionTableRow[] = [];
+    public powerTableRows: PowerTableRow[] = [];
     public settings: Settings = new Settings();
 
     constructor() {
-        this.importsTableRows = this.readTable<ImportsTableRow>('imports', ImportsTableRow);
-        this.productionTableRows = this.readTable<ProductionTableRow>('recipes', ProductionTableRow);
-        this.powerTableRows = this.readTable<PowerTableRow>('power', PowerTableRow);
+        this.initialize();
+    }
 
-        this.addEventListeners();
-        this.addShortcuts();
+    private async initialize(): Promise<void> {
+        this.disableButtons();
+
+        await this.getTableData();
+        await this.addEventListeners();
+        await this.addShortcuts();
+
+        $('#loading').addClass('d-none');
+        $('#main-content').removeClass('d-none');
+
+        this.enableButtons();
+    }
+
+    private async getTableData() {
+        this.importsTableRows = await this.readTable<ImportsTableRow>('imports', ImportsTableRow);
+        this.productionTableRows = await this.readTable<ProductionTableRow>('recipes', ProductionTableRow);
+        this.powerTableRows = await this.readTable<PowerTableRow>('power', PowerTableRow);
     }
 
     /**
@@ -38,7 +50,7 @@ export class TableHandler {
      * @param {new(...args: any[]) => T} rowClass - The class constructor for the table rows.
      * @returns {T[]} An array of instances of the specified row class.
      */
-    private readTable<T>(id: string, rowClass: { new(...args: any[]): T }): T[] {
+    private async readTable<T>(id: string, rowClass: { new(...args: any[]): T }): Promise<T[]> {
         const table = $(`#${id} tbody tr`);
         const rows: T[] = [];
         let lengthReduction = 0;
@@ -88,7 +100,7 @@ export class TableHandler {
     /**
      * Adds event listeners for change events on all inputs and selects within tables.
      */
-    private addEventListeners() {
+    private async addEventListeners() {
         const tables = ['imports', 'recipes', 'power'];
 
         tables.forEach((tableId) => {
@@ -357,65 +369,89 @@ export class TableHandler {
         this.addEventListeners();
     }
 
+    private disableButtons() {
+        $('#save_button').addClass('disabled');
+        $('#save_button').prop('disabled', true);
 
-    private addShortcuts() {
-        document.addEventListener('keydown', (event) => {
-            const powerModal = $('#showPowerModal');
-            const editModal = $('#editProductionLine');
-            const helpModal = $('#helpModal');
+        $('#showPower').addClass('disabled');
+        $('#showPower').prop('disabled', true);
+    }
 
-            function closeModals() {
-                powerModal.modal('hide');
-                editModal.modal('hide');
-                helpModal.modal('hide');
-            }
+    private enableButtons() {
+        $('#save_button').removeClass('disabled');
+        $('#save_button').prop('disabled', false);
 
-            // Save production line
-            if (event.ctrlKey && event.key === 's') {
-                event.preventDefault();
-                SaveFunctions.saveProductionLine(SaveFunctions.prepareSaveData(this.productionTableRows, this.powerTableRows, this.importsTableRows));
-            }
+        $('#showPower').removeClass('disabled');
+        $('#showPower').prop('disabled', false);
+    }
 
-            // Open power modal
-            if (event.ctrlKey && event.key === 'p') {
-                event.preventDefault();
-                if (powerModal.is(':hidden')) {
-                    closeModals();
-                    powerModal.modal('show');
-                } else {
+    private async addShortcuts() {
+        const tableHandler = this;
+        document.addEventListener("DOMContentLoaded", function () {
+            document.addEventListener('keydown', (event) => {
+                const powerModal = $('#showPowerModal');
+                const editModal = $('#editProductionLine');
+                const helpModal = $('#helpModal');
+
+                function closeModals() {
                     powerModal.modal('hide');
-                }
-            }
-
-            // Open edit / settings modal
-            if (event.ctrlKey && event.key === 'e') {
-                event.preventDefault();
-                closeModals();
-                if (editModal.is(':hidden')) {
-                    closeModals();
-                    editModal.modal('show');
-                } else {
                     editModal.modal('hide');
-                }
-            }
-
-            // help modal
-            if (event.ctrlKey && event.key === 'h') {
-                event.preventDefault();
-                if (helpModal.is(':hidden')) {
-                    closeModals();
-                    helpModal.find('#welcome').hide();
-                    helpModal.modal('show');
-                } else {
                     helpModal.modal('hide');
                 }
-            }
 
-            // go back
-            if (event.ctrlKey && event.key === 'q') {
-                event.preventDefault();
-                window.history.back();
-            }
+                // Save production line
+                if (event.ctrlKey && event.key === 's') {
+                    event.preventDefault();
+                    SaveFunctions.saveProductionLine(
+                        SaveFunctions.prepareSaveData(
+                            tableHandler.productionTableRows,
+                            tableHandler.powerTableRows,
+                            tableHandler.importsTableRows
+                        )
+                    );
+                }
+
+                // Open power modal
+                if (event.ctrlKey && event.key === 'p') {
+                    event.preventDefault();
+                    if (powerModal.is(':hidden')) {
+                        closeModals();
+                        powerModal.modal('show');
+                    } else {
+                        powerModal.modal('hide');
+                    }
+                }
+
+                // Open edit / settings modal
+                if (event.ctrlKey && event.key === 'e') {
+                    event.preventDefault();
+                    closeModals();
+                    if (editModal.is(':hidden')) {
+                        closeModals();
+                        editModal.modal('show');
+                    } else {
+                        editModal.modal('hide');
+                    }
+                }
+
+                // help modal
+                if (event.ctrlKey && event.key === 'h') {
+                    event.preventDefault();
+                    if (helpModal.is(':hidden')) {
+                        closeModals();
+                        helpModal.find('#welcome').hide();
+                        helpModal.modal('show');
+                    } else {
+                        helpModal.modal('hide');
+                    }
+                }
+
+                // go back
+                if (event.ctrlKey && event.key === 'q') {
+                    event.preventDefault();
+                    window.history.back();
+                }
+            });
         });
     }
 }

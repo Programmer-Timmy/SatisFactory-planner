@@ -153,7 +153,14 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                 </div>
             </div>
         </div>
-        <div class="row">
+        <div class="mt-auto position-absolute top-50 start-50 translate-middle-x w-100 h-100" id="loading">
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+        <div class="row d-none" id="main-content">
             <div class="col-md-3">
                 <h2>Imports</h2>
                 <table class="table table-striped" id="imports">
