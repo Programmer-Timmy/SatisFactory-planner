@@ -8,7 +8,7 @@ import * as d3 from 'd3';
 // global variables
 const NODE_SIZE = 50;
 const INNER_NODE_SIZE = 60;
-const ROW_SPACING = 200;
+const ROW_SPACING = 250;
 const COLUMN_SPACING = 500;
 const IMPORT_ROW_SPACING = 300;
 const INSIDE_IMPORT_COLUMN_SPACING = 100;
