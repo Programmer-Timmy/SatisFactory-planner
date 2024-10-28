@@ -23,9 +23,12 @@ export class TableHandler {
 
     constructor() {
         this.initialize();
+
     }
 
     private async initialize(): Promise<void> {
+        $('#loading').removeClass('d-none');
+
         this.disableButtons();
 
         await this.getTableData();
