@@ -17,31 +17,35 @@ import {SaveFunctions} from "./Functions/SaveFunctions";
  */
 export class TableHandler {
 
-    public importsTableRows: ImportsTableRow[];
-    public productionTableRows: ProductionTableRow[];
-    public powerTableRows: PowerTableRow[];
+    public importsTableRows: ImportsTableRow[] = [];
+    public productionTableRows: ProductionTableRow[] = [];
+    public powerTableRows: PowerTableRow[] = [];
     public settings: Settings = new Settings();
 
     constructor() {
-        this.importsTableRows = this.readTable<ImportsTableRow>('imports', ImportsTableRow);
-        this.productionTableRows = this.readTable<ProductionTableRow>('recipes', ProductionTableRow);
-        this.powerTableRows = this.readTable<PowerTableRow>('power', PowerTableRow);
+        this.initialize();
 
-        this.addEventListeners();
+    }
 
-        console.log('TableHandler initialized');
-        $(document).on('keydown', (e: { key: string; ctrlKey: any; preventDefault: () => void; }) => {
-            console.log(e.key);
-            if (e.key === 'v' && e.ctrlKey) {
-                e.preventDefault();
-                this.showVisualization();
-            }
+    private async initialize(): Promise<void> {
+        $('#loading').removeClass('d-none');
 
-            if (e.key === 's' && e.ctrlKey) {
-                e.preventDefault();
-                SaveFunctions.saveProductionLine(SaveFunctions.prepareSaveData(this.productionTableRows, this.powerTableRows, this.importsTableRows));
-            }
-        });
+        this.disableButtons();
+
+        await this.getTableData();
+        await this.addEventListeners();
+        await this.addShortcuts();
+
+        $('#loading').addClass('d-none');
+        $('#main-content').removeClass('d-none');
+
+        this.enableButtons();
+    }
+
+    private async getTableData() {
+        this.importsTableRows = await this.readTable<ImportsTableRow>('imports', ImportsTableRow);
+        this.productionTableRows = await this.readTable<ProductionTableRow>('recipes', ProductionTableRow);
+        this.powerTableRows = await this.readTable<PowerTableRow>('power', PowerTableRow);
     }
 
     /**
@@ -50,7 +54,7 @@ export class TableHandler {
      * @param {new(...args: any[]) => T} rowClass - The class constructor for the table rows.
      * @returns {T[]} An array of instances of the specified row class.
      */
-    private readTable<T>(id: string, rowClass: { new(...args: any[]): T }): T[] {
+    private async readTable<T>(id: string, rowClass: { new(...args: any[]): T }): Promise<T[]> {
         const table = $(`#${id} tbody tr`);
         const rows: T[] = [];
         let lengthReduction = 0;
@@ -100,7 +104,7 @@ export class TableHandler {
     /**
      * Adds event listeners for change events on all inputs and selects within tables.
      */
-    private addEventListeners() {
+    private async addEventListeners() {
         const tables = ['imports', 'recipes', 'power'];
 
         tables.forEach((tableId) => {
@@ -349,8 +353,6 @@ export class TableHandler {
             this.addSpecificEventListener('power');
         }
 
-        console.log(this)
-
     }
 
     public saveData(productionTable: ProductionTableRow[], powerTable: PowerTableRow[], importTable: ImportsTableRow[]) {
@@ -371,6 +373,22 @@ export class TableHandler {
         this.addEventListeners();
     }
 
+    private disableButtons() {
+        $('#save_button').addClass('disabled');
+        $('#save_button').prop('disabled', true);
+
+        $('#showPower').addClass('disabled');
+        $('#showPower').prop('disabled', true);
+    }
+
+    private enableButtons() {
+        $('#save_button').removeClass('disabled');
+        $('#save_button').prop('disabled', false);
+
+        $('#showPower').removeClass('disabled');
+        $('#showPower').prop('disabled', false);
+    }
+
     public showVisualization() {
         const data: {
             importsTableRows: ImportsTableRow[],
@@ -382,6 +400,80 @@ export class TableHandler {
 
     }
 
+    private async addShortcuts() {
+        const tableHandler = this;
+        document.addEventListener("DOMContentLoaded", function () {
+            document.addEventListener('keydown', (event) => {
+                const powerModal = $('#showPowerModal');
+                const editModal = $('#editProductionLine');
+                const helpModal = $('#helpModal');
 
+                function closeModals() {
+                    powerModal.modal('hide');
+                    editModal.modal('hide');
+                    helpModal.modal('hide');
+                }
+
+                // Save production line
+                if (event.ctrlKey && event.key === 's') {
+                    event.preventDefault();
+                    SaveFunctions.saveProductionLine(
+                        SaveFunctions.prepareSaveData(
+                            tableHandler.productionTableRows,
+                            tableHandler.powerTableRows,
+                            tableHandler.importsTableRows
+                        )
+                    );
+                }
+
+                // Open power modal
+                if (event.ctrlKey && event.key === 'p') {
+                    event.preventDefault();
+                    if (powerModal.is(':hidden')) {
+                        closeModals();
+                        powerModal.modal('show');
+                    } else {
+                        powerModal.modal('hide');
+                    }
+                }
+
+                // Open edit / settings modal
+                if (event.ctrlKey && event.key === 'e') {
+                    event.preventDefault();
+                    closeModals();
+                    if (editModal.is(':hidden')) {
+                        closeModals();
+                        editModal.modal('show');
+                    } else {
+                        editModal.modal('hide');
+                    }
+                }
+
+                // help modal
+                if (event.ctrlKey && event.key === 'h') {
+                    event.preventDefault();
+                    if (helpModal.is(':hidden')) {
+                        closeModals();
+                        helpModal.find('#welcome').hide();
+                        helpModal.modal('show');
+                    } else {
+                        helpModal.modal('hide');
+                    }
+                }
+
+                // go back
+                if (event.ctrlKey && event.key === 'q') {
+                    event.preventDefault();
+                    window.history.back();
+                }
+
+                // show visualization
+                if (event.key === 'v' && event.ctrlKey) {
+                    event.preventDefault();
+                    tableHandler.showVisualization();
+                }
+            });
+        });
+    }
 }
 

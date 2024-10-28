@@ -1,5 +1,29 @@
 [
   {
+    "version": "1.6.15",
+    "date": "october 28 2024",
+    "changes": [
+      "Added loading spinner to the production line page when loading the data.",
+      "Disabled the save and power buttons when loading the data."
+    ]
+  },
+  {
+    "version": "1.6.14",
+    "date": "october 22 2024",
+    "changes": [
+      "Moved change theme to the navbar instead of the account page.",
+      "Added a guide for the game save page."
+    ]
+  },
+  {
+    "version": "1.6.13",
+    "date": "october 18 2024",
+    "changes": [
+      "Added shortcuts to the production line page.",
+      "Updated the guide for the production line page."
+    ]
+  },
+  {
     "version": "1.6.12",
     "date": "october 16 2024",
     "changes": [

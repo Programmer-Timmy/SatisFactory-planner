@@ -31,7 +31,8 @@ if (isset($_GET['dedicatedServerId'])) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="post" enctype="multipart/form-data" id="updateSaveGameForm_<?= $gameSave->id ?>">
+                <form method="post" enctype="multipart/form-data" id="updateSaveGameForm_<?= $gameSave->id ?>"
+                      autocomplete="off">
                     <input type="hidden" name="id" value="<?= $gameSave->id ?>">
 
                     <div class="mb-3">
@@ -80,8 +81,10 @@ if (isset($_GET['dedicatedServerId'])) {
                         <?php if ($users): ?>
                             <div class="mb-3">
                                 <h6>Add user</h6>
-                                <input type="search" class="form-control mb-2" id="searchUser_<?= $gameSave->id ?>"
-                                       placeholder="Search for user" autocomplete="off" value="">
+                                <input type="text" style="display:none">
+                                <input type="search" name="Search345" class="form-control mb-2"
+                                       id="search_<?= $gameSave->id ?>"
+                                       placeholder="Search for user" autocomplete="SearchUser1232">
                                 <div class="users">
                                     <?php foreach (array_slice($users, 0, 4) as $user) : ?>
                                         <div class="card mb-2 p-2">
@@ -175,8 +178,8 @@ if (isset($_GET['dedicatedServerId'])) {
             if (button) {  // Check if the button exists
                 button.addEventListener('click', function () {
                     // Get the search value if it exists or set it to an empty string
-                    const search = document.getElementById('searchUser_<?= $gameSave->id ?>')
-                        ? document.getElementById('searchUser_<?= $gameSave->id ?>').value
+                    const search = document.getElementById('search_<?= $gameSave->id ?>')
+                        ? document.getElementById('search_<?= $gameSave->id ?>').value
                         : '';
 
                     const userId = this.getAttribute('user-id');
@@ -213,7 +216,7 @@ if (isset($_GET['dedicatedServerId'])) {
 
     function handleSearch() {
         // add search event listener
-        const input = document.getElementById('searchUser_<?= $gameSave->id ?>')
+        const input = document.getElementById('search_<?= $gameSave->id ?>')
         // Check if the input exists
         if (!input) return;
 
