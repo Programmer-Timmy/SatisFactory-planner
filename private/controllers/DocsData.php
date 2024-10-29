@@ -77,7 +77,6 @@ class DocsData {
     /**
      * Building Functions
      */
-
     private function createItem(array $itemData): Item {
         return new Item(
             $this->itemI,
@@ -454,6 +453,5 @@ class DocsData {
     private function calculateExportPerMin(array $producedItems, float $duration, int $index): ?float {
         return isset($producedItems[$index]) ? $producedItems[$index][1] / $duration : null;
     }
-
 
 }
