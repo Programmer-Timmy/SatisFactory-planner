@@ -1,6 +1,17 @@
 <?php
 
+if (!isset($_GET['id'])) {
+    header('Location: /admin/users');
+    exit(0);
+}
+
 $user = Users::getUserById($_GET['id']);
+
+if (!$user) {
+    header('Location: /admin/users');
+    exit(0);
+}
+
 $error = false;
 
 if ($_POST) {
