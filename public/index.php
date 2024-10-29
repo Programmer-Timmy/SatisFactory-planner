@@ -59,10 +59,11 @@ if ($site['admin']['enabled']) {
     $admin = $site['admin'];
     $pageTemplate = __DIR__ . "/../private/Views/pages$require.php";
     if (file_exists($pageTemplate)) {
-        if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && $require !== '/404' && $require !== '/maintenance' && $require !== '/changelog') {
+        if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && $require !== '/404' && $require !== '/maintenance' && $require !== '/changelog' && $require !== '/403') {
             if (!isset($_SESSION[$admin['sessionName']])) {
 //                if already logged in show the 403 page
                 if (isset($_SESSION[$site['accounts']['sessionName']])) {
+                    ErrorHandeler::add403Log($requestedPage, $_SERVER['HTTP_REFERER'] ?? null, $_SESSION[$site['accounts']['sessionName']]);
                     header('Location: /403');
                     exit();
                 }
@@ -121,6 +122,7 @@ if ($continue) {
         include $pageTemplate;
     } else {
         // Handle 404 or display a default page
+        ErrorHandeler::add404Log($requestedPage, $_SERVER['HTTP_REFERER'] ?? null, $_SESSION['userId'] ?? null);
         include __DIR__ . '/../private/views/pages/404.php';
     }
 
