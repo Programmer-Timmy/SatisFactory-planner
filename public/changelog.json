@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.6.17",
+    "date": "october -- 2024",
+    "changes": [
+      "Added brute force attack protection. After 5 failed login attempts, the account will be locked for 1 hour. because FICSIT’s got safety regulations even for your fingers. Remember: real engineers don’t forget their passwords!"
+    ]
+  },
+  {
     "version": "1.6.16",
     "date": "october 28 2024",
     "changes": [
