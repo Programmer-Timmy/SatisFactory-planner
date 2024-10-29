@@ -49,6 +49,7 @@ foreach ($json as $item) {
 ?>
 
 <div class="container">
+    <h1 class="text-center mb-3">Update Docs Data</h1>
     <a href="/admin" class="btn btn-primary w-100 mb-3">Return to admin page</a>
 
     <div class="container">

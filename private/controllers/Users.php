@@ -38,6 +38,20 @@ class Users
         return true;
     }
 
+    /**
+     * @param $id
+     * @param $username
+     * @param $email
+     * @param $updates
+     * @param $admin
+     * @param $verified
+     * @return bool
+     */
+    public static function updateUserAdmin($id, $username, $email, $updates, $admin, $verified): bool {
+        Database::update("users", ['username', 'email', 'updates', 'admin', 'verified'], [$username, $email, $updates, $admin, $verified], ['id' => $id]);
+        return true;
+    }
+
     public static function updatePassword($id, $password): bool
     {
         $password = password_hash($password, PASSWORD_DEFAULT);
