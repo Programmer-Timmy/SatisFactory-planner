@@ -22,9 +22,10 @@ export class TableHandler {
     public powerTableRows: PowerTableRow[] = [];
     public settings: Settings = new Settings();
 
+    private visualisation: Visualization | null = null;
+
     constructor() {
         this.initialize();
-
     }
 
     private async initialize(): Promise<void> {
@@ -390,13 +391,21 @@ export class TableHandler {
     }
 
     public showVisualization() {
-        const data: {
-            importsTableRows: ImportsTableRow[],
-            indexes: number[]
-        } = ImportsTableFunctions.calculateImports(this.productionTableRows);
-        this.importsTableRows = data.importsTableRows;
-        new Visualization(this);
+        if (this.settings.autoImportExport) {
+            const data: {
+                importsTableRows: ImportsTableRow[],
+                indexes: number[]
+            } = ImportsTableFunctions.calculateImports(this.productionTableRows);
+            this.importsTableRows = data.importsTableRows;
+        }
+
+        if (this.visualisation) {
+            this.visualisation.update();
+        } else {
+            this.visualisation = new Visualization(this);
+        }
         $('#showVisualization').modal('show');
+
 
     }
 

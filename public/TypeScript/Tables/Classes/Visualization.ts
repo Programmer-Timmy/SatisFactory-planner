@@ -3,7 +3,7 @@ import {ImportNodes} from "./Data/Visualization/ImportNodes";
 import {ProductionNodes} from "./Data/Visualization/ProductionNodes";
 import {ExportNodes} from "./Data/Visualization/ExportNodes";
 import {Connection} from "./Data/Visualization/Connection";
-import * as d3 from 'd3';
+import cytoscape from "cytoscape";
 
 // global variables
 const NODE_SIZE = 50;
@@ -45,6 +45,13 @@ export class Visualization {
     public productionConnections: Connection[] = [];
     public exportConnections: Connection[] = [];
 
+    public layout: 'breadthfirst' | 'cose' = 'breadthfirst';
+
+    private showExport: boolean = false;
+    private showImport: boolean = true;
+    private useRoots: boolean = true;
+
+
     /**
      * Constructor for the Visualization class
      * @constructor
@@ -52,285 +59,261 @@ export class Visualization {
      */
     constructor(tableHandler: TableHandler) {
         this.TableHandler = tableHandler;
-        console.log('Visualization constructor');
-        this.getImportNodes();
-        this.getProduction();
-        this.getExportNodes();
 
-        this.getImportConnection();
+        // Get the data
+        this.getterData();
 
-        this.getPosition().then(() => {
-            this.removeCrossingConnections();
-            this.positionImportNodes()
-            this.createVisualization()
-        });
+        // Create the visualization
+        this.createVisualization();
 
+        // Add event listeners
+        this.addEventListeners();
+    }
+
+    public update(): void {
+        this.getterData();
+        this.createVisualization();
     }
 
     /**
      * Create the visualization of the production line
      */
     public createVisualization(): void {
-        console.log('Creating visualization');
-        const svg = d3.select('#graph');
-        svg.selectAll('*').remove();
+        let elements = [];
+        let roots = [];
+        let layout = {};
 
-        const width = +svg.attr('width');
-        const height = +svg.attr('height');
-
-        // Create a group to hold all visualization elements (nodes and links)
-        const container = svg.append('g');
-
-        // Add zoom and pan behavior
-        const zoom = d3.zoom()
-            .scaleExtent([0.5, 5]) // Restrict zooming scale between 0.5x and 5x
-            .on('zoom', (event) => {
-                container.attr('transform', event.transform); // Apply zooming and panning to the group
+        if (this.showImport) {
+            for (let i = 0; i < this.importNodes.length; i++) {
+                elements.push({
+                    data: {
+                        id: `import_${this.importNodes[i].id}`,
+                        label: `${this.importNodes[i].product}\n${this.importNodes[i].quantity}`,
+                        color: 'blue',
+                        title: `${this.importNodes[i].product} ${this.importNodes[i].quantity}`
+                    }
+                });
+                roots.push(`import_${this.importNodes[i].id}`);
+            }
+            for (let i = 0; i < this.importConnections.length; i++) {
+                elements.push({
+                    data: {
+                        id: `importConnection_${this.importConnections[i].id}`,
+                        source: `import_${this.importConnections[i].sourceId}`,
+                        target: `production_${this.importConnections[i].targetId}`,
+                        label: `${this.importConnections[i].product} ${this.importConnections[i].quantity}`,
+                        color: 'blue'
+                    }
+                });
+            }
+        }
+        for (let i = 0; i < this.productionNodes.length; i++) {
+            elements.push({
+                data: {
+                    id: `production_${this.productionNodes[i].id}`,
+                    header: `${this.productionNodes[i].product} ${this.productionNodes[i].quantity}`,
+                    label: `${this.productionNodes[i].building}\n${this.productionNodes[i].buildingAmount}`,
+                    color: 'green',
+                    title: `${this.productionNodes[i].product} ${this.productionNodes[i].quantity}`
+                }
             });
+        }
+        for (let i = 0; i < this.productionConnections.length; i++) {
+            elements.push({
+                data: {
+                    id: `productionConnection_${i}`,
+                    source: `production_${this.productionConnections[i].sourceId}`,
+                    target: `production_${this.productionConnections[i].targetId}`,
+                    label: `${this.productionConnections[i].product} ${this.productionConnections[i].quantity}`,
+                    color: 'green'
+                }
+            });
+        }
+        if (this.showExport) {
+            for (let i = 0; i < this.exportNodes.length; i++) {
+                elements.push({
+                    data: {
+                        id: `export_${this.exportNodes[i].id}`,
+                        label: `${this.exportNodes[i].product}\n${this.exportNodes[i].quantity}`,
+                        color: 'red',
+                        title: `${this.exportNodes[i].product} ${this.exportNodes[i].quantity}`,
+                    }
+                });
+            }
+            for (let i = 0; i < this.exportConnections.length; i++) {
+                elements.push({
+                    data: {
+                        id: `exportConnection_${this.exportConnections[i].id}`,
+                        source: `production_${this.exportConnections[i].sourceId}`,
+                        target: `export_${this.exportConnections[i].targetId}`,
+                        label: `${this.exportConnections[i].product} ${this.exportConnections[i].quantity}`,
+                        color: 'red',
+                    }
+            });
+            }
+        }
 
-        // Apply the zoom behavior to the SVG
+        switch (this.layout) {
+            case 'breadthfirst':
+                layout = {
+                    name: "breadthfirst",      // Layout for production chains
+                    directed: false,            // Forces direction (e.g., top to bottom)
+                    padding: 20,               // Adds padding around the graph
+                    spacingFactor: 3.0,        // Increases space between nodes
+                    animate: true,
+                    nodeDimensionsIncludeLabels: true, // Accounts for label dimensions in layout
+                    avoidOverlap: true,        // Prevents node overlap
+                }
+                if (this.showImport && this.useRoots) {
+                    // @ts-ignore
+                    layout['roots'] = roots;
+                }
+                break;
+            case 'cose':
+                layout = {
+                    name: "cose",
+                    idealEdgeLength: 100,    // Controls the preferred length of edges
+                    nodeRepulsion: 40000,     // Increases spacing between nodes
+                    gravity: 1.2,            // Helps to avoid nodes being too spread out
+                    numIter: 1000,           // Number of iterations for better arrangement
+                    animate: true,
+                }
+                if (this.showImport && this.useRoots) {
+                    // @ts-ignore
+                    layout['roots'] = roots;
+                }
+                break;
+            default: {
+                layout = {
+                    name: "breadthfirst",      // Layout for production chains
+                    directed: false,            // Forces direction (e.g., top to bottom)
+                    padding: 20,               // Adds padding around the graph
+                    spacingFactor: 1.0,        // Increases space between nodes
+                    animate: true,
+                    nodeDimensionsIncludeLabels: true, // Accounts for label dimensions in layout
+                    avoidOverlap: true,        // Prevents node overlap
+                }
+                if (this.showImport && this.useRoots) {
+                    // @ts-ignore
+                    layout['roots'] = roots;
+                }
+            }
+        }
+
         // @ts-ignore
-        svg.call(zoom);
+        // @ts-ignore
+        const cy = cytoscape({
+            container: document.getElementById("graph"), // container to render in
+            elements: elements,
 
-        // Import Links
-// Add the arrow to the SVG
-        svg.append('defs').append('marker')
-            .attr('id', 'arrow')
-            .attr('viewBox', '0 -5 10 10')
-            .attr('refX', INNER_NODE_SIZE / LINE_WIDTH + ARROW_SIZE)
-            .attr('refY', 0)
-            .attr('markerWidth', ARROW_SIZE)
-            .attr('markerHeight', ARROW_SIZE)
-            .attr('orient', 'auto')
-            .append('path')
-            .attr('d', 'M0,-5L10,0L0,5')
-            .attr('fill', '#999');
+            style: [
+                {
+                    selector: "node",
+                    style: {
+                        "label": "data(header)",                       // Top label
+                        "background-color": "data(color)",
+                        "text-halign": "center",                      // Center align text horizontally
+                        "text-valign": "top",                         // Align top
+                        "color": "black",
+                        "width": 200,
+                        "height": 200,
+                        "font-size": TEXT_SIZE,
+                        "text-wrap": "wrap",
+                    }
+                },
+                {
+                    selector: "node",
+                    style: {
+                        "label": "data(label)",                // Middle label
+                        "text-halign": "center",
+                        "text-valign": "center",                     // Align middle
+                        "color": "black",
+                        "font-size": TEXT_SIZE,
+                        "text-wrap": "wrap",
+                    }
+                },
+                {
+                    selector: "edge",
+                    style: {
+                        "label": "data(label)",         // Display label from data
+                        "font-size": TEXT_SIZE,            // Customize font size if needed
+                        "color": "black",               // Text color
+                        "width": 5,                     // Line width
+                        "line-color": "data(color)",    // Line color
+                        "target-arrow-color": "#333",
+                        "target-arrow-shape": "triangle",
+                        "target-arrow-fill": "filled",
+                        "curve-style": "bezier",
+                        "control-point-step-size": 40,
 
-// Import Links
-        const importLinks = container.append('g')
-            .attr('class', 'links')
-            .attr('id', 'importLinks')
-            .selectAll('line')
-            .data(this.importConnections)
-            .enter().append('line')
-            .attr('stroke', 'blue')
-            .attr('stroke-width', LINE_WIDTH)
-            .attr('marker-end', 'url(#arrow)')
-            .attr('marker-mid', 'url(#connectionText)'); // Ensure this is correct
-
-        importLinks.append('title')
-            .text((d: any) => d.product + ' ' + d.quantity);
-
-        const importLinkLabels = container.append('g')
-            .attr('class', 'link-labels')
-            .selectAll('text')
-            .data(this.importConnections)
-            .enter()
-            .append('text')
-            .attr('text-anchor', 'middle') // Center the text horizontally
-            .attr('font-size', TEXT_SIZE / 1.5)
-            .attr('fill', 'black')
-            .text((d: any) => `${d.product} (${d.quantity})`);
-//         set the rotaiton of the text based on the line
-        importLinkLabels.attr('transform', (d: any) => {
-            const x = (this.importNodes[d.sourceId].X + this.productionNodes[d.targetId].X) / 2;
-            const y = (this.importNodes[d.sourceId].Y + this.productionNodes[d.targetId].Y) / 2;
-            const angle = Math.atan2(this.productionNodes[d.targetId].Y - this.importNodes[d.sourceId].Y, this.productionNodes[d.targetId].X - this.importNodes[d.sourceId].X) * 180 / Math.PI;
-            return `translate(${x}, ${y}) rotate(${angle})`;
-        });
-
-//         reset the text to the middle of the line
-        importLinkLabels.attr('x', ARROW_SIZE + 5)
-            .attr('y', -5);
-
-        importLinkLabels.append('title')
-            .text((d: any) => d.product + ' ' + d.quantity);
-
-
-
-
-
-// Production Links
-        const productionLinks = container.append('g')
-            .attr('class', 'links')
-            .selectAll('line')
-            .data(this.productionConnections)
-            .enter().append('line')
-            .attr('stroke', 'green')
-            .attr('stroke-width', LINE_WIDTH)
-            .attr('marker-end', 'url(#arrow)'); // Ensure this is correct
-
-        const productionLinkLabels = container.append('g')
-            .attr('class', 'link-labels')
-            .selectAll('text')
-            .data(this.productionConnections)
-            .enter()
-            .append('text')
-            .attr('text-anchor', 'middle') // Center the text horizontally
-            .attr('font-size', TEXT_SIZE / 1.5)
-            .text((d: any) => `${d.product} (${d.quantity})`);
-
-        productionLinkLabels.attr('transform', (d: any) => {
-            const x = (this.productionNodes[d.sourceId].X + this.productionNodes[d.targetId].X) / 2;
-            const y = (this.productionNodes[d.sourceId].Y + this.productionNodes[d.targetId].Y) / 2;
-            const angle = Math.atan2(this.productionNodes[d.targetId].Y - this.productionNodes[d.sourceId].Y, this.productionNodes[d.targetId].X - this.productionNodes[d.sourceId].X) * 180 / Math.PI;
-            return `translate(${x}, ${y}) rotate(${angle})`;
-        });
-
-        productionLinkLabels.attr('x', ARROW_SIZE + 5)
-            .attr('y', -5);
-
-        productionLinkLabels.append('title')
-            .text((d: any) => d.product + ' ' + d.quantity);
-
-        productionLinks.append('title')
-            .text((d: any) => d.product + ' ' + d.quantity);
-
-
-
-        // // Export Links (if needed, you can uncomment and use this)
-        // const exportLinks = container.append('g')
-        //     .attr('class', 'links')
-        //     .selectAll('line')
-        //     .data(this.exportConnections)
-        //     .enter().append('line')
-        //     .attr('stroke', 'red')
-        //     .attr('stroke-width', 2)
-        //     .attr('marker-end', 'url(#arrow)'); // Ensure this is correct
-
-        // Import Nodes
-        const importNodes = container.append('g')
-            .attr('class', 'nodes')
-            .selectAll('g')
-            .data(this.importNodes)
-            .enter().append('g')
-            .attr('transform', (d: any) => `translate(${d.X}, ${d.Y})`);
-
-        importNodes.append('title')
-            .text((d: any) => d.product + ' ' + d.quantity);
-
-        // Production Nodes
-        const productionNodes = container.append('g')
-            .attr('class', 'nodes')
-            .selectAll('g')
-            .data(this.productionNodes)
-            .enter().append('g')
-            .attr('transform', (d: any) => `translate(${d.X}, ${d.Y})`);
-
-        productionNodes.append('title')
-            .text((d: any) =>
-                `${d.buildingAmount} ${d.building}\n` +   // Line 1: Building amount and name
-                `Quantity: ${d.quantity}\n` +              // Line 2: Quantity label and value
-                `Recipe: ${d.product}`                    // Line 3: Product label and value
-            );
-
-
-        // const exportNodes = container.append('g')
-        //     .attr('class', 'nodes')
-        //     .selectAll('g')
-        //     .data(this.exportNodes)
-        //     .enter().append('g')
-        //     .attr('transform', (d: any) => `translate(${d.X}, ${d.Y})`);
-
-        // Draw circles for the nodes
-        importNodes.append('circle')
-            .attr('r', INNER_NODE_SIZE)
-            .attr('fill', 'blue');
-
-        productionNodes.append('circle')
-            .attr('r', INNER_NODE_SIZE)
-            .attr('fill', 'green');
-
-        // exportNodes.append('circle')
-        //     .attr('r', INNER_NODE_SIZE)
-        //     .attr('fill', 'red');
-
-        // Add text labels
-        importNodes.append('text')
-            .attr('text-anchor', 'middle') // Center horizontally
-            .attr('x', 0) // Center horizontally with the circle
-            .attr('y', -INNER_NODE_SIZE - 5)
-            .attr('font-size', TEXT_SIZE)
-            .text((d: any) => d.product);
-
-        importNodes.append('text')
-            .attr('text-anchor', 'middle') // Center horizontally
-            .attr('x', 0) // Center horizontally with the circle
-            .attr('y', 10) // Center vertically based on font size
-            .attr('fill', 'white')
-            .attr('font-size', `${INNER_NODE_SIZE / 2}px`) // Scale font size based on circle radius
-            .text((d: any) => d.quantity); // Truncate if too long
-
-
-        // 2 tspan
-        productionNodes.append('text')
-            .attr('text-anchor', 'middle') // Center horizontally
-            .attr('x', 0) // Center horizontally with the circle
-            .attr('y', 0) // Center vertically based on font size
-            .attr('font-size', `${INNER_NODE_SIZE / 3}px`) // Scale font size based on circle radius
-            // .attr('textLength', INNER_NODE_SIZE * 1.5) // Limit text width to 1.5 times the radius
-            .text((d: any) => d.building.length > 10 ? d.building.slice(0, 10) + '...' : d.building) // Truncate if too long
-            .append('tspan')
-            .attr('x', 0) // Center horizontally for the second line
-            .attr('dy', `${INNER_NODE_SIZE / 3}px`) // Position below the first line with scaled spacing
-            .text((d: any) => d.buildingAmount);
-
-
-        productionNodes.append('text')
-            .attr('text-anchor', 'middle') // Center horizontally
-            .attr('x', 0) // Center horizontally with the circle
-            .attr('y', -INNER_NODE_SIZE - 5)
-            .attr('font-size', TEXT_SIZE)
-            .text((d: any) => d.quantity + ' ' + d.product);
-
-        // exportNodes.append('text')
-        //     .attr('x', INNER_NODE_SIZE + 5)
-        //     .attr('y', -20)
-        //     .attr('font-size', TEXT_SIZE)
-        //     .text((d: any) => d.product);
-
-        // Export Nodes
-
-
-        // Set link positions
-        importLinks
-            .attr('x1', (d: any) => this.importNodes[d.sourceId].X)
-            .attr('y1', (d: any) => this.importNodes[d.sourceId].Y)
-            .attr('x2', (d: any) => this.productionNodes[d.targetId].X)
-            .attr('y2', (d: any) => this.productionNodes[d.targetId].Y);
-
-        productionLinks
-            .attr('x1', (d: any) => this.productionNodes[d.sourceId].X)
-            .attr('y1', (d: any) => this.productionNodes[d.sourceId].Y)
-            .attr('x2', (d: any) => this.productionNodes[d.targetId].X)
-            .attr('y2', (d: any) => this.productionNodes[d.targetId].Y);
-
-        // exportLinks
-        //     .attr('x1', (d: any) => this.productionNodes[d.sourceId].X)
-        //     .attr('y1', (d: any) => this.productionNodes[d.sourceId].Y)
-        //     .attr('x2', (d: any) => this.exportNodes[d.targetId].X)
-        //     .attr('y2', (d: any) => this.exportNodes[d.targetId].Y);
-
-        const nodes = container.selectAll('.nodes g');
-        const bounds = nodes.nodes().reduce((acc, node) => {
+                    }
+                }
+            ],
             // @ts-ignore
-            const bbox = node.getBBox();
-            return {
-                x: Math.min(acc.x, bbox.x),
-                y: Math.min(acc.y, bbox.y),
-                width: Math.max(acc.width, bbox.width + (bbox.x - acc.x)),
-                height: Math.max(acc.height, bbox.height + (bbox.y - acc.y)),
-            };
-        }, {x: Infinity, y: Infinity, width: 0, height: 0});
+            layout: layout
+        });
 
-        // use a algorithm to center the graph
-        const xOffset = (width - bounds.width) / 2 - bounds.x;
-        const yOffset = (height - bounds.height) / 2 - bounds.y;
-        container.attr('transform', `translate(${xOffset}, ${yOffset})`);
-
-        // make it fit in the svg
+        cy.nodes().forEach(node => {
+            if (node.position().y < 50) { // Adjust threshold based on your layout
+                node.position({x: node.position().x + 50, y: node.position().y}); // Move right if it's too high
+            }
+        });
 
 
+
+    }
+
+    /**
+     * Get the data from the tables
+     * @private
+     */
+    private getterData(): void {
+        this.importNodes = [];
+        this.productionNodes = [];
+        this.exportNodes = [];
+        this.importConnections = [];
+        this.productionConnections = [];
+        this.exportConnections = [];
+
+        this.getImportNodes();
+        this.getProduction();
+        this.getExportNodes();
+        this.getImportConnection();
+    }
+
+    /**
+     * Add event listeners to the visualization
+     * @method
+     * @private
+     */
+    private addEventListeners(): void {
+        $('#layout').on('change', (e) => {
+            const select = $(e.target);
+            this.layout = select.val() as 'breadthfirst' | 'cose';
+            this.createVisualization();
+        });
+
+        $('#export').on('change', (e) => {
+            const select = $(e.target);
+            this.showExport = select.prop('checked');
+            this.createVisualization();
+        });
+
+        $('#import').on('change', (e) => {
+            const select = $(e.target);
+            this.showImport = select.prop('checked');
+            this.createVisualization();
+        });
+
+        $('#refresh').on('click', () => {
+            this.createVisualization();
+        });
+
+        $('#roots').on('change', (e) => {
+            const select = $(e.target);
+            this.useRoots = select.prop('checked');
+            this.createVisualization();
+        });
     }
 
 
@@ -418,6 +401,11 @@ export class Visualization {
 
         }
     }
+
+
+    // old code
+
+
 
     async getPosition(): Promise<void> {
         const levels: Map<number, number[]> = new Map();
