@@ -3,7 +3,11 @@ import {ImportNodes} from "./Data/Visualization/ImportNodes";
 import {ProductionNodes} from "./Data/Visualization/ProductionNodes";
 import {ExportNodes} from "./Data/Visualization/ExportNodes";
 import {Connection} from "./Data/Visualization/Connection";
-import cytoscape from "cytoscape";
+import cytoscape from 'cytoscape';
+import 'cytoscape-qtip';
+
+cytoscape.use(require('cytoscape-qtip'));
+
 
 // global variables
 const NODE_SIZE = 50;
@@ -90,7 +94,7 @@ export class Visualization {
                         id: `import_${this.importNodes[i].id}`,
                         label: `${this.importNodes[i].product}\n${this.importNodes[i].quantity}`,
                         color: 'blue',
-                        title: `${this.importNodes[i].product} ${this.importNodes[i].quantity}`
+                        title: `Import: ${this.importNodes[i].product}<br>Amount: ${this.importNodes[i].quantity}`,
                     }
                 });
                 roots.push(`import_${this.importNodes[i].id}`);
@@ -111,11 +115,11 @@ export class Visualization {
             elements.push({
                 data: {
                     id: `production_${this.productionNodes[i].id}`,
-                    header: `${this.productionNodes[i].product} ${this.productionNodes[i].quantity}`,
-                    label: `${this.productionNodes[i].building}\n${this.productionNodes[i].buildingAmount}`,
+                    label: `${this.productionNodes[i].product}\n${this.productionNodes[i].quantity}\n\n\n\n${this.productionNodes[i].building}\n${this.productionNodes[i].buildingAmount}`,
                     color: 'green',
-                    title: `${this.productionNodes[i].product} ${this.productionNodes[i].quantity}`
-                }
+                    title: `Recipe: ${this.productionNodes[i].product}<br>Amount: ${this.productionNodes[i].quantity}<br><hr>Building: ${this.productionNodes[i].building}<br>Amount of building: ${this.productionNodes[i].buildingAmount}`
+                },
+                classes: 'top-text'
             });
         }
         for (let i = 0; i < this.productionConnections.length; i++) {
@@ -136,7 +140,7 @@ export class Visualization {
                         id: `export_${this.exportNodes[i].id}`,
                         label: `${this.exportNodes[i].product}\n${this.exportNodes[i].quantity}`,
                         color: 'red',
-                        title: `${this.exportNodes[i].product} ${this.exportNodes[i].quantity}`,
+                        title: `Export: ${this.exportNodes[i].product}<br>Amount: ${this.exportNodes[i].quantity}`,
                     }
                 });
             }
@@ -210,26 +214,21 @@ export class Visualization {
                 {
                     selector: "node",
                     style: {
-                        "label": "data(header)",                       // Top label
-                        "background-color": "data(color)",
-                        "text-halign": "center",                      // Center align text horizontally
-                        "text-valign": "top",                         // Align top
+                        "label": "data(label)",
+                        'background-color': 'data(color)', // Middle label
+                        "text-halign": "center",
+                        "text-valign": "center",
+                        'width': 200,
+                        'height': 200,// Align middle
                         "color": "black",
-                        "width": 200,
-                        "height": 200,
                         "font-size": TEXT_SIZE,
                         "text-wrap": "wrap",
                     }
                 },
                 {
-                    selector: "node",
+                    selector: "node.top-text",
                     style: {
-                        "label": "data(label)",                // Middle label
-                        "text-halign": "center",
-                        "text-valign": "center",                     // Align middle
-                        "color": "black",
-                        "font-size": TEXT_SIZE,
-                        "text-wrap": "wrap",
+                        'text-margin-y': -60,           // Adjusts position to appear above center
                     }
                 },
                 {
@@ -237,6 +236,10 @@ export class Visualization {
                     style: {
                         "label": "data(label)",         // Display label from data
                         "font-size": TEXT_SIZE,            // Customize font size if needed
+                        "text-background-color": "white",
+                        "text-background-opacity": 0.5,
+                        "text-background-padding": '3px',
+                        "text-background-shape": "roundrectangle",
                         "color": "black",               // Text color
                         "width": 5,                     // Line width
                         "line-color": "data(color)",    // Line color
@@ -253,14 +256,62 @@ export class Visualization {
             layout: layout
         });
 
-        cy.nodes().forEach(node => {
-            if (node.position().y < 50) { // Adjust threshold based on your layout
-                node.position({x: node.position().x + 50, y: node.position().y}); // Move right if it's too high
-            }
+        cy.ready(() => {
+            cy.nodes().forEach(node => {
+                node.qtip({
+                    content: node.data('title'),
+                    position: {
+                        my: 'top center',
+                        at: 'bottom center'
+                    },
+                    style: {
+                        classes: 'qtip-bootstrap',
+                        tip: {
+                            width: 16,
+                            height: 8
+                        }
+                    },
+                    show: {
+                        event: 'mouseover'
+                    },
+                });
+
+                node.on('drag', () => {
+                    if (node.qtip('api').visible) {
+                        node.qtip('api').hide();
+                    }
+                });
+
+                node.on('mouseout', () => {
+                    node.qtip('api').hide();
+
+                });
+
+            });
+
+            cy.edges().forEach(edge => {
+                edge.qtip({
+                    content: edge.data('label'),
+                    position: {
+                        my: 'top center',
+                        at: 'bottom center'
+                    },
+                    style: {
+                        classes: 'qtip-bootstrap',
+                        tip: {
+                            width: 16,
+                            height: 8
+                        }
+                    },
+                    show: {
+                        event: 'mouseover'
+                    },
+                    hide: {
+                        event: 'mouseout'
+                    }
+                });
+            });
         });
-
-
-
     }
 
     /**
