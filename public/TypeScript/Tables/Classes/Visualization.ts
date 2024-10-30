@@ -272,7 +272,8 @@ export class Visualization {
                         }
                     },
                     show: {
-                        event: 'mouseover'
+                        event: 'mouseover',
+                        delay: 100
                     },
                 });
 
@@ -304,7 +305,8 @@ export class Visualization {
                         }
                     },
                     show: {
-                        event: 'mouseover'
+                        event: 'mouseover',
+                        delay: 100
                     },
                     hide: {
                         event: 'mouseout'
