@@ -1,17 +1,10 @@
 {
   "devDependencies": {
-    "@types/axios": "^0.14.0",
     "@types/bootstrap": "^5.2.10",
     "@types/cytoscape": "^3.21.8",
-    "@types/d3": "^7.4.3",
     "@types/jquery": "^3.5.32",
-    "@types/qtip2": "^2.2.34",
-    "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
-    "d3": "^7.9.0",
-    "https-browserify": "^1.0.0",
     "husky": "^9.1.6",
-    "node-fetch": "^3.3.2",
     "ts-loader": "^9.5.1",
     "typescript": "^5.5.4",
     "webpack": "^5.93.0",
@@ -26,9 +19,6 @@
   },
   "dependencies": {
     "cytoscape": "^3.30.3",
-    "cytoscape-dagre": "^2.5.0",
-    "cytoscape-qtip": "^2.8.0",
-    "d3": "^7.9.0",
-    "qtip2": "^3.0.3"
+    "cytoscape-qtip": "^2.8.0"
   }
 }
