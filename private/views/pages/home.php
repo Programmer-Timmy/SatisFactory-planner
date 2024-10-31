@@ -213,12 +213,13 @@ if (count($gameSaves) == 2) {
                         </div>
                     </a>
                 </div>
-                <?php if ($gameSave->owner_id == $_SESSION['userId']) require '../private/views/Popups/updateSaveGame.php'; ?>
+                <?php if ($gameSave->owner_id == $_SESSION['userId']) require '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
-<?php require_once '../private/views/Popups/addSaveGame.php'; ?>
+
+<?php require_once '../private/views/Popups/saveGame/addSaveGame.php'; ?>
 
 <script>
     document.getElementById('InvitesDropdown').addEventListener('click', function (event) {

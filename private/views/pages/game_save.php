@@ -333,7 +333,6 @@ if (isset($_GET['layoutType'])) {
                 <?php else: ?>
                     <div class="accordion" id="productionLinesAccordion">
                         <?php foreach ($outputs as $lineTitle => $lineOutputs) :
-                            $lineTitle = htmlspecialchars($lineTitle);
                             $lineId = preg_replace('/\s+/', '_', $lineTitle);
                             ?>
                             <div class="accordion-item">
@@ -342,7 +341,7 @@ if (isset($_GET['layoutType'])) {
                                             data-bs-target="#collapse-<?= $lineId ?>"
                                             aria-expanded="false"
                                             aria-controls="collapse-<?= $lineId ?>">
-                                        <?= htmlspecialchars($lineTitle) ?>
+                                        <?= $lineTitle ?>
                                     </button>
                                 </h2>
                                 <div id="collapse-<?= $lineId ?>"
@@ -432,9 +431,9 @@ if (DedicatedServer::getBySaveGameId($gameSave->id)) : ?>
 
     </script>
 <?php endif; ?>
-<?php require_once '../private/views/Popups/addProductionLine.php'; ?>
-<?php require_once '../private/views/Popups/updatePowerProduction.php'; ?>
-<?php require_once '../private/views/Popups/helpGameSave.php'; ?>
+<?php require_once '../private/views/Popups/productionLine/addProductionLine.php'; ?>
+<?php require_once '../private/views/Popups/saveGame/updatePowerProduction.php'; ?>
+<?php require_once '../private/views/Popups/saveGame/helpGameSave.php'; ?>
 
 <?php if (Users::checkIfFirstSaveGame($_SESSION['userId'])): ?>
     <script>

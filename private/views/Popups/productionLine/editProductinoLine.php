@@ -4,19 +4,33 @@ if ($_POST && isset($_POST['productionLineName'])) {
     // Assuming you've included or defined the Database class somewhere
     $productionLineName = $_POST['productionLineName'];
 
-    $productLineId = $productLine->id;
-    $active = isset($_POST['productionLineActive']) ? 1 : 0;
+    // Validate Production Line Name Length
+    if (strlen($productionLineName) > 45) {
+        $error = 'Production Line Name is too lengthy. Please use up to 45 characters.';
+    } elseif ($productionLineName !== strip_tags($productionLineName)) {
+        $error = 'Security Alert: Unauthorized characters detected in Production Line Name. Nice try, but FICSIT Security has blocked that!';
+    }
 
-    if (ProductionLines::updateProductionLine($productLineId, $productionLineName, $active)) {
-        header('Location: /production_line?id=' . $productLineId);
-        exit();
+    if (!$error) {
+        $productLineId = $productLine->id;
+        $active = isset($_POST['productionLineActive']) ? 1 : 0;
+
+        $productionLineName = htmlspecialchars($productionLineName);
+
+        if (ProductionLines::updateProductionLine($productLineId, $productionLineName, $active)) {
+            header('Location: /production_line?id=' . $productLineId);
+            exit();
+        } else {
+            $error = 'Error updating production line. Please try again or contact support.';
+        }
     }
 }
 
 $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intval($_GET['id']));
 ?>
 
-<div class="modal fade" id="editProductionLine" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
+<div class="modal fade <?= $error ? 'show d-block' : '' ?>" id="editProductionLine" tabindex="-1"
+     aria-labelledby="popupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -24,6 +38,9 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <?php if ($error): ?>
+                    <div class="alert alert-danger"><?= $error ?></div>
+                <?php endif; ?>
                 <div id="successAlert" class="alert alert-success d-none fade" role="alert">
                     Import was successful!
                 </div>
@@ -55,8 +72,9 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
                     <h5>Production Line</h5>
                     <div class="mb-3 col-10">
                         <label for="productionLineName" class="form-label">Production Line Name</label>
-                        <input type="text" value="<?= $productLine->title ?>" class="form-control"
-                               id="productionLineName" name="productionLineName"
+                        <input type="text"
+                               value="<?= isset($productionLineName) ? htmlspecialchars($productionLineName) : $productLine->title ?>"
+                               id="productionLineName" name="productionLineName" class="form-control" maxlength="45"
                                required>
                     </div>
                     <div class="mb-3 col-2">
