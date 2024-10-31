@@ -305,5 +305,10 @@ $users = Users::getAllValidatedUsers();
         handleAddUserButtons();
     });
 
-
+    <?php if ($error): ?>
+    document.addEventListener('DOMContentLoaded', function () {
+        const popupModal = new bootstrap.Modal(document.getElementById('popupModal'));
+        popupModal.show();
+    });
+    <?php endif; ?>
 </script>

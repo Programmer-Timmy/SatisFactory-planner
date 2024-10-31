@@ -30,7 +30,8 @@ if ($_POST && isset($_POST['link_name'])) {
 }
 
 ?>
-<div class="modal fade <?= $error ? 'show d-block' : '' ?>" id="suggestionModal" tabindex="-1"
+<div class="modal fade <?= $error ? 'show' : '' ?>" id="suggestionModal"
+     tabindex="-1" <?= $error ? 'style="display: block;"' : '' ?>
      aria-labelledby="suggestionModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
