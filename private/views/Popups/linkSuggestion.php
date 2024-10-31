@@ -67,3 +67,12 @@ if ($_POST && isset($_POST['link_name'])) {
         </div>
     </div>
 </div>
+
+<?php if ($error) : ?>
+    <script>
+        $(document).ready(function () {
+            const modal = new bootstrap.Modal(document.getElementById('suggestionModal'));
+            modal.show();
+        });
+    </script>
+<?php endif; ?>
