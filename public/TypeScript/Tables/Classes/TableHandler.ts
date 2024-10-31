@@ -22,9 +22,11 @@ export class TableHandler {
     public powerTableRows: PowerTableRow[] = [];
     public settings: Settings = new Settings();
 
+    private visualisation: Visualization | null = null;
+    private updated: boolean = false;
+
     constructor() {
         this.initialize();
-
     }
 
     private async initialize(): Promise<void> {
@@ -320,39 +322,24 @@ export class TableHandler {
         PowerTableFunctions.updateTotalConsumption(this.powerTableRows);
     }
 
-    /**
-     * Handles the change event for the production table.
-     * @param row - The row object to update.
-     * @param rowIndex - The index of the row in the table.
-     * @param value - The new value to set in the row.
-     * @param tableId - The ID of the table.
-     * @param target - The target element that triggered the event.
-     * @constructor
-     * @private
-     */
-    private async HandleProductionTable(row: ProductionTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
-        await ProductionLineFunctions.calculateProductionExport(row);
-
-        if (this.checkIfSelect(target)) {
-            await ProductionLineFunctions.updateRecipe(row, value);
-        }
-
-        this.updateRowInTable(tableId, rowIndex, row);
-
+    public showVisualization() {
         if (this.settings.autoImportExport) {
             const data: {
                 importsTableRows: ImportsTableRow[],
                 indexes: number[]
             } = ImportsTableFunctions.calculateImports(this.productionTableRows);
             this.importsTableRows = data.importsTableRows;
-            this.UpdateOnIndex(data.indexes);
         }
 
-        if (this.settings.autoPowerMachine) {
-            this.powerTableRows = PowerTableFunctions.calculateBuildings(this.productionTableRows, this.powerTableRows);
-            this.addSpecificEventListener('power');
+        if (!this.visualisation) {
+            this.updated = false;
+            this.visualisation = new Visualization(this);
+        } else if (this.updated) {
+            this.updated = false;
+            this.visualisation.update();
         }
 
+        $('#showVisualization').modal('show');
     }
 
     public saveData(productionTable: ProductionTableRow[], powerTable: PowerTableRow[], importTable: ImportsTableRow[]) {
@@ -389,14 +376,39 @@ export class TableHandler {
         $('#showPower').prop('disabled', false);
     }
 
-    public showVisualization() {
-        const data: {
-            importsTableRows: ImportsTableRow[],
-            indexes: number[]
-        } = ImportsTableFunctions.calculateImports(this.productionTableRows);
-        this.importsTableRows = data.importsTableRows;
-        new Visualization(this);
-        $('#showVisualization').modal('show');
+    /**
+     * Handles the change event for the production table.
+     * @param row - The row object to update.
+     * @param rowIndex - The index of the row in the table.
+     * @param value - The new value to set in the row.
+     * @param tableId - The ID of the table.
+     * @param target - The target element that triggered the event.
+     * @constructor
+     * @private
+     */
+    private async HandleProductionTable(row: ProductionTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
+        this.updated = true;
+        await ProductionLineFunctions.calculateProductionExport(row);
+
+        if (this.checkIfSelect(target)) {
+            await ProductionLineFunctions.updateRecipe(row, value);
+        }
+
+        this.updateRowInTable(tableId, rowIndex, row);
+
+        if (this.settings.autoImportExport) {
+            const data: {
+                importsTableRows: ImportsTableRow[],
+                indexes: number[]
+            } = ImportsTableFunctions.calculateImports(this.productionTableRows);
+            this.importsTableRows = data.importsTableRows;
+            this.UpdateOnIndex(data.indexes);
+        }
+
+        if (this.settings.autoPowerMachine) {
+            this.powerTableRows = PowerTableFunctions.calculateBuildings(this.productionTableRows, this.powerTableRows);
+            this.addSpecificEventListener('power');
+        }
 
     }
 
@@ -407,11 +419,13 @@ export class TableHandler {
                 const powerModal = $('#showPowerModal');
                 const editModal = $('#editProductionLine');
                 const helpModal = $('#helpModal');
+                const VisualizationModal = $('#showVisualization');
 
                 function closeModals() {
                     powerModal.modal('hide');
                     editModal.modal('hide');
                     helpModal.modal('hide');
+                    VisualizationModal.modal('hide');
                 }
 
                 // Save production line
@@ -470,12 +484,11 @@ export class TableHandler {
                 // show visualization
                 if (event.key === 'v' && event.ctrlKey) {
                     event.preventDefault();
-                    const modal = $('#showVisualization');
-                    if (modal.is(':hidden')) {
+                    if (VisualizationModal.is(':hidden')) {
                         closeModals();
                         tableHandler.showVisualization();
                     } else {
-                        modal.modal('hide');
+                        VisualizationModal.modal('hide');
                     }
                 }
             });

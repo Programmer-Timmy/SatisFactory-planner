@@ -8,9 +8,20 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
-                <svg id="graph" class="border-0" width="100%" height="100%"></svg>
+                <div id="graph" class="border-0" style="height: 85vh; width: 100vw;"></div>
             </div>
             <div class="modal-footer">
+                <select id="layout" class="form-select" style="width: 200px;">
+                    <option value="breadthfirst">Breadthfirst</option>
+                    <option value="cose">Cose</option>
+                </select>
+                <input type="checkbox" id="export" class="form-check-input" style="width: 20px; height: 20px;">
+                <label for="export" class="form-check-label">Export</label>
+                <input type="checkbox" id="import" class="form-check-input" style="width: 20px; height: 20px;" checked>
+                <label for="import" class="form-check-label">Import</label>
+                <input type="checkbox" id="roots" class="form-check-input" style="width: 20px; height: 20px;" checked>
+                <label for="roots" class="form-check-label">Roots</label>
+                <button type="button" class="btn btn-primary" id="refresh">Refresh</button>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>

@@ -1,8 +1,14 @@
 {
   "compilerOptions": {
     "target": "es5",
+    // Specifies the ECMAScript target version
     "module": "es6",
+    // Specifies the module code generation
     "strict": true,
-    "esModuleInterop": true
+    // Enables all strict type-checking options
+    "esModuleInterop": true,
+    // Enables emit interoperability between CommonJS and ES Modules
+    "skipLibCheck": true
+    // Skips type checking of declaration files
   }
 }
