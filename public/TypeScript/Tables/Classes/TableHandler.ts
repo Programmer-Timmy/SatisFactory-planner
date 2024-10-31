@@ -483,6 +483,13 @@ export class TableHandler {
 
                 // show visualization
                 if (event.key === 'v' && event.ctrlKey) {
+                    // if in input field, do not trigger
+                    const ignoreTags = ['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'];
+                    // @ts-ignore
+                    if (ignoreTags.includes(event.target.tagName)) {
+                        return; // Early exit for these tags
+                    }
+
                     event.preventDefault();
                     if (VisualizationModal.is(':hidden')) {
                         closeModals();
