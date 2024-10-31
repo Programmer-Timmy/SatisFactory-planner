@@ -14,6 +14,8 @@ if ($_POST && isset($_POST['saveGameName'])) {
         $error = 'Invalid image format. Please upload an image in JPEG, PNG, GIF, or WebP format.';
     } elseif (isset($_FILES['saveGameImage']['tmp_name']) && $_FILES['saveGameImage']['tmp_name'] && $_FILES['saveGameImage']['size'] > 2097152) {
         $error = 'Image size is too large. Please upload an image under 2MB.';
+    } elseif (isset($_FILES['saveGameImage']['name']) && $_FILES['saveGameImage']['name'] !== strip_tags($_FILES['saveGameImage']['name'])) {
+        $error = 'Security Alert: Unauthorized characters detected in image name. Nice try, but FICSIT Security has blocked that!';
     }
 
     if (!$error) {
