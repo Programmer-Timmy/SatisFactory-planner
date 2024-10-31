@@ -21,7 +21,11 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     $data = AuthControler::login($username, $password);
     if ($data != null) {
         if (is_array($data)) {
-            $error = 'Email not verified please check your email. If you did not receive an email please check your spam folder. <a href="?resent=' . $username . '">Resend verification email</a>';
+            if ($data[1] == 'maxAttempts') {
+                $error = 'You have reached the maximum login attempts. Please try again later.';
+            } elseif ($data[1] == 'notVerified') {
+                $error = 'Email not verified please check your email. If you did not receive an email please check your spam folder. <a href="?resent=' . $data[0] . '">Resend verification email</a>';
+            }
         } else {
         header('Location: ' . $data);
         }
