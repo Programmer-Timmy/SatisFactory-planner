@@ -142,12 +142,11 @@ if (isset($_POST['action']) && isset($_POST['link_id'])) {
 <script>
     const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.replaceState({path: url}, "", url);
+
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+            alert.remove();
+        });
+    }, 5000);
 </script>
 
-<?php if ($error != '' || $success != '') : ?>
-    <script>
-        setTimeout(function () {
-            window.location.href = '/helpfulLinks';
-        }, 3000);
-    </script>
-<?php endif; ?>

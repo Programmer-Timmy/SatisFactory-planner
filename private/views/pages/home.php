@@ -9,30 +9,58 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
         exit();
     }
 
-    $UpdatedSaveGameName = $_POST['UpdatedSaveGameName'];
+    $updatedSaveGameName = $_POST['UpdatedSaveGameName'];
 
-    $gameSave_id = $_POST['id'];
 
-    if (!isset($_POST['AllowedUsers'])) {
-        $_POST['AllowedUsers'] = [];
+    if (strlen($updatedSaveGameName) > 45) {
+        $error = 'Save Game Name is too lengthy. Please use up to 45 characters.';
+    } elseif ($updatedSaveGameName !== strip_tags($updatedSaveGameName)) {
+        $error = 'Security Alert: Unauthorized characters detected in Save Game Name. Nice try, but FICSIT Security has blocked that!';
+    } elseif (isset($_FILES['saveGameImage']['tmp_name']) && $_FILES['saveGameImage']['tmp_name'] &&
+        !in_array(mime_content_type($_FILES['saveGameImage']['tmp_name']), ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
+        $error = 'Invalid image format. Please upload an image in JPEG, PNG, GIF, or WebP format.';
+    } elseif (isset($_FILES['saveGameImage']['tmp_name']) && $_FILES['saveGameImage']['tmp_name'] && $_FILES['saveGameImage']['size'] > 2097152) {
+        $error = 'Image size is too large. Please upload an image under 2MB.';
+    } elseif (isset($_FILES['saveGameImage']['name']) && $_FILES['saveGameImage']['name'] !== strip_tags($_FILES['saveGameImage']['name'])) {
+        $error = 'Security Alert: Unauthorized characters detected in image name. Nice try, but FICSIT Security has blocked that!';
     }
 
-    // Assuming Database::insert() is a function that inserts data into the database
-    $gameSaveId = GameSaves::updateSaveGame($gameSave_id, $_SESSION['userId'], $UpdatedSaveGameName, $_FILES['UpdatedSaveGameImage']);
-//    check if dedicated server is set and updated
-    if ($_POST['dedicatedServerIp'] && $_POST['dedicatedServerPort']) {
-        $data = DedicatedServer::saveServer($gameSave_id, $_POST['dedicatedServerIp'], $_POST['dedicatedServerPort'], $_POST['dedicatedServerPassword']);
-        if ($data) {
-            if ($data['status'] === 'error') {
-                $error = $data['message'];
-            } else {
-                $success = $data['message'];
+    if (!$error) {
+        $gameSave_id = $_POST['id'];
+
+        if (!isset($_POST['AllowedUsers'])) {
+            $_POST['AllowedUsers'] = [];
+        }
+
+        try {
+            $gameSaveId = GameSaves::updateSaveGame($gameSave_id, $_SESSION['userId'], $updatedSaveGameName, $_FILES['UpdatedSaveGameImage']);
+        } catch (Exception $e) {
+            $error = 'Error updating save game. Please try again or contact support.';
+        }
+
+
+        if ($_POST['dedicatedServerIp'] && $_POST['dedicatedServerPort']) {
+            if (!filter_var($_POST['dedicatedServerIp'], FILTER_VALIDATE_IP)) {
+                $error = 'Invalid IP address';
+            } elseif (!is_numeric($_POST['dedicatedServerPort'])) {
+                $error = 'Invalid port number';
+            }
+
+            if (!$error) {
+                $data = DedicatedServer::saveServer($gameSave_id, $_POST['dedicatedServerIp'], $_POST['dedicatedServerPort'], $_POST['dedicatedServerPassword']);
+                if ($data) {
+                    if ($data['status'] === 'error') {
+                        $error = $data['message'];
+                    } else {
+                        $success = $data['message'];
+                    }
+                }
             }
         }
-    }
 
-    header('Location:/home');
-    exit();
+        header('Location:/home');
+        exit();
+    }
 }
 
 if ($_GET && isset($_GET['delete'])) {
@@ -213,12 +241,13 @@ if (count($gameSaves) == 2) {
                         </div>
                     </a>
                 </div>
-                <?php if ($gameSave->owner_id == $_SESSION['userId']) require '../private/views/Popups/updateSaveGame.php'; ?>
+                <?php if ($gameSave->owner_id == $_SESSION['userId']) require '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
-<?php require_once '../private/views/Popups/addSaveGame.php'; ?>
+
+<?php require_once '../private/views/Popups/saveGame/addSaveGame.php'; ?>
 
 <script>
     document.getElementById('InvitesDropdown').addEventListener('click', function (event) {

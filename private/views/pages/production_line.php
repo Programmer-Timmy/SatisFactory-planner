@@ -176,7 +176,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                 </div>
             </div>
         </div>
-        <div class="mt-auto position-absolute top-50 start-50 translate-middle-x w-100 h-100 d-none" id="loading">
+        <div class="mt-auto position-absolute top-50 start-50 translate-middle-x w-100 h-100" id="loading">
             <div class="d-flex justify-content-center">
                 <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
                     <span class="visually-hidden">Loading...</span>
@@ -319,7 +319,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                 </div>
             </div>
         </div>
-        <?php require_once '../private/views/Popups/showPower.php'; ?>
+        <?php require_once '../private/views/Popups/productionLine/showPower.php'; ?>
     </form>
 </div>
 <?php
@@ -330,12 +330,12 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
     </script>
 <?php endif; ?>
 <script type="module" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
-<?php require_once '../private/views/Popups/editProductinoLine.php'; ?>
+<?php require_once '../private/views/Popups/productionLine/editProductinoLine.php'; ?>
 
 <!-- Help Modal -->
-<?php require_once '../private/views/Popups/helpProductionLine.php'; ?>
+<?php require_once '../private/views/Popups/productionLine/helpProductionLine.php'; ?>
 
-<?php require_once '../private/views/Popups/showVisualization.php'; ?>
+<?php require_once '../private/views/Popups/productionLine/showVisualization.php'; ?>
 
 <?php if ($firstProduction) : ?>
     <script>

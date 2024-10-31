@@ -17,7 +17,13 @@ function getPageTitle($skipCheck = false) {
     return $pageTitle;
 }
 
-$changelog = json_decode(file_get_contents('changelog.json'), true)[0];
+$changelog = ['version' => '0.0.0'];
+
+$changelogJson = json_decode(file_get_contents('changelog.json'), true);
+if ($changelogJson) {
+    $changelog = $changelogJson[0];
+}
+
 $theme = 'styles-light';
 if (isset($_COOKIE['theme'])) {
     $theme = $_COOKIE['theme'] === 'dark' ? 'styles-dark' : 'styles-light';
@@ -111,7 +117,7 @@ global $allowedIPs;
     <title><?php echo getPageTitle(true); ?></title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap5-toggle@5.0.4/css/bootstrap5-toggle.min.css" rel="stylesheet">
-<!--    make sure its loaded and eceutued bevore page load-->
+    <!--    make sure its loaded and eceutued bevore page load-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap5-toggle@5.0.4/js/bootstrap5-toggle.ecmas.min.js" defer></script>
 
     <!-- Custom CSS -->

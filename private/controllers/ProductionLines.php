@@ -4,7 +4,7 @@ class ProductionLines
 {
     public static function addProductionline($gameSaveId, $title)
     {
-        $id = Database::insert("production_lines", ['game_saves_id', 'title'], [$gameSaveId, $title]);
+        $id = Database::insert("production_lines", ['game_saves_id', 'title'], [$gameSaveId]);
         ProductionLineSettings::addProductionLineSettings($id);
         return $id;
 
@@ -103,7 +103,7 @@ class ProductionLines
     public static function updateProductionLine(int $productLineId, string $productionLineName, int $active)
     {
         self::changeActiveStats($productLineId, $active);
-        Database::update("production_lines", ['title'], [$productionLineName], ['id' => $productLineId]);
+        Database::update("production_lines", ['title', 'updated_at'], [$productionLineName, date('Y-m-d H:i:s')], ['id' => $productLineId]);
         return true;
     }
 

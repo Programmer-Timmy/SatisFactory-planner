@@ -1,39 +1,65 @@
 <?php
-ob_start();
+$error = null;
+
 if ($_POST && isset($_POST['saveGameName'])) {
-    $saveGameName = $_POST['saveGameName'];
-    var_dump($_FILES);
-    if ($_POST['selectedUsers'] == null) {
-        $_POST['selectedUsers'] = [];
-    } else {
-        $_POST['selectedUsers'] = explode(',', $_POST['selectedUsers']);
+    $saveGameName = trim($_POST['saveGameName']);
+
+    // Validate Save Game Name
+    if (strlen($saveGameName) > 45) {
+        $error = 'Save Game Name is too lengthy. Please use up to 45 characters.';
+    } elseif ($saveGameName !== strip_tags($saveGameName)) {
+        $error = 'Security Alert: Unauthorized characters detected in Save Game Name. Nice try, but FICSIT Security has blocked that!';
+    } elseif (isset($_FILES['saveGameImage']['tmp_name']) && $_FILES['saveGameImage']['tmp_name'] &&
+        !in_array(mime_content_type($_FILES['saveGameImage']['tmp_name']), ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
+        $error = 'Invalid image format. Please upload an image in JPEG, PNG, GIF, or WebP format.';
+    } elseif (isset($_FILES['saveGameImage']['tmp_name']) && $_FILES['saveGameImage']['tmp_name'] && $_FILES['saveGameImage']['size'] > 2097152) {
+        $error = 'Image size is too large. Please upload an image under 2MB.';
+    } elseif (isset($_FILES['saveGameImage']['name']) && $_FILES['saveGameImage']['name'] !== strip_tags($_FILES['saveGameImage']['name'])) {
+        $error = 'Security Alert: Unauthorized characters detected in image name. Nice try, but FICSIT Security has blocked that!';
     }
 
-    $gameSaveId = GameSaves::createSaveGame($_SESSION['userId'], $saveGameName, $_FILES['saveGameImage'], $_POST['selectedUsers']);
+    if (!$error) {
+        // Handle selected users
+        $selectedUsers = $_POST['selectedUsers'] ? explode(',', $_POST['selectedUsers']) : [];
 
-    if ($_POST['dedicatedServerIp'] && $_POST['dedicatedServerPort']) {
-        $data = DedicatedServer::saveServer($gameSaveId, $_POST['dedicatedServerIp'], $_POST['dedicatedServerPort'], $_POST['dedicatedServerPassword']);
-        if ($data) {
-            if ($data['status'] === 'error') {
-                $error = $data['message'];
-            } else {
-                $success = $data['message'];
+        // Create save game
+        $gameSaveId = GameSaves::createSaveGame($_SESSION['userId'], $saveGameName, $_FILES['saveGameImage'], $selectedUsers);
+
+        // Validate dedicated server details if provided
+        if (!empty($_POST['dedicatedServerIp']) && !empty($_POST['dedicatedServerPort'])) {
+            if (!filter_var($_POST['dedicatedServerIp'], FILTER_VALIDATE_IP)) {
+                $error = 'Invalid IP address';
+            } elseif (!is_numeric($_POST['dedicatedServerPort'])) {
+                $error = 'Invalid port number';
+            }
+
+            // Save dedicated server if no error
+            if (!$error) {
+                $data = DedicatedServer::saveServer($gameSaveId, $_POST['dedicatedServerIp'], $_POST['dedicatedServerPort'], $_POST['dedicatedServerPassword']);
+                if ($data) {
+                    if ($data['status'] === 'error') {
+                        $error = $data['message'];
+                    } else {
+                        $success = $data['message'];
+                    }
+                }
             }
         }
+
+        // Redirect if successful
+        if ($gameSaveId && !$error) {
+            header('Location: /game_save?id=' . $gameSaveId);
+            exit();
+        }
     }
-
-    if ($gameSaveId) {
-        header('Location:/game_save?id=' . $gameSaveId);
-        exit();
-    }
-
-
 }
-$users = Users::getAllValidatedUsers();
 
+// Fetch users for selection
+$users = Users::getAllValidatedUsers();
 ?>
 
-<div class="modal fade" id="popupModal" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
+<div class="modal fade <?= $error ? 'show' : '' ?>" id="popupModal" tabindex="-1" aria-labelledby="popupModalLabel"
+     aria-modal="true" role="dialog" style="display: <?= $error ? 'block' : 'none' ?>;">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -43,9 +69,14 @@ $users = Users::getAllValidatedUsers();
             <form method="post" enctype="multipart/form-data" autocomplete="off">
                 <div class="modal-body">
                     <!-- Other form fields for the save game -->
+                    <?php if ($error): ?>
+                        <div class="alert alert-danger"><?= $error ?></div>
+                    <?php endif; ?>
                     <div class="mb-3">
                         <label for="saveGameName" class="form-label">Save Game Name</label>
-                        <input type="text" class="form-control" id="saveGameName" name="saveGameName" required>
+                        <input type="text" class="form-control" id="saveGameName" name="saveGameName" required
+                               maxlength="45"
+                               value="<?= isset($saveGameName) ? htmlspecialchars($saveGameName) : '' ?>">
                     </div>
                     <div class="mb-3">
                         <label for="saveGameImage" class="form-label">Save Game Image</label>

@@ -28,4 +28,9 @@ class HelpfulLinks
         return Database::delete(table: 'helpful_links', where: ['id' => $linkId]);
     }
 
+    public static function linkExists($url) {
+        $link = Database::get(table: 'helpful_links', where: ['url' => $url]);
+        return (bool)$link;
+    }
+
 }
