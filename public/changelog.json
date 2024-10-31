@@ -8,6 +8,7 @@
       "Fixed cross-site scripting vulnerability on the game save page.",
       "Fixed cross-site scripting vulnerability on the home page.",
       "Fixed cross-site scripting vulnerability on the account page.",
+      "Fixed cross-site scripting vulnerability on the useful links page.",
       "Fixed display of special characters on the game save page.",
       "Fixed issue with default version when an invalid changelog version is provided.",
       "Added loading spinner to the production line page when loading.",
