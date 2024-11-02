@@ -173,5 +173,22 @@ class Users
         return false;
     }
 
+    public static function CheckVerificationStatus($userName, $email, $token) {
+        if (self::getUserByUsername($userName) === false || self::getUserByEmail($email) === false) {
+            return ['error_code' => 1, 'error_message' => 'User does not exist'];
+        }
+
+        $user = Database::get("users", ['*'], [], ['username' => $userName, 'email' => $email]);
+        if ($user->verified === '1') {
+            return ['error_code' => 2, 'error_message' => 'User is already verified'];
+        }
+
+        if ($user->verified !== $token) {
+            return ['error_code' => 3, 'error_message' => 'Token is invalid please check your email for the correct link or resend the verification email by clicking the button below'];
+        }
+
+        return ['success' => 'User is ready to be verified'];
+    }
+
 
 }

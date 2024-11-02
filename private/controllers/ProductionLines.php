@@ -4,7 +4,7 @@ class ProductionLines
 {
     public static function addProductionline($gameSaveId, $title)
     {
-        $id = Database::insert("production_lines", ['game_saves_id', 'title'], [$gameSaveId]);
+        $id = Database::insert("production_lines", ['game_saves_id', 'title'], [$gameSaveId, $title]);
         ProductionLineSettings::addProductionLineSettings($id);
         return $id;
 

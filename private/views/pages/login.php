@@ -1,4 +1,4 @@
-<?php
++<?php
 $error = '';
 $success = '';
 if (isset($_GET['resent'])) {
@@ -12,7 +12,6 @@ if (isset($_GET['resent'])) {
         }
     }
 }
-$username = '';
 
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
@@ -38,7 +37,7 @@ if (isset($_GET['verify']) && strtok($_SERVER['REQUEST_URI'], '?') == '/login') 
     if (Users::verifyUser($_GET['verify'])) {
         $success = 'Email verified';
     } else {
-        $error = 'The verification code is invalid. Please check your latest email for the correct link. If you did not receive an email please check your spam folder.';
+        $error = 'The verification code is invalid. Please check your latest email for the correct link. If you did not receive an email please check your spam folder. If you want to resend the email login and click the resend verification email link.';
     }
     echo '<script>const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.replaceState({ path: url }, "", url);
