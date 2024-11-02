@@ -40,7 +40,14 @@ if ($registered) {
     $resend = $registered;
 }
 
-$verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
+if (!$verified && !$resend) {
+    $verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
+
+    if (isset($verificationStatus['error_code']) && $verificationStatus['error_code'] !== 3) {
+        header('Location: /login');
+        exit();
+    }
+}
 ?>
 
 <div class="container">
