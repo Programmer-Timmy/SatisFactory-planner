@@ -29,8 +29,8 @@ if ($_POST && isset($_POST['productionLineName'])) {
 $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intval($_GET['id']));
 ?>
 
-<div class="modal fade <?= $error ? 'show d-block' : '' ?>" id="editProductionLine" tabindex="-1"
-     aria-labelledby="popupModalLabel" aria-hidden="true">
+<div class="modal fade <?= $error ? 'show' : '' ?>" id="editProductionLine" tabindex="-1"
+     aria-labelledby="popupModalLabel" aria-hidden="true" <?= $error ? 'style="display: block;"' : '' ?>>
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -114,4 +114,11 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
         const addProductionLine = new bootstrap.Modal(document.getElementById('editProductionLine'));
         addProductionLine.show();
     });
+
+    <?php if ($error): ?>
+    $(document).ready(function () {
+        const addProductionLine = new bootstrap.Modal(document.getElementById('editProductionLine'));
+        addProductionLine.show();
+    });
+    <?php endif; ?>
 </script>

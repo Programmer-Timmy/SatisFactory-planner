@@ -29,7 +29,8 @@ if ($_POST && isset($_POST['productionLineName'])) {
 }
 ?>
 
-<div class="modal fade <?= $error ? 'show d-block' : '' ?>" id="addProductionLine" tabindex="-1"
+<div class="modal fade <?= $error ? 'show' : '' ?>" id="addProductionLine"
+     tabindex="-1" <?= $error ? 'style="display: block;"' : '' ?>
      aria-labelledby="popupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -75,6 +76,9 @@ if ($_POST && isset($_POST['productionLineName'])) {
         const popoverProduction = $('#popover-production');
         popoverProduction.popover('hide');
         popoverProduction.attr('opened', 'true');
+
+        const addProductionLine = new bootstrap.Modal(document.getElementById('addProductionLine'));
+        addProductionLine.show();
     });
     <?php endif; ?>
 </script>
