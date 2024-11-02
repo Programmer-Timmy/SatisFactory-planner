@@ -144,7 +144,7 @@ class Users
     public static function checkIfValidated($username) {
         $user = Database::get("users", ['*'], [], ['username' => $username]);
         if ($user) {
-            if ($user->verified === '0') {
+            if ($user->verified === '1') {
                 return true;
             }
         }
