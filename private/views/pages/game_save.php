@@ -191,10 +191,10 @@ if (isset($_GET['layoutType'])) {
                 <h2>Production Lines</h2>
                 <div class="d-flex flex-nowrap">
                     <button class="btn btn-secondary me-2"
-                            onclick="location.href = 'game_save?id=<?= $gameSave->id ?>&layoutType=<?= $gameSave->card_view === 1 ? 0 : 1 ?>'"
+                            onclick="location.href = 'game_save?id=<?= $gameSave->id ?>&layoutType=<?= $gameSave->card_view ? 0 : 1 ?>'"
                             data-bs-toggle="tooltip" data-bs-placement="top"
-                            data-bs-title="<?= $gameSave->card_view === 1 ? 'Table View' : 'Card View' ?>">
-                        <i class=" <?= $gameSave->card_view === 1 ? 'fa-solid fa-table' : 'fa-regular fa-square' ?>"></i>
+                            data-bs-title="<?= $gameSave->card_view ? 'Table View' : 'Card View' ?>">
+                        <i class=" <?= $gameSave->card_view ? 'fa-solid fa-table' : 'fa-regular fa-square' ?>"></i>
                     </button>
                     <span id="popover-production" data-bs-toggle="popover" data-bs-placement="bottom"
                           opened="<?= empty($productionLines) ? 'false' : 'true' ?>"

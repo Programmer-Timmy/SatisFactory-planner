@@ -63,7 +63,7 @@ class Users
     {
         $password = password_hash($password, PASSWORD_DEFAULT);
         $verified_code = bin2hex(random_bytes(16));
-        Mailer::sendVerificationEmail($email, $verified_code);
+        Mailer::sendVerificationEmail($email, $username, $verified_code);
         return Database::insert("users", ['username', 'password_hash', 'email', 'verified'], [$username, $password, $email, $verified_code]);
     }
 
@@ -91,7 +91,7 @@ class Users
         if ($user) {
             $verified_code = bin2hex(random_bytes(16));
             Database::update("users", ['verified'], [$verified_code], ['id' => $user->id]);
-            Mailer::sendVerificationEmail($user->email, $verified_code);
+            Mailer::sendVerificationEmail($user->email, $user->username, $verified_code);
             return true;
         }
         return false;
@@ -171,6 +171,23 @@ class Users
             }
         }
         return false;
+    }
+
+    public static function CheckVerificationStatus($userName, $email, $token) {
+        if (self::getUserByUsername($userName) === false || self::getUserByEmail($email) === false) {
+            return ['error_code' => 1, 'error_message' => 'User does not exist'];
+        }
+
+        $user = Database::get("users", ['*'], [], ['username' => $userName, 'email' => $email]);
+        if ($user->verified === '1') {
+            return ['error_code' => 2, 'error_message' => 'User is already verified'];
+        }
+
+        if ($user->verified !== $token) {
+            return ['error_code' => 3, 'error_message' => 'Token is invalid please check your email for the correct link or resend the verification email by clicking the button below'];
+        }
+
+        return ['success' => 'User is ready to be verified'];
     }
 
 

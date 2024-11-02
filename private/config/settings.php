@@ -6,7 +6,7 @@ $database = [
     'host' => 'localhost',
     'user' => 'root',
     'password' => '',
-    'database' => 'satisfactory_planner',
+    'database' => 'satisfactoryplanner',
 ];
 
 /**

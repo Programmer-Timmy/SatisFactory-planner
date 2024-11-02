@@ -49,7 +49,10 @@ class Database {
      *
      * @throws ErrorException
      */
-    public static function insert(string $table, array $columns, array $values, $connection = (new Database)): string {
+    public static function insert(string $table, array $columns, array $values, Database $connection = null): string {
+        if ($connection === null) {
+            $connection = new Database();
+        }
         $sql = "INSERT INTO $table (";
         foreach ($columns as $column) {
             $sql .= "$column, ";
@@ -158,7 +161,10 @@ class Database {
      * @param array $where
      * @return void
      */
-    public static function update(string $table, array $columns, array $values, array $where, Database $database = new Database) {
+    public static function update(string $table, array $columns, array $values, array $where, $database = null) {
+        if ($database === null) {
+            $database = new Database();
+        }
         $sql = "UPDATE $table SET ";
         foreach ($columns as $column) {
             $sql .= "$column = ?,";
@@ -179,7 +185,10 @@ class Database {
      * @param array $where
      * @return void
      */
-    public static function delete(string $table, array $where, Database $database = new Database) {
+    public static function delete(string $table, array $where, Database $database = null) {
+        if ($database === null) {
+            $database = new Database();
+        }
         $sql = "DELETE FROM $table WHERE ";
         foreach ($where as $column => $value) {
             $sql .= "$column = ? AND ";
@@ -195,7 +204,10 @@ class Database {
      * @param array $values
      * @return mixed
      */
-    public static function query(string $query, array $values = [], Database $database = new Database) {
+    public static function query(string $query, array $values = [], Database $database = null) {
+        if ($database === null) {
+            $database = new Database();
+        }
         $stmt = $database->prepare($query);
         $stmt->execute($values);
         return $stmt->fetchAll(PDO::FETCH_OBJ);

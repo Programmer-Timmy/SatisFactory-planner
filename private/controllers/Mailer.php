@@ -131,22 +131,29 @@ class Mailer
         return self::sendEmail($user->email, $subject, $htmlBody, $plainTextBody);
     }
 
-    public static function sendVerificationEmail($to, $token)
+    public static function sendVerificationEmail($to, $username, $token)
     {
-        $subject = 'Verify your email address';
-        $url = 'https://satisfactoryplanner.timmygamer.nl/login?verify=' . $token;
+        $subject = 'Verify Your Email Address';
+        $encodedUsername = urlencode($username);
+        $encodedTo = urlencode($to);
+        $encodedToken = urlencode($token);
+        $url = "https://satisfactoryplanner.timmygamer.nl/login/verify?usr=$encodedUsername&eml=$encodedTo&tkn=$encodedToken";
 
         // HTML body
         $htmlBody = '
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            /* Include Bootstrap inline styles */
             .container {
                 width: 100%;
+                max-width: 600px;
                 padding: 15px;
                 margin: 0 auto;
+                font-family: Arial, sans-serif;
+                color: #333333;
             }
             .header {
                 background-color: #f8f9fa;
@@ -159,6 +166,7 @@ class Mailer
                 border: 1px solid #dee2e6;
                 border-radius: 5px;
                 margin: 20px 0;
+                line-height: 1.6;
             }
             .footer {
                 text-align: center;
@@ -169,6 +177,7 @@ class Mailer
             a {
                 color: #007bff;
                 text-decoration: none;
+                font-weight: bold;
             }
             a:hover {
                 text-decoration: underline;
@@ -181,9 +190,11 @@ class Mailer
                 <h2>Welcome to Satisfactory Planner</h2>
             </div>
             <div class="content">
-                <p>Hello,</p>
-                <p>Thank you for registering at Satisfactory Planner. Please verify your email address by clicking the link below.</p>
-                <p><a href="' . $url . '">Verify Email</a></p>
+                <p>Hello ' . htmlspecialchars($username) . ',</p>
+                <p>Thank you for registering at Satisfactory Planner. Please verify your email address by clicking the link below:</p>
+                <p><a href="' . htmlspecialchars($url) . '" aria-label="Verify Email">Verify Email</a></p>
+                <p>If the button above does not work, you can also copy and paste the following link into your browser:</p>
+                <p><a href="' . htmlspecialchars($url) . '">' . htmlspecialchars($url) . '</a></p>
             </div>
             <div class="footer">
                 <p>Kind regards,<br>The Satisfactory Planner Team</p>
@@ -193,13 +204,12 @@ class Mailer
     </html>';
 
         // Plain text version
-        $plainTextBody = "Hello,\n";
-        $plainTextBody .= "Thank you for registering at Satisfactory Planner. Please verify your email address by clicking the link below.\n";
-        $plainTextBody .= $url . "\n";
-        $plainTextBody .= "\nKind regards,\nThe Satisfactory Planner Team";
+        $plainTextBody = "Hello,\n\n";
+        $plainTextBody .= "Thank you for registering at Satisfactory Planner. Please verify your email address by clicking the link below:\n";
+        $plainTextBody .= $url . "\n\n";
+        $plainTextBody .= "Kind regards,\nThe Satisfactory Planner Team";
 
         // Send email as multipart/alternative (HTML + Plain Text)
-        // Use your mail sending method here
         return self::sendEmail($to, $subject, $htmlBody, $plainTextBody);
     }
 }
