@@ -23,8 +23,13 @@ if (!($userName && $email && $token) && !$resend && !$registered) {
 }
 
 if ($resend) {
-    if (Users::checkIfValidated($resend)) {
-        $error = 'Email already verified';
+    $data = Users::checkIfValidated($resend);
+    if (isset($data['error_code']) && $data['error_code'] === 1) {
+        header('Location: /login');
+        exit();
+    } elseif ($data) {
+        header('Location: /login');
+        exit();
     } else {
         if (Users::resendVerificationEmail($resend)) {
             $success = 'Verification email resent successfully. Please check your email. If you did not receive an email, please check your spam folder. If you really did not receive an email, you can try to resend the verification email by clicking the button below.';
