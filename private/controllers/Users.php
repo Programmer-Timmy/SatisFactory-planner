@@ -146,9 +146,12 @@ class Users
         if ($user) {
             if ($user->verified === '1') {
                 return true;
+            } else {
+                return false;
             }
+        } else {
+            return ['error_code' => 1, 'error_message' => 'User does not exist'];
         }
-        return false;
     }
 
     public static function checkIfFirstProduction($user_id): bool {
