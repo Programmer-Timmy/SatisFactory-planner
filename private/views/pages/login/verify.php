@@ -57,6 +57,11 @@ $verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
                 <h1 class="">Email Verification</h1>
                 <p class="lead">To continue, please verify your email address.</p>
             </div>
+            <?php if ($error): ?>
+                <div class="alert alert-danger" role="alert">
+                    <?= $error ?>
+                </div>
+            <?php endif; ?>
             <?php if ($success): ?>
                 <div class="card border-success mb-3">
                     <div class="card-body text-center">
