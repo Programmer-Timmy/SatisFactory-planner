@@ -63,7 +63,7 @@ class Users
     {
         $password = password_hash($password, PASSWORD_DEFAULT);
         $verified_code = bin2hex(random_bytes(16));
-        Mailer::sendVerificationEmail($email, $verified_code);
+        Mailer::sendVerificationEmail($email, $username, $verified_code);
         return Database::insert("users", ['username', 'password_hash', 'email', 'verified'], [$username, $password, $email, $verified_code]);
     }
 
@@ -91,7 +91,7 @@ class Users
         if ($user) {
             $verified_code = bin2hex(random_bytes(16));
             Database::update("users", ['verified'], [$verified_code], ['id' => $user->id]);
-            Mailer::sendVerificationEmail($user->email, $verified_code);
+            Mailer::sendVerificationEmail($user->email, $user->username, $verified_code);
             return true;
         }
         return false;

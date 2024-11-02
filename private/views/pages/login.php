@@ -1,18 +1,6 @@
-+<?php
+<?php
 $error = '';
 $success = '';
-if (isset($_GET['resent'])) {
-    if (Users::checkIfValidated($_GET['resent'])) {
-        $error = 'Email already verified';
-    } else {
-        if (Users::resendVerificationEmail($_GET['resent'])) {
-            $success = 'Verification email resent';
-        } else {
-            $error = 'Error resending verification email';
-        }
-    }
-}
-
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -23,7 +11,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
             if ($data[1] == 'maxAttempts') {
                 $error = 'You have reached the maximum login attempts. Please try again later.';
             } elseif ($data[1] == 'notVerified') {
-                $error = 'Email not verified please check your email. If you did not receive an email please check your spam folder. <a href="?resent=' . $data[0] . '">Resend verification email</a>';
+                $error = 'Email not verified please check your email. If you did not receive an email please check your spam folder. <a href="/login/verify?resend=' . $data[0] . '">Resend verification email</a>';
             }
         } else {
         header('Location: ' . $data);
@@ -34,14 +22,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
 }
 
 if (isset($_GET['verify']) && strtok($_SERVER['REQUEST_URI'], '?') == '/login') {
-    if (Users::verifyUser($_GET['verify'])) {
-        $success = 'Email verified';
-    } else {
-        $error = 'The verification code is invalid. Please check your latest email for the correct link. If you did not receive an email please check your spam folder. If you want to resend the email login and click the resend verification email link.';
-    }
-    echo '<script>const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
-    window.history.replaceState({ path: url }, "", url);
-</script>';
+    $error = 'You used the old verification system. Login and click the "Resend Verification Email" link to get a new verification email.';
 }
 ?>
 <div class="container mt-5">

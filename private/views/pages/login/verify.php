@@ -1,8 +1,10 @@
 <?php
-$userName = $_GET['usr'] ?? null;
-$email = $_GET['eml'] ?? null;
-$token = $_GET['tkn'] ?? null;
-$resend = $_GET['resent'] ?? null;
+$userName = urldecode($_GET['usr'] ?? '');
+$email = urldecode($_GET['eml'] ?? '');
+$token = urldecode($_GET['tkn'] ?? '');
+$resend = urldecode($_GET['resend'] ?? '');
+$registered = urldecode($_GET['registered'] ?? '');
+
 
 $error = '';
 $success = '';
@@ -16,7 +18,7 @@ if (isset($_POST['token'])) {
     }
 }
 
-if (!($userName && $email && $token || $resend)) {
+if (!($userName && $email && $token || $resend || $registered)) {
     header('Location: /login');
     exit();
 }
@@ -33,17 +35,21 @@ if ($resend) {
     }
 }
 
-$verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
+if ($registered) {
+    $success = 'You have successfully registered! Please check your email to verify your account. If you don\'t see the email, check your spam folder. Didn\'t receive it? You can try to resend the verification email by clicking the button below.';
+    $resend = $registered;
+}
 
+$verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
 ?>
+
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="text-center mb-4">
-                <h1 class="display-4">Email Verification</h1>
-                <p class="lead">Please verify your email address to proceed.</p>
+                <h1 class="">Email Verification</h1>
+                <p class="lead">To continue, please verify your email address.</p>
             </div>
-
             <?php if ($success): ?>
                 <div class="card border-success mb-3">
                     <div class="card-body text-center">
@@ -51,7 +57,7 @@ $verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
                         <p class="card-text"><?= $success ?></p>
 
                         <?php if ($resend): ?>
-                            <a href="/login/verify?resent=<?= htmlspecialchars($resend) ?>" class="btn btn-primary">Resend
+                            <a href="/login/verify?resend=<?= htmlspecialchars($resend) ?>" class="btn btn-primary">Resend
                                 Verification Email</a>
                         <?php endif; ?>
 

@@ -37,7 +37,7 @@ if ($_POST) {
             if (Users::createUser($username, $password, $email)) {
                 $_SESSION['userId'] = null;
                 $_SESSION['redirect'] = '/account';
-                header("Location: /login?registered=$username");
+                header("Location: /login/verify?registered=$username");
                 exit(); // Stops execution after redirection
             } else {
                 $error = 'An error occurred while creating your account. Please try again or contact support.';
