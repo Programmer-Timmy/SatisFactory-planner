@@ -5,7 +5,6 @@ $token = urldecode($_GET['tkn'] ?? '');
 $resend = urldecode($_GET['resend'] ?? '');
 $registered = urldecode($_GET['registered'] ?? '');
 
-
 $error = '';
 $success = '';
 $verified = false;
@@ -18,7 +17,7 @@ if (isset($_POST['token'])) {
     }
 }
 
-if (!($userName && $email && $token || $resend || $registered)) {
+if (!($userName && $email && $token) && !$resend && !$registered) {
     header('Location: /login');
     exit();
 }
@@ -36,11 +35,11 @@ if ($resend) {
 }
 
 if ($registered) {
-    $success = 'You have successfully registered! Please check your email to verify your account. If you don\'t see the email, check your spam folder. Didn\'t receive it? You can try to resend the verification email by clicking the button below.';
+    $success = 'Registration successful! Please check your email for the verification link. If you did not receive an email, please check your spam folder. If you really did not receive an email, you can try to resend the verification email by clicking the button below.';
     $resend = $registered;
 }
 
-if (!$verified && !$resend) {
+if ($userName && $email && $token) {
     $verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
 
     if (isset($verificationStatus['error_code']) && $verificationStatus['error_code'] === 1) {
@@ -48,8 +47,9 @@ if (!$verified && !$resend) {
         exit();
     }
 }
-?>
 
+$verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
+?>
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6">
@@ -106,7 +106,7 @@ if (!$verified && !$resend) {
                 </div>
             <?php endif; ?>
 
-            <?php if (!isset($verificationStatus['error_code']) && !$verified): ?>
+            <?php if (!isset($verificationStatus['error_code']) && !$verified && $userName && $email && $token): ?>
                 <div class="text-center mb-3 card border-info">
                     <div class="card-body">
                         <h5 class="card-title">Verify Your Email</h5>
@@ -127,4 +127,3 @@ if (!$verified && !$resend) {
     const url = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.replaceState({path: url}, "", url);
 </script>
-
