@@ -36,7 +36,7 @@ class AuthControler
             if ($site['saveUrl']) {
                 if (isset($_SESSION['redirect'])) {
                     $_SESSION['lastVisitedSaveGame'] = GameSaves::getSaveGamesByUser($user->id)[0]->id;
-                    return $_SESSION['redirect'];
+                    return str_contains($_SESSION['redirect'], '/login') ? '/home' : $_SESSION['redirect'];
                     exit();
                 }else{
                     return '/home';

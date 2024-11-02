@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.6.20",
+    "date": "november 2 2024",
+    "changes": [
+      "New and improved verification process for new accounts."
+    ]
+  },
+  {
     "version": "1.6.19",
     "date": "october 31 2024",
     "changes": [
