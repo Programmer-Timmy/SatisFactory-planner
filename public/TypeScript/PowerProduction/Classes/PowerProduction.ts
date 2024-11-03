@@ -267,6 +267,7 @@ export class PowerProduction {
                         dataType: 'json',
                         headers: {'X-CSRF-Token': PowerProduction._getCsrfToken()},
                         data: {
+                            gameSaveId: gameSaveId,
                             powerProductionId: powerProductionId
                         },
                         success: function (data) {
@@ -287,6 +288,7 @@ export class PowerProduction {
                         dataType: 'json',
                         headers: {'X-CSRF-Token': PowerProduction._getCsrfToken()},
                         data: {
+                            gameSaveId: gameSaveId,
                             powerProductionId: powerProductionId,
                             amount: amount1,
                             clockSpeed: clockSpeed1

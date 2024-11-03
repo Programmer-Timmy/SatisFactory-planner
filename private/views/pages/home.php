@@ -4,7 +4,7 @@ $gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
 $error = '';
 $success = '';
 if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
-    if (!GameSaves::checkecsess($_POST['id'])) {
+    if (!GameSaves::checkAccessOwner($_POST['id'])) {
         header('Location:/home');
         exit();
     }
@@ -67,7 +67,7 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
 
 if ($_GET && isset($_GET['delete'])) {
     $gameSaveId = $_GET['delete'];
-    if (!GameSaves::checkecsess($gameSaveId)) {
+    if (!GameSaves::checkAccessOwner($gameSaveId)) {
         header('Location:/home');
         exit();
     }

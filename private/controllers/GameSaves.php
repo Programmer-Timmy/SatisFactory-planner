@@ -277,7 +277,13 @@ class GameSaves
         Database::update("users_has_game_saves", ['card_view'], [$cardView], ['game_saves_id' => $gameSaveId, 'users_id' => $_SESSION['userId']]);
     }
 
-    public static function checkecsess($gameSaveId)
+    /**
+     * Checks if the user is the owner of the game save
+     *
+     * @param int $gameSaveId The id of the game save
+     * @return bool True if the user is the owner of the game save, false otherwise
+     */
+    public static function checkAccessOwner(int $gameSaveId): bool
     {
         $gameSave = self::getSaveGameById($gameSaveId);
         if ($gameSave->owner_id != $_SESSION['userId']) {
@@ -287,5 +293,19 @@ class GameSaves
 
     }
 
+    /**
+     * Checks if an user has access to a game save
+     *
+     * @param $gameSaveId int The id of the game save
+     * @return bool True if the user has access to the game save, false otherwise
+     */
+    public static function checkAccessUser(int $gameSaveId): bool {
+        $userId = $_SESSION['userId'];
+        $gameSave = Database::get("users_has_game_saves", ['game_saves_id'], [], ['game_saves_id' => $gameSaveId, 'users_id' => $userId, 'accepted' => 1]);
+        if ($gameSave) {
+            return true;
+        }
 
+        return false;
+    }
 }

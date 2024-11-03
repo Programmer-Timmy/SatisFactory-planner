@@ -12,7 +12,7 @@ $requestUsers = $data['requestUsers'];
 $dedicatedServer = DedicatedServer::getBySaveGameId($gameSave->id);
 
 if (isset($_GET['dedicatedServerId'])) {
-    if (!GameSaves::checkecsess($_GET['dedicatedServerId'])) {
+    if (!GameSaves::checkAccessOwner($_GET['dedicatedServerId'])) {
         header('Location:/home');
         exit();
     }

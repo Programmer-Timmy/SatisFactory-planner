@@ -9,6 +9,13 @@ if (!isset($_POST['saveGameId'])) {
 }
 
 $saveGameId = $_POST['saveGameId'];
+
+// validate that user has access to this save game
+if (!GameSaves::checkAccessUser($saveGameId)) {
+    http_response_code(403);
+    die(json_encode(['status' => 'error', 'message' => 'You do not have access to this save game']));
+}
+
 $dedicatedServer = DedicatedServer::getBySaveGameId($saveGameId);
 
 if (!$dedicatedServer) {

@@ -3,6 +3,7 @@ import {Building} from "../Types/Building";
 
 
 export class Ajax {
+    private static gameSaveId: number = Number($('#gameSaveId').val()) ?? 0;
 
     /**
      * Get a recipe by its ID.
@@ -76,6 +77,7 @@ export class Ajax {
                 type: 'POST',
                 url: 'saveProductionLine',
                 data: {
+                    gameSaveId: this.gameSaveId,
                     data: JSON.stringify(data),
                     id: id
                 },
@@ -105,6 +107,7 @@ export class Ajax {
             url: 'updateProductionLineSettings',
             headers: {'X-CSRF-Token': Ajax._getCsrfToken()},
             data: {
+                gameSaveId: this.gameSaveId,
                 productionLineId: productionLineId,
                 autoImportExport: autoImportExport,
                 autoPowerMachine: autoPowerMachine,
