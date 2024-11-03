@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['admin']) || $_SESSION['admin'] !== true) {
+if (!isset($_SESSION['admin']) || !$_SESSION['admin']) {
     http_response_code(403);
     echo json_encode(['error' => 'You do not have permission to access this page']);
     exit(1);
