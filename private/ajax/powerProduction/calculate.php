@@ -1,10 +1,17 @@
 <?php
 if (!$_POST) {
+    http_response_code(400);
     echo json_encode(['error' => 'No data provided']);
     exit;
 }
 
 $gameSaveId = $_POST['gameSaveId'];
+
+if (!GameSaves::checkAccessUser($gameSaveId)) {
+    http_response_code(403);
+    echo json_encode(['error' => 'You do not have access to this save game']);
+    exit;
+}
 $powerProduction = PowerProduction::getPowerProduction($gameSaveId);
 $totalPowerProduction = 0;
 $bonus_percentage = 1;

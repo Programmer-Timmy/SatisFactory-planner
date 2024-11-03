@@ -1,15 +1,23 @@
 <?php
 if (!$_POST) {
-    header('Location: /');
+    http_response_code(400);
+    echo json_encode(['error' => 'No data provided']);
+    exit();
+}
+
+if (!isset($_POST['gameId'])) {
+    http_response_code(400);
+    echo json_encode(['error' => 'No game id provided']);
     exit();
 }
 
 $game_id = $_POST['gameId'];
-
 // check if user is the owner of the game
-$game = GameSaves::getSaveGameById($game_id);
-if ($game->userId != $_SESSION['userId']) {
-    header('Location: /');
+$game = GameSaves::checkAccessOwner($game_id);
+
+if (!$game) {
+    http_response_code(403);
+    echo json_encode(['error' => 'You do not have access to this save game']);
     exit();
 }
 

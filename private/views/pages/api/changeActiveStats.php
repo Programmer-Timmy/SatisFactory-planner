@@ -3,6 +3,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $requestData = json_decode(file_get_contents('php://input'), true);
 
+        if (!isset($requestData['gameSaveId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No game save id provided']);
+            exit();
+        }
+
+        $gameSaveId = $requestData['gameSaveId'];
+
+        if (!GameSaves::checkAccessUser($gameSaveId)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'You do not have access to this save game']);
+            exit();
+        }
+
         // Extracting data from JSON request
         $id = $requestData['id'];
         $active = $requestData['active'];

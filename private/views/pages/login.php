@@ -5,6 +5,8 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
+    var_dump($username, $password);
+
     $data = AuthControler::login($username, $password);
     if ($data != null) {
         if (is_array($data)) {

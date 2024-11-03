@@ -1,8 +1,16 @@
 <?php
 if (!isset($_POST['search']) && !isset($_POST['gameId'])) {
-    header('Location: /');
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid request']);
     exit();
 }
+
+if (!GameSaves::checkAccessOwner($_POST['gameId'])) {
+    http_response_code(403);
+    echo json_encode(['error' => 'You do not have access to this save game']);
+    exit();
+}
+
 
 if (!isset($_POST['add'])) {
     $game_id = htmlspecialchars($_POST['gameId']);

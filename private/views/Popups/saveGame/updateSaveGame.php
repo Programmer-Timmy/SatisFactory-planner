@@ -12,7 +12,7 @@ $requestUsers = $data['requestUsers'];
 $dedicatedServer = DedicatedServer::getBySaveGameId($gameSave->id);
 
 if (isset($_GET['dedicatedServerId'])) {
-    if (!GameSaves::checkecsess($_GET['dedicatedServerId'])) {
+    if (!GameSaves::checkAccessOwner($_GET['dedicatedServerId'])) {
         header('Location:/home');
         exit();
     }
@@ -168,6 +168,10 @@ if (isset($_GET['dedicatedServerId'])) {
     </div>
 </div>
 <script>
+    const token = $('meta[name="csrf-token"]').attr('content');
+    if (!token) {
+        console.error('CSRF token not found');
+    }
     // Function to handle AJAX requests
     function handleRequest(buttonId, requestData) {
         // preventing default
@@ -194,6 +198,9 @@ if (isset($_GET['dedicatedServerId'])) {
                         url: 'requestHandeler',
                         type: 'POST',
                         data: data,
+                        headers: {
+                            'X-CSRF-TOKEN': token
+                        },
                         success: function (response) {
                             // apply changes to the user list
                             document.getElementById('userList_<?= $gameSave->id ?>').innerHTML = response;
@@ -229,6 +236,9 @@ if (isset($_GET['dedicatedServerId'])) {
                 data: {
                     search: search,
                     gameId: gameId
+                },
+                headers: {
+                    'X-CSRF-TOKEN': token
                 },
                 success: function (response) {
                     // apply changes to the user list

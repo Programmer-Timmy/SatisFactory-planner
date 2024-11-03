@@ -76,6 +76,7 @@ export class DedicatedServer {
 
 
     public AjaxHealthCheck(gameSaveId: number = this.gameSaveId): Promise<HealthCheck> {
+        const token = this._getCsrfToken();
         return new Promise(function (resolve, reject) {
             $.ajax({
                 url: 'dedicatedServerAPI/healthCheck', // Replace with your actual PHP file path
@@ -83,6 +84,7 @@ export class DedicatedServer {
                 data: {
                     saveGameId: gameSaveId
                 },
+                headers: {'X-CSRF-Token': token},
                 dataType: 'json',
                 success: function (response) {
                     try {
@@ -103,6 +105,7 @@ export class DedicatedServer {
     }
 
     public AjaxQueryServer(gameSaveId: number = this.gameSaveId): Promise<any> {
+        const token = this._getCsrfToken();
         return new Promise(function (resolve, reject) {
             $.ajax({
                 url: 'dedicatedServerAPI/queryServerState', // Replace with your actual PHP file path
@@ -110,6 +113,7 @@ export class DedicatedServer {
                 data: {
                     saveGameId: gameSaveId
                 },
+                headers: {'X-CSRF-Token': token},
                 dataType: 'json',
                 success: function (response) {
                     try {
@@ -135,5 +139,13 @@ export class DedicatedServer {
             this.closed = true;
             document.cookie = 'toastClosed=true';
         });
+    }
+
+    private _getCsrfToken(): string {
+        const meta = $('meta[name="csrf-token"]');
+        if (meta.length === 0) {
+            throw new Error('CSRF token not found');
+        }
+        return <string>meta.attr('content');
     }
 }

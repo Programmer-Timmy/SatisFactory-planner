@@ -36,12 +36,25 @@ if ($position !== false) {
 }
 
 // if ajax is enabled and the request is an ajax request load the ajax file
-if ($site['ajax']) {
-    if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-        include __DIR__ . "/../private/ajax/$require.php";
+// get the X-CSRF-Token from the headers and check if it is the same as the session token
+if ($site['ajax'] && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+    // Check for CSRF token in session and headers
+    if (empty($_SESSION['csrf_token']) || empty($_SERVER['HTTP_X_CSRF_TOKEN']) || $_SESSION['csrf_token'] !== $_SERVER['HTTP_X_CSRF_TOKEN']) {
+        ErrorHandeler::add403Log($requestedPage, $_SERVER['HTTP_REFERER'] ?? null, $_SESSION['userId'] ?? null);
+        sendJsonResponse(403, 'Invalid or missing CSRF token');
+    }
+
+    // Check if the requested AJAX file exists
+    $ajaxFile = __DIR__ . "/../private/ajax$require.php";
+    if (file_exists($ajaxFile)) {
+        include $ajaxFile;
         exit();
+    } else {
+        ErrorHandeler::add404Log($requestedPage, $_SERVER['HTTP_REFERER'] ?? null, $_SESSION['userId'] ?? null);
+        sendJsonResponse(404, 'Invalid Ajax endpoint');
     }
 }
+
 
 // if url has api in it load the api file and exit
 if (str_contains($require, '/api')) {
@@ -84,7 +97,7 @@ if ($site['accounts']['enabled']) {
     $pageTemplate = __DIR__ . "/../private/views/pages$require.php";
 
     if (file_exists($pageTemplate)) {
-        if (str_contains($require, $accounts['filterInUrl']) && !str_contains($require, $site['redirect']) && $require !== '/404' && $require !== '/maintenance' && $require !== '/register' && $require !== '/changelog') {
+        if (str_contains($require, $accounts['filterInUrl']) && !str_contains($require, $site['redirect']) && $require !== '/404' && $require !== '/maintenance' && $require !== '/register' && $require !== '/changelog' && $require !== '/logout') {
             if (!isset($_SESSION[$accounts['sessionName']])) {
                 if ($site['saveUrl']) {
                     $_SESSION['redirect'] = $requestedPage;
@@ -140,4 +153,16 @@ if ($continue) {
 }
 
 
-
+// functions
+/**
+ * Send a JSON response with a given HTTP status code and message.
+ *
+ * @param int $statusCode
+ * @param string $message
+ */
+function sendJsonResponse(int $statusCode, string $message): void {
+    http_response_code($statusCode);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => $message]);
+    exit();
+}

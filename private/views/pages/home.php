@@ -4,7 +4,7 @@ $gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
 $error = '';
 $success = '';
 if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
-    if (!GameSaves::checkecsess($_POST['id'])) {
+    if (!GameSaves::checkAccessOwner($_POST['id'])) {
         header('Location:/home');
         exit();
     }
@@ -41,7 +41,9 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
 
         if ($_POST['dedicatedServerIp'] && $_POST['dedicatedServerPort']) {
             if (!filter_var($_POST['dedicatedServerIp'], FILTER_VALIDATE_IP)) {
-                $error = 'Invalid IP address';
+                if (!preg_match('/^(?!:\/\/)([a-zA-Z0-9-_]{1,63}\.)+[a-zA-Z]{2,6}$/', $_POST['dedicatedServerIp'])) {
+                    $error = 'Invalid IP address or domain name';
+                }
             } elseif (!is_numeric($_POST['dedicatedServerPort'])) {
                 $error = 'Invalid port number';
             }
@@ -65,7 +67,7 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
 
 if ($_GET && isset($_GET['delete'])) {
     $gameSaveId = $_GET['delete'];
-    if (!GameSaves::checkecsess($gameSaveId)) {
+    if (!GameSaves::checkAccessOwner($gameSaveId)) {
         header('Location:/home');
         exit();
     }

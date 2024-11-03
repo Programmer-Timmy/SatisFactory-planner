@@ -24,11 +24,14 @@ if ($_POST && isset($_POST['saveGameName'])) {
 
         // Create save game
         $gameSaveId = GameSaves::createSaveGame($_SESSION['userId'], $saveGameName, $_FILES['saveGameImage'], $selectedUsers);
+        //TODO: FIX THIS SO IT DOES NOT MAKE A SAVE GAME WHEN THERE IS AN ERROR
 
         // Validate dedicated server details if provided
         if (!empty($_POST['dedicatedServerIp']) && !empty($_POST['dedicatedServerPort'])) {
             if (!filter_var($_POST['dedicatedServerIp'], FILTER_VALIDATE_IP)) {
-                $error = 'Invalid IP address';
+                if (!preg_match('/^(?!:\/\/)([a-zA-Z0-9-_]{1,63}\.)+[a-zA-Z]{2,6}$/', $_POST['dedicatedServerIp'])) {
+                    $error = 'Invalid IP address or domain name';
+                }
             } elseif (!is_numeric($_POST['dedicatedServerPort'])) {
                 $error = 'Invalid port number';
             }
@@ -175,6 +178,10 @@ $users = Users::getAllValidatedUsers();
     document.addEventListener('DOMContentLoaded', function () {
         const selectedUsers = [];
         const selectedUsersInput = document.getElementById('selectedUsersInput');
+        const token = $('meta[name="csrf-token"]').attr('content');
+        if (!token) {
+            console.error('CSRF token not found');
+        }
 
         // Handle user search input
         document.getElementById('addSearch').addEventListener('input', function () {
@@ -187,6 +194,9 @@ $users = Users::getAllValidatedUsers();
                     add: true,
                     search: search,
                     selectedUsers: selectedUsers.join(',')
+                },
+                headers: {
+                    'X-CSRF-Token': token
                 },
                 success: function (response) {
                     // Populate the .users container with the search results

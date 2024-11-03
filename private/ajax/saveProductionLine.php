@@ -1,11 +1,25 @@
 <?php
 
 if (!isset($_POST['data']) || !isset($_POST['id'])) {
+    http_response_code(400);
     echo json_encode(['error' => 'Invalid request']);
     exit();
 }
 
-if (!ProductionLines::checkProductionLineVisability($_SESSION['lastVisitedSaveGame'], $_SESSION['userId'])) {
+if (!isset($_SESSION['userId'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'You must be logged in to edit production lines']);
+    exit();
+}
+
+if (!isset($_POST['gameSaveId'])) {
+    http_response_code(400);
+    echo json_encode(['error' => 'No game save id provided']);
+    exit();
+}
+
+if (!ProductionLines::checkProductionLineVisability($_POST['gameSaveId'], $_SESSION['userId'])) {
+    http_response_code(403);
     echo json_encode(['error' => 'You do not have permission to edit this production line']);
     exit();
 }

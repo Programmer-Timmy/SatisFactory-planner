@@ -5,7 +5,7 @@ enum ActionType {
     Calculate = 'calculate'
 }
 
-declare function updatePowerProduction(power : number) : void;
+declare function updatePowerProduction(power: number): void;
 
 export class PowerProduction {
     private powerProduction: JQuery<HTMLElement>;
@@ -219,6 +219,14 @@ export class PowerProduction {
         return !error;
     }
 
+    private static _getCsrfToken(): string {
+        const meta = $('meta[name="csrf-token"]');
+        if (meta.length === 0 || meta.attr('content') === undefined) {
+            throw new Error('CSRF token not found');
+        }
+        return <string>meta.attr('content');
+    }
+
     // apply to database using ajax
     async applyToDatabase(action: ActionType, element: HTMLElement): Promise<any> {
         const card = $(element).closest('.card');
@@ -239,6 +247,7 @@ export class PowerProduction {
                         url: 'powerProduction/add',
                         type: 'POST',
                         dataType: 'json',
+                        headers: {'X-CSRF-Token': PowerProduction._getCsrfToken()},
                         data: {
                             gameSaveId: gameSaveId,
                             buildingId: buildingId,
@@ -256,7 +265,9 @@ export class PowerProduction {
                         url: 'powerProduction/delete',
                         type: 'POST',
                         dataType: 'json',
+                        headers: {'X-CSRF-Token': PowerProduction._getCsrfToken()},
                         data: {
+                            gameSaveId: gameSaveId,
                             powerProductionId: powerProductionId
                         },
                         success: function (data) {
@@ -275,7 +286,9 @@ export class PowerProduction {
                         url: 'powerProduction/update',
                         type: 'POST',
                         dataType: 'json',
+                        headers: {'X-CSRF-Token': PowerProduction._getCsrfToken()},
                         data: {
+                            gameSaveId: gameSaveId,
                             powerProductionId: powerProductionId,
                             amount: amount1,
                             clockSpeed: clockSpeed1
@@ -291,6 +304,7 @@ export class PowerProduction {
                         url: 'powerProduction/calculate',
                         type: 'POST',
                         dataType: 'json',
+                        headers: {'X-CSRF-Token': PowerProduction._getCsrfToken()},
                         data: {
                             gameSaveId: gameSaveId
                         },
