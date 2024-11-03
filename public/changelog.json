@@ -4,7 +4,8 @@
     "date": "november 2 2024",
     "changes": [
       "Added CSRF tokens to all the ajax requests.",
-      "Fixed issue whit not able to add or update a dedicated server."
+      "Fixed issue whit not able to add or update a dedicated server.",
+      "Added more security to all the ajax and api requests."
     ]
   },
   {
