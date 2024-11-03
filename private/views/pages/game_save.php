@@ -431,14 +431,6 @@ if (DedicatedServer::getBySaveGameId($gameSave->id)) : ?>
         new DedicatedServer(<?= $gameSave->id ?>);
     </script>
 
-    <script>
-        document.querySelectorAll('.accordion-button').forEach(button => {
-            button.addEventListener('click', function () {
-                console.log(this.getAttribute('aria-expanded'));
-            });
-        });
-
-    </script>
 <?php endif; ?>
 <?php require_once '../private/views/Popups/productionLine/addProductionLine.php'; ?>
 <?php require_once '../private/views/Popups/saveGame/updatePowerProduction.php'; ?>
