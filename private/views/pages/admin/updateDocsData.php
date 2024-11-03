@@ -109,6 +109,9 @@ foreach ($json as $item) {
                 ItemsNativeClasses: ItemsNativeClasses,
                 BuildingNativeClasses: BuildingNativeClasses
             },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
             success: function (response) {
                 $('#updateDocsDataResponse').after(response['html']);
                 $('#updateDocsData').prop('disabled', false);
