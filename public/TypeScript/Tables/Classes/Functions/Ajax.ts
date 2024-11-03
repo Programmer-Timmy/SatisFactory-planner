@@ -17,6 +17,7 @@ export class Ajax {
                 data: {
                     id: recipe_id
                 },
+                headers: {'X-CSRF-Token': Ajax._getCsrfToken()},
                 dataType: 'json',
                 success: function (response) {
 
@@ -46,6 +47,7 @@ export class Ajax {
                 data: {
                     id: building_id
                 },
+                headers: {'X-CSRF-Token': Ajax._getCsrfToken()},
                 dataType: 'json',
                 success: function (response) {
                     try {
@@ -77,6 +79,7 @@ export class Ajax {
                     data: JSON.stringify(data),
                     id: id
                 },
+                headers: {'X-CSRF-Token': Ajax._getCsrfToken()},
                 success: function (response) {
                     resolve(JSON.parse(response));
                 },
@@ -85,5 +88,37 @@ export class Ajax {
                 },
             });
         });
+    }
+
+    /**
+     * Get the production line data.
+     *
+     * @returns The response from the server.
+     * @param productionLineId
+     * @param autoImportExport
+     * @param autoPowerMachine
+     * @param autoSave
+     */
+    public static saveSettings(productionLineId: number, autoImportExport: boolean, autoPowerMachine: boolean, autoSave: boolean): void {
+        $.ajax({
+            type: 'POST',
+            url: 'updateProductionLineSettings',
+            headers: {'X-CSRF-Token': Ajax._getCsrfToken()},
+            data: {
+                productionLineId: productionLineId,
+                autoImportExport: autoImportExport,
+                autoPowerMachine: autoPowerMachine,
+                autoSave: autoSave,
+
+            },
+        });
+    }
+
+    private static _getCsrfToken(): string {
+        const meta = $('meta[name="csrf-token"]');
+        if (meta.length === 0 || meta.attr('content') === undefined) {
+            throw new Error('CSRF token not found');
+        }
+        return <string>meta.attr('content');
     }
 }

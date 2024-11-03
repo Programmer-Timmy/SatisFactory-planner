@@ -1,3 +1,4 @@
+import {Ajax} from "./Functions/Ajax";
 
 export class Settings {
     public autoImportExport: boolean = true;
@@ -25,7 +26,7 @@ export class Settings {
             this.autoPowerMachine = autoPowerMachineCheckbox.checked;
         }
 
-        this.saveSettings(productionLineId);
+        Ajax.saveSettings(productionLineId, this.autoImportExport, this.autoPowerMachine, this.autoSave);
     }
 
     public addEventListeners() {
@@ -48,17 +49,5 @@ export class Settings {
         }
     }
 
-    public saveSettings(productionLineId: number) {
-        $.ajax({
-            type: 'POST',
-            url: 'updateProductionLineSettings',
-            data: {
-                productionLineId: productionLineId,
-                autoImportExport: this.autoImportExport,
-                autoPowerMachine: this.autoPowerMachine,
-                autoSave: this.autoSave
 
-            },
-        });
-    }
 }

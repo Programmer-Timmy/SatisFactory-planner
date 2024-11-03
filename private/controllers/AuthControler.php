@@ -21,6 +21,9 @@ class AuthControler
                 return [$user->username, 'notVerified'];
                 exit();
             }
+
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+
             $_SESSION[$site['accounts']['sessionName']] = $user->id;
             if ($site['admin']['enabled']) {
                 if ($user->admin == 1) {

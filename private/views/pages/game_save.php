@@ -75,6 +75,7 @@ if (isset($_GET['layoutType'])) {
                 type: 'POST',
                 url: 'powerProduction/get',
                 dataType: 'json',
+                headers: {'X-CSRF-Token': getCsrfToken()},
                 data: {
                     gameSaveId: <?= $gameSave->id ?>
                 },
@@ -91,6 +92,14 @@ if (isset($_GET['layoutType'])) {
                 }
             });
         });
+    }
+
+    function getCsrfToken() {
+        const meta = $('meta[name="csrf-token"]');
+        if (meta.length === 0 || meta.attr('content') === undefined) {
+            throw new Error('CSRF token not found');
+        }
+        return meta.attr('content');
     }
 
     async function update_total_power_consumption() {

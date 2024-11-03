@@ -41,7 +41,9 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
 
         if ($_POST['dedicatedServerIp'] && $_POST['dedicatedServerPort']) {
             if (!filter_var($_POST['dedicatedServerIp'], FILTER_VALIDATE_IP)) {
-                $error = 'Invalid IP address';
+                if (!preg_match('/^(?!:\/\/)([a-zA-Z0-9-_]{1,63}\.)+[a-zA-Z]{2,6}$/', $_POST['dedicatedServerIp'])) {
+                    $error = 'Invalid IP address or domain name';
+                }
             } elseif (!is_numeric($_POST['dedicatedServerPort'])) {
                 $error = 'Invalid port number';
             }

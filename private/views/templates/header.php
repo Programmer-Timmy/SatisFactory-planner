@@ -96,6 +96,11 @@ global $allowedIPs;
     <meta property="og:image:width" content="192">
     <meta property="og:image:height" content="192">
 
+    <!-- crsf token -->
+    <?php if (isset($_SESSION['csrf_token'])) : ?>
+        <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?>">
+    <?php endif; ?>
+
     <!-- icon -->
     <link rel="apple-touch-icon" sizes="57x57" href="/image/favicons/apple-touch-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/image/favicons/apple-touch-icon-60x60.png">
