@@ -1,13 +1,15 @@
 <?php
+$LIMIT = 10;
+$searchYear = $_GET['year'] ?? date('Y');
 
-$fourOFourLogs = ErrorHandeler::getAll404Logs();
-$threeOFourLogs = ErrorHandeler::getAll403Logs();
+$fourOFourLogs = ErrorHandeler::getAll404Logs($LIMIT);
+$threeOFourLogs = ErrorHandeler::getAll403Logs($LIMIT);
+$YearlyLogs = ErrorHandeler::getYearlyLogs($searchYear);
+
 $availableYears = ErrorHandeler::getAvailableYears();
 $topTenFourOFourLogs = ErrorHandeler::getTopTen404Logs();
 $topTenThreeOFourLogs = ErrorHandeler::getTopTen403Logs();
 
-$searchYear = isset($_GET['year']) ? $_GET['year'] : date('Y');
-$YearlyLogs = ErrorHandeler::getYearlyLogs($searchYear);
 $monthlySortedLogs = [];
 
 // Sort logs by month and error type
@@ -168,6 +170,27 @@ foreach ($threeOFourLogs as $threeOFourLog) {
                     <?php else: ?>
                         <?= GlobalUtility::createTable($threeOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']) ?>
                     <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <h2 class="text-center mb-4">All Logs</h2>
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body h-100">
+                    <h3 class="card-title text-center">404 Logs</h3>
+                    <?= GlobalUtility::createTable($fourOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']) ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body h-100">
+                    <h3 class="card-title text-center">403 Logs</h3>
+                    <?= GlobalUtility::createTable($threeOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']) ?>
                 </div>
             </div>
         </div>
