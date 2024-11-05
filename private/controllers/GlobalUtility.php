@@ -99,7 +99,7 @@ class GlobalUtility
     public static function dateTimeToLocal($time): string {
         $date = new DateTime($time);
         $date->setTimezone(new DateTimeZone('Europe/Amsterdam'));
-        return $date->format('d-m-Y H:i:s T');
+        return $date->format('d-m-Y H:i T');
     }
 }
 

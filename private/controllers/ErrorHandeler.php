@@ -26,12 +26,39 @@ class ErrorHandeler {
         return Database::query("SELECT users.username, error_403_logs.requested_url, error_403_logs.ip_address, error_403_logs.referrer_url, error_403_logs.error_timestamp FROM error_403_logs LEFT JOIN users ON error_403_logs.users_id = users.id order by error_timestamp desc limit $limit");
     }
 
+    public static function getYearlyLogs($year): array {
+        $fourOFourLogs = Database::query("SELECT users.username, error_404_logs.requested_url, error_404_logs.ip_address, error_404_logs.referrer_url, error_404_logs.error_timestamp FROM error_404_logs LEFT JOIN users ON error_404_logs.users_id = users.id WHERE YEAR(error_404_logs.error_timestamp) = ? order by error_timestamp desc", [$year]);
+        $threeOFourLogs = Database::query("SELECT users.username, error_403_logs.requested_url, error_403_logs.ip_address, error_403_logs.referrer_url, error_403_logs.error_timestamp FROM error_403_logs LEFT JOIN users ON error_403_logs.users_id = users.id WHERE YEAR(error_403_logs.error_timestamp) = ? order by error_timestamp desc", [$year]);
+        foreach ($fourOFourLogs as $fourOFourLog) {
+            $fourOFourLog->error_timestamp = GlobalUtility::dateTimeToLocal($fourOFourLog->error_timestamp);
+        }
+
+        foreach ($threeOFourLogs as $threeOFourLog) {
+            $threeOFourLog->error_timestamp = GlobalUtility::dateTimeToLocal($threeOFourLog->error_timestamp);
+        }
+        return [$fourOFourLogs, $threeOFourLogs];
+    }
+
     public static function get404LogsByMonth($month, $year) {
         return Database::query("SELECT users.username, error_404_logs.requested_url, error_404_logs.ip_address, error_404_logs.referrer_url, error_404_logs.error_timestamp FROM error_404_logs LEFT JOIN users ON error_404_logs.users_id = users.id WHERE MONTH(error_404_logs.error_timestamp) = ? AND YEAR(error_404_logs.error_timestamp) = ? order by error_timestamp desc", [$month, $year]);
     }
 
     public static function get403LogsByMonth($month, $year) {
         return Database::query("SELECT users.username, error_403_logs.requested_url, error_403_logs.ip_address, error_403_logs.referrer_url, error_403_logs.error_timestamp FROM error_403_logs LEFT JOIN users ON error_403_logs.users_id = users.id WHERE MONTH(error_403_logs.error_timestamp) = ? AND YEAR(error_403_logs.error_timestamp) = ? order by error_timestamp desc", [$month, $year]);
+    }
+
+    public static function getAvailableYears() {
+        return Database::query("SELECT DISTINCT YEAR(error_timestamp) as year FROM error_404_logs UNION SELECT DISTINCT YEAR(error_timestamp) as year FROM error_403_logs");
+    }
+
+    public static function getTopTen404Logs() {
+        $database = new NewDatabase();
+        return $database->query("SELECT requested_url, COUNT(requested_url) as count FROM error_404_logs GROUP BY requested_url ORDER BY count DESC LIMIT 10");
+    }
+
+    public static function getTopTen403Logs() {
+        $database = new NewDatabase();
+        return $database->query("SELECT requested_url, COUNT(requested_url) as count FROM error_403_logs GROUP BY requested_url ORDER BY count DESC LIMIT 10");
     }
 
 }
