@@ -9,7 +9,7 @@ class GlobalUtility
      * @param bool $bootstrap
      * @return string
      */
-    public static function createTable(array $data, array $shownTables = ['*'], array $customButtons = [], bool $bootstrap = true): string
+    public static function createTable(array $data, array $shownTables = ['*'], array $customButtons = [], bool $bootstrap = true, bool $enableBool = true): string
     {
         $tableClass = $bootstrap ? 'table table-striped table-hover table-responsive' : '';
 
@@ -38,7 +38,7 @@ class GlobalUtility
             foreach ($data as $row) {
                 $table .= '<tr>';
                 foreach (get_object_vars($row) as $column => $value) {
-                    if ($value == 1 || $value == 0) {
+                    if (($value == 1 || $value == 0) && $enableBool) {
                         $value = $value ? 'True' : 'False';
                     }
                     if ($shownTables[0] == '*') {

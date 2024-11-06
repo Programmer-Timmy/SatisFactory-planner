@@ -1,5 +1,5 @@
 <?php
-$LIMIT = 10;
+$LIMIT = 20;
 $searchYear = $_GET['year'] ?? date('Y');
 
 $fourOFourLogs = ErrorHandeler::getAll404Logs($LIMIT);
@@ -7,6 +7,7 @@ $threeOFourLogs = ErrorHandeler::getAll403Logs($LIMIT);
 $YearlyLogs = ErrorHandeler::getYearlyLogs($searchYear);
 
 $availableYears = ErrorHandeler::getAvailableYears();
+$availableIpAddresses = ErrorHandeler::getAvailableIpAddresses();
 $topTenFourOFourLogs = ErrorHandeler::getTopTen404Logs();
 $topTenThreeOFourLogs = ErrorHandeler::getTopTen403Logs();
 
@@ -119,7 +120,7 @@ foreach ($threeOFourLogs as $threeOFourLog) {
                             No 404 logs have been made.
                         </div>
                     <?php else: ?>
-                        <?= GlobalUtility::createTable($topTenFourOFourLogs, ['requested_url', 'count']) ?>
+                        <?= GlobalUtility::createTable($topTenFourOFourLogs, ['requested_url', 'count'], enableBool: false) ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -134,7 +135,7 @@ foreach ($threeOFourLogs as $threeOFourLog) {
                             No 403 logs have been made.
                         </div>
                     <?php else: ?>
-                        <?= GlobalUtility::createTable($topTenThreeOFourLogs, ['requested_url', 'count']) ?>
+                        <?= GlobalUtility::createTable($topTenThreeOFourLogs, ['requested_url', 'count'], enableBool: false) ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -147,7 +148,18 @@ foreach ($threeOFourLogs as $threeOFourLog) {
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
                 <div class="card-body h-100">
-                    <h3 class="card-title text-center">404 Logs</h3>
+                    <div class="row align-items-center pb-2">
+                        <div class="col-lg-4">
+                        </div>
+                        <div class="col-lg-4">
+                            <h3 class="card-title text-center">404 Logs</h3>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="d-flex justify-content-end">
+                                <input type="search" class="form-control" id="four-o-four-search" placeholder="Search">
+                            </div>
+                        </div>
+                    </div>
                     <?php if (empty($fourOFourLogs)): ?>
                         <div class="alert alert-info text-center" role="alert">
                             No 404 logs have been made.
@@ -162,7 +174,21 @@ foreach ($threeOFourLogs as $threeOFourLog) {
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
                 <div class="card-body h-100">
-                    <h3 class="card-title text-center">403 Logs</h3>
+                    <div class="row align-items-center pb-2 ">
+                        <div class="col-lg-4">
+                        </div>
+                        <div class="col-lg-4">
+                            <h3 class="card-title text-center">403 Logs</h3>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="d-flex justify-content-end">
+<!--                                button to select filters-->
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                                    Filter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <?php if (empty($threeOFourLogs)): ?>
                         <div class="alert alert-info text-center" role="alert">
                             No 403 logs have been made.
@@ -170,27 +196,6 @@ foreach ($threeOFourLogs as $threeOFourLog) {
                     <?php else: ?>
                         <?= GlobalUtility::createTable($threeOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']) ?>
                     <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <h2 class="text-center mb-4">All Logs</h2>
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body h-100">
-                    <h3 class="card-title text-center">404 Logs</h3>
-                    <?= GlobalUtility::createTable($fourOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']) ?>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body h-100">
-                    <h3 class="card-title text-center">403 Logs</h3>
-                    <?= GlobalUtility::createTable($threeOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']) ?>
                 </div>
             </div>
         </div>

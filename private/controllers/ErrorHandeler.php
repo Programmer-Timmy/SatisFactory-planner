@@ -61,4 +61,10 @@ class ErrorHandeler {
         return $database->query("SELECT requested_url, COUNT(requested_url) as count FROM error_403_logs GROUP BY requested_url ORDER BY count DESC LIMIT 10");
     }
 
+    # get anvalible ips
+    public static function getAvailableIpAddresses() {
+        return Database::query("SELECT DISTINCT ip_address FROM error_404_logs UNION SELECT DISTINCT ip_address FROM error_403_logs");
+
+    }
+
 }
