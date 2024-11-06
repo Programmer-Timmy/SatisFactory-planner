@@ -1,13 +1,21 @@
 <?php
 $LIMIT = 20;
 $searchYear = $_GET['year'] ?? date('Y');
+$fourOFourIpFilter = $_GET['404ip'] ?? null;
+$fourOFourUrlFilter = $_GET['404url'] ?? null;
+$threeOFourIpFilter = $_GET['403ip'] ?? null;
+$threeOFourUrlFilter = $_GET['403url'] ?? null;
 
-$fourOFourLogs = ErrorHandeler::getAll404Logs($LIMIT);
-$threeOFourLogs = ErrorHandeler::getAll403Logs($LIMIT);
+$fourOFourLogs = ErrorHandeler::getAll404Logs($LIMIT, $fourOFourIpFilter, $fourOFourUrlFilter);
+$threeOFourLogs = ErrorHandeler::getAll403Logs($LIMIT, $threeOFourIpFilter, $threeOFourUrlFilter);
 $YearlyLogs = ErrorHandeler::getYearlyLogs($searchYear);
 
 $availableYears = ErrorHandeler::getAvailableYears();
-$availableIpAddresses = ErrorHandeler::getAvailableIpAddresses();
+$availableFourOThreePages = ErrorHandeler::getAvailable403Pages();
+$availableFourOFourPages = ErrorHandeler::getAvailable404Pages();
+$availableFourOThreeIpAddresses = ErrorHandeler::getAvailable403IpAddresses();
+$availableFourOFourIpAddresses = ErrorHandeler::getAvailable404IpAddresses();
+
 $topTenFourOFourLogs = ErrorHandeler::getTopTen404Logs();
 $topTenThreeOFourLogs = ErrorHandeler::getTopTen403Logs();
 
@@ -154,10 +162,20 @@ foreach ($threeOFourLogs as $threeOFourLog) {
                         <div class="col-lg-4">
                             <h3 class="card-title text-center">404 Logs</h3>
                         </div>
-                        <div class="col-lg-4">
-                            <div class="d-flex justify-content-end">
-                                <input type="search" class="form-control" id="four-o-four-search" placeholder="Search">
-                            </div>
+                        <div class="col-lg-4"></div>
+                        <div class="d-flex justify-content-center col-12">
+                            <select class="form-select w-auto mx-3" id="404ipFilter" onchange="applyFilters('404')">
+                                <option value="">Filter by IP</option>
+                                <?php foreach ($availableFourOFourIpAddresses as $ip): ?>
+                                    <option value="<?= $ip->ip_address ?>" <?= $fourOFourIpFilter == $ip->ip_address ? 'selected' : '' ?>><?= $ip->ip_address ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <select class="form-select w-auto mx-3" id="404urlFilter" onchange="applyFilters('404')">
+                                <option value="">Filter by URL</option>
+                                <?php foreach ($availableFourOFourPages as $page): ?>
+                                    <option value="<?= $page->requested_url ?>" <?= $fourOFourUrlFilter == $page->requested_url ? 'selected' : '' ?>><?= $page->requested_url ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </div>
                     <?php if (empty($fourOFourLogs)): ?>
@@ -180,13 +198,20 @@ foreach ($threeOFourLogs as $threeOFourLog) {
                         <div class="col-lg-4">
                             <h3 class="card-title text-center">403 Logs</h3>
                         </div>
-                        <div class="col-lg-4">
-                            <div class="d-flex justify-content-end">
-<!--                                button to select filters-->
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
-                                    Filter
-                                </button>
-                            </div>
+                        <div class="col-lg-4"></div>
+                        <div class="d-flex justify-content-center col-12">
+                            <select class="form-select w-auto mx-3" id="403ipFilter" onchange="applyFilters('403')">
+                                <option value="">Filter by IP</option>
+                                <?php foreach ($availableFourOThreeIpAddresses as $ip): ?>
+                                    <option value="<?= $ip->ip_address ?>" <?= $threeOFourIpFilter == $ip->ip_address ? 'selected' : '' ?>><?= $ip->ip_address ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <select class="form-select w-auto mx-3" id="403urlFilter" onchange="applyFilters('403')">
+                                <option value="">Filter by URL</option>
+                                <?php foreach ($availableFourOThreePages as $page): ?>
+                                    <option value="<?= $page->requested_url ?>" <?= $threeOFourUrlFilter == $page->requested_url ? 'selected' : '' ?>><?= $page->requested_url ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </div>
                     <?php if (empty($threeOFourLogs)): ?>
@@ -203,6 +228,11 @@ foreach ($threeOFourLogs as $threeOFourLog) {
 </div>
 
 <script type="text/javascript">
+    let existingFilters = new URLSearchParams(window.location.search);
+    let ipFilter = existingFilters.get('ip');
+    let urlFilter = existingFilters.get('url');
+    let ipYear = existingFilters.get('year');
+
     google.charts.load('current', {'packages': ['corechart']});
     google.charts.setOnLoadCallback(drawCharts);
 
@@ -246,6 +276,19 @@ foreach ($threeOFourLogs as $threeOFourLog) {
         chart.draw(data, options);
     }
 
+    function applyFilters(type) {
+        const ip = document.getElementById(`${type}ipFilter`).value;
+        const url = document.getElementById(`${type}urlFilter`).value;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set(`${type}ip`, ip);
+        urlParams.set(`${type}url`, url);
+
+        window.location.href = window.location.pathname + '?' + urlParams.toString();
+    }
+
+
     // Redraw charts on window resize for responsiveness
     window.addEventListener('resize', drawCharts);
 </script>
+

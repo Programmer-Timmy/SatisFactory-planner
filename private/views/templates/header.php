@@ -4,6 +4,7 @@
 function getPageTitle($skipCheck = false) {
     global $titles;
     $url = $_SERVER['REQUEST_URI'];
+    $url = explode('?', $url)[0];
 
     $pageTitle = ucfirst($titles['default']);
 

@@ -16,14 +16,32 @@ class ErrorHandeler {
 
     }
 
-    public static function getAll404Logs($limit = 10) {
-        // user can be null
-        return Database::query("SELECT users.username, error_404_logs.requested_url, error_404_logs.ip_address, error_404_logs.referrer_url, error_404_logs.error_timestamp FROM error_404_logs LEFT JOIN users ON error_404_logs.users_id = users.id order by error_timestamp desc limit $limit");
+    public static function getAll404Logs($limit = 10, $ip = null, $page = null) {
+        $where = [];
+        if ($ip) {
+            $where[] = "ip_address = '$ip'";
+        }
+        if ($page) {
+            $where[] = "requested_url = '$page'";
+        }
+
+        $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        return Database::query("SELECT users.username, error_404_logs.requested_url, error_404_logs.ip_address, error_404_logs.referrer_url, error_404_logs.error_timestamp FROM error_404_logs LEFT JOIN users ON error_404_logs.users_id = users.id $whereClause order by error_timestamp desc limit $limit");
     }
 
-    public static function getAll403Logs($limit = 10) {
-        // user can be null
-        return Database::query("SELECT users.username, error_403_logs.requested_url, error_403_logs.ip_address, error_403_logs.referrer_url, error_403_logs.error_timestamp FROM error_403_logs LEFT JOIN users ON error_403_logs.users_id = users.id order by error_timestamp desc limit $limit");
+    public static function getAll403Logs($limit = 10, $ip = null, $page = null) {
+        $where = [];
+        if ($ip) {
+            $where[] = "ip_address = '$ip'";
+        }
+        if ($page) {
+            $where[] = "requested_url = '$page'";
+        }
+
+        $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        return Database::query("SELECT users.username, error_403_logs.requested_url, error_403_logs.ip_address, error_403_logs.referrer_url, error_403_logs.error_timestamp FROM error_403_logs LEFT JOIN users ON error_403_logs.users_id = users.id $whereClause order by error_timestamp desc limit $limit");
     }
 
     public static function getYearlyLogs($year): array {
@@ -51,20 +69,55 @@ class ErrorHandeler {
         return Database::query("SELECT DISTINCT YEAR(error_timestamp) as year FROM error_404_logs UNION SELECT DISTINCT YEAR(error_timestamp) as year FROM error_403_logs");
     }
 
-    public static function getTopTen404Logs() {
+    public static function getTopTen404Logs(): false|array {
         $database = new NewDatabase();
         return $database->query("SELECT requested_url, COUNT(requested_url) as count FROM error_404_logs GROUP BY requested_url ORDER BY count DESC LIMIT 10");
     }
 
-    public static function getTopTen403Logs() {
+    public static function getTopTen403Logs(): false|array {
         $database = new NewDatabase();
         return $database->query("SELECT requested_url, COUNT(requested_url) as count FROM error_403_logs GROUP BY requested_url ORDER BY count DESC LIMIT 10");
     }
 
-    # get anvalible ips
-    public static function getAvailableIpAddresses() {
-        return Database::query("SELECT DISTINCT ip_address FROM error_404_logs UNION SELECT DISTINCT ip_address FROM error_403_logs");
-
+    public static function getAvailable404IpAddresses() {
+        return Database::query("
+        SELECT ip_address, COUNT(*) as count 
+        FROM (
+            SELECT ip_address FROM error_404_logs
+        ) as combined
+        GROUP BY ip_address
+    ");
     }
+
+    public static function getAvailable403IpAddresses() {
+        return Database::query("
+        SELECT ip_address, COUNT(*) as count 
+        FROM (
+            SELECT ip_address FROM error_403_logs
+        ) as combined
+        GROUP BY ip_address
+    ");
+    }
+
+    public static function getAvailable403Pages() {
+        return Database::query("
+        SELECT requested_url, COUNT(*) as count 
+        FROM (
+            SELECT requested_url FROM error_403_logs
+        ) as combined
+        GROUP BY requested_url
+    ");
+    }
+
+    public static function getAvailable404Pages() {
+        return Database::query("
+        SELECT requested_url, COUNT(*) as count 
+        FROM (
+            SELECT requested_url FROM error_404_logs
+        ) as combined
+        GROUP BY requested_url
+    ");
+    }
+
 
 }
