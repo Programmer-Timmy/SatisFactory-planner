@@ -84,17 +84,18 @@ $yearSelect .= '</select>';
         <div class="col-lg-6 mb-4">
             <?php GlobalUtility::renderCard(
                 '404 Logs',
-                empty($topTenFourOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 404 logs have been made.</div>' : GlobalUtility::createTable($topTenFourOFourLogs, ['requested_url', 'count'], enableBool: false)
+                empty($topTenFourOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 404 logs have been made.</div>' : '<div id="top_ten_404_chart_div" style="width: 100%; height: 400px;"></div>'
             ); ?>
         </div>
 
         <div class="col-lg-6 mb-4">
             <?php GlobalUtility::renderCard(
                 '403 Logs',
-                empty($topTenThreeOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 403 logs have been made.</div>' : GlobalUtility::createTable($topTenThreeOFourLogs, ['requested_url', 'count'], enableBool: false)
+                empty($topTenThreeOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 403 logs have been made.</div>' : '<div id="top_ten_403_chart_div" style="width: 100%; height: 400px;"></div>'
             ); ?>
         </div>
     </div>
+
 
 
     <div class="row">
@@ -141,6 +142,8 @@ $yearSelect .= '</select>';
     function drawCharts() {
         drawBarChart();
         drawPieChart();
+        drawTopTen404Chart();
+        drawTopTen403Chart();
     }
 
     function drawBarChart() {
@@ -156,6 +159,7 @@ $yearSelect .= '</select>';
             vAxis: {title: 'Logs'},
             hAxis: {title: 'Month'},
             isStacked: true,
+            fontSize: 12,
             seriesType: 'bars'
         };
 
@@ -190,6 +194,50 @@ $yearSelect .= '</select>';
 
         window.location.href = window.location.pathname + '?' + urlParams.toString() + '#latestLogs';
     }
+
+    function drawTopTen404Chart() {
+        const data = google.visualization.arrayToDataTable([
+            ['Requested URL', 'Count'],
+            <?php foreach ($topTenFourOFourLogs as $log): ?>
+            // remove fist /
+            ['<?= htmlspecialchars(substr($log->requested_url, 1)) ?>', <?= $log->count ?>],
+            <?php endforeach; ?>
+        ]);
+
+        const options = {
+            title: 'Top 10 Requested 404 URLs',
+            hAxis: {title: 'Count', minValue: 0},
+            vAxis: {title: 'Requested URL'},
+            chartArea: {width: '50%'},
+            fontSize: 12,
+            bars: 'horizontal',
+        };
+
+        const chart = new google.visualization.BarChart(document.getElementById('top_ten_404_chart_div'));
+        chart.draw(data, options);
+    }
+
+    function drawTopTen403Chart() {
+        const data = google.visualization.arrayToDataTable([
+            ['Requested URL', 'Count'],
+            <?php foreach ($topTenThreeOFourLogs as $log): ?>
+            ['<?= htmlspecialchars($log->requested_url) ?>', <?= $log->count ?>],
+            <?php endforeach; ?>
+        ]);
+
+        const options = {
+            title: 'Top 10 Requested 403 URLs',
+            hAxis: {title: 'Count', minValue: 0},
+            vAxis: {title: 'Requested URL'},
+            chartArea: {width: '50%'},
+            fontSize: 12,
+            bars: 'horizontal',
+        };
+
+        const chart = new google.visualization.BarChart(document.getElementById('top_ten_403_chart_div'));
+        chart.draw(data, options);
+    }
+
 
 
     // Redraw charts on window resize for responsiveness
