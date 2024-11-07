@@ -88,6 +88,14 @@ if ($url == '/') {
 
 $titles = [
     'default' => substr($url, 1) . ' - ' . $site['siteName'],
+
+    // admin
+    'admin/errorLogs' => 'Error Logs - ' . $site['siteName'],
+    'admin/loginAttempts' => 'Login Attempts - ' . $site['siteName'],
+    'admin/updateDocsData' => 'Update Docs Data - ' . $site['siteName'],
+    'admin/users' => 'Users - ' . $site['siteName'],
+    'admin' => 'Admin - ' . $site['siteName'],
+
     'maintenance' => 'Under Maintenance - ' . $site['siteName'],
     'home' => 'Home - ' . $site['siteName'],
     'about' => 'About Us - ' . $site['siteName'],
@@ -99,13 +107,6 @@ $titles = [
     'account' => 'Account - ' . $site['siteName'],
     'helpfulLinks' => 'Helpful Links - ' . $site['siteName'],
     '404' => '404 - Oops page not found!',
-
-    // admin
-    'admin/errorLogs' => 'Error Logs - ' . $site['siteName'],
-    'admin/loginAttempts' => 'Login Attempts - ' . $site['siteName'],
-    'admin/updateDocsData' => 'Update Docs Data - ' . $site['siteName'],
-    'admin/users' => 'Users - ' . $site['siteName'],
-    'admin' => 'Admin - ' . $site['siteName'],
 
 
     // Add more titles as needed
