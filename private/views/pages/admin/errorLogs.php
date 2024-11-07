@@ -98,7 +98,7 @@ $yearSelect .= '</select>';
 
 
     <div class="row">
-        <h2 class="text-center mb-4">Latest Logs</h2>
+        <h2 class="text-center mb-4" id="latestLogs">Latest Logs</h2>
         <div class="col-lg-6 mb-4">
             <?php GlobalUtility::renderCard(
                 '404 Logs',
@@ -185,8 +185,10 @@ $yearSelect .= '</select>';
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.set(`${type}ip`, ip);
         urlParams.set(`${type}url`, url);
+        // send the user to the same position on the page
 
-        window.location.href = window.location.pathname + '?' + urlParams.toString();
+
+        window.location.href = window.location.pathname + '?' + urlParams.toString() + '#latestLogs';
     }
 
 
