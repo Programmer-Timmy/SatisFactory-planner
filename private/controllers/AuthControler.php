@@ -60,6 +60,22 @@ class AuthControler
         return Database::getAll('login_attempts', columns: ['username', 'ip_address', 'success', 'login_timestamp'], join: ['users' => 'users_id = users.id']);
     }
 
+    public static function getSuccessfulLoginAttempts(string | null $year = null) {
+        if ($year) {
+            return Database::query("SELECT users.username, login_attempts.ip_address, login_attempts.success, login_attempts.login_timestamp FROM login_attempts LEFT JOIN users ON login_attempts.users_id = users.id WHERE success = 1 AND YEAR(login_timestamp) = ?", [$year]);
+        }
+
+        return Database::getAll('login_attempts', columns: ['username', 'ip_address', 'success', 'login_timestamp'], join: ['users' => 'users_id = users.id'], where: ['success' => 1]);
+    }
+
+    public static function getFailedLoginAttempts(string | null $year = null) {
+        if ($year) {
+            return Database::query("SELECT users.username, login_attempts.ip_address, login_attempts.success, login_attempts.login_timestamp FROM login_attempts LEFT JOIN users ON login_attempts.users_id = users.id WHERE success = 0 AND YEAR(login_timestamp) = ?", [$year]);
+        }
+
+        return Database::getAll('login_attempts', columns: ['username', 'ip_address', 'success', 'login_timestamp'], join: ['users' => 'users_id = users.id'], where: ['success' => 0]);
+    }
+
     private static function setLoginAttempt($userId, $success) {
         $ip = $_SERVER['REMOTE_ADDR'];
         $timeStamp = date('Y-m-d H:i:s');

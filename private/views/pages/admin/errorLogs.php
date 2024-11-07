@@ -40,113 +40,59 @@ foreach ($fourOFourLogs as $fourOFourLog) {
 foreach ($threeOFourLogs as $threeOFourLog) {
     $threeOFourLog->error_timestamp = GlobalUtility::dateTimeToLocal($threeOFourLog->error_timestamp);
 }
+
+$yearSelect = '<select class="form-select w-auto" id="yearSelect" onchange="window.location.href = \'/admin/errorLogs?year=\' + this.value">';
+foreach ($availableYears as $availableYear) {
+    $yearSelect .= '<option value="' . $availableYear->year . '" ' . ($availableYear->year == $searchYear ? 'selected' : '') . '>' . $availableYear->year . '</option>';
+}
+$yearSelect .= '</select>';
+
 ?>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
 <div class="px-md-4 px-2">
     <div class="row mb-4 align-items-center">
-        <div class="col-lg-4"></div>
-        <div class="col-lg-4">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6">
             <h1 class="text-center">Logs Overview</h1>
         </div>
-        <div class="col-lg-4 text-end">
+        <div class="col-lg-3 text-center text-lg-end">
             <a href="/admin" class="btn btn-primary">Return to admin page</a>
         </div>
     </div>
 
     <div class="row">
         <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body h-100">
-                    <div class="row align-items-center">
-                        <div class="col-lg-4"></div>
-                        <div class="col-lg-4">
-                            <h3 class="card-title text-center">Monthly Logs</h3>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="d-flex justify-content-end">
-                                <select class="form-select w-auto" id="yearSelect"
-                                        onchange="window.location.href = '/admin/errorLogs?year=' + this.value">
-                                    <?php foreach ($availableYears as $year): ?>
-                                        <option value="<?= $year->year ?>" <?= (isset($_GET['year']) && $_GET['year'] == $year->year) ? 'selected' : '' ?>><?= $year->year ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <?php if (empty($YearlyLogs)): ?>
-                        <div class="alert alert-info text-center" role="alert">
-                            No logs have been made this year.
-                        </div>
-                    <?php else: ?>
-                        <div id="chart_div" style="width: 100%; height: 400px;"></div>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <?php GlobalUtility::renderCard(
+                'Monthly Logs',
+                '<div id="chart_div" style="width: 100%; height: 400px;"></div>',
+                [$yearSelect]
+            ); ?>
         </div>
 
         <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body h-100">
-                    <div class="row align-items-center">
-                        <div class="col-lg-4"></div>
-                        <div class="col-lg-4">
-                            <h3 class="card-title text-center">Yearly Logs</h3>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="d-flex justify-content-end">
-                                <select class="form-select w-auto" id="yearSelect"
-                                        onchange="window.location.href = '/admin/errorLogs?year=' + this.value">
-                                    <?php foreach ($availableYears as $year): ?>
-                                        <option value="<?= $year->year ?>" <?= (isset($_GET['year']) && $_GET['year'] == $year->year) ? 'selected' : '' ?>><?= $year->year ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <?php if (empty($YearlyLogs)): ?>
-                        <div class="alert alert-info text-center" role="alert">
-                            No logs have been made this year.
-                        </div>
-                    <?php else: ?>
-                        <div id="pie_chart_div" style="width: 100%; height: 400px;"></div>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <?php GlobalUtility::renderCard(
+                'Yearly Logs',
+                '<div id="pie_chart_div" style="width: 100%; height: 400px;"></div>',
+                [$yearSelect]
+            ); ?>
         </div>
     </div>
 
     <div class="row">
         <h2 class="text-center mb-4">Top 10 Logs</h2>
         <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body h-100">
-                    <h3 class="card-title text-center">404 Logs</h3>
-                    <?php if (empty($topTenFourOFourLogs)): ?>
-                        <div class="alert alert-info text-center" role="alert">
-                            No 404 logs have been made.
-                        </div>
-                    <?php else: ?>
-                        <?= GlobalUtility::createTable($topTenFourOFourLogs, ['requested_url', 'count'], enableBool: false) ?>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <?php GlobalUtility::renderCard(
+                '404 Logs',
+                empty($topTenFourOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 404 logs have been made.</div>' : GlobalUtility::createTable($topTenFourOFourLogs, ['requested_url', 'count'], enableBool: false)
+            ); ?>
         </div>
 
         <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body h-100">
-                    <h3 class="card-title text-center">403 Logs</h3>
-                    <?php if (empty($topTenThreeOFourLogs)): ?>
-                        <div class="alert alert-info text-center" role="alert">
-                            No 403 logs have been made.
-                        </div>
-                    <?php else: ?>
-                        <?= GlobalUtility::createTable($topTenThreeOFourLogs, ['requested_url', 'count'], enableBool: false) ?>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <?php GlobalUtility::renderCard(
+                '403 Logs',
+                empty($topTenThreeOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 403 logs have been made.</div>' : GlobalUtility::createTable($topTenThreeOFourLogs, ['requested_url', 'count'], enableBool: false)
+            ); ?>
         </div>
     </div>
 
@@ -154,75 +100,31 @@ foreach ($threeOFourLogs as $threeOFourLog) {
     <div class="row">
         <h2 class="text-center mb-4">Latest Logs</h2>
         <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body h-100">
-                    <div class="row align-items-center pb-2">
-                        <div class="col-lg-4">
-                        </div>
-                        <div class="col-lg-4">
-                            <h3 class="card-title text-center">404 Logs</h3>
-                        </div>
-                        <div class="col-lg-4"></div>
-                        <div class="d-flex justify-content-center col-12">
-                            <select class="form-select w-auto mx-3" id="404ipFilter" onchange="applyFilters('404')">
-                                <option value="">Filter by IP</option>
-                                <?php foreach ($availableFourOFourIpAddresses as $ip): ?>
-                                    <option value="<?= $ip->ip_address ?>" <?= $fourOFourIpFilter == $ip->ip_address ? 'selected' : '' ?>><?= $ip->ip_address . ' (' . $ip->count . ')' ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <select class="form-select w-auto mx-3" id="404urlFilter" onchange="applyFilters('404')">
-                                <option value="">Filter by URL</option>
-                                <?php foreach ($availableFourOFourPages as $page): ?>
-                                    <option value="<?= $page->requested_url ?>" <?= $fourOFourUrlFilter == $page->requested_url ? 'selected' : '' ?>><?= $page->requested_url . ' (' . $page->count . ')' ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <?php if (empty($fourOFourLogs)): ?>
-                        <div class="alert alert-info text-center" role="alert">
-                            No 404 logs have been made.
-                        </div>
-                    <?php else: ?>
-                        <?= GlobalUtility::createTable($fourOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']) ?>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <?php GlobalUtility::renderCard(
+                '404 Logs',
+                empty($fourOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 404 logs have been made.</div>' : GlobalUtility::createTable($fourOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']),
+                [
+                    generateIpFilterDropdown($availableFourOFourIpAddresses, $fourOFourIpFilter),
+                    generateUrlFilterDropdown($availableFourOFourPages, $fourOFourUrlFilter)
+                ],
+                null,
+                true
+            );
+            ?>
         </div>
 
         <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body h-100">
-                    <div class="row align-items-center pb-2 ">
-                        <div class="col-lg-4">
-                        </div>
-                        <div class="col-lg-4">
-                            <h3 class="card-title text-center">403 Logs</h3>
-                        </div>
-                        <div class="col-lg-4"></div>
-                        <div class="d-flex justify-content-center col-12">
-                            <select class="form-select w-auto mx-3" id="403ipFilter" onchange="applyFilters('403')">
-                                <option value="">Filter by IP</option>
-                                <?php foreach ($availableFourOThreeIpAddresses as $ip): ?>
-                                    <option value="<?= $ip->ip_address ?>" <?= $threeOFourIpFilter == $ip->ip_address ? 'selected' : '' ?>><?= $ip->ip_address . ' (' . $ip->count . ')' ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <select class="form-select w-auto mx-3" id="403urlFilter" onchange="applyFilters('403')">
-                                <option value="">Filter by URL</option>
-                                <?php foreach ($availableFourOThreePages as $page): ?>
-                                    <option value="<?= $page->requested_url ?>" <?= $threeOFourUrlFilter == $page->requested_url ? 'selected' : '' ?>><?= $page->requested_url . ' (' . $page->count . ')' ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <?php if (empty($threeOFourLogs)): ?>
-                        <div class="alert alert-info text-center" role="alert">
-                            No 403 logs have been made.
-                        </div>
-                    <?php else: ?>
-                        <?= GlobalUtility::createTable($threeOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']) ?>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <?php GlobalUtility::renderCard(
+                '403 Logs',
+                empty($threeOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 403 logs have been made.</div>' : GlobalUtility::createTable($threeOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']),
+                [
+                    generateIpFilterDropdown($availableFourOThreeIpAddresses, $threeOFourIpFilter, '403'),
+                    generateUrlFilterDropdown($availableFourOThreePages, $threeOFourUrlFilter, '403')
+                ],
+                null,
+                true
+            );
+            ?>
         </div>
     </div>
 </div>
@@ -291,4 +193,60 @@ foreach ($threeOFourLogs as $threeOFourLog) {
     // Redraw charts on window resize for responsiveness
     window.addEventListener('resize', drawCharts);
 </script>
+
+
+<?php
+
+
+/**
+ * Generates an HTML select dropdown for filtering by IP address.
+ *
+ * @param array $ipAddresses Array of objects containing `ip_address` and `count` properties.
+ * @param string|null $selectedIp Currently selected IP for filtering.
+ * @return string HTML for the IP filter dropdown.
+ */
+function generateIpFilterDropdown(array $ipAddresses, ?string $selectedIp = null, string $type = '404'): string {
+    $html = '<select class="form-select w-auto mx-3" id="' . $type . 'ipFilter" onchange="applyFilters(\'' . $type . '\')">';
+    $html .= '<option value="">Filter by IP</option>';
+
+    foreach ($ipAddresses as $ip) {
+        $isSelected = ($selectedIp === $ip->ip_address) ? 'selected' : '';
+        $html .= sprintf(
+            '<option value="%s" %s>%s (%d)</option>',
+            htmlspecialchars($ip->ip_address),
+            $isSelected,
+            htmlspecialchars($ip->ip_address),
+            $ip->count
+        );
+    }
+
+    $html .= '</select>';
+    return $html;
+}
+
+/**
+ * Generates an HTML select dropdown for filtering by URL.
+ *
+ * @param array $urls Array of objects containing `requested_url` and `count` properties.
+ * @param string|null $selectedUrl Currently selected URL for filtering.
+ * @return string HTML for the URL filter dropdown.
+ */
+function generateUrlFilterDropdown(array $urls, ?string $selectedUrl = null, string $type = '404'): string {
+    $html = '<select class="form-select w-auto mx-3" id="' . $type . 'urlFilter" onchange="applyFilters(\'' . $type . '\')">';
+    $html .= '<option value="">Filter by URL</option>';
+
+    foreach ($urls as $page) {
+        $isSelected = ($selectedUrl === $page->requested_url) ? 'selected' : '';
+        $html .= sprintf(
+            '<option value="%s" %s>%s (%d)</option>',
+            htmlspecialchars($page->requested_url),
+            $isSelected,
+            htmlspecialchars($page->requested_url),
+            $page->count
+        );
+    }
+
+    $html .= '</select>';
+    return $html;
+}
 
