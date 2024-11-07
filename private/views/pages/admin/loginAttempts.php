@@ -75,6 +75,7 @@ $failedOrSuccessSelect = '<select class="form-select w-auto mx-2" onchange="wind
                     GlobalUtility::createTable($loginAttempts, ['username', 'ip_address', 'success', 'login_timestamp'], enableBool: false),
                     [$yearSelect, $ipSelect, $usernameSelect, $failedOrSuccessSelect],
                     foreBottomControls: true
+            //TODO: implement the search functionality
             ); ?>
         </div>
     </div>
