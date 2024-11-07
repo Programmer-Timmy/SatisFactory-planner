@@ -167,13 +167,13 @@ foreach ($threeOFourLogs as $threeOFourLog) {
                             <select class="form-select w-auto mx-3" id="404ipFilter" onchange="applyFilters('404')">
                                 <option value="">Filter by IP</option>
                                 <?php foreach ($availableFourOFourIpAddresses as $ip): ?>
-                                    <option value="<?= $ip->ip_address ?>" <?= $fourOFourIpFilter == $ip->ip_address ? 'selected' : '' ?>><?= $ip->ip_address ?></option>
+                                    <option value="<?= $ip->ip_address ?>" <?= $fourOFourIpFilter == $ip->ip_address ? 'selected' : '' ?>><?= $ip->ip_address . ' (' . $ip->count . ')' ?></option>
                                 <?php endforeach; ?>
                             </select>
                             <select class="form-select w-auto mx-3" id="404urlFilter" onchange="applyFilters('404')">
                                 <option value="">Filter by URL</option>
                                 <?php foreach ($availableFourOFourPages as $page): ?>
-                                    <option value="<?= $page->requested_url ?>" <?= $fourOFourUrlFilter == $page->requested_url ? 'selected' : '' ?>><?= $page->requested_url ?></option>
+                                    <option value="<?= $page->requested_url ?>" <?= $fourOFourUrlFilter == $page->requested_url ? 'selected' : '' ?>><?= $page->requested_url . ' (' . $page->count . ')' ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -203,13 +203,13 @@ foreach ($threeOFourLogs as $threeOFourLog) {
                             <select class="form-select w-auto mx-3" id="403ipFilter" onchange="applyFilters('403')">
                                 <option value="">Filter by IP</option>
                                 <?php foreach ($availableFourOThreeIpAddresses as $ip): ?>
-                                    <option value="<?= $ip->ip_address ?>" <?= $threeOFourIpFilter == $ip->ip_address ? 'selected' : '' ?>><?= $ip->ip_address ?></option>
+                                    <option value="<?= $ip->ip_address ?>" <?= $threeOFourIpFilter == $ip->ip_address ? 'selected' : '' ?>><?= $ip->ip_address . ' (' . $ip->count . ')' ?></option>
                                 <?php endforeach; ?>
                             </select>
                             <select class="form-select w-auto mx-3" id="403urlFilter" onchange="applyFilters('403')">
                                 <option value="">Filter by URL</option>
                                 <?php foreach ($availableFourOThreePages as $page): ?>
-                                    <option value="<?= $page->requested_url ?>" <?= $threeOFourUrlFilter == $page->requested_url ? 'selected' : '' ?>><?= $page->requested_url ?></option>
+                                    <option value="<?= $page->requested_url ?>" <?= $threeOFourUrlFilter == $page->requested_url ? 'selected' : '' ?>><?= $page->requested_url . ' (' . $page->count . ')' ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
