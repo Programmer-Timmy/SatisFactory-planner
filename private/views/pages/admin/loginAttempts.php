@@ -13,12 +13,43 @@ foreach ($loginAttempts as $loginAttempt) {
 }
 
 $anvalibleIpAddresses = Database::query("SELECT DISTINCT ip_address FROM login_attempts");
-$anvalibleUsernames = Database::query("SELECT DISTINCT username FROM users");
+$anvalibleUsernames = Database::query("SELECT DISTINCT username, id FROM users");
 
-$yearSelect = '<select class="form-select w-auto mx-2" onchange="window.location.href = \'/admin/loginAttempts?year=\' + this.value">' . implode('', array_map(fn($availableYear) => '<option value="' . $availableYear->year . '" ' . ($availableYear->year == $year ? 'selected' : '') . '>' . $availableYear->year . '</option>', $availableYears)) . '</select>';
-$ipSelect = '<select class="form-select w-auto mx-2" onchange="window.location.href = \'/admin/loginAttempts?ip=\' + this.value">' . implode('', array_map(fn($anvalibleIp) => '<option value="' . $anvalibleIp->ip_address . '">' . $anvalibleIp->ip_address . '</option>', $anvalibleIpAddresses)) . '</select>';
-$usernameSelect = '<select class="form-select w-auto mx-2" onchange="window.location.href = \'/admin/loginAttempts?username=\' + this.value">' . implode('', array_map(fn($anvalibleUsername) => '<option value="' . $anvalibleUsername->username . '">' . $anvalibleUsername->username . '</option>', $anvalibleUsernames)) . '</select>';
-$failedOrSuccessSelect = '<select class="form-select w-auto mx-2" onchange="window.location.href = \'/admin/loginAttempts?success=\' + this.value"><option value="1">Success</option><option value="0">Failed</option></select>';
+// Year Select
+$yearSelect = '
+    <select class="form-select w-auto mx-2 mb-2" name="year">
+        ' . implode('', array_map(function ($availableYear) use ($year) {
+        $isSelected = $availableYear->year == $year ? 'selected' : '';
+        return '<option value="' . $availableYear->year . '" ' . $isSelected . '>' . $availableYear->year . '</option>';
+    }, $availableYears)) . '
+    </select>';
+
+// IP Address Select
+$ipSelect = '
+    <select class="form-select w-auto mx-2 mb-2" name="ip">
+        <option value="">All IPs</option>
+        ' . implode('', array_map(function ($anvalibleIp) {
+        return '<option value="' . $anvalibleIp->ip_address . '">' . $anvalibleIp->ip_address . '</option>';
+    }, $anvalibleIpAddresses)) . '
+    </select>';
+
+// Username Select
+$usernameSelect = '
+    <select class="form-select w-auto mx-2 mb-2" name="userName">
+        <option value="">All users</option>
+        ' . implode('', array_map(function ($anvalibleUsername) {
+        return '<option value="' . $anvalibleUsername->id . '">' . $anvalibleUsername->username . '</option>';
+    }, $anvalibleUsernames)) . '
+    </select>';
+
+// Failed or Success Select
+$failedOrSuccessSelect = '
+    <select class="form-select w-auto mx-2 mb-2" name="type">
+        <option value="">All types</option>
+        <option value="1">Success</option>
+        <option value="0">Failed</option>
+    </select>';
+
 ?>
 
 
@@ -72,7 +103,7 @@ $failedOrSuccessSelect = '<select class="form-select w-auto mx-2" onchange="wind
         <div class="col-md-6">
             <?php GlobalUtility::renderCard(
                     'Login Attempts',
-                    GlobalUtility::createTable($loginAttempts, ['username', 'ip_address', 'success', 'login_timestamp'], enableBool: false),
+                    GlobalUtility::createTable($loginAttempts, ['username', 'ip_address', 'success', 'login_timestamp'], enableBool: false, customId: 'loginAttemptsTable'),
                     [$yearSelect, $ipSelect, $usernameSelect, $failedOrSuccessSelect],
                     foreBottomControls: true
             //TODO: implement the search functionality
@@ -148,4 +179,43 @@ $failedOrSuccessSelect = '<select class="form-select w-auto mx-2" onchange="wind
     }
 
     window.addEventListener('resize', drawCharts);
+</script>
+<script>
+    // ajax search
+    console.log('search');
+    const ip = document.querySelector('select[name="ip"]');
+    const year = document.querySelector('select[name="year"]');
+    const userName = document.querySelector('select[name="userName"]');
+    const type = document.querySelector('select[name="type"]');
+    const loginAttemptsTable = document.getElementById('loginAttemptsTable');
+
+    ip.addEventListener('change', search);
+    year.addEventListener('change', search);
+    userName.addEventListener('change', search);
+    type.addEventListener('change', search);
+
+    function search() {
+        const formData = new FormData();
+        formData.append('ip', ip.value);
+        formData.append('year', year.value);
+        formData.append('user', userName.value);
+        formData.append('type', type.value);
+
+        $.ajax({
+            url: '/admin/loginAttempts/search',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': '<?= $_SESSION['csrf_token'] ?>'
+            },
+            success: function (data) {
+                loginAttemptsTable.innerHTML = data;
+            },
+            error: function (data) {
+                loginAttemptsTable.innerHTML = data.responseJSON.error;
+            }
+        });
+    }
 </script>

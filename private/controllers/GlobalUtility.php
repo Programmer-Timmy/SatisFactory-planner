@@ -9,11 +9,13 @@ class GlobalUtility
      * @param bool $bootstrap
      * @return string
      */
-    public static function createTable(array $data, array $shownTables = ['*'], array $customButtons = [], bool $bootstrap = true, bool $enableBool = true): string
+    public static function createTable(array $data, array $shownTables = ['*'], array $customButtons = [], bool $bootstrap = true, bool $enableBool = true, ?string $customId = null): string
     {
         $tableClass = $bootstrap ? 'table table-striped table-hover table-responsive' : '';
+        $customId = $customId ? "id='$customId'" : '';
 
-        $table = '<div class="' . ($bootstrap ? 'table-responsive' : '') . '">';
+
+        $table = "<div $customId class=' " . ($bootstrap ? 'table-responsive' : '') . "'>";
         $table .= '<table class="' . $tableClass . '">';
         $table .= '<thead class="' .($bootstrap ? 'table-dark' : '') . '"><tr>';
 
@@ -124,7 +126,7 @@ class GlobalUtility
                         <h3 class="card-title text-center"><?= htmlspecialchars($title) ?></h3>
                     </div>
                     <?php if ($foreBottomControls): ?>
-                        <div class="col-md-12 d-flex justify-content-center">
+                        <div class="col-md-12 d-flex justify-content-center flex-wrap">
                             <?php foreach ($controls as $control): ?>
                                 <?= $control ?>
                             <?php endforeach; ?>

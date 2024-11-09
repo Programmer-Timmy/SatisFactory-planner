@@ -85,6 +85,27 @@ class AuthControler
         return Database::getAll('login_attempts', columns: ['username', 'ip_address', 'success', 'login_timestamp'], join: ['users' => 'users_id = users.id'], where: ['success' => 0]);
     }
 
+    public static function searchLoginAttempts($ip, $userId, $year, $success) {
+        $where = [];
+        if ($ip) {
+            $where[] = "ip_address = '$ip'";
+        }
+        if ($userId) {
+            $where[] = "users_id = '$userId'";
+        }
+        if ($year) {
+            $where[] = "YEAR(login_timestamp) = '$year'";
+        }
+        if ($success !== null && $success !== '') {
+            $where[] = "success = '$success'";
+        }
+
+        $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        return Database::query("SELECT users.username, login_attempts.ip_address, login_attempts.success, login_attempts.login_timestamp FROM login_attempts LEFT JOIN users ON login_attempts.users_id = users.id $whereClause");
+
+    }
+
     private static function setLoginAttempt($userId, $success) {
         $ip = $_SERVER['REMOTE_ADDR'];
         $timeStamp = date('Y-m-d H:i:s');

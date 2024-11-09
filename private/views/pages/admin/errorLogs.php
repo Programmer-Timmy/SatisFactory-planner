@@ -103,13 +103,14 @@ $yearSelect .= '</select>';
         <div class="col-lg-6 mb-4">
             <?php GlobalUtility::renderCard(
                 '404 Logs',
-                empty($fourOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 404 logs have been made.</div>' : GlobalUtility::createTable($fourOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']),
+                empty($fourOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 404 logs have been made.</div>' :
+                    GlobalUtility::createTable($fourOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp'], customId: '404ErrorLogsTable'),
                 [
                     generateIpFilterDropdown($availableFourOFourIpAddresses, $fourOFourIpFilter),
                     generateUrlFilterDropdown($availableFourOFourPages, $fourOFourUrlFilter)
                 ],
                 null,
-                true
+                true,
             );
             ?>
         </div>
@@ -117,7 +118,8 @@ $yearSelect .= '</select>';
         <div class="col-lg-6 mb-4">
             <?php GlobalUtility::renderCard(
                 '403 Logs',
-                empty($threeOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 403 logs have been made.</div>' : GlobalUtility::createTable($threeOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp']),
+                empty($threeOFourLogs) ? '<div class="alert alert-info text-center" role="alert">No 403 logs have been made.</div>' :
+                    GlobalUtility::createTable($threeOFourLogs, ['username', 'requested_url', 'ip_address', 'error_timestamp'], customId: '403ErrorLogsTable'),
                 [
                     generateIpFilterDropdown($availableFourOThreeIpAddresses, $threeOFourIpFilter, '403'),
                     generateUrlFilterDropdown($availableFourOThreePages, $threeOFourUrlFilter, '403')
@@ -189,10 +191,26 @@ $yearSelect .= '</select>';
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.set(`${type}ip`, ip);
         urlParams.set(`${type}url`, url);
-        // send the user to the same position on the page
 
-
-        window.location.href = window.location.pathname + '?' + urlParams.toString() + '#latestLogs';
+        // ajax request
+        $.ajax({
+            url: '/admin/errorLogs/search',
+            type: 'POST',
+            data: {
+                ip: ip,
+                url: url,
+                type: type
+            },
+            headers: {
+                'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?>'
+            },
+            success: function (response) {
+                document.getElementById(`${type}ErrorLogsTable`).innerHTML = response;
+            },
+            error: function (response) {
+                console.error(response);
+            }
+        });
     }
 
     function drawTopTen404Chart() {
@@ -256,7 +274,7 @@ $yearSelect .= '</select>';
  * @return string HTML for the IP filter dropdown.
  */
 function generateIpFilterDropdown(array $ipAddresses, ?string $selectedIp = null, string $type = '404'): string {
-    $html = '<select class="form-select w-auto mx-3" id="' . $type . 'ipFilter" onchange="applyFilters(\'' . $type . '\')">';
+    $html = '<select class="form-select w-auto mx-3 mb-2" id="' . $type . 'ipFilter" onchange="applyFilters(\'' . $type . '\')">';
     $html .= '<option value="">Filter by IP</option>';
 
     foreach ($ipAddresses as $ip) {
@@ -282,7 +300,7 @@ function generateIpFilterDropdown(array $ipAddresses, ?string $selectedIp = null
  * @return string HTML for the URL filter dropdown.
  */
 function generateUrlFilterDropdown(array $urls, ?string $selectedUrl = null, string $type = '404'): string {
-    $html = '<select class="form-select w-auto mx-3" id="' . $type . 'urlFilter" onchange="applyFilters(\'' . $type . '\')">';
+    $html = '<select class="form-select w-auto mx-3 mb-2" id="' . $type . 'urlFilter" onchange="applyFilters(\'' . $type . '\')">';
     $html .= '<option value="">Filter by URL</option>';
 
     foreach ($urls as $page) {

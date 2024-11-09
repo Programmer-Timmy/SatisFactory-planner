@@ -57,6 +57,26 @@ class ErrorHandeler {
         return [$fourOFourLogs, $threeOFourLogs];
     }
 
+    public static function searchErrorLogs($ip, $url, $type) {
+        $where = [];
+        if ($ip) {
+            $where[] = "ip_address = '$ip'";
+        }
+        if ($url) {
+            $where[] = "requested_url = '$url'";
+        }
+
+        if ($type === '403') {
+            return Database::query("SELECT users.username, error_403_logs.requested_url, error_403_logs.ip_address, error_403_logs.referrer_url, error_403_logs.error_timestamp FROM error_403_logs LEFT JOIN users ON error_403_logs.users_id = users.id " . ($where ? 'WHERE ' . implode(' AND ', $where) : '') . " order by error_timestamp desc");
+        } else if ($type === '404') {
+            return Database::query("SELECT users.username, error_404_logs.requested_url, error_404_logs.ip_address, error_404_logs.referrer_url, error_404_logs.error_timestamp FROM error_404_logs LEFT JOIN users ON error_404_logs.users_id = users.id " . ($where ? 'WHERE ' . implode(' AND ', $where) : '') . " order by error_timestamp desc");
+        } else {
+            return json_encode("{
+                'error' => 'Invalid type provided must be one of the following: all, 404, 403'
+            }");
+        }
+    }
+
     public static function get404LogsByMonth($month, $year) {
         return Database::query("SELECT users.username, error_404_logs.requested_url, error_404_logs.ip_address, error_404_logs.referrer_url, error_404_logs.error_timestamp FROM error_404_logs LEFT JOIN users ON error_404_logs.users_id = users.id WHERE MONTH(error_404_logs.error_timestamp) = ? AND YEAR(error_404_logs.error_timestamp) = ? order by error_timestamp desc", [$month, $year]);
     }
