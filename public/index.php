@@ -75,7 +75,8 @@ if ($site['admin']['enabled']) {
     $admin = $site['admin'];
     $pageTemplate = __DIR__ . "/../private/Views/pages$require.php";
     if (file_exists($pageTemplate)) {
-        if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && $require !== '/404' && $require !== '/maintenance' && $require !== '/changelog' && $require !== '/403') {
+        //
+        if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && !in_array($require, $admin['skipChecks'])) {
             if (!isset($_SESSION[$admin['sessionName']])) {
 //                if already logged in show the 403 page
                 if (isset($_SESSION[$site['accounts']['sessionName']])) {
@@ -100,7 +101,7 @@ if ($site['accounts']['enabled']) {
     $pageTemplate = __DIR__ . "/../private/views/pages$require.php";
 
     if (file_exists($pageTemplate)) {
-        if (str_contains($require, $accounts['filterInUrl']) && !str_contains($require, $site['redirect']) && $require !== '/404' && $require !== '/maintenance' && $require !== '/register' && $require !== '/changelog' && $require !== '/logout') {
+        if (str_contains($require, $accounts['filterInUrl']) && !str_contains($require, $site['redirect']) && !in_array(substr($require, 1), $accounts['skipChecks'])) {
             if (!isset($_SESSION[$accounts['sessionName']])) {
                 if ($site['saveUrl']) {
                     $_SESSION['redirect'] = $requestedPage;
