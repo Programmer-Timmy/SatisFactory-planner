@@ -1,9 +1,9 @@
 [
   {
     "version": "1.6.22",
-    "date": "november 6 2024",
+    "date": "november 11 2024",
     "changes": [
-      "Fixed issue when showing types login credentials when a error on login accused "
+      "Fixed issue when showing types login credentials when a error on login accused"
     ]
   },
   {
