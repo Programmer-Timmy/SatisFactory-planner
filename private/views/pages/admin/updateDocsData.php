@@ -49,8 +49,15 @@ foreach ($json as $item) {
 ?>
 
 <div class="container">
-    <h1 class="text-center mb-3">Update Docs Data</h1>
-    <a href="/admin" class="btn btn-primary w-100 mb-3">Return to admin page</a>
+    <div class="row align-items-center mb-3">
+        <div class="col-lg-4"></div>
+        <div class="col-lg-4">
+            <h1 class="text-center">Update Docs Data</h1>
+        </div>
+        <div class="col-lg-4 text-center text-lg-end">
+            <a href="/admin" class="btn btn-primary">Return to admin page</a>
+        </div>
+    </div>
 
     <div class="container">
         <form id="updateDocsDataForm">
