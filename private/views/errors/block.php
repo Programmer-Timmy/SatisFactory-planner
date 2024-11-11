@@ -7,9 +7,10 @@ if ($blocked) {
 }
 $env = parse_ini_file(__DIR__ . '/../../../.env');
 $ipInfoKey = $env['IP_INFO_TOKEN'];
-$ip = '84.83.150.26';
+$ip = $_SERVER['REMOTE_ADDR'];
 
 $details = json_decode(file_get_contents("https://vpnapi.io/api/$ip?key=$ipInfoKey"));
+
 $isVpn = $details->security->vpn;
 $isProxy = $details->security->proxy;
 ?>
