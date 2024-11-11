@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Database Settings
  */
@@ -48,6 +49,7 @@ $site = [
         'sessionName' => 'admin', // the session name that will be used to store that the user is a admin check by isset function
         'filterInUrl' => 'admin', // empty string means no filter
         'redirect' => '/login', // redirect to this page if the user is not a admin
+        'skipChecks' => ['login', 'register', 'logout', '404', 'maintenance', '403', 'changelog', 'phpinfo'], // skip the checks for these pages
     ],
 
     // Accounts settings
@@ -55,6 +57,7 @@ $site = [
         'enabled' => true   ,
         'sessionName' => 'userId', // the session name that will be used to store that the user is logged in check by isset function
         'filterInUrl' => '', // empty string means no filter
+        'skipChecks' => ['login', 'register', 'logout', '404', 'maintenance', '403', 'changelog', 'phpinfo', 'logout'], // skip the checks for these pages
     ],
 
     // popup settings
@@ -74,7 +77,7 @@ $site = [
 /**
  * Allowed IPs That can bypass the maintenance
  */
-$allowedIPs = ['84.83.150.26']; // ['::0'] means all IPs are allowed
+$allowedIPs = []; // ['::0'] means all IPs are allowed
 
 /**
  * Page Title Settings
@@ -88,6 +91,14 @@ if ($url == '/') {
 
 $titles = [
     'default' => substr($url, 1) . ' - ' . $site['siteName'],
+
+    // admin
+    'admin/errorLogs' => 'Error Logs - ' . $site['siteName'],
+    'admin/loginAttempts' => 'Login Attempts - ' . $site['siteName'],
+    'admin/updateDocsData' => 'Update Docs Data - ' . $site['siteName'],
+    'admin/users' => 'Users - ' . $site['siteName'],
+    'admin' => 'Admin - ' . $site['siteName'],
+
     'maintenance' => 'Under Maintenance - ' . $site['siteName'],
     'home' => 'Home - ' . $site['siteName'],
     'about' => 'About Us - ' . $site['siteName'],
@@ -99,6 +110,8 @@ $titles = [
     'account' => 'Account - ' . $site['siteName'],
     'helpfulLinks' => 'Helpful Links - ' . $site['siteName'],
     '404' => '404 - Oops page not found!',
+
+
     // Add more titles as needed
 ];
 

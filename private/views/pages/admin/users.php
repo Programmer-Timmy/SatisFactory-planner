@@ -3,8 +3,15 @@ $users = Users::getAllUsers();
 ?>
 
 <div class="container">
-    <h1 class="text-center mb-3">Users</h1>
-    <a href="/admin" class="btn btn-primary w-100 mb-3">Return to admin page</a>
+    <div class="row align-items-center mb-3">
+        <div class="col-lg-4"></div>
+        <div class="col-lg-4">
+            <h1 class="text-center">Users</h1>
+        </div>
+        <div class="col-lg-4 text-lg-end text-center">
+            <a href="/admin" class="btn btn-primary">Return to admin page</a>
+        </div>
+    </div>
     <?= GlobalUtility::createTable(
         $users,
         ['username', 'email', 'updates', 'admin', 'verified'],

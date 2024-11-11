@@ -4,6 +4,7 @@
 function getPageTitle($skipCheck = false) {
     global $titles;
     $url = $_SERVER['REQUEST_URI'];
+    $url = explode('?', $url)[0];
 
     $pageTitle = ucfirst($titles['default']);
 
@@ -87,7 +88,7 @@ global $allowedIPs;
         <!-- og tags -->
         <meta property="og:title" content="<?= getPageTitle() ?>">
         <meta property="og:description" content="<?= getDescription() ?>">
-        <meta property="og:image" content="image/favicons/android-chrome-192x192.png">
+        <meta property="og:image" content="/image/favicons/android-chrome-192x192.png">
         <meta property="og:url" content="https://satisfactoryplanner.timmygamer.nl<?= $url ?>">
     <?php endif; ?>
     <meta property="og:type" content="website">

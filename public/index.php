@@ -13,6 +13,14 @@ session_start();
 global $site;
 global $allowedIPs;
 
+// check if ip is blocked
+if (AuthControler::isIPBlocked($_SERVER['REMOTE_ADDR'])) {
+    include __DIR__ . '/../private/views/errors/block.php';
+    exit();
+}
+
+
+// handle maintenance mode
 if ($site['maintenance'] && !in_array($_SERVER['REMOTE_ADDR'], $allowedIPs)) {
     // Include the maintenance page
     include __DIR__ . '/../private/views/templates/header.php';
@@ -37,7 +45,10 @@ if ($position !== false) {
 
 // if ajax is enabled and the request is an ajax request load the ajax file
 // get the X-CSRF-Token from the headers and check if it is the same as the session token
-if ($site['ajax'] && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+if ($site['ajax'] && (
+        (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') ||
+        (isset($_SERVER['HTTP_HX_REQUEST']) && $_SERVER['HTTP_HX_REQUEST'] === 'true')
+    )) {
     // Check for CSRF token in session and headers
     if (empty($_SESSION['csrf_token']) || empty($_SERVER['HTTP_X_CSRF_TOKEN']) || $_SESSION['csrf_token'] !== $_SERVER['HTTP_X_CSRF_TOKEN']) {
         ErrorHandeler::add403Log($requestedPage, $_SERVER['HTTP_REFERER'] ?? null, $_SESSION['userId'] ?? null);
@@ -62,6 +73,8 @@ if (str_contains($require, '/api')) {
         include __DIR__ . "/../private/views/pages$require.php";
         exit();
     }
+    ErrorHandeler::add404Log($requestedPage, $_SERVER['HTTP_REFERER'] ?? null, $_SESSION['userId'] ?? null);
+    ErrorHandeler::blockIPForRapid404Errors($_SERVER['REMOTE_ADDR']);
     http_response_code(404);
     header('Content-Type: application/json');
     echo json_encode(['error' => 'Invalid API endpoint']);
@@ -72,7 +85,8 @@ if ($site['admin']['enabled']) {
     $admin = $site['admin'];
     $pageTemplate = __DIR__ . "/../private/Views/pages$require.php";
     if (file_exists($pageTemplate)) {
-        if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && $require !== '/404' && $require !== '/maintenance' && $require !== '/changelog' && $require !== '/403') {
+        //
+        if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && !in_array($require, $admin['skipChecks'])) {
             if (!isset($_SESSION[$admin['sessionName']])) {
 //                if already logged in show the 403 page
                 if (isset($_SESSION[$site['accounts']['sessionName']])) {
@@ -97,7 +111,7 @@ if ($site['accounts']['enabled']) {
     $pageTemplate = __DIR__ . "/../private/views/pages$require.php";
 
     if (file_exists($pageTemplate)) {
-        if (str_contains($require, $accounts['filterInUrl']) && !str_contains($require, $site['redirect']) && $require !== '/404' && $require !== '/maintenance' && $require !== '/register' && $require !== '/changelog' && $require !== '/logout') {
+        if (str_contains($require, $accounts['filterInUrl']) && !str_contains($require, $site['redirect']) && !in_array(substr($require, 1), $accounts['skipChecks'])) {
             if (!isset($_SESSION[$accounts['sessionName']])) {
                 if ($site['saveUrl']) {
                     $_SESSION['redirect'] = $requestedPage;
@@ -135,8 +149,9 @@ if ($continue) {
         include $pageTemplate;
     } else {
         // Handle 404 or display a default page
+        ErrorHandeler::blockIPForRapid404Errors($_SERVER['REMOTE_ADDR']);
         ErrorHandeler::add404Log($requestedPage, $_SERVER['HTTP_REFERER'] ?? null, $_SESSION['userId'] ?? null);
-        include __DIR__ . '/../private/views/pages/404.php';
+        include __DIR__ . '/../private/views/errors/404.php';
     }
 
     // Include the common footer

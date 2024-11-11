@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.6.22",
+    "date": "november 11 2024",
+    "changes": [
+      "Fixed issue when showing types login credentials when a error on login accused"
+    ]
+  },
+  {
     "version": "1.6.21",
     "date": "november 2 2024",
     "changes": [
