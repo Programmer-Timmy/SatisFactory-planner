@@ -14,6 +14,8 @@
                 <select id="layout" class="form-select" style="width: 200px;">
                     <option value="breadthfirst">Breadthfirst</option>
                     <option value="cose">Cose</option>
+                    <option value="klay" selected>klay</option>
+                    <option value="fcose">fcose</option>
                 </select>
                 <input type="checkbox" id="export" class="form-check-input" style="width: 20px; height: 20px;">
                 <label for="export" class="form-check-label">Export</label>

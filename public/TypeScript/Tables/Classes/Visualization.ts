@@ -3,10 +3,17 @@ import {ImportNodes} from "./Data/Visualization/ImportNodes";
 import {ProductionNodes} from "./Data/Visualization/ProductionNodes";
 import {ExportNodes} from "./Data/Visualization/ExportNodes";
 import {Connection} from "./Data/Visualization/Connection";
-import cytoscape from 'cytoscape';
+import cytoscape from "cytoscape";
+
+// klay
 import 'cytoscape-qtip';
+import 'cytoscape-klay';
+import 'cytoscape-fcose';
 
 cytoscape.use(require('cytoscape-qtip'));
+cytoscape.use(require('cytoscape-klay'));
+cytoscape.use(require('cytoscape-fcose'));
+
 
 
 // global variables
@@ -49,7 +56,7 @@ export class Visualization {
     public productionConnections: Connection[] = [];
     public exportConnections: Connection[] = [];
 
-    public layout: 'breadthfirst' | 'cose' = 'breadthfirst';
+    public layout: 'breadthfirst' | 'cose' | 'klay' | 'fcose' | 'concentric' = 'klay';
 
     private showExport: boolean = false;
     private showImport: boolean = true;
@@ -163,7 +170,7 @@ export class Visualization {
                     name: "breadthfirst",      // Layout for production chains
                     directed: false,            // Forces direction (e.g., top to bottom)
                     padding: 20,               // Adds padding around the graph
-                    spacingFactor: 3.0,        // Increases space between nodes
+                    spacingFactor: 2.0,        // Increases space between nodes
                     animate: true,
                     nodeDimensionsIncludeLabels: true, // Accounts for label dimensions in layout
                     avoidOverlap: true,        // Prevents node overlap
@@ -187,6 +194,32 @@ export class Visualization {
                     layout['roots'] = roots;
                 }
                 break;
+            case 'klay':
+                layout = {
+                    name: "klay",
+                    animate: true,
+                    spacingFactor: 2.0,
+                    nodeDimensionsIncludeLabels: true,
+                    avoidOverlap: true,
+                }
+                break;
+            case 'fcose':
+                layout = {
+                    name: "fcose",
+                    animate: true,
+                    nodeDimensionsIncludeLabels: true,
+                    avoidOverlap: true,
+                    spacingFactor: 1.5,
+                }
+                break;
+            case 'concentric':
+                layout = {
+                    name: "concentric",
+                    animate: true,
+                    nodeDimensionsIncludeLabels: true,
+                    avoidOverlap: true,
+                }
+                break
             default: {
                 layout = {
                     name: "breadthfirst",      // Layout for production chains
@@ -313,6 +346,8 @@ export class Visualization {
                     }
                 });
             });
+            cy.center();
+            cy.fit();
         });
     }
 
@@ -342,7 +377,7 @@ export class Visualization {
     private addEventListeners(): void {
         $('#layout').on('change', (e) => {
             const select = $(e.target);
-            this.layout = select.val() as 'breadthfirst' | 'cose';
+            this.layout = select.val() as 'breadthfirst' | 'cose' | 'klay' | 'fcose' | 'concentric';
             this.createVisualization();
         });
 
@@ -452,181 +487,6 @@ export class Visualization {
                 index++;
             }
 
-        }
-    }
-
-
-    // old code
-
-
-
-    async getPosition(): Promise<void> {
-        const levels: Map<number, number[]> = new Map();
-        const positions: Map<number, { X: number, Y: number }> = new Map();
-        const SHIFT_AMOUNT = ROW_SPACING;  // Amount to shift nodes down
-
-        // Helper function for node positioning
-        const positionNode = async (nodeId: number, level: number): Promise<void> => {
-            if (!levels.has(level)) {
-                levels.set(level, []);
-            }
-
-            const currentNode = this.productionNodes[nodeId];
-
-            if (positions.has(nodeId)) {
-                return;
-            }
-
-            // Set initial Y position
-            let yPosition = (levels.get(level)?.length || 0) * ROW_SPACING + START_Y;
-            levels.get(level)?.push(nodeId);
-
-            positions.set(nodeId, {
-                X: START_X + level * COLUMN_SPACING,
-                Y: yPosition
-            });
-
-            // Process child nodes recursively
-            const childConnections = this.productionConnections.filter(conn => conn.sourceId === nodeId);
-            await Promise.all(childConnections.map(conn => positionNode(conn.targetId, level + 1)));
-        };
-
-        // Position root nodes (no incoming connections)
-        const rootNodes = this.productionNodes.filter(node =>
-            !this.productionConnections.some(conn => conn.targetId === node.id)
-        );
-
-        await Promise.all(rootNodes.map(node => positionNode(node.id, 0)));
-
-        // Remove crossing connections
-
-        // Apply final positions
-        levels.forEach((nodes, level) => {
-            nodes.forEach((nodeId, index) => {
-                const {X, Y} = positions.get(nodeId)!;
-                this.productionNodes[nodeId].X = X;
-                this.productionNodes[nodeId].Y = Y;
-            });
-        });
-    }
-
-    private removeCrossingConnections(): void {
-        let counter = 0;
-        //     check if one of the nodes connection is crossing another connection or node. if so try moving it to the row under the node it needs to connect to
-        for (let i = 0; i < this.productionConnections.length; i++) {
-            const connection = this.productionConnections[i];
-            for (let j = 0; j < this.productionConnections.length; j++) {
-                const otherConnection = this.productionConnections[j];
-                if (connection.sourceId === otherConnection.sourceId || connection.targetId === otherConnection.targetId) {
-                    continue;
-                }
-
-                const sourceNode = this.productionNodes[connection.sourceId];
-                const targetNode = this.productionNodes[connection.targetId];
-                const otherSourceNode = this.productionNodes[otherConnection.sourceId];
-                const otherTargetNode = this.productionNodes[otherConnection.targetId];
-
-                // add a litle bit of padding to the nodes
-                const padding = 20;
-                if (this.checkLineIntersection(sourceNode.X + padding, sourceNode.Y + padding, targetNode.X - padding, targetNode.Y - padding, otherSourceNode.X + padding, otherSourceNode.Y + padding, otherTargetNode.X - padding, otherTargetNode.Y - padding)) {
-                    counter++;
-
-                }
-            }
-        }
-        // if (counter > 0) {
-        //     this.removeCrossingConnections();
-        // }
-    }
-
-    private checkLineIntersection(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): boolean {
-        const det = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-        if (det === 0) {
-            return false;
-        }
-
-        const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / det;
-        const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / det;
-
-        return t >= 0 && t <= 1 && u >= 0 && u <= 1;
-    }
-
-
-    private positionImportNodes(): void {
-        for (let i = 0; i < this.importNodes.length; i++) {
-            // if it hase a connection to a production node move it closer to the production node
-            const connection = this.importConnections.filter(conn => conn.sourceId === i);
-
-            if (connection && connection.length > 1) {
-                const ConnectionAmount = connection.length;
-
-                // grab the middle connection if not even move it to the middle of the connections
-                const middleConnection = connection[Math.floor(ConnectionAmount / 2)];
-                const X = this.productionNodes[middleConnection.targetId].X - IMPORT_ROW_SPACING;
-                let Y = this.productionNodes[middleConnection.targetId].Y;
-
-                if (X > START_X) {
-                    Y -= INSIDE_IMPORT_COLUMN_SPACING;
-                }
-
-                this.importNodes[i].X = X;
-                this.importNodes[i].Y = Y;
-            } else if (connection && connection.length === 1) {
-                const samePosition = this.importNodes.filter(node => node.X === this.productionNodes[connection[0].targetId].X - IMPORT_ROW_SPACING && node.Y === this.productionNodes[connection[0].targetId].Y);
-                const X = this.productionNodes[connection[0].targetId].X - IMPORT_ROW_SPACING;
-                let Y = this.productionNodes[connection[0].targetId].Y;
-
-                if (X > START_X) {
-                    Y -= INSIDE_IMPORT_COLUMN_SPACING;
-                }
-
-                if (samePosition.length > 0) {
-                    this.importNodes[i].X = X;
-                    this.importNodes[i].Y = Y + DOUBLE_OFFSET;
-                    samePosition[0].Y = Y - DOUBLE_OFFSET;
-                } else {
-                    this.importNodes[i].X = X;
-                    this.importNodes[i].Y = Y;
-                }
-            }
-        }
-    }
-
-    private positionExportNodes(): void {
-        for (let i = 0; i < this.exportNodes.length; i++) {
-            const connection = this.exportConnections.filter(conn => conn.sourceId === i);
-            if (connection && connection.length > 1) {
-                const ConnectionAmount = connection.length;
-
-                // grab the middle connection if not even move it to the middle of the connections
-                const middleConnection = connection[Math.floor(ConnectionAmount / 2)];
-                const X = this.productionNodes[middleConnection.sourceId].X;
-                let Y = this.productionNodes[middleConnection.sourceId].Y;
-
-                if (X > START_X) {
-                    Y -= INSIDE_IMPORT_COLUMN_SPACING;
-                }
-
-                this.exportNodes[i].X = X;
-                this.exportNodes[i].Y = Y;
-            } else if (connection && connection.length === 1) {
-                const samePosition = this.exportNodes.filter(node => node.X === this.productionNodes[connection[0].sourceId].X + IMPORT_ROW_SPACING && node.Y === this.productionNodes[connection[0].sourceId].Y);
-                const X = this.productionNodes[connection[0].sourceId].X;
-                let Y = this.productionNodes[connection[0].sourceId].Y;
-
-                if (X >= START_X) {
-                    Y -= INSIDE_IMPORT_COLUMN_SPACING;
-                }
-
-                if (samePosition.length > 0) {
-                    this.exportNodes[i].X = X + IMPORT_ROW_SPACING;
-                    this.exportNodes[i].Y = Y;
-                    samePosition[0].X = X - IMPORT_ROW_SPACING;
-                } else {
-                    this.exportNodes[i].X = X;
-                    this.exportNodes[i].Y = Y;
-                }
-            }
         }
     }
 }

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.0",
+    "date": "november 11 2024",
+    "changes": [
+      "Added production line visualisation to the production line page.",
+      "Updated the guide for the production line page. To include the visualisation.",
+      "Added button to open the visualisation on the production line page.",
+      "Improved styling of the production line page buttons."
+    ]
+  },
+  {
     "version": "1.6.22",
     "date": "november 11 2024",
     "changes": [
