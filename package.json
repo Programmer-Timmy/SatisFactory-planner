@@ -2,12 +2,16 @@
   "devDependencies": {
     "@types/bootstrap": "^5.2.10",
     "@types/cytoscape": "^3.21.8",
+    "@types/cytoscape-fcose": "^2.2.4",
+    "@types/cytoscape-klay": "^3.1.4",
     "@types/jquery": "^3.5.32",
     "bootstrap": "^5.3.3",
+    "compression-webpack-plugin": "^11.1.0",
     "husky": "^9.1.6",
     "ts-loader": "^9.5.1",
     "typescript": "^5.5.4",
     "webpack": "^5.93.0",
+    "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.1.4"
   },
   "scripts": {
@@ -19,6 +23,8 @@
   },
   "dependencies": {
     "cytoscape": "^3.30.3",
+    "cytoscape-fcose": "^2.2.0",
+    "cytoscape-klay": "^3.1.4",
     "cytoscape-qtip": "^2.8.0"
   }
 }

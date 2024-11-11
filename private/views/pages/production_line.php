@@ -138,19 +138,31 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
         <div class="alert alert-danger d-none fade" role="alert" id="saveErrorAlert"></div>
         <input type="hidden" name="total_consumption" id="total_consumption">
         <div class="row justify-content-end align-items-center">
-            <div class="col-md-3"></div>
-            <div class="col-md-6 text-center">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-6 text-center">
                 <h1 id="productionLineName">Production Line - <?= $productLine->title ?></h1>
             </div>
-            <div class="col-md-3">
-                <div class="text-md-end text-center">
-                    <button type="submit" id="save_button" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" data-bs-title="Save production line.<br> <small>Hold <b>Shift</b> to save without returning to the save game.</small>"><i class="fa-solid fa-save"></i></button>
-                    <button type="button" id="edit_product_line" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit the production line"><i class="fa-solid fa-pencil"></i></button>
-                    <button type="button" id="showPower" class="btn btn-info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show power consumption"><i class="fa-solid fa-bolt"></i></button>
-                    <button type="button" id="showHelp" class="btn btn-info " data-bs-toggle="tooltip"
+            <div class="col-lg-3">
+                <div class="text-lg-end text-center">
+                    <button type="submit" id="save_button" class="btn btn-primary mb-1" data-bs-toggle="tooltip"
+                            data-bs-placement="top" data-bs-html="true"
+                            data-bs-title="Save production line.<br> <small>Hold <b>Shift</b> to save without returning to the save game.</small>">
+                        <i class="fa-solid fa-save"></i></button>
+                    <button type="button" id="edit_product_line" class="btn btn-warning mb-1" data-bs-toggle="tooltip"
+                            data-bs-placement="top" data-bs-title="Edit the production line"><i
+                                class="fa-solid fa-pencil"></i></button>
+                    <button type="button" id="showPower" class="btn btn-info mb-1" data-bs-toggle="tooltip"
+                            data-bs-placement="top" data-bs-title="Show power consumption"><i
+                                class="fa-solid fa-bolt"></i></button>
+                    <button type="button" id="showVisualizationButton" class="btn btn-info mb-1"
+                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show visualization"><i
+                                class="fa-solid fa-project-diagram"></i></button>
+                    <button type="button" id="showHelp" class="btn btn-info mb-1" data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-title="Need help? Click here!"><i
                                 class="fa-regular fa-question-circle"></i></button>
-                    <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i class="fa-solid fa-arrow-left"></i></a>
+                    <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary mb-1"
+                       data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i
+                                class="fa-solid fa-arrow-left"></i></a>
                 </div>
             </div>
         </div>

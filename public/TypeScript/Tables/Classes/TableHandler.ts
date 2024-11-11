@@ -36,6 +36,7 @@ export class TableHandler {
 
         await this.getTableData();
         await this.addEventListeners();
+        await this.addButtonEventListeners();
         await this.addShortcuts();
 
         $('#loading').addClass('d-none');
@@ -499,6 +500,12 @@ export class TableHandler {
                     }
                 }
             });
+        });
+    }
+
+    private async addButtonEventListeners() {
+        $('#showVisualizationButton').on('click', () => {
+            this.showVisualization();
         });
     }
 }

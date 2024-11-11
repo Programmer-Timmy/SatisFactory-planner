@@ -41,6 +41,9 @@
                     <a href="#powerSection" class="list-group-item list-group-item-action">
                         <i class="fa-solid fa-bolt"></i> Power Section
                     </a>
+                    <a href="#visualizationSection" class="list-group-item list-group-item-action">
+                        <i class="fa-solid fa-project-diagram"></i> Visualization Section
+                    </a>
                     <a href="#editSection" class="list-group-item list-group-item-action">
                         <i class="fa-solid fa-edit"></i> Edit Screen
                     </a>
@@ -87,6 +90,45 @@
                             <li>Calculate the number and type of buildings needed.</li>
                             <li>Calculate the total power usage.</li>
                         </ul>
+                    </div>
+                </div>
+
+                <div class="card mb-3 border-0">
+                    <div class="card-body">
+                        <h4 class="card-title text-primary" id="visualizationSection"><i
+                                    class="fa-solid fa-project-diagram"></i> Visualization Section</h4>
+                        <p>
+                            The <strong>Visualization Section</strong> can be accessed via the <kbd
+                                    class="bg-info text-dark"><i class="fa-solid fa-project-diagram"
+                                                                 aria-hidden="true"></i></kbd> button in the <a
+                                    class="link-primary" href="#toolbar">Toolbar</a> or by pressing <kbd>Ctrl</kbd> +
+                            <kbd>V</kbd>
+                            . Here you can see a visual representation of your production line. The visualization is
+                            generated automatically and shows the connections between the buildings and the flow of
+                            items.
+                        </p>
+                        <p>
+                            You can use the <strong>Layout</strong> dropdown to change the layout of the visualization.
+                            The following layouts are available:
+                        </p>
+                        <ul>
+                            <li><strong>Breadthfirst:</strong> A layout that arranges the nodes in a tree-like
+                                structure.
+                            </li>
+                            <li><strong>Cose:</strong> A layout that arranges the nodes in a force-directed graph.</li>
+                            <li><strong>Klay:</strong> A layout that arranges the nodes in a tree-like structure with
+                                minimal edge crossings.
+                            </li>
+                            <li><strong>Fcose:</strong> A layout that arranges the nodes in a force-directed graph with
+                                a focus on performance.
+                            </li>
+                        </ul>
+
+                        <p>
+                            You can also use the <strong>Export</strong> checkbox to show or hide the export buildings,
+                            the <strong>Import</strong> checkbox to show or hide the import buildings, and the <strong>Roots</strong>
+                            checkbox to show or hide the root nodes.
+                        </p>
                     </div>
                 </div>
 
@@ -172,6 +214,9 @@
                                 see the
                                 buildings and their power consumption.
                             </li>
+                            <li><i class="fa-solid fa-project-diagram" aria-hidden="true"></i> <strong>Production Line
+                                    Visualization</strong> to see a visual representation of your production line.
+                            </li>
                             <li><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> <strong>Go Back</strong> to
                                 the save
                                 games without saving the current production line.
@@ -193,6 +238,9 @@
                             <li><kbd>Ctrl</kbd> + <kbd>P</kbd> <strong>View Power Usage</strong> of the production line.
                             </li>
                             <li><kbd>Ctrl</kbd> + <kbd>H</kbd> <strong>Open Help</strong> to view this guide.</li>
+                            <li><kbd>Ctrl</kbd> + <kbd>V</kbd> <strong>Show/Hide Production Line Visualization</strong>
+                                (doesn't work in input fields)
+                            </li>
                             <li><kbd>Ctrl</kbd> + <kbd>Q</kbd> <strong>Go Back</strong> to the save games without saving
                                 the
                                 current production line.
