@@ -163,6 +163,31 @@ class AuthControler
         return $blockedIps;
     }
 
+    /**
+     * Check if an IP is blocked
+     * @param string $ip IP address to check
+     * @return bool True if the IP is blocked, false otherwise
+     */
+    public static function isIPBlocked($ip) {
+        $blockedState = Database::query("SELECT COUNT(*) as count FROM blocked_ips WHERE ip_address = ? AND blocked_until > ?", [$ip, date('Y-m-d H:i:s')]);
+
+        return $blockedState[0]->count > 0;
+    }
+
+    /**
+     * Block an IP address
+     * @param string $ip IP address to block
+     * @param string $reason Reason for blocking
+     * @param int $time Time in hours to block the IP
+     *
+     * @return string ID of the newly created blocked IP
+     * @throws ErrorException
+     */
+    public static function blockIP($ip, $reason, $time = 1) {
+        $time = date('Y-m-d H:i:s', strtotime("+$time hours"));
+        return Database::insert('blocked_ips', ['ip_address', 'blocked_until', 'reason'], [$ip, $time, $reason]);
+    }
+
 
 
 }

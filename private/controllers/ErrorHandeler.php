@@ -139,5 +139,25 @@ class ErrorHandeler {
     ");
     }
 
+    /**
+     * Blocks an IP address if it has made more than 5 404 errors in the last minute
+     *
+     * @param string $ip The IP address to block
+     * @return bool True if the IP was blocked, false otherwise
+     * @throws ErrorException
+     */
+    public static function blockIPForRapid404Errors(string $ip) {
+        $MAX_404_ERRORS = 5;
+
+        $time = date('Y-m-d H:i:s', strtotime('-1 minutes'));
+        $count = Database::query("SELECT COUNT(*) as count FROM error_404_logs WHERE ip_address = ? AND error_timestamp > ?", [$ip, $time])[0]->count;
+        if ($count >= $MAX_404_ERRORS && !AuthControler::isIPBlocked($ip)) {
+            AuthControler::blockIP($ip, 'Rapid 404 Errors');
+            return true;
+
+        }
+        return false;
+    }
+
 
 }

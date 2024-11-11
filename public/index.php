@@ -13,6 +13,14 @@ session_start();
 global $site;
 global $allowedIPs;
 
+// check if ip is blocked
+if (AuthControler::isIPBlocked($_SERVER['REMOTE_ADDR'])) {
+    include __DIR__ . '/../private/views/errors/block.php';
+    exit();
+}
+
+
+// handle maintenance mode
 if ($site['maintenance'] && !in_array($_SERVER['REMOTE_ADDR'], $allowedIPs)) {
     // Include the maintenance page
     include __DIR__ . '/../private/views/templates/header.php';
@@ -65,6 +73,8 @@ if (str_contains($require, '/api')) {
         include __DIR__ . "/../private/views/pages$require.php";
         exit();
     }
+    ErrorHandeler::add404Log($requestedPage, $_SERVER['HTTP_REFERER'] ?? null, $_SESSION['userId'] ?? null);
+    ErrorHandeler::blockIPForRapid404Errors($_SERVER['REMOTE_ADDR']);
     http_response_code(404);
     header('Content-Type: application/json');
     echo json_encode(['error' => 'Invalid API endpoint']);
@@ -139,8 +149,9 @@ if ($continue) {
         include $pageTemplate;
     } else {
         // Handle 404 or display a default page
+        ErrorHandeler::blockIPForRapid404Errors($_SERVER['REMOTE_ADDR']);
         ErrorHandeler::add404Log($requestedPage, $_SERVER['HTTP_REFERER'] ?? null, $_SESSION['userId'] ?? null);
-        include __DIR__ . '/../private/views/pages/404.php';
+        include __DIR__ . '/../private/views/errors/404.php';
     }
 
     // Include the common footer
