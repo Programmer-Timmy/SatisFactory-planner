@@ -41,8 +41,15 @@ if ($_POST) {
 ?>
 
 <div class="container w-100">
-    <h1 class="text-center mb-3">Edit User</h1>
-    <a href="/admin/users" class="btn btn-primary w-100 mb-3">Return to users page</a>
+    <div class="row align-items-center mb-3">
+        <div class="col-lg-4"></div>
+        <div class="col-lg-4">
+            <h1 class="text-center">Edit User</h1>
+        </div>
+        <div class="col-lg-4 text-lg-end text-center">
+            <a href="/admin/users" class="btn btn-primary">Return to users page</a>
+        </div>
+    </div>
 
     <form method="post">
         <?php if ($error): ?>
