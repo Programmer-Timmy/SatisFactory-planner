@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "esnext",
     // Specifies the ECMAScript target version
-    "module": "es6",
+    "module": "esnext",
     // Specifies the module code generation
     "strict": true,
     // Enables all strict type-checking options

@@ -32,8 +32,6 @@ export class TableHandler {
     private async initialize(): Promise<void> {
         $('#loading').removeClass('d-none');
 
-        this.disableButtons();
-
         await this.getTableData();
         await this.addEventListeners();
         await this.addButtonEventListeners();
@@ -375,6 +373,13 @@ export class TableHandler {
 
         $('#showPower').removeClass('disabled');
         $('#showPower').prop('disabled', false);
+
+        $('#showVisualizationButton').removeClass('disabled');
+        $('#showVisualizationButton').prop('disabled', false);
+
+        $('#edit_product_line').removeClass('disabled');
+        $('#edit_product_line').prop('disabled', false);
+
     }
 
     /**
