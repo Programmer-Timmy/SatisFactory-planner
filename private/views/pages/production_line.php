@@ -176,7 +176,8 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                 <div class="progress mt-3 w-75 mx-auto">
                     <div class="progress-bar progress-bar-striped progress-bar-animated" id="loading-progress"
                          role="progressbar" style="width: 0%"
-                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                    </div>
                 </div>
             </div>
 

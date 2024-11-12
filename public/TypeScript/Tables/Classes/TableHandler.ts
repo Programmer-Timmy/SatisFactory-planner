@@ -124,6 +124,7 @@ export class TableHandler {
 
                 // Skip the extra row in the next iteration
                 i++;
+                this.finishedRows++;
             } else if (id === 'recipes') {
                 rowValues.push(false, null);
             }
