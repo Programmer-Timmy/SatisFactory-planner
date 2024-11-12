@@ -10,13 +10,14 @@ import {HtmlGeneration} from "./Functions/HtmlGeneration";
 import {buildingOptions} from "./Data/BuildingOptions";
 import {Visualization} from "./Visualization";
 import {SaveFunctions} from "./Functions/SaveFunctions";
+import {Building} from "./Types/Building";
+import {Recipe} from "./Types/Recipe";
 
 
 /**
  * Class responsible for handling the manipulation and event handling of tables.
  */
 export class TableHandler {
-
     public importsTableRows: ImportsTableRow[] = [];
     public productionTableRows: ProductionTableRow[] = [];
     public powerTableRows: PowerTableRow[] = [];
@@ -24,6 +25,16 @@ export class TableHandler {
 
     private visualisation: Visualization | null = null;
     private updated: boolean = false;
+
+    // cache data
+    private buildingCache: Building[] = [];
+    private recipeCache: Recipe[] = [];
+
+    // progress bar
+    private progressBar = $('#loading-progress');
+    private progressInterval: number = 0;
+    private totalRows = 0;
+    private finishedRows = 0;
 
     constructor() {
         this.initialize();
@@ -37,29 +48,47 @@ export class TableHandler {
         await this.addButtonEventListeners();
         await this.addShortcuts();
 
-        $('#loading').addClass('d-none');
-        $('#main-content').removeClass('d-none');
+        // wait for a little bit so the user can see the 100% progress
+        setTimeout(() => {
+            this.hideLoading();
+            this.enableButtons();
+        }, 500);
 
-        this.enableButtons();
     }
 
     private async getTableData() {
-        this.importsTableRows = await this.readTable<ImportsTableRow>('imports', ImportsTableRow);
-        this.productionTableRows = await this.readTable<ProductionTableRow>('recipes', ProductionTableRow);
-        this.powerTableRows = await this.readTable<PowerTableRow>('power', PowerTableRow);
+        this.totalRows = $('#recipes tbody tr').length;
+        console.log('Total rows:', this.totalRows);
+        this.progressInterval = 100 / this.totalRows;
+
+        this.productionTableRows = await this.readTable<ProductionTableRow>('recipes', ProductionTableRow, true);
+
+        await this.readTable<ImportsTableRow>('imports', ImportsTableRow).then(result => {
+            this.importsTableRows = result;
+        }).catch(error => {
+            console.error('Failed to load imports table rows:', error);
+        });
+
+        this.readTable<PowerTableRow>('power', PowerTableRow).then(result => {
+            this.powerTableRows = result;
+        }).catch(error => {
+            console.error('Failed to load power table rows:', error);
+        });
     }
 
     /**
      * Generic method to read tables and convert rows into class instances.
      * @param {string} id - The ID of the table.
      * @param {new(...args: any[]) => T} rowClass - The class constructor for the table rows.
+     * @param useProgress - Whether to use the progress bar.
      * @returns {T[]} An array of instances of the specified row class.
      */
-    private async readTable<T>(id: string, rowClass: { new(...args: any[]): T }): Promise<T[]> {
+    private async readTable<T>(id: string, rowClass: {
+        new(...args: any[]): T
+    }, useProgress: boolean = false): Promise<T[]> {
         const table = $(`#${id} tbody tr`);
         const rows: T[] = [];
         let lengthReduction = 0;
-
         if (id === 'power') {
             lengthReduction = 1;
         }
@@ -95,11 +124,45 @@ export class TableHandler {
 
                 // Skip the extra row in the next iteration
                 i++;
+            } else if (id === 'recipes') {
+                rowValues.push(false, null);
             }
 
-            rows.push(new rowClass(...rowValues));
+            if (id === 'recipes') {
+                rowValues.push(this.recipeCache);
+            }
+
+            if (id === 'power') {
+                rowValues.push(null);
+                rowValues.push(this.buildingCache);
+            }
+
+            // @ts-ignore
+            rows.push(await rowClass.create(...rowValues));
+            if (useProgress) {
+                this.updateProgress();
+            }
         }
         return rows;
+    }
+
+    private hideLoading() {
+        $('#loading').addClass('d-none');
+        $('#main-content').removeClass('d-none');
+
+    }
+
+    /**
+     * Updates the progress bar.
+     * @returns {void}
+     * @private
+     */
+    private updateProgress() {
+        this.finishedRows++;
+        const progress = Math.round(this.finishedRows * this.progressInterval)
+        this.progressBar.css('width', `${progress}%`);
+        this.progressBar.attr('aria-valuenow', progress);
+        this.progressBar.html(`${progress}%`);
     }
 
     /**

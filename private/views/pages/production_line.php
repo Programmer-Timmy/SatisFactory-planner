@@ -168,12 +168,18 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                 </div>
             </div>
         </div>
-        <div class="mt-auto position-absolute top-50 start-50 translate-middle-x w-100 h-100" id="loading">
-            <div class="d-flex justify-content-center">
+        <div class="mt-auto position-absolute top-50 start-50 translate-middle-x w-100" id="loading">
+            <div class="d-flex justify-content-center flex-column align-items-center">
                 <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
                     <span class="visually-hidden">Loading...</span>
                 </div>
+                <div class="progress mt-3 w-75 mx-auto">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="loading-progress"
+                         role="progressbar" style="width: 0%"
+                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
             </div>
+
         </div>
         <div class="row d-none" id="main-content">
             <div class="col-md-3">

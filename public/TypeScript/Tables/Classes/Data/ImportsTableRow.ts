@@ -9,4 +9,16 @@ export class ImportsTableRow {
         this.product = product;
     }
 
+    static async create(
+        itemId: number = 0,
+        quantity: number = 0,
+        product: string = '',
+    ): Promise<ImportsTableRow> {
+        return new ImportsTableRow(
+            itemId,
+            quantity,
+            product
+        );
+    }
+
 }
