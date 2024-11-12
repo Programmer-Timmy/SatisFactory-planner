@@ -144,17 +144,19 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
             </div>
             <div class="col-lg-3">
                 <div class="text-lg-end text-center">
-                    <button type="submit" id="save_button" class="btn btn-primary mb-1" data-bs-toggle="tooltip"
+                    <button type="submit" id="save_button" class="btn btn-primary mb-1 disabled"
+                            data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-html="true"
                             data-bs-title="Save production line.<br> <small>Hold <b>Shift</b> to save without returning to the save game.</small>">
                         <i class="fa-solid fa-save"></i></button>
-                    <button type="button" id="edit_product_line" class="btn btn-warning mb-1" data-bs-toggle="tooltip"
+                    <button type="button" id="edit_product_line" class="btn btn-warning mb-1 disabled"
+                            data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-title="Edit the production line"><i
                                 class="fa-solid fa-pencil"></i></button>
-                    <button type="button" id="showPower" class="btn btn-info mb-1" data-bs-toggle="tooltip"
+                    <button type="button" id="showPower" class="btn btn-info mb-1 disabled" data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-title="Show power consumption"><i
                                 class="fa-solid fa-bolt"></i></button>
-                    <button type="button" id="showVisualizationButton" class="btn btn-info mb-1"
+                    <button type="button" id="showVisualizationButton" class="btn btn-info mb-1 disabled"
                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show visualization"><i
                                 class="fa-solid fa-project-diagram"></i></button>
                     <button type="button" id="showHelp" class="btn btn-info mb-1" data-bs-toggle="tooltip"
@@ -166,12 +168,19 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
                 </div>
             </div>
         </div>
-        <div class="mt-auto position-absolute top-50 start-50 translate-middle-x w-100 h-100" id="loading">
-            <div class="d-flex justify-content-center">
+        <div class="mt-auto position-absolute top-50 start-50 translate-middle-x w-100" id="loading">
+            <div class="d-flex justify-content-center flex-column align-items-center">
                 <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
                     <span class="visually-hidden">Loading...</span>
                 </div>
+                <div class="progress mt-3 w-75 mx-auto">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="loading-progress"
+                         role="progressbar" style="width: 0%"
+                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                    </div>
+                </div>
             </div>
+
         </div>
         <div class="row d-none" id="main-content">
             <div class="col-md-3">

@@ -16,11 +16,35 @@ export class PowerTableRow {
         this.Consumption = Consumption;
         this.userRow = userRow;
         this.building = building;
+    }
 
-        if (!isNaN(buildingId) && buildingId !== null && building === null) {
-            Ajax.getBuilding(buildingId).then(building => {
-                this.building = building;
-            });
+    static async create(
+        buildingId: number = NaN,
+        quantity: number = 0,
+        clockSpeed: number = 100,
+        Consumption: number = 0,
+        userRow: boolean = true,
+        building: Building | null = null,
+        buildingCache: Building[] = []
+    ): Promise<PowerTableRow> {
+        const instance = new PowerTableRow(
+            buildingId,
+            quantity,
+            clockSpeed,
+            Consumption,
+            userRow,
+            building
+        );
+
+        if (!building && buildingId) {
+            instance.building = buildingCache.find(b => b.id === +buildingId) || null;
+            if (!instance.building) {
+                const building = await Ajax.getBuilding(buildingId);
+                buildingCache.push(building);
+                instance.building = building;
+            }
         }
+
+        return instance;
     }
 }

@@ -16,7 +16,15 @@ export class ProductionTableRow {
     public imports: Import[];
     public productionImports: Import[];
 
-    constructor(recipeId: string = '', quantity: number = 0, product: string = '', Usage: number = 0, exportPerMin: number = 0, doubleExport: boolean = false, extraCells: ExtraProductionRow | null = null) {
+    constructor(
+        recipeId: string = '',
+        quantity: number = 0,
+        product: string = '',
+        Usage: number = 0,
+        exportPerMin: number = 0,
+        doubleExport: boolean = false,
+        extraCells: ExtraProductionRow | null = null,
+    ) {
         this.recipeId = +recipeId;
         this.quantity = quantity;
         this.product = product;
@@ -27,14 +35,42 @@ export class ProductionTableRow {
         this.recipe = null;
         this.imports = [];
         this.productionImports = [];
-        this.getRecipe(recipeId).then(r =>
-            this.saveDoubleExportQuantity()
+    }
+
+    static async create(
+        recipeId: string = '',
+        quantity: number = 0,
+        product: string = '',
+        Usage: number = 0,
+        exportPerMin: number = 0,
+        doubleExport: boolean = false,
+        extraCells: ExtraProductionRow | null = null,
+        recipeCache: Recipe[] = []
+    ): Promise<ProductionTableRow> {
+        const instance = new ProductionTableRow(
+            recipeId,
+            quantity,
+            product,
+            Usage,
+            exportPerMin,
+            doubleExport,
+            extraCells,
         );
 
+        if (instance.recipe == null) {
+            if (instance.recipe == null) {
+                instance.recipe = await Ajax.getRecipe(+recipeId);
+                recipeCache.push(instance.recipe);
+            }
+        }
+
+        return instance;
     }
 
     public async getRecipe(recipeId: string): Promise<void> {
         this.recipe = await Ajax.getRecipe(+recipeId);
+
+
     }
 
     public saveDoubleExportQuantity(): void {

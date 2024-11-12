@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.7.1",
+    "date": "november 12 2024",
+    "changes": [
+      "Improved the loading feature of the production line visualisation.",
+      "Added an progress bar to show the loading progress of the visualisation."
+    ]
+  },
+  {
     "version": "1.7.0",
     "date": "november 11 2024",
     "changes": [

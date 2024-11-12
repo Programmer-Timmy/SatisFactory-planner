@@ -3,9 +3,8 @@ import {ImportNodes} from "./Data/Visualization/ImportNodes";
 import {ProductionNodes} from "./Data/Visualization/ProductionNodes";
 import {ExportNodes} from "./Data/Visualization/ExportNodes";
 import {Connection} from "./Data/Visualization/Connection";
-import cytoscape from "cytoscape";
+import cytoscape, {LayoutOptions} from "cytoscape";
 
-// klay
 import 'cytoscape-qtip';
 import 'cytoscape-klay';
 import 'cytoscape-fcose';
@@ -14,22 +13,8 @@ cytoscape.use(require('cytoscape-qtip'));
 cytoscape.use(require('cytoscape-klay'));
 cytoscape.use(require('cytoscape-fcose'));
 
-
-
 // global variables
-const NODE_SIZE = 50;
-const INNER_NODE_SIZE = 60;
-const ROW_SPACING = 250;
-const COLUMN_SPACING = 500;
-const IMPORT_ROW_SPACING = 300;
-const INSIDE_IMPORT_COLUMN_SPACING = 100;
-const START_X = 200;
-const START_Y = 100;
 const TEXT_SIZE = 25;
-const DOUBLE_OFFSET = 100;
-const ARROW_SIZE = 10;
-const LINE_WIDTH = 3;
-
 
 /**
  * Visualization class
@@ -92,76 +77,25 @@ export class Visualization {
     public createVisualization(): void {
         let elements = [];
         let roots = [];
-        let layout = {};
+        let layout: LayoutOptions;
 
         if (this.showImport) {
-            for (let i = 0; i < this.importNodes.length; i++) {
-                elements.push({
-                    data: {
-                        id: `import_${this.importNodes[i].id}`,
-                        label: `${this.importNodes[i].product}\n${this.importNodes[i].quantity}`,
-                        color: 'blue',
-                        title: `Import: ${this.importNodes[i].product}<br>Amount: ${this.importNodes[i].quantity}`,
-                    }
-                });
-                roots.push(`import_${this.importNodes[i].id}`);
+            elements.push(...this.importNodes.map(node => this.addNode('import', node)));
+            roots.push(...this.importNodes.map(node => `import_${node.id}`));
+            elements.push(...this.importConnections.map(connection => this.addConnection('import', connection, 'import', 'production')));
+        }
+
+        elements.push(...this.productionNodes.map(node => this.addNode('production', node)));
+        elements.push(...this.productionConnections.map((connection, i) => ({
+            ...this.addConnection('production', connection, 'production', 'production'),
+            data: {
+                ...this.addConnection('production', connection, 'production', 'production').data,
+                id: `productionConnection_${i}`
             }
-            for (let i = 0; i < this.importConnections.length; i++) {
-                elements.push({
-                    data: {
-                        id: `importConnection_${this.importConnections[i].id}`,
-                        source: `import_${this.importConnections[i].sourceId}`,
-                        target: `production_${this.importConnections[i].targetId}`,
-                        label: `${this.importConnections[i].product} ${this.importConnections[i].quantity}`,
-                        color: 'blue'
-                    }
-                });
-            }
-        }
-        for (let i = 0; i < this.productionNodes.length; i++) {
-            elements.push({
-                data: {
-                    id: `production_${this.productionNodes[i].id}`,
-                    label: `${this.productionNodes[i].product}\n${this.productionNodes[i].quantity}\n\n\n\n${this.productionNodes[i].building}\n${this.productionNodes[i].buildingAmount}`,
-                    color: 'green',
-                    title: `Recipe: ${this.productionNodes[i].product}<br>Amount: ${this.productionNodes[i].quantity}<br><hr>Building: ${this.productionNodes[i].building}<br>Amount of building: ${this.productionNodes[i].buildingAmount}`
-                },
-                classes: 'top-text'
-            });
-        }
-        for (let i = 0; i < this.productionConnections.length; i++) {
-            elements.push({
-                data: {
-                    id: `productionConnection_${i}`,
-                    source: `production_${this.productionConnections[i].sourceId}`,
-                    target: `production_${this.productionConnections[i].targetId}`,
-                    label: `${this.productionConnections[i].product} ${this.productionConnections[i].quantity}`,
-                    color: 'green'
-                }
-            });
-        }
+        })));
         if (this.showExport) {
-            for (let i = 0; i < this.exportNodes.length; i++) {
-                elements.push({
-                    data: {
-                        id: `export_${this.exportNodes[i].id}`,
-                        label: `${this.exportNodes[i].product}\n${this.exportNodes[i].quantity}`,
-                        color: 'red',
-                        title: `Export: ${this.exportNodes[i].product}<br>Amount: ${this.exportNodes[i].quantity}`,
-                    }
-                });
-            }
-            for (let i = 0; i < this.exportConnections.length; i++) {
-                elements.push({
-                    data: {
-                        id: `exportConnection_${this.exportConnections[i].id}`,
-                        source: `production_${this.exportConnections[i].sourceId}`,
-                        target: `export_${this.exportConnections[i].targetId}`,
-                        label: `${this.exportConnections[i].product} ${this.exportConnections[i].quantity}`,
-                        color: 'red',
-                    }
-            });
-            }
+            elements.push(...this.exportNodes.map(node => this.addNode('export', node)));
+            elements.push(...this.exportConnections.map(connection => this.addConnection('export', connection, 'production', 'export')));
         }
 
         switch (this.layout) {
@@ -181,6 +115,7 @@ export class Visualization {
                 }
                 break;
             case 'cose':
+                // @ts-ignore
                 layout = {
                     name: "cose",
                     idealEdgeLength: 100,    // Controls the preferred length of edges
@@ -197,6 +132,7 @@ export class Visualization {
             case 'klay':
                 layout = {
                     name: "klay",
+                    // @ts-ignore
                     animate: true,
                     spacingFactor: 2.0,
                     nodeDimensionsIncludeLabels: true,
@@ -206,6 +142,7 @@ export class Visualization {
             case 'fcose':
                 layout = {
                     name: "fcose",
+                    // @ts-ignore
                     animate: true,
                     nodeDimensionsIncludeLabels: true,
                     avoidOverlap: true,
@@ -231,14 +168,11 @@ export class Visualization {
                     avoidOverlap: true,        // Prevents node overlap
                 }
                 if (this.showImport && this.useRoots) {
-                    // @ts-ignore
                     layout['roots'] = roots;
                 }
             }
         }
 
-        // @ts-ignore
-        // @ts-ignore
         const cy = cytoscape({
             container: document.getElementById("graph"), // container to render in
             elements: elements,
@@ -285,30 +219,12 @@ export class Visualization {
                     }
                 }
             ],
-            // @ts-ignore
             layout: layout
         });
 
         cy.ready(() => {
             cy.nodes().forEach(node => {
-                node.qtip({
-                    content: node.data('title'),
-                    position: {
-                        my: 'top center',
-                        at: 'bottom center'
-                    },
-                    style: {
-                        classes: 'qtip-bootstrap',
-                        tip: {
-                            width: 16,
-                            height: 8
-                        }
-                    },
-                    show: {
-                        event: 'mouseover',
-                        delay: 100
-                    },
-                });
+                this.applyQTip(node, node.data('title'));
 
                 node.on('drag', () => {
                     if (node.qtip('api').visible) {
@@ -318,39 +234,79 @@ export class Visualization {
 
                 node.on('mouseout', () => {
                     node.qtip('api').hide();
-
                 });
-
             });
 
             cy.edges().forEach(edge => {
-                edge.qtip({
-                    content: edge.data('label'),
-                    position: {
-                        my: 'top center',
-                        at: 'bottom center'
-                    },
-                    style: {
-                        classes: 'qtip-bootstrap',
-                        tip: {
-                            width: 16,
-                            height: 8
-                        }
-                    },
-                    show: {
-                        event: 'mouseover',
-                        delay: 100
-                    },
-                    hide: {
-                        event: 'mouseout'
-                    }
-                });
+                this.applyQTip(edge, edge.data('label'));
             });
+
             cy.center();
             cy.fit();
         });
+
+
     }
 
+    private applyQTip(element: cytoscape.NodeSingular | cytoscape.EdgeSingular, content: string): void {
+        element.qtip({
+            content: content,
+            position: {
+                my: 'top center',
+                at: 'bottom center'
+            },
+            style: {
+                classes: 'qtip-bootstrap',
+                tip: {
+                    width: 16,
+                    height: 8
+                }
+            },
+            show: {
+                event: 'mouseover',
+                delay: 100
+            },
+            hide: {
+                event: 'mouseout'
+            }
+        });
+    }
+
+
+    /**
+     * Add a node to the visualization
+     * @param node - The node to add
+     * @param type - The type of the node
+     * @private
+     *
+     * @returns {object} - The node object
+     */
+    private addNode(type: 'import' | 'export' | 'production', node: any): {
+        data: { id: string, label: string, color: string, title: string },
+        classes: string
+    } {
+        return {
+            data: {
+                id: `${type}_${node.id}`,
+                label: `${node.product}\n${node.quantity}${node.building ? `\n\n\n\n${node.building}\n${node.buildingAmount}` : ''}`,
+                color: type === 'import' ? 'blue' : type === 'export' ? 'red' : 'green',
+                title: `${type.charAt(0).toUpperCase() + type.slice(1)}: ${node.product}<br>Amount: ${node.quantity}${node.building ? `<br><hr>Building: ${node.building}<br>Amount of building: ${node.buildingAmount}` : ''}`
+            },
+            classes: type === 'production' ? 'top-text' : ''
+        }
+    }
+
+    private addConnection(type: 'import' | 'export' | 'production', connection: any, sourcePrefix: string, targetPrefix: string) {
+        return {
+            data: {
+                id: `${type}Connection_${connection.id}`,
+                source: `${sourcePrefix}_${connection.sourceId}`,
+                target: `${targetPrefix}_${connection.targetId}`,
+                label: `${connection.product} ${connection.quantity}`,
+                color: type === 'import' ? 'blue' : type === 'export' ? 'red' : 'green'
+            }
+        };
+    }
     /**
      * Get the data from the tables
      * @private
