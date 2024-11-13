@@ -87,7 +87,8 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
                 <div class="row mb-3">
                     <h5>Import/Export</h5>
                     <div class="col-8 pe-0">
-                        <input type="file" id="importFile" name="file" accept=".json" class="form-control rounded-0 rounded-start" required>
+                        <input type="file" id="importFile" name="file" accept=".json"
+                               class="form-control rounded-0 rounded-start" required>
                         <div class="invalid-feedback">Please select a valid JSON file.</div>
                     </div>
                     <div class="col-2 p-0">
@@ -97,6 +98,35 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
                         <button class="btn btn-primary w-100 rounded-0 rounded-end" id="exportButton">Export</button>
                     </div>
                 </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <!-- Collapsible Button -->
+                        <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#cachedData" aria-expanded="false" aria-controls="cachedData">
+                            Cached Data
+                        </button>
+                        <!-- Collapsible Content -->
+                        <div class="collapse" id="cachedData">
+                            <div class="card card-body mt-3">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <h6>Recipes</h6>
+                                        <p id="cachedRecipes" class="col-12">0</p>
+                                    </div>
+                                    <div class="col-3">
+                                        <h6>Buildings</h6>
+                                        <p id="cachedBuildings" class="col-12">0</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <h6>Remove Cache</h6>
+                                        <button class="btn btn-danger w-100" id="removeCache">Remove Cache</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <div class="modal-footer">

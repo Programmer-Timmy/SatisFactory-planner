@@ -27,8 +27,10 @@ export class TableHandler {
     private updated: boolean = false;
 
     // cache data
+    private cacheVersion: number = <number>$('#dataVersion').val();
     private buildingCache: Building[] = [];
     private recipeCache: Recipe[] = [];
+
 
     // progress bar
     private progressBar = $('#loading-progress');
@@ -41,8 +43,24 @@ export class TableHandler {
     }
 
     private async initialize(): Promise<void> {
-        $('#loading').removeClass('d-none');
+        this.CheckCacheVersion();
+        let timeOutTime = 500;
 
+        // if page is reloaded set timeout to 0
+        const pageAccessedByReload = (
+            (window.performance.getEntriesByType('navigation').length === 0) ||
+            window.performance
+                .getEntriesByType('navigation')
+                // @ts-ignore
+                .map((nav) => nav.type)
+                .includes('reload')
+        );
+
+        if (pageAccessedByReload) {
+            timeOutTime = 0;
+        }
+
+        this.loadFromLocal();
         await this.getTableData();
         await this.addEventListeners();
         await this.addButtonEventListeners();
@@ -52,13 +70,15 @@ export class TableHandler {
         setTimeout(() => {
             this.hideLoading();
             this.enableButtons();
-        }, 500);
+        }, timeOutTime);
+
+
 
     }
 
     private async getTableData() {
+        // if page is reloaded
         this.totalRows = $('#recipes tbody tr').length;
-        console.log('Total rows:', this.totalRows);
         this.progressInterval = 100 / this.totalRows;
 
         this.productionTableRows = await this.readTable<ProductionTableRow>('recipes', ProductionTableRow, true);
@@ -71,6 +91,8 @@ export class TableHandler {
 
         this.readTable<PowerTableRow>('power', PowerTableRow).then(result => {
             this.powerTableRows = result;
+            this.saveToLocal();
+            this.showCacheAmount();
         }).catch(error => {
             console.error('Failed to load power table rows:', error);
         });
@@ -147,10 +169,64 @@ export class TableHandler {
         return rows;
     }
 
+    /**
+     * save cache to local storage
+     * @returns {void}
+     */
+    private saveToLocal() {
+        localStorage.setItem('cachedData', JSON.stringify({
+            Version: this.cacheVersion,
+            Recipe: this.recipeCache,
+            Building: this.buildingCache,
+        }));
+    }
+
+    /**
+     * show cache amount
+     * @returns {void}
+     */
+    private showCacheAmount() {
+        $('#cachedRecipes').html(this.recipeCache.length.toString());
+        $('#cachedBuildings').html(this.buildingCache.length.toString());
+    }
+
+    /**
+     * empty cache from local storage
+     * @returns {void}
+     */
+    private emptyLocal() {
+        localStorage.removeItem('cachedData');
+    }
+    /**
+     * load from local storage
+     * @returns {void}
+     */
+    private loadFromLocal() {
+        const data = JSON.parse(localStorage.getItem('cachedData') || '{}');
+        this.recipeCache = data.Recipe || [];
+        this.buildingCache = data.Building || [];
+        $('#cachedRecipes').html(this.recipeCache.length.toString());
+        $('#cachedBuildings').html(this.buildingCache.length.toString());
+    }
+
+    private CheckCacheVersion() {
+        console.log(this.cacheVersion);
+        const data = JSON.parse(localStorage.getItem('cachedData') || '{}');
+        if (data.Version !== this.cacheVersion.toString()) {
+            this.emptyLocal();
+            this.loadFromLocal();
+        }
+    }
+
+
+    /**
+     * Hides the loading screen and shows the main content.
+     * @returns {void}
+     * @private
+     */
     private hideLoading() {
         $('#loading').addClass('d-none');
         $('#main-content').removeClass('d-none');
-
     }
 
     /**
@@ -575,6 +651,12 @@ export class TableHandler {
     private async addButtonEventListeners() {
         $('#showVisualizationButton').on('click', () => {
             this.showVisualization();
+        });
+
+        $('#removeCache').on('click', () => {
+            this.emptyLocal();
+            this.loadFromLocal()
+            this.showCacheAmount();
         });
     }
 }

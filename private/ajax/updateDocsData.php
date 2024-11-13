@@ -51,6 +51,8 @@ try {
     $docsData->insertBuildings();
     $docsData->insertRecipes();
 
+    SiteSettings::incrementDataVersion();
+
     $added_stuff = $docsData->added_stuff;
     $deleted_stuff = $docsData->deleted_stuff;
     $updated_stuff = $docsData->updated_stuff;
