@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = true;
     }
 }
+global $changelog;
 ?>
 
 <div class="container">
@@ -96,8 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </fieldset>
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary">Save</button>
+        <div class="mt-4 text-center d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary me-3">Save</button>
+            <a href="/admin/siteSettings/sendUpdateMail" class="btn btn-primary">Send Update Mail
+                (V<?= $changelog['version'] ?>)</a>
         </div>
     </form>
 

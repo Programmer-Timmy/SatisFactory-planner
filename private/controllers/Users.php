@@ -193,5 +193,12 @@ class Users
         return ['success' => 'User is ready to be verified'];
     }
 
-
+    public static function unsubscribeUser($email) {
+        $user = Database::get("users", ['*'], [], ['email' => $email]);
+        if ($user) {
+            Database::update("users", ['updates'], [0], ['id' => $user->id]);
+            return true;
+        }
+        return false;
+    }
 }

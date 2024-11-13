@@ -15,14 +15,14 @@ $database = [
  * email settings
  */
 $emailSettings = [
-    'host' => '',
+    'host' => 'mail.timmygamer.nl',
     'SMTPAuth' => true,
-    'username' => '',
-    'password' => '',
+    'username' => 'timmy',
+    'password' => 'eHK.;SDd@lz9x"40s^wn',
     'encryption' => 'tls', // tls or ssl
     'port' => 587, // 587 or 465
     'from' => [
-        'email' => 'updates@satisfactoryplanner.timmygamer.nl',
+        'email' => 'update@satisfactoryplanner.timmygamer.nl',
         'name' => 'Satisfactory Planner'
     ]
 ];
@@ -34,8 +34,8 @@ $siteSettings = SiteSettings::getSettings();
 $site = [
     // General settings
     'siteName' => 'Satisfactory Planner',
-    'debug' => $siteSettings->debug,
-    'maintenance' => $siteSettings->maintenance,
+    'debug' => $siteSettings->debug ?? false,
+    'maintenance' => $siteSettings->maintenance ?? false,
 
     // ajax on or off
     'ajax' => true, // if true the site will only load the ajax pages
