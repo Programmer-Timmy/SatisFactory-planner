@@ -41,8 +41,23 @@ export class TableHandler {
     }
 
     private async initialize(): Promise<void> {
-        $('#loading').removeClass('d-none');
+        let timeOutTime = 500;
 
+        // if page is reloaded set timeout to 0
+        const pageAccessedByReload = (
+            (window.performance.getEntriesByType('navigation').length === 0) ||
+            window.performance
+                .getEntriesByType('navigation')
+                // @ts-ignore
+                .map((nav) => nav.type)
+                .includes('reload')
+        );
+
+        if (pageAccessedByReload) {
+            timeOutTime = 0;
+        }
+
+        this.loadFromLocal();
         await this.getTableData();
         await this.addEventListeners();
         await this.addButtonEventListeners();
@@ -52,13 +67,15 @@ export class TableHandler {
         setTimeout(() => {
             this.hideLoading();
             this.enableButtons();
-        }, 500);
+        }, timeOutTime);
+
+
 
     }
 
     private async getTableData() {
+        // if page is reloaded
         this.totalRows = $('#recipes tbody tr').length;
-        console.log('Total rows:', this.totalRows);
         this.progressInterval = 100 / this.totalRows;
 
         this.productionTableRows = await this.readTable<ProductionTableRow>('recipes', ProductionTableRow, true);
@@ -71,6 +88,7 @@ export class TableHandler {
 
         this.readTable<PowerTableRow>('power', PowerTableRow).then(result => {
             this.powerTableRows = result;
+            this.saveToLocal();
         }).catch(error => {
             console.error('Failed to load power table rows:', error);
         });
@@ -147,10 +165,43 @@ export class TableHandler {
         return rows;
     }
 
+    /**
+     * save cache to local storage
+     * @returns {void}
+     */
+    public saveToLocal() {
+        localStorage.setItem('cachedData', JSON.stringify({
+            Recipe: this.recipeCache,
+            Building: this.buildingCache,
+        }));
+    }
+
+    /**
+     * empty cache from local storage
+     * @returns {void}
+     */
+    public emptyLocal() {
+        localStorage.removeItem('cachedData');
+    }
+    /**
+     * load from local storage
+     * @returns {void}
+     */
+    public loadFromLocal() {
+        const data = JSON.parse(localStorage.getItem('cachedData') || '{}');
+        this.recipeCache = data.Recipe || [];
+        this.buildingCache = data.Building || [];
+    }
+
+
+    /**
+     * Hides the loading screen and shows the main content.
+     * @returns {void}
+     * @private
+     */
     private hideLoading() {
         $('#loading').addClass('d-none');
         $('#main-content').removeClass('d-none');
-
     }
 
     /**

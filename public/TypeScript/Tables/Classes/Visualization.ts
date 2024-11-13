@@ -389,7 +389,11 @@ export class Visualization {
             const building = row.recipe?.building;
             const amount = row.quantity;
             const recipe = row.recipe;
-            // @ts-ignore
+
+            if (!recipe) {
+                continue;
+            }
+
             let amountOfBuilding = (amount / recipe.export_amount_per_min).toFixed(3);
 
             if (building && recipe) {
