@@ -27,8 +27,10 @@ export class TableHandler {
     private updated: boolean = false;
 
     // cache data
+    private cacheVersion: number = <number>$('#dataVersion').val();
     private buildingCache: Building[] = [];
     private recipeCache: Recipe[] = [];
+
 
     // progress bar
     private progressBar = $('#loading-progress');
@@ -41,6 +43,7 @@ export class TableHandler {
     }
 
     private async initialize(): Promise<void> {
+        this.CheckCacheVersion();
         let timeOutTime = 500;
 
         // if page is reloaded set timeout to 0
@@ -89,6 +92,7 @@ export class TableHandler {
         this.readTable<PowerTableRow>('power', PowerTableRow).then(result => {
             this.powerTableRows = result;
             this.saveToLocal();
+            this.showCacheAmount();
         }).catch(error => {
             console.error('Failed to load power table rows:', error);
         });
@@ -169,28 +173,49 @@ export class TableHandler {
      * save cache to local storage
      * @returns {void}
      */
-    public saveToLocal() {
+    private saveToLocal() {
         localStorage.setItem('cachedData', JSON.stringify({
+            Version: this.cacheVersion,
             Recipe: this.recipeCache,
             Building: this.buildingCache,
         }));
     }
 
     /**
+     * show cache amount
+     * @returns {void}
+     */
+    private showCacheAmount() {
+        $('#cachedRecipes').html(this.recipeCache.length.toString());
+        $('#cachedBuildings').html(this.buildingCache.length.toString());
+    }
+
+    /**
      * empty cache from local storage
      * @returns {void}
      */
-    public emptyLocal() {
+    private emptyLocal() {
         localStorage.removeItem('cachedData');
     }
     /**
      * load from local storage
      * @returns {void}
      */
-    public loadFromLocal() {
+    private loadFromLocal() {
         const data = JSON.parse(localStorage.getItem('cachedData') || '{}');
         this.recipeCache = data.Recipe || [];
         this.buildingCache = data.Building || [];
+        $('#cachedRecipes').html(this.recipeCache.length.toString());
+        $('#cachedBuildings').html(this.buildingCache.length.toString());
+    }
+
+    private CheckCacheVersion() {
+        console.log(this.cacheVersion);
+        const data = JSON.parse(localStorage.getItem('cachedData') || '{}');
+        if (data.Version !== this.cacheVersion.toString()) {
+            this.emptyLocal();
+            this.loadFromLocal();
+        }
     }
 
 
@@ -626,6 +651,12 @@ export class TableHandler {
     private async addButtonEventListeners() {
         $('#showVisualizationButton').on('click', () => {
             this.showVisualization();
+        });
+
+        $('#removeCache').on('click', () => {
+            this.emptyLocal();
+            this.loadFromLocal()
+            this.showCacheAmount();
         });
     }
 }

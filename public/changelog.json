@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.7.2",
+    "date": "november 13 2024",
+    "changes": [
+      "Added user side caching for the production line. This will make the loading of the production line faster. after the first load.",
+      "Added a button to clear the cache of the production line."
+    ]
+  },
+  {
     "version": "1.7.1",
     "date": "november 12 2024",
     "changes": [

@@ -98,7 +98,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
     $error = 'Please fill all the fields';
 }
 
-$changelog = json_decode(file_get_contents('changelog.json'), true)[0];
+global $changelog;
+
 
 ?>
 
@@ -124,7 +125,7 @@ $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
         cursor: default;
     }
 </style>
-
+    <input type="hidden" id="dataVersion" value="<?= SiteSettings::getDataVersion() ?>">
     <input type="hidden" id="gameSaveId" value="<?= $productLine->game_saves_id ?>">
 
 <div class="px-3 px-lg-5">
