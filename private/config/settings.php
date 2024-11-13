@@ -10,6 +10,7 @@ $database = [
     'database' => 'satisfactoryplanner',
 ];
 
+
 /**
  * email settings
  */
@@ -29,11 +30,12 @@ $emailSettings = [
 /**
  * Site Settings
  */
+$siteSettings = SiteSettings::getSettings();
 $site = [
     // General settings
     'siteName' => 'Satisfactory Planner',
-    'debug' => true, // shows errors if true
-    'maintenance' => false, // shows the maintenance page if true the client's IP is not in the allowedIPs array
+    'debug' => $siteSettings->debug,
+    'maintenance' => $siteSettings->maintenance,
 
     // ajax on or off
     'ajax' => true, // if true the site will only load the ajax pages
@@ -77,7 +79,7 @@ $site = [
 /**
  * Allowed IPs That can bypass the maintenance
  */
-$allowedIPs = []; // ['::0'] means all IPs are allowed
+$allowedIPs = $siteSettings->allowed_ip_addresses ? explode(',', $siteSettings->allowed_ip_addresses) : [];
 
 /**
  * Page Title Settings

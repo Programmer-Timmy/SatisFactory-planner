@@ -9,6 +9,9 @@ foreach ($files as $file) {
         $fileName = str_replace(['_', '-'], ' ', $fileName);
         $fileName = ucwords($fileName);
         $pages[] = (object)['name' => $fileName, 'file' => $file];
+        if ($fileName === 'Site Settings' && !SiteSettings::isOwner()) {
+            unset($pages[count($pages) - 1]);
+        }
     }
 }
 ?>
