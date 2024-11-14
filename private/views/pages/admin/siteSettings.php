@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($settings as $key => $value) {
         if (in_array($key, $exclude)) continue;
         if (in_array($key, $booleans)) {
-            $data[$key] = isset($_POST[$key]);
+            $data[$key] = isset($_POST[$key]) ? 1 : 0;
         } else {
             $data[$key] = $_POST[$key];
         }
@@ -29,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $settings = SiteSettings::getSettings();
         $success = true;
     } catch (Exception $e) {
+        echo($e);
         $error = true;
     }
 }
@@ -73,7 +74,7 @@ global $changelog;
                 <div class="mb-4">
                     <label for="<?= $key ?>" class="form-label"><?= ucwords(str_replace('_', ' ', $key)) ?></label>
                     <input type="text" class="form-control" id="<?= $key ?>" name="<?= $key ?>"
-                           value="<?= htmlspecialchars($value) ?>">
+                           value="<?= htmlspecialchars($value ?? '') ?>">
                 </div>
             <?php endforeach; ?>
         </fieldset>

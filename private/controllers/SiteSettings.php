@@ -30,7 +30,6 @@ class SiteSettings {
     public static function updateSettings(array $data) {
         $database = new NewDatabase();
         $database->update('site_settings', array_keys($data), array_values($data), ['id' => 1]);
-        self::incrementDataVersion();
     }
 
 }

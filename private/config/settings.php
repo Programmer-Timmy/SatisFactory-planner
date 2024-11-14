@@ -15,10 +15,10 @@ $database = [
  * email settings
  */
 $emailSettings = [
-    'host' => 'mail.timmygamer.nl',
+    'host' => '',
     'SMTPAuth' => true,
-    'username' => 'timmy',
-    'password' => 'eHK.;SDd@lz9x"40s^wn',
+    'username' => '',
+    'password' => 'password',
     'encryption' => 'tls', // tls or ssl
     'port' => 587, // 587 or 465
     'from' => [
