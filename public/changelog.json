@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.7.3",
+    "date": "november 19 2024",
+    "changes": [
+      "Fixed issues whit loading the production line data."
+    ]
+  },
+  {
     "version": "1.7.2",
     "date": "november 13 2024",
     "changes": [

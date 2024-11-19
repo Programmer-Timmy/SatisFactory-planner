@@ -65,6 +65,10 @@ export class ProductionTableRow {
             }
         }
 
+        if (instance.extraCells !== null) {
+            instance.extraCells.Quantity = <number>ProductionLineFunctions.calculateSecondExportPerMin(instance);
+        }
+
         return instance;
     }
 

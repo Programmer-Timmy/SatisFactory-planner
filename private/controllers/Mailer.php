@@ -10,7 +10,7 @@ require '../static/PHPMailer/src/SMTP.php';
 class Mailer
 {
 
-    public static function sendEmail($to, $subject, $body, $plainText)
+    public static function sendEmail($to, $subject, $body, $plainText, $sendFrom = null, $sendFromName = null)
     {
         global $emailSettings;
         $encryption = '';
@@ -20,6 +20,7 @@ class Mailer
             $encryption = PHPMailer::ENCRYPTION_SMTPS;
         }
         $mail = new PHPMailer(true);
+
 
         try {
 
@@ -31,7 +32,12 @@ class Mailer
             $mail->SMTPSecure = $encryption;
             $mail->Port = $emailSettings['port'];
 
-            $mail->setFrom($emailSettings['from']['email'], $emailSettings['from']['name']);
+            if ($sendFrom && $sendFromName) {
+                $mail->setFrom($sendFrom, $sendFromName);
+            } else {
+                $mail->setFrom($emailSettings['from']['email'], $emailSettings['from']['name']);
+            }
+
             $mail->addCustomHeader("List-Unsubscribe", "<https://satisfactoryplanner.timmygamer.nl/unsubscribe.php?email=$to>");
             $mail->addAddress($to);
             $mail->isHTML(true);
@@ -52,19 +58,23 @@ class Mailer
     public static function sendWebsiteUpdateEmail(object $user)
     {
         $changelog = json_decode(file_get_contents('changelog.json'), true)[0];
-        $subject = 'Website Update ' . $changelog['version'];
+        $subject = 'New Update Available for Satisfactory Planner';
 
         // HTML body
         $htmlBody = '
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
+    <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            /* Include Bootstrap inline styles */
             .container {
                 width: 100%;
+                max-width: 600px;
                 padding: 15px;
                 margin: 0 auto;
+                font-family: Arial, sans-serif;
+                color: #333333;
             }
             .header {
                 background-color: #f8f9fa;
@@ -77,16 +87,17 @@ class Mailer
                 border: 1px solid #dee2e6;
                 border-radius: 5px;
                 margin: 20px 0;
+                line-height: 1.6;
             }
             .footer {
                 text-align: center;
                 padding: 10px;
                 background-color: #f8f9fa;
-                border-top: 1px solid #dee2e6;
             }
             a {
                 color: #007bff;
                 text-decoration: none;
+                font-weight: bold;
             }
             a:hover {
                 text-decoration: underline;
@@ -96,7 +107,7 @@ class Mailer
     <body>
         <div class="container">
             <div class="header">
-                <h2>Welcome to Satisfactory Planner</h2>
+                <h2>A new update is available for Satisfactory Planner</h2>
             </div>
             <div class="content">
                 <p>Hello ' . htmlspecialchars($user->username) . ',</p>
@@ -108,10 +119,15 @@ class Mailer
         }
         $htmlBody .= '
                 </ul>
+                
+                <p>You can view the full changelog <a href="https://satisfactoryplanner.timmygamer.nl/changelog">here</a>.</p>
+                
+                <p>Thank you for using Satisfactory Planner!</p>
             </div>
             <div class="footer">
                 <p>Kind regards,<br>The Satisfactory Planner Team</p>
-                <p>If you no longer wish to receive these updates, you can <a href="https://satisfactoryplanner.timmygamer.nl/unsubscribe">unsubscribe here</a>.</p>
+                <p>If you no longer wish to receive these updates, you can <a href="https://satisfactoryplanner.timmygamer.nl/unsubscribe?email=' . urlencode($user->email) . '">unsubscribe here</a>.</p>
+                <p>If you have any feedback or suggestions, feel free to <a href="https://forms.gle/fAd5LrGRATYwFHzr7">let us know</a>.</p>
             </div>
         </div>
     </body>
@@ -125,6 +141,8 @@ class Mailer
             $plainTextBody .= "- " . htmlspecialchars($change) . "\n";
         }
         $plainTextBody .= "\nKind regards,\nThe Satisfactory Planner Team";
+        $plainTextBody .= "\n\nIf you no longer wish to receive these updates, you can unsubscribe here: https://satisfactoryplanner.timmygamer.nl/unsubscribe?email=" . urlencode($user->email);
+        $plainTextBody .= "\nIf you have any feedback or suggestions, feel free to let us know: https://forms.gle/fAd5LrGRATYwFHzr7";
 
         // Send email as multipart/alternative (HTML + Plain Text)
         // Use your mail sending method here
