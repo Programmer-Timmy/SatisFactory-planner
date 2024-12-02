@@ -1,6 +1,13 @@
 [
   {
     "version": "1.7.3",
+    "date": "december 2 2024",
+    "changes": [
+      "Fixed issues with not able to save some production lines."
+    ]
+  },
+  {
+    "version": "1.7.3",
     "date": "november 19 2024",
     "changes": [
       "Fixed issues whit loading the production line data."
