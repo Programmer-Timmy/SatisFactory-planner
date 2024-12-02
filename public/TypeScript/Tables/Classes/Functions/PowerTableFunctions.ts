@@ -43,6 +43,9 @@ export class PowerTableFunctions {
 
                 if (exes > 0) {
                     const clockSpeed = exes * 100;
+                    if (clockSpeed < 1) {
+                        continue;
+                    }
                     const consumption = +PowerTableFunctions.calculateConsumption(1, clockSpeed, building.power_used);
                     powerTableRows.push(new PowerTableRow(building.id, 1, +clockSpeed.toFixed(1), consumption, false, building));
                 }
