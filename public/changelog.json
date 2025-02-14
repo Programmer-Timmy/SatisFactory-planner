@@ -4,7 +4,7 @@
     "date": "Februari 14 2025",
     "changes": [
       "Fixed not able to delete account.",
-      "Fixed Import issue where the user created power rows where always true.",
+      "Fixed Import issue where the user created power rows where always true."
     ]
   },
   {
