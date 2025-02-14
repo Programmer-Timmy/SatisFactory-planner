@@ -1,12 +1,11 @@
 <?php
 
-if (!isset($_GET['hash'])) {
+if (!isset($_GET['email'])) {
     header('Location: /');
     exit(0);
 }
 
-$email = $_GET['hash'];
-
+$email = $_GET['email'];
 if (!Users::unsubscribeUser($email)) {
     $message = 'An error occurred while trying to unsubscribe.';
 }
