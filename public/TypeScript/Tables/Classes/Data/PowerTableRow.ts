@@ -23,10 +23,25 @@ export class PowerTableRow {
         quantity: number = 0,
         clockSpeed: number = 100,
         Consumption: number = 0,
-        userRow: boolean = true,
+        userRow: boolean | string = true,
         building: Building | null = null,
         buildingCache: Building[] = []
     ): Promise<PowerTableRow> {
+        if (typeof userRow === 'string') {
+            switch (userRow.toLowerCase()) {
+                case '0':
+                case 'false':
+                    userRow = false;
+                    break;
+                case '1':
+                case 'true':
+                    userRow = true;
+                    break;
+                default:
+                    userRow = true;
+                    break;
+            }
+        }
         const instance = new PowerTableRow(
             buildingId,
             quantity,

@@ -149,7 +149,7 @@ class ErrorHandeler {
     public static function blockIPForRapid404Errors(string $ip) {
         $MAX_404_ERRORS = 5;
 
-        $time = date('Y-m-d H:i:s', strtotime('-1 minutes'));
+        $time = date('Y-m-d H:i:s', time() - 5);
         $count = Database::query("SELECT COUNT(*) as count FROM error_404_logs WHERE ip_address = ? AND error_timestamp > ?", [$ip, $time])[0]->count;
         if ($count >= $MAX_404_ERRORS && !AuthControler::isIPBlocked($ip)) {
             AuthControler::blockIP($ip, 'Rapid 404 Errors');

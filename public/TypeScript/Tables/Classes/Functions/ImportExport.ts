@@ -35,6 +35,8 @@ export class ImportExport {
             importTable: importTableData
         }
 
+        console.log(powerTableData);
+
         const bytes = new TextEncoder().encode(JSON.stringify(dataToExport));
         const blob = new Blob([bytes], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
