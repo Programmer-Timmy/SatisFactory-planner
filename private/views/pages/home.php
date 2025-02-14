@@ -90,11 +90,8 @@ if ($_GET && isset($_GET['request'])) {
 $Invites = GameSaves::getRequests($_SESSION['userId']);
 
 $class = 'col-md-6 col-lg-4';
-if (count($gameSaves) == 2) {
+if (count($gameSaves) <= 2) {
     $class = 'col-md-6';
-} elseif (count($gameSaves) == 1) {
-    $class = 'col-md-8 offset-md-2';
-
 }
 
 
@@ -211,7 +208,7 @@ if (count($gameSaves) == 2) {
         </div>
     <?php else : ?>
         <!--    show cards-->
-        <div class="row">
+        <div class="row <?= count($gameSaves) == 1 ? "justify-content-center" : "" ?>">
             <?php foreach ($gameSaves as $gameSave) :
                 $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
                 ?>
