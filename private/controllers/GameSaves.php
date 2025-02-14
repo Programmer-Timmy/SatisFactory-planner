@@ -118,10 +118,12 @@ class GameSaves
      * @param int $game_save_id
      * @return false|void
      */
-    public static function deleteSaveGame(int $game_save_id)
+    public static function deleteSaveGame(int $game_save_id, $ownerId = null)
     {
-
-        if (Database::get("game_saves", ['id'], [], ['id' => $game_save_id, 'owner_id' => $_SESSION['userId']]) == false) {
+	if (!$ownerId){
+	    $ownerId = $_SESSION['userId'];
+	}
+        if (Database::get("game_saves", ['id'], [], ['id' => $game_save_id, 'owner_id' => $ownerId]) == false) {
             return false;
         }
         try {
@@ -130,7 +132,7 @@ class GameSaves
             ProductionLineSettings::deleteProductionLineSettings($game_save_id);
             ProductionLines::deleteProductionLineOnGameId($game_save_id);
             Database::delete("users_has_game_saves", ['game_saves_id' => $game_save_id]);
-            Database::delete("game_saves", ['id' => $game_save_id, 'owner_id' => $_SESSION['userId']]);
+            Database::delete("game_saves", ['id' => $game_save_id, 'owner_id' => $ownerId ]);
             return true;
         } catch (Exception $e) {
             var_dump($e);
@@ -197,19 +199,21 @@ class GameSaves
      */
     public static function transferSaveGames(int $userId)
     {
-        $gamesaves = self::getSaveGamesByUser($userId);
+        $gamesaves = self::getSaveGameByOwner($userId);
         foreach ($gamesaves as $game) {
-            if ($game->owner_id == $userId) {
+            if ($game->owner_id !== $userId) {
                 continue;
             }
             $gamesaveUsers = self::getAllowedUsers($game->id);
-            $gamesaveUsers = array_diff($gamesaveUsers, [$userId]);
+            $gamesaveUsers = array_values(array_filter($gamesaveUsers, function ($user) use ($userId) {
+                return $user->users_id !== $userId;
+            }));
             if (count($gamesaveUsers) == 0) {
-                self::deleteSaveGame($game->id);
+                self::deleteSaveGame($game->id, $userId);
                 continue;
             }
             $newOwner = $gamesaveUsers[0];
-            Database::update("game_saves", ['owner_id'], [$newOwner], ['id' => $game->id]);
+            Database::update("game_saves", ['owner_id'], [$newOwner->users_id], ['id' => $game->id]);
 
         }
 

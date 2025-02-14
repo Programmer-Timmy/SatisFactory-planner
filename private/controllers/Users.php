@@ -71,7 +71,6 @@ class Users
     {
         GameSaves::transferSaveGames($id);
         GameSaves::deleteUserHasGameSavesByUser($id);
-
         return Database::delete("users", ['id' => $id]);
     }
 
