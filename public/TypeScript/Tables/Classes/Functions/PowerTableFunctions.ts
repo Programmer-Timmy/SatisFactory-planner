@@ -47,7 +47,7 @@ export class PowerTableFunctions {
                         continue;
                     }
                     const consumption = +PowerTableFunctions.calculateConsumption(1, clockSpeed, building.power_used);
-                    powerTableRows.push(new PowerTableRow(building.id, 1, +clockSpeed.toFixed(1), consumption, false, building));
+                    powerTableRows.push(new PowerTableRow(building.id, 1, +clockSpeed.toFixed(5), consumption, false, building));
                 }
             }
         }
@@ -68,7 +68,7 @@ export class PowerTableFunctions {
         // tot de maght van 1,321928
         const clockSpeed = Math.pow(ClockSpeed / 100, 1.321928);
         // to 1 decimal
-        return (amount * Consumption * clockSpeed).toFixed(1);
+        return (amount * Consumption * clockSpeed).toFixed(5);
     }
 
     static calculateTotalConsumption(table: PowerTableRow[]): number {
@@ -78,14 +78,14 @@ export class PowerTableFunctions {
             return acc + consumption;
         }, 0);
 
-        return parseFloat(totalConsumption.toFixed(3)); // Limit to 3 decimal places
+        return parseFloat(totalConsumption.toFixed(5)); // Limit to 3 decimal places
     }
 
     public static calculateSingleConsumption(row: PowerTableRow): number {
         if (row.building === null) return 0;
 
         const clockSpeed = Math.pow(row.clockSpeed / 100, 1.321928);
-        return +(row.quantity * row.building.power_used * clockSpeed).toFixed(1);
+        return +(row.quantity * row.building.power_used * clockSpeed).toFixed(5);
     }
 
     public static async updateBuilding(row: PowerTableRow, buildingId: number): Promise<void> {

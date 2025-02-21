@@ -8,7 +8,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
-                <div id="graph" class="border-0" style="height: 85vh; width: 100vw;"></div>
+                <div id="graph" class="border-0" style="height: 100%"></div>
             </div>
             <div class="modal-footer">
                 <select id="layout" class="form-select" style="width: 200px;">

@@ -173,8 +173,8 @@ export class ImportsTableFunctions {
             }
 
             // Update usage for this produced row
-            producedRow.Usage += +canUse.toFixed(2);
-            producedRow.exportPerMin = +(producedRow.quantity - producedRow.Usage).toFixed(2);
+            producedRow.Usage += +canUse.toFixed(5);
+            producedRow.exportPerMin = +(producedRow.quantity - producedRow.Usage).toFixed(5);
 
 
             // Update the total used amount
@@ -217,8 +217,8 @@ export class ImportsTableFunctions {
             }
 
             // Update usage for this extra row
-            doubleExport.extraCells.Usage += +canUse.toFixed(2);
-            doubleExport.extraCells.ExportPerMin = +(doubleExport.extraCells.Quantity - doubleExport.extraCells.Usage).toFixed(2);
+            doubleExport.extraCells.Usage += +canUse.toFixed(5);
+            doubleExport.extraCells.ExportPerMin = +(doubleExport.extraCells.Quantity - doubleExport.extraCells.Usage).toFixed(5);
 
             // Update the total used amount
             totalUsed += canUse;
@@ -253,7 +253,10 @@ export class ImportsTableFunctions {
         product: string
     ): void {
         const existingImportRow = importsTableRows.find(r => r.itemId === itemId);
-        amountToImport = +amountToImport.toFixed(2);
+        amountToImport = +amountToImport.toFixed(5)
+        if (amountToImport <= 0.0001) {
+            return;
+        }
         if (existingImportRow) {
             existingImportRow.quantity += amountToImport;
             row.imports.push(new Import(importsTableRows.indexOf(existingImportRow), amountToImport, product));
