@@ -1,5 +1,20 @@
 [
   {
+    "version": "1.7.6",
+    "date": "Februari 22 2025",
+    "changes": [
+      "Changed column 'Usage Per/Min to 'Local Usage Per/Min'."
+    ]
+  },
+  {
+    "version": "1.7.5",
+    "date": "Februari 14 2025",
+    "changes": [
+      "Fixed not able to delete account.",
+      "Fixed Import issue where the user created power rows where always true."
+    ]
+  },
+  {
     "version": "1.7.5",
     "date": "Februari 14 2025",
     "changes": [
