@@ -88,7 +88,7 @@ export class HtmlGeneration {
         const rowsHTML = importsTableRows.map(row => {
             const formattedQuantity = Number(row.quantity) % 1 === 0 ?
                 row.quantity.toFixed(0) :
-                row.quantity.toFixed(1);
+                row.quantity.toFixed(5);
 
             return `
             <tr>

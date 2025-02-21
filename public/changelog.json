@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.6",
+    "date": "Februari 14 2025",
+    "changes": [
+      "Fixed: Scrollbar showing in visualisation.",
+      "Fixed: empty space under the footer after loading the visualisation.",
+      "Fixed: visualisation not opening.",
+      "Changed: Round the numbers now up to 5 decimal places to make it more accurate.",
+    ]
+  },
+  {
     "version": "1.7.5",
     "date": "Februari 14 2025",
     "changes": [
