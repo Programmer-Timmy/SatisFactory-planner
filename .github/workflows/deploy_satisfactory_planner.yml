@@ -6,6 +6,7 @@ on:
       - public/**
       - static/**
       - private/**
+  workflow_dispatch:
 
 jobs:
   deploy_satisfactory_planner:
