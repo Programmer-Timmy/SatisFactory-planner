@@ -237,7 +237,7 @@ global $changelog;
                         <th scope="col">Recipe</th>
                         <th scope="col">Quantity Per/min</th>
                         <th scope="col">Product</th>
-                        <th scope="col">Usage Per/min</th>
+                        <th scope="col">Local Usage Per/min</th>
                         <th scope="col">Export Per/min</th>
                     </tr>
                     </thead>
