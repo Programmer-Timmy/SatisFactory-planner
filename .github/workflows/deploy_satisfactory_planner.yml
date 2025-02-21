@@ -24,7 +24,7 @@ jobs:
           rsync -av --progress ./public/ deploy_directory/public_html/ \
             --exclude '.htaccess' \
             --exclude 'image' \
-            --exclude 'TypeScript` \
+            --exclude 'TypeScript' \
             --exclude 'index.php'
 
           # Prepare private files
