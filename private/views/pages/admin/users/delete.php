@@ -15,7 +15,6 @@ if (!$user) {
 $error = false;
 
 if ($_POST) {
-    var_dump($_POST);
     $id = $user->id;
 
     try {
@@ -50,3 +49,4 @@ if ($_POST) {
         <a href="/admin/users" class="btn btn-secondary px-4">Cancel</a>
     </div>
 </div>
+

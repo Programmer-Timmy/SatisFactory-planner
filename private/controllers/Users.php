@@ -59,12 +59,12 @@ class Users
         return true;
     }
 
-    public static function createUser($username, $password, $email)
+    public static function createUser($username, $password, $email, $googleId = null)
     {
         $password = password_hash($password, PASSWORD_DEFAULT);
         $verified_code = bin2hex(random_bytes(16));
         Mailer::sendVerificationEmail($email, $username, $verified_code);
-        return Database::insert("users", ['username', 'password_hash', 'email', 'verified'], [$username, $password, $email, $verified_code]);
+        return Database::insert("users", ['username', 'password_hash', 'email', 'verified', 'google_id'], [$username, $password, $email, $verified_code, $googleId]);
     }
 
     public static function deleteUser($id)
@@ -197,6 +197,21 @@ class Users
         if ($user) {
             Database::update("users", ['updates'], [0], ['id' => $user->id]);
             return true;
+        }
+        return false;
+    }
+
+    public static function getGoogleConnectedUser($googleId, $email) {
+        return Database::get("users", ['*'], [], ['google_id' => $googleId, 'email' => $email]);
+    }
+
+    public static function linkGoogleAccount($googleId, $email, $password) {
+        $user = Users::getUserByEmail($email);
+        if ($user) {
+            if (password_verify($password, $user->password_hash)) {
+                Database::update("users", ['google_id'], [$googleId], ['id' => $user->id]);
+                return AuthControler::login($user->username, $password);
+            }
         }
         return false;
     }
