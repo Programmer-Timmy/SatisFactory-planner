@@ -4,7 +4,7 @@ $success = '';
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
-    
+
     $data = AuthControler::login($username, $password);
     if ($data != null) {
         if (is_array($data)) {
@@ -14,7 +14,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                 $error = 'Email not verified please check your email. If you did not receive an email please check your spam folder. <a href="/login/verify?resend=' . $data[0] . '">Resend verification email</a>';
             }
         } else {
-        header('Location: ' . $data);
+            header('Location: ' . $data);
         }
     } else {
         $error = 'Username or password is incorrect';
@@ -68,9 +68,23 @@ if (isset($_GET['verify']) && strtok($_SERVER['REQUEST_URI'], '?') == '/login') 
                             <input type="password" class="form-control" id="password" name="password" required
                                    autocomplete="current-password">
                         </div>
-                        <button type="submit" class="btn btn-primary">Login</button>
-                        <a href="/register" class="btn btn-secondary">Register</a>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                            <a href="/register" class="btn btn-secondary">Register</a>
+                        </div>
                     </form>
+                    <div class="mt-3">
+                        <div style="display: flex; align-items: center; text-align: center;">
+                            <hr style="flex: 1; border: none; border-top: 1px solid #ccc;">
+                            <span style="padding: 0 10px; color: #666;">or</span>
+                            <hr style="flex: 1; border: none; border-top: 1px solid #ccc;">
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <a href="/login/google-oauth" class=""><img
+                                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/800px-Google_%22G%22_logo.svg.png"
+                                        alt="Google" style="width: 40px; height: 40px;"></a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -7,7 +7,6 @@ if (isset($_POST['send'])) {
     try {
         foreach ($users as $user) {
             if ($user->updates) {
-                var_dump($user);
                 Mailer::sendWebsiteUpdateEmail($user);
             }
         }

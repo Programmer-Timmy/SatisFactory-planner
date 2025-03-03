@@ -21,8 +21,6 @@ if ($_POST) {
     $admin = isset($_POST['admin']) ? 1 : 0;
     $verified = isset($_POST['verified']) ? 1 : 0;
 
-    var_dump($username, $email, $updates, $admin, $verified);
-
     if (Users::getUserByUsername($username) && $username !== $user->username) {
         $error = 'Username already exists';
     } elseif (Users::getUserByEmail($email) && $email !== $user->email) {

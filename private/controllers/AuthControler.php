@@ -37,7 +37,9 @@ class AuthControler
             }
 
             if ($site['saveUrl']) {
+
                 if (isset($_SESSION['redirect'])) {
+
                     $_SESSION['lastVisitedSaveGame'] = GameSaves::getSaveGamesByUser($user->id)[0]->id;
                     return str_contains($_SESSION['redirect'], '/login') ? '/home' : $_SESSION['redirect'];
                     exit();
@@ -54,6 +56,50 @@ class AuthControler
             exit();
 
         }
+    }
+
+    public static function loginGoogleSSO($googleId, $email){
+        global $site;
+        $user = Users::getGoogleConnectedUser($googleId, $email);
+        if (!$user) {
+            return;
+            exit();
+        }
+
+        if ($user->verified != 1) {
+            return [$user->username, 'notVerified'];
+            exit();
+        }
+
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        $_SESSION['accounts'] = $user->id;
+
+        if ($user->email == null) {
+            return '/account';
+            exit();
+        }
+
+        $_SESSION[$site['accounts']['sessionName']] = $user->id;
+        if ($site['admin']['enabled']) {
+            if ($user->admin == 1) {
+                $_SESSION[$site['admin']['sessionName']] = $user->id;
+            }
+        }
+
+        if ($site['saveUrl']) {
+            if (isset($_SESSION['redirect'])) {
+                $_SESSION['lastVisitedSaveGame'] = GameSaves::getSaveGamesByUser($user->id)[0]->id;
+                return str_contains($_SESSION['redirect'], '/login') ? '/home' : $_SESSION['redirect'];
+                exit();
+            }else{
+                return '/home';
+                exit();
+            }
+        }
+        return 'home';
+        exit();
+
+
     }
 
     public static function getAllLoginAttempts($year = null, $limit = null) {

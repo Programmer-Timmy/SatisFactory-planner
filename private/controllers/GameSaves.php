@@ -135,7 +135,6 @@ class GameSaves
             Database::delete("game_saves", ['id' => $game_save_id, 'owner_id' => $ownerId ]);
             return true;
         } catch (Exception $e) {
-            var_dump($e);
             return false;
         }
 
