@@ -59,12 +59,12 @@ class Users
         return true;
     }
 
-    public static function createUser($username, $password, $email, $googleId = null)
+    public static function createUser($username, $password, $email, $googleId = null, $googleEmail = null)
     {
         $password = password_hash($password, PASSWORD_DEFAULT);
         $verified_code = bin2hex(random_bytes(16));
         Mailer::sendVerificationEmail($email, $username, $verified_code);
-        return Database::insert("users", ['username', 'password_hash', 'email', 'verified', 'google_id'], [$username, $password, $email, $verified_code, $googleId]);
+        return Database::insert("users", ['username', 'password_hash', 'email', 'verified', 'google_id', 'google_email'], [$username, $password, $email, $verified_code, $googleId, $googleEmail]);
     }
 
     public static function deleteUser($id)
@@ -201,18 +201,32 @@ class Users
         return false;
     }
 
-    public static function getGoogleConnectedUser($googleId, $email) {
-        return Database::get("users", ['*'], [], ['google_id' => $googleId, 'email' => $email]);
+    public static function getGoogleConnectedUser($googleId) {
+        return Database::get("users", ['*'], [], ['google_id' => $googleId]);
     }
 
-    public static function linkGoogleAccount($googleId, $email, $password) {
-        $user = Users::getUserByEmail($email);
+    public static function linkGoogleAccount($googleId, $googleEmail, $password, $userId = null) {
+        $user = $userId ? self::getUserById($userId) : self::getUserByEmail($googleEmail);
+        var_dump($user);
         if ($user) {
             if (password_verify($password, $user->password_hash)) {
-                Database::update("users", ['google_id'], [$googleId], ['id' => $user->id]);
+                Database::update("users", ['google_id', 'google_email'], [$googleId, $googleEmail], ['id' => $user->id]);
+
                 return AuthControler::login($user->username, $password);
             }
         }
         return false;
+    }
+
+    public static function linkGoogleAccountBySession($googleId, $googleEmail) {
+        $userId = $_SESSION['userId'];
+        $user = self::getUserById($userId);
+
+        Database::update("users", ['google_id', 'google_email'], [$googleId, $googleEmail], ['id' => $userId]);
+
+    }
+
+    public static function disconnectGoogleAccount(mixed $userId) {
+        Database::update("users", ['google_id', 'google_email'], [null, null], ['id' => $userId]);
     }
 }

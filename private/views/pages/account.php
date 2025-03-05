@@ -107,6 +107,32 @@ if (isset($_GET['delete'])) {
             </div>
         </div>
     </form>
+    <!-- Connected accounts -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mt-2 shadow-sm">
+                <div class="card-body p-3">
+                    <h6 class="card-title mb-2">Connected Accounts</h6>
+                    <div class="border border-light shadow-sm rounded p-2">
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/800px-Google_%22G%22_logo.svg.png"
+                                 alt="Google Logo" width="20" height="20" class="me-2">
+                            <strong class="small">Google</strong>
+                        </div>
+                        <?php if ($user->google_id) : ?>
+                            <p class="mb-2 text-success small">Connected - <?= htmlspecialchars($user->google_email) ?></p>
+                            <a href="/login/google-oauth/disconnect" class="btn btn-outline-danger btn-sm">Disconnect</a>
+                        <?php else : ?>
+                            <a href="/login/google-oauth" class="btn btn-outline-primary btn-sm">Connect Google</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
     <!-- Change Password form -->
     <form method="post">
         <!-- Password change card -->
