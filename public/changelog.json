@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.7.8",
+    "date": "March 5 2025",
+    "changes": [
+      "Add Google account connection and disconnection features."
+    ]
+  },
+  {
     "version": "1.7.7",
     "date": "Februari 14 2025",
     "changes": [
