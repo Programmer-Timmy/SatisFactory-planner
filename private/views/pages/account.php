@@ -110,7 +110,7 @@ if (isset($_GET['delete'])) {
     <!-- Connected accounts -->
     <div class="row">
         <div class="col-12">
-            <div class="card mt-2 shadow-sm">
+            <div class="card mt-3">
                 <div class="card-body p-3">
                     <h6 class="card-title mb-2">Connected Accounts</h6>
                     <div class="border border-light shadow-sm rounded p-2">
