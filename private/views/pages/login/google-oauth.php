@@ -10,14 +10,14 @@ $env = parse_ini_file(__DIR__ . '../../../../../.env');
 
 $google_oauth_client_id = $env['GOOGLE_OAUTH_CLIENT_ID'];
 $google_oauth_client_secret = $env['GOOGLE_OAUTH_CLIENT_SECRET'];
-$google_oauth_redirect_uri = 'http://sataisfactoryplanner.nl/login/google-oauth';
+$google_oauth_redirect_uri = 'https://satisfactoryplanner.timmygamer.nl/login/google-oauth';
 $google_oauth_version = 'v3';
 
 if (isset($_POST['type'])) {
     if ($_POST['type'] === 'linkGoogle') {
-        $redirect = Users::linkGoogleAccount($_POST['googleId'], $_POST['email'], $_POST['password']);
+        $redirect = Users::linkGoogleAccount($_POST['googleId'], $_POST['email'] , $_POST['password']);
         if ($redirect) {
-            header('Location: /' . $redirect);
+            header('Location: https://satisfactoryplanner.timmygamer.nl/' . $redirect);
             exit;
         }
     }
@@ -34,7 +34,7 @@ if (isset($_POST['type'])) {
             $error = 'Email already exists';
         } else {
             try {
-                $user_id = Users::createUser($username, $password, $email, $googleId);
+                $user_id = Users::createUser($username, $password, $email, $googleId, $email);
                 header("Location: /login/verify?registered=$username");
 
             } catch (Exception $e) {
@@ -93,14 +93,13 @@ if (isset($_GET['code']) && !empty($_GET['code']) && !isset($_POST['type'])) {
 
         $userinfo = json_decode($userinfo, true);
 
-        $connectedAccount = Users::getGoogleConnectedUser($userinfo['id'], $userinfo['email']);
+        $connectedAccount = Users::getGoogleConnectedUser($userinfo['id']);
         $existingUser = Users::getUserByEmail($userinfo['email']);
 
         if ($connectedAccount) {
-            $data = AuthControler::loginGoogleSSO($userinfo['id'], $userinfo['email']);
+            $data = AuthControler::loginGoogleSSO($userinfo['id']);
             if ($data !== null && !is_array($data)) {
-                var_dump("redirecting to: /$data");
-                header('Location: /' . $data);
+                header('Location: https://satisfactoryplanner.timmygamer.nl/' . $data);
                 exit;
             } elseif (is_array($data)) {
                 if ($data[1] == 'maxAttempts') {
@@ -111,6 +110,9 @@ if (isset($_GET['code']) && !empty($_GET['code']) && !isset($_POST['type'])) {
                     $error = 'Email not verified please check your email. If you did not receive an email please check your spam folder. <a href="/login/verify?resend=' . $data[0] . '">Resend verification email</a>';
                 }
             }
+        } elseif ($_SESSION['userId']) {
+            Users::linkGoogleAccountBySession($userinfo['id'], $userinfo['email']);
+            header('Location: https://satisfactoryplanner.timmygamer.nl/account');
         }
 
     }

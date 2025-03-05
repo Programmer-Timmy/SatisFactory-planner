@@ -58,9 +58,9 @@ class AuthControler
         }
     }
 
-    public static function loginGoogleSSO($googleId, $email){
+    public static function loginGoogleSSO($googleId){
         global $site;
-        $user = Users::getGoogleConnectedUser($googleId, $email);
+        $user = Users::getGoogleConnectedUser($googleId);
         if (!$user) {
             return;
             exit();
