@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.7.9",
+    "date": "March 10 2025",
+    "changes": [
+      "Fixed image not uploading"
+    ]
+  },
+  {
     "version": "1.7.8",
     "date": "March 5 2025",
     "changes": [

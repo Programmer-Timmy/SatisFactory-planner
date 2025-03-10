@@ -151,8 +151,8 @@ class GameSaves
         $name = 'save_game/' . $game_save_id . '/' . uniqid(). '.' . pathinfo($image['name'], PATHINFO_EXTENSION);
         $imagePath = 'image/' . $name;
         // check if the directory exists
-        if (!file_exists('../public/image/save_game/' . $game_save_id)) {
-            mkdir('../public/image/save_game/' . $game_save_id, 0777, true);
+        if (!file_exists('../public_html/image/save_game/' . $game_save_id)) {
+            mkdir('../public_html/image/save_game/' . $game_save_id, 0777, true);
         }
         if (!move_uploaded_file($image['tmp_name'], $imagePath)) {
             return false;
