@@ -12,6 +12,7 @@ import {Visualization} from "./Visualization";
 import {SaveFunctions} from "./Functions/SaveFunctions";
 import {Building} from "./Types/Building";
 import {Recipe} from "./Types/Recipe";
+import {Checklist} from "./Checklist";
 
 
 /**
@@ -72,7 +73,7 @@ export class TableHandler {
             this.enableButtons();
         }, timeOutTime);
 
-
+        new Checklist(this);
 
     }
 
