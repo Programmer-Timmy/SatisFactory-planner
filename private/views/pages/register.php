@@ -86,8 +86,23 @@ if ($_POST) {
                                    minlength="8"
                                    autocomplete="off">
                         </div>
-                        <button type="submit" class="btn btn-primary">Register</button>
-                        <a href="/login" class="btn btn-secondary">Go back</a>
+                        <p class="small text-muted">By clicking Register, you agree to our <a href="/privacy">Privacy Policy</a>.</p>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Register</button>
+                            <a href="/login" class="btn btn-secondary">Go back</a>
+                        </div>
+                        <div class="mt-3">
+                            <div style="display: flex; align-items: center; text-align: center;">
+                                <hr style="flex: 1; border: none; border-top: 1px solid #ccc;">
+                                <span style="padding: 0 10px; color: #666;">or</span>
+                                <hr style="flex: 1; border: none; border-top: 1px solid #ccc;">
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <a href="/login/google-oauth" class=""><img
+                                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/800px-Google_%22G%22_logo.svg.png"
+                                            alt="Google" style="width: 40px; height: 40px;"></a>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
