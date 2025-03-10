@@ -195,6 +195,8 @@ if (isset($_GET['code']) && !empty($_GET['code']) && !isset($_POST['type'])) {
                         <input type="password" id="password" name="password" class="form-control" placeholder="Password"
                                required>
                     </div>
+                    <p class="small text-muted">By clicking create account, you agree to our <a href="/privacy">Privacy Policy</a>.</p>
+
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Yes, create account</button>
