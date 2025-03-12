@@ -521,6 +521,9 @@ export class TableHandler {
         $('#edit_product_line').removeClass('disabled');
         $('#edit_product_line').prop('disabled', false);
 
+        $('#showCheckList').removeClass('disabled');
+        $('#showCheckList').prop('disabled', false);
+
     }
 
     /**
