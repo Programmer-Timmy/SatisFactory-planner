@@ -20,6 +20,7 @@ export class Checklist {
 
         this.createChecklist()
         this.attachEvents();
+        console.log(this.checklist);
     }
 
     private CheckForExistingChecklist() {
