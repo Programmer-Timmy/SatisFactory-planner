@@ -263,11 +263,11 @@ export class Visualization {
      * @private
      */
     private addEventListeners(): void {
-        $('#layout').on('change', (e) => {
-            const select = $(e.target);
-            this.layout = select.val() as 'breadthfirst' | 'cose' | 'klay' | 'fcose' | 'concentric';
-            this.createVisualization();
-        });
+        // $('#layout').on('change', (e) => {
+        //     const select = $(e.target);
+        //     this.layout = select.val() as 'breadthfirst' | 'cose' | 'klay' | 'fcose' | 'concentric';
+        //     this.createVisualization();
+        // });
 
         $('#export').on('change', (e) => {
             const select = $(e.target);

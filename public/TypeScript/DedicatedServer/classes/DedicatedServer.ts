@@ -1,6 +1,16 @@
 import {HealthCheck} from "../Data/HealthCheck";
 import {ToastElement} from "../Data/ToastElement";
-import {Toast} from "bootstrap";
+import type { Toast } from "bootstrap";
+
+class FakeToast {
+    constructor(_element: HTMLElement) {}
+    show() {}
+    hide() {}
+    dispose() {}
+}
+
+// Use FakeToast as a fallback when Bootstrap's Toast is not available
+const ToastConstructor: typeof Toast = (window.bootstrap?.Toast || FakeToast) as typeof Toast;
 
 export class DedicatedServer {
 
@@ -16,7 +26,8 @@ export class DedicatedServer {
         this.gameSaveId = gameSaveId;
         // insert the toast element
         document.body.appendChild(ToastElement[0]);
-        this.toast = new Toast(document.getElementById('DedicatedServerStatus') as HTMLElement);
+
+        this.toast = new ToastConstructor(document.getElementById('DedicatedServerStatus')!);
 
         if (document.cookie.includes('toastClosed=true')) {
             this.closed = true;
