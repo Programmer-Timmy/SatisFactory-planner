@@ -61,7 +61,9 @@ export class ProductionTableRow {
             instance.recipe = recipeCache.find(r => r.id === +recipeId) || null;
             if (instance.recipe == null && recipeId) {
                 instance.recipe = await Ajax.getRecipe(+recipeId);
-                recipeCache.push(instance.recipe);
+                if (instance.recipe && !recipeCache.find(r => r.id === instance.recipe?.id)) {
+                    recipeCache.push(instance.recipe);
+                }
             }
         }
 
