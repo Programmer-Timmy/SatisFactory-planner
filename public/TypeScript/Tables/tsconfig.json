@@ -3,6 +3,7 @@
     "target": "esnext",
     // Specifies the ECMAScript target version
     "module": "esnext",
+    "moduleResolution": "node",
     // Specifies the module code generation
     "strict": true,
     // Enables all strict type-checking options

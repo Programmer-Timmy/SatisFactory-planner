@@ -63,9 +63,9 @@ export class TableHandler {
 
         this.loadFromLocal();
         await this.getTableData();
-        await this.addEventListeners();
-        await this.addButtonEventListeners();
-        await this.addShortcuts();
+        this.addEventListeners();
+        this.addButtonEventListeners();
+        this.addShortcuts();
 
         // wait for a little bit so the user can see the 100% progress
         setTimeout(() => {
@@ -110,11 +110,11 @@ export class TableHandler {
         new(...args: any[]): T
     }, useProgress: boolean = false): Promise<T[]> {
         const table = $(`#${id} tbody tr`);
-        const rows: T[] = [];
         let lengthReduction = 0;
         if (id === 'power') {
             lengthReduction = 1;
         }
+        const rowPromises: Promise<T>[] = [];
 
         for (let i = 0; i < table.length - lengthReduction; i++) {
             const row = table[i];
@@ -162,12 +162,16 @@ export class TableHandler {
             }
 
             // @ts-ignore
-            rows.push(await rowClass.create(...rowValues));
-            if (useProgress) {
-                this.updateProgress();
-            }
+            const rowPromise = rowClass.create(...rowValues).then((row) => {
+                if (useProgress) {
+                    this.updateProgress();
+                }
+                return row;
+            });
+            rowPromises.push(rowPromise);
         }
-        return rows;
+        return await Promise.all(rowPromises);
+
     }
 
     /**
@@ -520,6 +524,9 @@ export class TableHandler {
 
         $('#edit_product_line').removeClass('disabled');
         $('#edit_product_line').prop('disabled', false);
+
+        $('#showCheckList').removeClass('disabled');
+        $('#showCheckList').prop('disabled', false);
 
     }
 

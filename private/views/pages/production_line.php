@@ -160,12 +160,12 @@ global $changelog;
                     <button type="button" id="showVisualizationButton" class="btn btn-info mb-1 disabled"
                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show visualization"><i
                                 class="fa-solid fa-project-diagram"></i></button>
+                    <button type="button" id="showCheckList" class="btn btn-info mb-1 disabled" data-bs-toggle="tooltip"
+                            data-bs-placement="top" data-bs-title="Checklist"><i class="fa-solid fa-list-check"></i>
+                    </button>
                     <button type="button" id="showHelp" class="btn btn-info mb-1" data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-title="Need help? Click here!"><i
                                 class="fa-regular fa-question-circle"></i></button>
-                    <button type="button" id="showCheckList" class="btn btn-info mb-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" data-bs-title="Checklist"><i class="fa-solid fa-list-check"></i>
-                    </button>
                     <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary mb-1"
                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i
                                 class="fa-solid fa-arrow-left"></i></a>
@@ -339,57 +339,15 @@ global $changelog;
 </div>
 <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="Checklist"
      aria-labelledby="offcanvasChecklist">
-    <div class="offcanvas-header">
+    <div class="offcanvas-header pb-1">
         <h5 class="offcanvas-title" id="offcanvasChecklist">Checklist</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
-    <div class="offcanvas-body">
-        <!--            iron ingot - 250 per min - 35 refineries     [ ] Build [ ] Tested-->
-        <div class="card mb-2">
-            <div class="card-body">
-                <h5 class="card-title recipeName">Iron Ingot</h5>
-                <p class="card-text"><span class="productionAmount">250</span> per min - <span class="buildingAmount">35</span> refineries</p>
-                <div style="display: flex; justify-content: space-between;">
-                    <div>
-                        <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark"
-                               data-on="<i class='fa-solid fa-check'></i>" data-off="<i class='fa-solid fa-times'></i>"
-                               data-size="sm" data-style="ios" data-theme="dark" id="beenBuild" />
-                        <label for="build">Build</label>
-                    </div>
-                    <div>
-                        <!--                        same checkbox as above-->
-                        <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark"
-                               data-on="<i class='fa-solid fa-check'></i>" data-off="<i class='fa-solid fa-times'></i>"
-                               data-size="sm" data-style="ios" data-theme="dark" id="beenTested" />
-                        <label for="tested">Tested</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="card mb-2">
-            <div class="card-body">
-                <h5 class="card-title recipeName">Iron Ingot</h5>
-                <p class="card-text"><span class="productionAmount">250</span> per min - <span class="buildingAmount">35</span> refineries</p>
-                <div style="display: flex; justify-content: space-between;">
-                    <div>
-                        <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark"
-                               data-on="<i class='fa-solid fa-check'></i>" data-off="<i class='fa-solid fa-times'></i>"
-                               data-size="sm" data-style="ios" data-theme="dark" id="beenBuild" />
-                        <label for="build">Build</label>
-                    </div>
-                    <div>
-                        <!--                        same checkbox as above-->
-                        <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark"
-                               data-on="<i class='fa-solid fa-check'></i>" data-off="<i class='fa-solid fa-times'></i>"
-                               data-size="sm" data-style="ios" data-theme="dark" id="beenTested" />
-                        <label for="tested">Tested</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+    <div class="input-group p-3 pt-0">
+        <input type="search" class="form-control mt-2" id="searchChecklist" placeholder="Search">
+        <button class="btn btn-primary mt-2" id="resetSearchChecklist"><i class="fa-solid fa-undo"></i></button>
+    </div>
+    <div class="offcanvas-body overflow-y-auto">
     </div>
 </div>
 
@@ -401,7 +359,7 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
         new DedicatedServer(<?= $_SESSION['lastVisitedSaveGame'] ?>);
     </script>
 <?php endif; ?>
-<script type="module" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
+<script type="" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
 <?php require_once '../private/views/Popups/productionLine/editProductinoLine.php'; ?>
 
 <!-- Help Modal -->
