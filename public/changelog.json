@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.8.0",
+    "date": "March 10 2025",
+    "changes": [
+      "Fixed: Output accordion not being able to close.",
+      "Improved: The speed of loading recipes and buildings.",
+      "Improved: File size of tables.js by 75%+. This will make the production line page load faster. (It will load more files when opening the visualisation.)",
+      "Added: Checklist for the production line page. This will help you to keep track of what you have done and what you still need to do.",
+      "Added: Button to open the checklist on the production line page.",
+      "Added: Search bar to the checklist."
+    ]
+  },
+  {
     "version": "1.7.9",
     "date": "March 10 2025",
     "changes": [
