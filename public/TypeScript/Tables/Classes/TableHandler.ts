@@ -38,6 +38,7 @@ export class TableHandler {
     private progressInterval: number = 0;
     private totalRows = 0;
     private finishedRows = 0;
+    private checklist: Checklist | null = null;
 
     constructor() {
         this.initialize();
@@ -73,8 +74,7 @@ export class TableHandler {
             this.enableButtons();
         }, timeOutTime);
 
-        new Checklist(this);
-
+        this.checklist = new Checklist(this);
     }
 
     private async getTableData() {
@@ -303,6 +303,7 @@ export class TableHandler {
                     break;
                 case 'recipes':
                     await this.HandleProductionTable(row, rowIndex, value, tableId, target);
+                    this.checklist?.createChecklist();
                     break;
                 case 'power':
                     await this.HandlePowerTable(row, rowIndex, value, tableId, target);
