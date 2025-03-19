@@ -56,10 +56,15 @@ export class Checklist {
             const beenTested = false;
 
             checklist.append(this.createCard(recipeName, productionAmount, buildingAmount, beenBuild, beenTested, buildingName));
-            // @ts-ignore
-            checklist.find(".card").last().find("input").bootstrapToggle();
             this.checklist.push({recipeName, productionAmount, buildingAmount, beenBuild, beenTested});
         });
+        // console.log(checklist.find("input[type='checkbox']"))
+        checklist.find("input[type='checkbox']").each((index, checkbox) => {
+            console.log($(checkbox))
+            // @ts-ignore
+            $(checkbox).bootstrapToggle();
+        })
+
     }
 
     private createCard(recipeName: string, productionAmount: number, buildingAmount: number, beenBuild: boolean, beenTested: boolean, building?: string) {
