@@ -19,6 +19,7 @@ $firstProduction = Users::checkIfFirstProduction($_SESSION['userId']);
 $imports = ProductionLines::getImportsByProductionLine($productLine->id);
 $production = ProductionLines::getProductionByProductionLine($productLine->id);
 $powers = ProductionLines::getPowerByProductionLine($productLine->id);
+$checklist = Checklist::getChecklist($productLine->id);
 
 $items = Items::getAllItems();
 $Recipes = Recipes::getAllRecipes();
@@ -348,6 +349,32 @@ global $changelog;
         <button class="btn btn-primary mt-2" id="resetSearchChecklist"><i class="fa-solid fa-undo"></i></button>
     </div>
     <div class="offcanvas-body overflow-y-auto">
+        <?php if (!empty($checklist)) : ?>
+
+            <?php foreach ($checklist as $item) :?>
+            <div class="card mb-2">
+                <div class="card-body p-3">
+                    <h5 class="card-title recipeName"><?= $item->recipe_name ?></h5>
+                    <p class="card-text"><span class="productionAmount"><?= $item->production_amount ?></span> per min - <span class="buildingAmount"><?=$item->building_amount?></span> <span class="buildingName"><?=$item->building_name?></span></p>
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>
+                            <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark" for="build" class="beenBuild"
+                                   data-onlabel="<i class='fa-solid fa-check'></i>" data-offlabel="<i class='fa-solid fa-times'></i>"
+                                   data-size="sm" data-style="ios" data-theme="dark" <?= $item->been_build ? 'checked' : '' ?>>
+                            <label for="build">Build</label>
+                        </div>
+                        <div>
+                            <!--                        same checkbox as above-->
+                            <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark" for="tested" class="beenTested"
+                                   data-onlabel="<i class='fa-solid fa-check'></i>" data-offlabel="<i class='fa-solid fa-times'></i>"
+                                   data-size="sm" data-style="ios" data-theme="dark" <?= $item->been_tested ? 'checked' : '' ?>>
+                            <label for="tested">Tested</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        <?php endif ?>
     </div>
 </div>
 

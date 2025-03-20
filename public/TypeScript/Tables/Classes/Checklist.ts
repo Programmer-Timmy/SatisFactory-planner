@@ -1,9 +1,11 @@
 import {TableHandler} from "./TableHandler";
+import {Ajax} from "./Functions/Ajax";
 
-interface IChecklist {
+export interface IChecklist {
     recipeName: string;
     productionAmount: number;
     buildingAmount: number;
+    buildingName: string;
 
     beenBuild: boolean
     beenTested: boolean;
@@ -18,7 +20,6 @@ export class Checklist {
 
         this.CheckForExistingChecklist();
 
-        this.createChecklist()
         this.attachEvents();
         console.log(this.checklist);
     }
@@ -33,8 +34,9 @@ export class Checklist {
                 const buildingAmount = parseInt($(check).find(".buildingAmount").text());
                 const beenBuild = $(check).find(".beenBuild").is(":checked");
                 const beenTested = $(check).find(".beenTested").is(":checked");
+                const buildingName = $(check).find(".buildingName").text();
 
-                this.checklist.push({recipeName, productionAmount, buildingAmount, beenBuild, beenTested});
+                this.checklist.push({recipeName, productionAmount, buildingAmount, buildingName, beenBuild, beenTested});
             });
         } else {
             this.createChecklist();
@@ -56,14 +58,14 @@ export class Checklist {
             const beenTested = false;
 
             checklist.append(this.createCard(recipeName, productionAmount, buildingAmount, beenBuild, beenTested, buildingName));
-            this.checklist.push({recipeName, productionAmount, buildingAmount, beenBuild, beenTested});
+            this.checklist.push({recipeName, productionAmount, buildingAmount, buildingName, beenBuild, beenTested});
         });
-        // console.log(checklist.find("input[type='checkbox']"))
         checklist.find("input[type='checkbox']").each((index, checkbox) => {
-            console.log($(checkbox))
             // @ts-ignore
             $(checkbox).bootstrapToggle();
         })
+
+        Ajax.saveChecklist(this.checklist);
 
     }
 
@@ -72,19 +74,19 @@ export class Checklist {
         <div class="card mb-2">
             <div class="card-body p-3">
                 <h5 class="card-title recipeName">${recipeName}</h5>
-                <p class="card-text"><span class="productionAmount">${productionAmount}</span> per min - <span class="buildingAmount">${buildingAmount}</span> ${building}</p>
+                <p class="card-text"><span class="productionAmount">${productionAmount}</span> per min - <span class="buildingAmount">${buildingAmount}</span> <span class="buildingName">${building}</span></p>
                 <div style="display: flex; justify-content: space-between;">
                     <div>
-                        <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark"
+                        <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark" for="build" class="beenBuild"
                                data-onlabel="<i class='fa-solid fa-check'></i>" data-offlabel="<i class='fa-solid fa-times'></i>"
-                               data-size="sm" data-style="ios" data-theme="dark" id="beenBuild" ${beenBuild ? "checked" : ""}/>
+                               data-size="sm" data-style="ios" data-theme="dark" ${beenBuild ? "checked" : ""}/>
                         <label for="build">Build</label>
                     </div>
                     <div>
                         <!--                        same checkbox as above-->
-                        <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark"
+                        <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark" for="tested" class="beenTested"
                                data-onlabel="<i class='fa-solid fa-check'></i>" data-offlabel="<i class='fa-solid fa-times'></i>"
-                               data-size="sm" data-style="ios" data-theme="dark" id="beenTested" ${beenTested ? "checked" : ""}/>
+                               data-size="sm" data-style="ios" data-theme="dark" ${beenTested ? "checked" : ""}/>
                         <label for="tested">Tested</label>
                     </div>
                 </div>
@@ -107,6 +109,20 @@ export class Checklist {
             this.clearSearch();
         });
 
+        const beenTested = $("#Checklist .offcanvas-body").find("input[type='checkbox'][for='tested']");
+        const beenBuild = $("#Checklist .offcanvas-body").find("input[type='checkbox'][for='build']");
+        beenTested.on("change", (event) => {
+            const index = beenTested.index(event.target);
+            console.log(index);
+            this.checklist[index].beenTested = $(event.target).is(":checked");
+            Ajax.saveChecklist(this.checklist);
+        });
+
+        beenBuild.on("change", (event) => {
+            const index = beenBuild.index(event.target);
+            this.checklist[index].beenBuild = $(event.target).is(":checked");
+            Ajax.saveChecklist(this.checklist);
+        });
     }
 
     private searchChecklist(recipeName: string) {
@@ -134,6 +150,5 @@ export class Checklist {
             $(card).show();
         });
     }
-
 
 }
