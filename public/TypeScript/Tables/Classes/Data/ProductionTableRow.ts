@@ -3,9 +3,11 @@ import {Recipe} from "../Types/Recipe";
 import {Ajax} from "../Functions/Ajax";
 import {ProductionLineFunctions} from "../Functions/ProductionLineFunctions";
 import {Import} from "./Import";
+import { v4 as uuidv4 } from 'uuid';
+
 
 export class ProductionTableRow {
-    public id: number;
+    public row_id: number | string;
     public recipeId: number;
     public quantity: number;
     public product: string;
@@ -18,7 +20,7 @@ export class ProductionTableRow {
     public productionImports: Import[];
 
     constructor(
-        id: number = 0,
+        id: number | string = uuidv4(),
         recipeId: string = '',
         quantity: number = 0,
         product: string = '',
@@ -27,7 +29,7 @@ export class ProductionTableRow {
         doubleExport: boolean = false,
         extraCells: ExtraProductionRow | null = null,
     ) {
-        this.id = id;
+        this.row_id = id;
         this.recipeId = +recipeId;
         this.quantity = quantity;
         this.product = product;

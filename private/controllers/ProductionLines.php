@@ -57,10 +57,13 @@ class ProductionLines
             foreach ($imports as $import) {
                 $database->insert("input", ['production_lines_id', 'items_id', 'ammount'], [$id, $import->id, $import->ammount]);
             }
+
+            $updatedAndNewProduction = [];
+            $allProduction = Database::getAll("production", ['id'], [], ['production_lines_id' => $id]);
             foreach ($production as $prod) {
                 $recipes = Recipes::getRecipeById($prod->recipe_id);
 
-                $existingProduction = Database::get("production", ['id'], [], ['id' => $prod->id]);
+                $existingProduction = $database->get("production", ['id'], [], ['id' => $prod->id]);
 
                 if ($existingProduction) {
                     $database->update(
@@ -85,9 +88,13 @@ class ProductionLines
                             'id' => $prod->id
                         ]
                     );
+                    $updatedAndNewProduction[] = $prod->id;
+
                 } else {
                     $database->insert("production", ['production_lines_id', 'recipe_id', 'quantity', 'local_usage', 'export_ammount_per_min', 'export_ammount_per_min2', 'local_usage2'], [$id, $prod->recipe_id, $prod->product_quantity, $prod->usage, $prod->export_amount_per_min, $prod->export_ammount_per_min2, $prod->local_usage2]);
+                    $updatedAndNewProduction[] = $database->connection->lastInsertId();
                 }
+
 
                 $database->delete("output", ['production_lines_id' => $id]);
                 $database->insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id, $prod->export_amount_per_min]);
@@ -96,6 +103,12 @@ class ProductionLines
                     $database->insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id2, $prod->export_ammount_per_min2]);
                 }
             }
+
+            $deleteProduction = array_diff(array_column($allProduction, 'id'), $updatedAndNewProduction);
+            foreach ($deleteProduction as $delete) {
+                $database->delete("production", ['id' => $delete]);
+            }
+
             foreach ($power as $pow) {
                 $database->insert("power", ['production_lines_id', 'buildings_id', 'building_ammount', 'clock_speed', 'power_used', 'user'], [$id, $pow->buildings_id, $pow->building_ammount, $pow->clock_speed, $pow->power_used, $pow->user ? 1 : 0]);
             }

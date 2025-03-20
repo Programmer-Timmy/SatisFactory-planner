@@ -51,7 +51,7 @@ foreach ($productionRows as $row) {
     $secondUsage = $row['doubleExport'] == 'true' ? $row['extraCells']['Usage'] : null;
     $secondExport = $row['doubleExport'] == 'true' ? $row['extraCells']['ExportPerMin'] : null;
     $productionData[] = (object)[
-        'id' => $row['id'],
+        'id' => $row['row_id'],
         'recipe_id' => $row['recipeId'],
         'product_quantity' => $row['quantity'],
         'usage' => $row['Usage'],

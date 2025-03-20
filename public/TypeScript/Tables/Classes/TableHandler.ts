@@ -354,7 +354,6 @@ export class TableHandler {
     private updateRowInTable(tableId: string, rowIndex: number, row: any) {
         const table = $(`#${tableId} tbody tr`);
         let rowToUpdate = $(table[rowIndex]);
-
         rowToUpdate.find('input, select').each((index, element) => {
             const key = Object.keys(row)[index];
             let value: any;
@@ -363,8 +362,8 @@ export class TableHandler {
                 value = row.recipe[key];  // Use value from recipe
             } else {
                 value = row[key];  // Use value from row
-            }
 
+            }
             $(element).val(value);
         });
         if (tableId === 'recipes') {
@@ -543,13 +542,16 @@ export class TableHandler {
      */
     private async HandleProductionTable(row: ProductionTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
         this.updated = true;
+
         await ProductionLineFunctions.calculateProductionExport(row);
 
         if (this.checkIfSelect(target)) {
             await ProductionLineFunctions.updateRecipe(row, value);
         }
+        console.log(row)
 
         this.updateRowInTable(tableId, rowIndex, row);
+        console.log(row)
 
         if (this.settings.autoImportExport) {
             const data: {

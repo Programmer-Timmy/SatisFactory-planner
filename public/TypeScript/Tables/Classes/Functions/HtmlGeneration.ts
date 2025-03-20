@@ -148,6 +148,9 @@ export class HtmlGeneration {
             `;
             }
             return ` <tr>
+          <td class="hidden">
+            <input type="hidden" name="production_id[]" value="${row.row_id}">
+          </td>
           <td class="m-0 p-0" ${rowSpan}>
             <select name="production_recipe_id[]" class="form-control rounded-0 item-recipe-id recipe" ${style}>
               ${RecipeOptions.replace(`value="${row.recipeId}"`, `value="${row.recipeId}" selected`)}

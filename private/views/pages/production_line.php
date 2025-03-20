@@ -102,6 +102,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
 
 global $changelog;
 
+function generateUUID(): string {
+    $data = random_bytes(16);
+
+    // Versie instellen (4) en variant instellen (RFC 4122)
+    $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // Versie 4
+    $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // Variant RFC 4122
+
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
 
 ?>
 
@@ -308,6 +317,9 @@ global $changelog;
                             <?php endif; ?>
                         <?php endforeach; ?>
                         <tr>
+                            <td class="hidden">
+                                <input type="hidden" name="production_id[]" value="<?= generateUUID() ?>">
+                            </td>
                             <td class="m-0 p-0">
                                 <select name="production_recipe_id[]"
                                         class="form-control rounded-0 item-recipe-id recipe">
