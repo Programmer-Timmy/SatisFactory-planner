@@ -194,4 +194,30 @@ export class HtmlGeneration {
 
         return rowsHTML + emptyRowHTML; // Combine the existing rows with the empty row
     }
+
+    public static createCard(recipeName: string, productionAmount: number, buildingAmount: number, beenBuild: boolean, beenTested: boolean, building?: string) {
+        return `
+        <div class="card mb-2">
+            <div class="card-body p-3">
+                <h5 class="card-title recipeName">${recipeName}</h5>
+                <p class="card-text"><span class="productionAmount">${productionAmount}</span> per min - <span class="buildingAmount">${buildingAmount}</span> <span class="buildingName">${building}</span></p>
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark" for="build" class="beenBuild"
+                               data-onlabel="<i class='fa-solid fa-check'></i>" data-offlabel="<i class='fa-solid fa-times'></i>"
+                               data-size="sm" data-style="ios" data-theme="dark" ${beenBuild ? "checked" : ""}/>
+                        <label for="build">Build</label>
+                    </div>
+                    <div>
+                        <!--                        same checkbox as above-->
+                        <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark" for="tested" class="beenTested"
+                               data-onlabel="<i class='fa-solid fa-check'></i>" data-offlabel="<i class='fa-solid fa-times'></i>"
+                               data-size="sm" data-style="ios" data-theme="dark" ${beenTested ? "checked" : ""}/>
+                        <label for="tested">Tested</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    }
 }
