@@ -61,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
             }
 
             $productionData[] = (object)[
+                'id' => $data['production_id'][$i],
                 'recipe_id' => $data['production_recipe_id'][$i],
                 'product_quantity' => $data['production_quantity'][$i],
                 'usage' => $data['production_usage'][$i],
@@ -250,6 +251,9 @@ global $changelog;
                         <tbody>
                         <?php foreach ($production as $product) : ?>
                             <tr>
+                                <td class="hidden">
+                                    <input type="hidden" name="production_id[]" value="<?= $product->id ?>">
+                                </td>
                                 <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
 
                                     <select name="production_recipe_id[]"

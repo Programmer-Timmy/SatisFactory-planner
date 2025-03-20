@@ -5,6 +5,7 @@ import {ProductionLineFunctions} from "../Functions/ProductionLineFunctions";
 import {Import} from "./Import";
 
 export class ProductionTableRow {
+    public id: number;
     public recipeId: number;
     public quantity: number;
     public product: string;
@@ -17,6 +18,7 @@ export class ProductionTableRow {
     public productionImports: Import[];
 
     constructor(
+        id: number = 0,
         recipeId: string = '',
         quantity: number = 0,
         product: string = '',
@@ -25,6 +27,7 @@ export class ProductionTableRow {
         doubleExport: boolean = false,
         extraCells: ExtraProductionRow | null = null,
     ) {
+        this.id = id;
         this.recipeId = +recipeId;
         this.quantity = quantity;
         this.product = product;
@@ -38,6 +41,7 @@ export class ProductionTableRow {
     }
 
     static async create(
+        id: number = 0,
         recipeId: string = '',
         quantity: number = 0,
         product: string = '',
@@ -48,6 +52,7 @@ export class ProductionTableRow {
         recipeCache: Recipe[] = []
     ): Promise<ProductionTableRow> {
         const instance = new ProductionTableRow(
+            id,
             recipeId,
             quantity,
             product,
