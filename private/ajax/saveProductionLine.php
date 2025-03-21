@@ -76,10 +76,42 @@ foreach ($powerRows as $row) {
     $totalPower += $row['Consumption'];
 }
 
-if (ProductionLines::saveProductionLine($importsData, $productionData, $powerData, $totalPower, $productionLineId)) {
-    echo json_encode(['success' => 'Production line updated successfully']);
+$oldAndNewIds = ProductionLines::saveProductionLine($importsData, $productionData, $powerData, $totalPower, $productionLineId);
+
+$checklist = $data['checklist'];
+$checklists = [];
+foreach ($checklist as $check) {
+//    if id is in old id change it to the new id
+    $newId = null;
+    if ($oldAndNewIds !== false) {
+        foreach ($oldAndNewIds as $oldAndNewId) {
+            if ($oldAndNewId['old'] == $check['productionRow']['row_id']) {
+                $newId = $oldAndNewId['new'];
+                break;
+            }
+        }
+    }
+
+    $checklists[] = (object)[
+        'productionRowId' => $newId ?? $check['productionRow']['row_id'],
+        'beenBuild' => $check['beenBuild'],
+        'beenTested' => $check['beenTested'],
+    ];
+}
+
+if ($checklists) {
+
+    if (!Checklist::saveChecklist($checklists, $productionLineId)) {
+        echo json_encode(['error' => 'Failed to update production line']);
+        exit();
+    }
+}
+
+if ($oldAndNewIds !== false) {
+    echo json_encode(['success' => 'Production line updated successfully', 'data' => ['newAndOldIds' => $oldAndNewIds]]);
     exit();
 }
+
 
 echo json_encode(['error' => 'Failed to update production line']);
 exit();

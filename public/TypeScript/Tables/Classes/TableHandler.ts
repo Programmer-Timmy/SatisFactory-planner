@@ -23,6 +23,7 @@ export class TableHandler {
     public productionTableRows: ProductionTableRow[] = [];
     public powerTableRows: PowerTableRow[] = [];
     public settings: Settings = new Settings();
+    public checklist: Checklist | null = null;
 
     private visualisation: Visualization | null = null;
     private updated: boolean = false;
@@ -38,7 +39,6 @@ export class TableHandler {
     private progressInterval: number = 0;
     private totalRows = 0;
     private finishedRows = 0;
-    private checklist: Checklist | null = null;
 
     constructor() {
         this.initialize();
@@ -303,7 +303,7 @@ export class TableHandler {
                     break;
                 case 'recipes':
                     await this.HandleProductionTable(row, rowIndex, value, tableId, target);
-                    this.checklist?.createChecklist();
+                    this.checklist?.updateCheckList(row);
                     break;
                 case 'power':
                     await this.HandlePowerTable(row, rowIndex, value, tableId, target);
@@ -592,8 +592,10 @@ export class TableHandler {
                         SaveFunctions.prepareSaveData(
                             tableHandler.productionTableRows,
                             tableHandler.powerTableRows,
-                            tableHandler.importsTableRows
-                        )
+                            tableHandler.importsTableRows,
+                            tableHandler.checklist
+                        ),
+                        tableHandler
                     );
                 }
 

@@ -1,18 +1,19 @@
 import {TableHandler} from "./TableHandler";
 import {Ajax} from "./Functions/Ajax";
 import {HtmlGeneration} from "./Functions/HtmlGeneration";
+import {ProductionTableRow} from "./Data/ProductionTableRow";
 
 export interface IChecklist {
-    recipeName: string;
-    productionAmount: number;
-    buildingAmount: number;
-    buildingName: string;
+    index: number;
+    productionRow: ProductionTableRow;
 
-    beenBuild: boolean
+    beenBuild: boolean;
     beenTested: boolean;
 }
 
 export class Checklist {
+    private htmlElement: JQuery<HTMLElement> = $("#Checklist");
+    private canvasBody: JQuery<HTMLElement> = this.htmlElement.find(".offcanvas-body");
     private tableHandler: TableHandler;
     private checklist: IChecklist[] = [];
 
@@ -26,47 +27,77 @@ export class Checklist {
     }
 
     private CheckForExistingChecklist() {
-        const checklist = $("#Checklist");
-        const checks = checklist.find(".card");
-        if (checks.length > 0) {
-            checks.each((index, check) => {
-                const recipeName = $(check).find(".recipeName").text();
-                const productionAmount = parseInt($(check).find(".productionAmount").text());
-                const buildingAmount = parseInt($(check).find(".buildingAmount").text());
-                const beenBuild = $(check).find(".beenBuild").is(":checked");
-                const beenTested = $(check).find(".beenTested").is(":checked");
-                const buildingName = $(check).find(".buildingName").text();
+        const checks = this.htmlElement.find('#checkListData').text();
+        if (checks) {
+            const JsonChecks = JSON.parse(checks);
+            JsonChecks.forEach((check: any, index: number) => {
+                const productionId = check.production_id;
+                const beenBuild = check.been_build === 1;
+                const beenTested = check.been_tested === 1;
 
-                this.checklist.push({recipeName, productionAmount, buildingAmount, buildingName, beenBuild, beenTested});
+                const productionRow = this.tableHandler.productionTableRows.find(row => row.row_id == productionId);
+
+                if (productionRow) {
+                    this.checklist.push({index, productionRow, beenBuild, beenTested});
+                }
             });
+
+            this.buildChecklist();
+            this.generateMissingChecklist();
         } else {
             this.createChecklist();
         }
     }
 
+    private buildChecklist() {
+        this.checklist.forEach((check, index) => {
+           this.createChecklistCard(check.productionRow, index, check.beenBuild, check.beenTested);
+        });
+        this.initCheckBoxes();
+    }
+
     public createChecklist() {
+        this.checklist = [];
         const checklist = $("#Checklist .offcanvas-body");
         checklist.empty();
         this.tableHandler.productionTableRows.forEach((row, index) => {
-            if (index === this.tableHandler.productionTableRows.length - 1) return
+            this.createChecklistCard(row, index);
+            this.checklist.push({index ,productionRow: row, beenBuild: false, beenTested: false});
+        });
+        this.initCheckBoxes();
+    }
+
+    private createChecklistCard(row: ProductionTableRow, index: number, beenBuild: boolean = false, beenTested: boolean = false) {
+        if (index === this.tableHandler.productionTableRows.length - 1) return
+        const productionAmount = row.quantity;
+        const recipeName = row.recipe?.name || "Unknown";
+        const buildingName = row.recipe?.building?.name || "Unknown";
+        const productionPerMin = row.recipe?.export_amount_per_min || 0;
+        const buildingAmount = +Math.ceil(productionAmount / productionPerMin).toFixed(5);
+
+        if (productionAmount <= 0) return;
+
+        this.canvasBody.append(HtmlGeneration.createCard(recipeName, productionAmount, buildingAmount, beenBuild, beenTested, buildingName));
+    }
+
+    public updateCheckList(productionRow: ProductionTableRow) {
+        const check = this.checklist.find(check => check.productionRow.row_id == productionRow.row_id);
+        if (check) {
+            const row = check.productionRow;
             const productionAmount = row.quantity;
             const recipeName = row.recipe?.name || "Unknown";
             const buildingName = row.recipe?.building?.name || "Unknown";
             const productionPerMin = row.recipe?.export_amount_per_min || 0;
             const buildingAmount = +Math.ceil(productionAmount / productionPerMin).toFixed(5);
 
-            const beenBuild = false;
-            const beenTested = false;
-
-            checklist.append(HtmlGeneration.createCard(recipeName, productionAmount, buildingAmount, beenBuild, beenTested, buildingName));
-            this.checklist.push({recipeName, productionAmount, buildingAmount, buildingName, beenBuild, beenTested});
-        });
-        checklist.find("input[type='checkbox']").each((index, checkbox) => {
-            // @ts-ignore
-            $(checkbox).bootstrapToggle();
-        })
-
-        Ajax.saveChecklist(this.checklist);
+            const card = this.canvasBody.find(`.card`)[check.index];
+            $(card).replaceWith(HtmlGeneration.createCard(recipeName, productionAmount, buildingAmount, false, false, buildingName));
+            this.checklist[check.index] = {index: check.index, productionRow, beenBuild: false, beenTested: false};
+        } else {
+            this.createChecklistCard(productionRow, this.tableHandler.productionTableRows.length - 1);
+            this.checklist.push({index: this.tableHandler.productionTableRows.length - 1, productionRow, beenBuild: false, beenTested: false});
+        }
+        this.initCheckBoxes();
 
     }
 
@@ -89,15 +120,23 @@ export class Checklist {
 
         beenTested.on("change", (event) => {
             const index = beenTested.index(event.target);
-            console.log(index);
             this.checklist[index].beenTested = $(event.target).is(":checked");
-            Ajax.saveChecklist(this.checklist);
         });
 
         beenBuild.on("change", (event) => {
             const index = beenBuild.index(event.target);
             this.checklist[index].beenBuild = $(event.target).is(":checked");
-            Ajax.saveChecklist(this.checklist);
+        });
+    }
+
+    private generateMissingChecklist() {
+        const missing = [];
+        this.tableHandler.productionTableRows.forEach((row, index) => {
+            const check = this.checklist.find(check => check.productionRow.row_id == row.row_id);
+            if (!check) {
+                this.createChecklistCard(row, index);
+                this.checklist.push({index, productionRow: row, beenBuild: false, beenTested: false});
+            }
         });
     }
 
@@ -125,6 +164,22 @@ export class Checklist {
         $("#Checklist .offcanvas-body").find(".card").each((index, card) => {
             $(card).show();
         });
+    }
+
+    public getChecklist() {
+        // filter out the checks that have 0 per min and 0 quantity
+        const checklist = this.checklist.filter(check => {
+            return +check.productionRow.quantity !== 0 && check.productionRow.quantity
+        });
+        console.log(checklist)
+        return checklist;
+    }
+
+    private initCheckBoxes() {
+        this.canvasBody.find("input[type='checkbox']").each((index, checkbox) => {
+            // @ts-ignore
+            $(checkbox).bootstrapToggle();
+        })
     }
 
 }

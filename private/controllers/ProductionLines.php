@@ -59,6 +59,7 @@ class ProductionLines
             }
 
             $updatedAndNewProduction = [];
+            $newAndOldIds = [];
             $allProduction = Database::getAll("production", ['id'], [], ['production_lines_id' => $id]);
             foreach ($production as $prod) {
                 $recipes = Recipes::getRecipeById($prod->recipe_id);
@@ -93,6 +94,10 @@ class ProductionLines
                 } else {
                     $database->insert("production", ['production_lines_id', 'recipe_id', 'quantity', 'local_usage', 'export_ammount_per_min', 'export_ammount_per_min2', 'local_usage2'], [$id, $prod->recipe_id, $prod->product_quantity, $prod->usage, $prod->export_amount_per_min, $prod->export_ammount_per_min2, $prod->local_usage2]);
                     $updatedAndNewProduction[] = $database->connection->lastInsertId();
+                    $newAndOldIds[] = [
+                        'new' => (int) $database->connection->lastInsertId(),
+                        'old' => $prod->id
+                    ];
                 }
 
 
@@ -114,7 +119,7 @@ class ProductionLines
             }
             $database->commit();
 
-            return true;
+            return $newAndOldIds;
         } catch (Exception $e) {
             $database->rollBack();
             return false;

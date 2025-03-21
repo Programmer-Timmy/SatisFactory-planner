@@ -12,21 +12,15 @@ class Checklist {
                     'checklist',
                     [
                         'production_lines_id',
-                        'recipe_name',
-                        'production_amount',
-                        'building_amount',
-                        "building_name",
+                        'production_id',
                         "been_build",
                         "been_tested",
                     ],
                     [
                         $productionLineId,
-                        $item['recipeName'],
-                        $item['productionAmount'],
-                        $item['buildingAmount'],
-                        $item['buildingName'],
-                        $item['beenBuild'] === true ? 1 : 0,
-                        $item['beenTested'] === true ? 1 : 0,
+                        $item->productionRowId,
+                        $item->beenBuild === true ? 1 : 0,
+                        $item->beenTested === true ? 1 : 0,
                     ]
                 );
             }
