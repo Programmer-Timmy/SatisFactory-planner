@@ -1,7 +1,7 @@
 [
   {
     "version": "1.8.0",
-    "date": "March 10 2025",
+    "date": "March 21 2025",
     "changes": [
       "Fixed: Output accordion not being able to close.",
       "Improved: The speed of loading recipes and buildings.",
