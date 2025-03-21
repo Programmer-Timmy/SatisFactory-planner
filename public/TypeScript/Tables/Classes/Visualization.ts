@@ -3,15 +3,10 @@ import {ImportNodes} from "./Data/Visualization/ImportNodes";
 import {ProductionNodes} from "./Data/Visualization/ProductionNodes";
 import {ExportNodes} from "./Data/Visualization/ExportNodes";
 import {Connection} from "./Data/Visualization/Connection";
-import cytoscape, {LayoutOptions} from "cytoscape";
+import {Ext, LayoutOptions} from "cytoscape";
 
-import 'cytoscape-qtip';
-import 'cytoscape-klay';
-import 'cytoscape-fcose';
+let cytoscape: typeof import("cytoscape")
 
-cytoscape.use(require('cytoscape-qtip'));
-cytoscape.use(require('cytoscape-klay'));
-cytoscape.use(require('cytoscape-fcose'));
 
 // global variables
 const TEXT_SIZE = 25;
@@ -41,7 +36,7 @@ export class Visualization {
     public productionConnections: Connection[] = [];
     public exportConnections: Connection[] = [];
 
-    public layout: 'breadthfirst' | 'cose' | 'klay' | 'fcose' | 'concentric' = 'klay';
+    public layout: string = 'klay';
 
     private showExport: boolean = false;
     private showImport: boolean = true;
@@ -74,10 +69,11 @@ export class Visualization {
     /**
      * Create the visualization of the production line
      */
-    public createVisualization(): void {
+    public async createVisualization(): Promise<void> {
+        await this.loadCytoscapeExtensions();
+
         let elements = [];
         let roots = [];
-        let layout: LayoutOptions;
 
         if (this.showImport) {
             elements.push(...this.importNodes.map(node => this.addNode('import', node)));
@@ -98,79 +94,13 @@ export class Visualization {
             elements.push(...this.exportConnections.map(connection => this.addConnection('export', connection, 'production', 'export')));
         }
 
-        switch (this.layout) {
-            case 'breadthfirst':
-                layout = {
-                    name: "breadthfirst",      // Layout for production chains
-                    directed: false,            // Forces direction (e.g., top to bottom)
-                    padding: 20,               // Adds padding around the graph
-                    spacingFactor: 2.0,        // Increases space between nodes
-                    animate: true,
-                    nodeDimensionsIncludeLabels: true, // Accounts for label dimensions in layout
-                    avoidOverlap: true,        // Prevents node overlap
-                }
-                if (this.showImport && this.useRoots) {
-                    // @ts-ignore
-                    layout['roots'] = roots;
-                }
-                break;
-            case 'cose':
-                // @ts-ignore
-                layout = {
-                    name: "cose",
-                    idealEdgeLength: 100,    // Controls the preferred length of edges
-                    nodeRepulsion: 40000,     // Increases spacing between nodes
-                    gravity: 1.2,            // Helps to avoid nodes being too spread out
-                    numIter: 1000,           // Number of iterations for better arrangement
-                    animate: true,
-                }
-                if (this.showImport && this.useRoots) {
-                    // @ts-ignore
-                    layout['roots'] = roots;
-                }
-                break;
-            case 'klay':
-                layout = {
-                    name: "klay",
-                    // @ts-ignore
-                    animate: true,
-                    spacingFactor: 2.0,
-                    nodeDimensionsIncludeLabels: true,
-                    avoidOverlap: true,
-                }
-                break;
-            case 'fcose':
-                layout = {
-                    name: "fcose",
-                    // @ts-ignore
-                    animate: true,
-                    nodeDimensionsIncludeLabels: true,
-                    avoidOverlap: true,
-                    spacingFactor: 1.5,
-                }
-                break;
-            case 'concentric':
-                layout = {
-                    name: "concentric",
-                    animate: true,
-                    nodeDimensionsIncludeLabels: true,
-                    avoidOverlap: true,
-                }
-                break
-            default: {
-                layout = {
-                    name: "breadthfirst",      // Layout for production chains
-                    directed: false,            // Forces direction (e.g., top to bottom)
-                    padding: 20,               // Adds padding around the graph
-                    spacingFactor: 1.0,        // Increases space between nodes
-                    animate: true,
-                    nodeDimensionsIncludeLabels: true, // Accounts for label dimensions in layout
-                    avoidOverlap: true,        // Prevents node overlap
-                }
-                if (this.showImport && this.useRoots) {
-                    layout['roots'] = roots;
-                }
-            }
+        const layout: LayoutOptions = {
+            name: "klay",
+            // @ts-ignore
+            animate: true,
+            spacingFactor: 2.0,
+            nodeDimensionsIncludeLabels: true,
+            avoidOverlap: true,
         }
 
         const cy = cytoscape({
@@ -223,6 +153,7 @@ export class Visualization {
         });
 
         cy.ready(() => {
+            // @ts-ignore
             cy.nodes().forEach(node => {
                 this.applyQTip(node, node.data('title'));
 
@@ -237,6 +168,7 @@ export class Visualization {
                 });
             });
 
+            // @ts-ignore
             cy.edges().forEach(edge => {
                 this.applyQTip(edge, edge.data('label'));
             });
@@ -331,11 +263,11 @@ export class Visualization {
      * @private
      */
     private addEventListeners(): void {
-        $('#layout').on('change', (e) => {
-            const select = $(e.target);
-            this.layout = select.val() as 'breadthfirst' | 'cose' | 'klay' | 'fcose' | 'concentric';
-            this.createVisualization();
-        });
+        // $('#layout').on('change', (e) => {
+        //     const select = $(e.target);
+        //     this.layout = select.val() as 'breadthfirst' | 'cose' | 'klay' | 'fcose' | 'concentric';
+        //     this.createVisualization();
+        // });
 
         $('#export').on('change', (e) => {
             const select = $(e.target);
@@ -449,4 +381,17 @@ export class Visualization {
 
         }
     }
+
+    private async loadCytoscapeExtensions() {
+        cytoscape = (await import("cytoscape")).default;
+
+        //@ts-ignore
+        const { default: qtip } = await import("cytoscape-qtip");
+        const { default: klay } = await import("cytoscape-klay");
+
+        cytoscape.use(qtip);
+        cytoscape.use(klay);
+    }
+
+
 }

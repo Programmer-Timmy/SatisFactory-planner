@@ -2,35 +2,53 @@ import {ProductionTableRow} from "../Data/ProductionTableRow";
 import {PowerTableRow} from "../Data/PowerTableRow";
 import {ImportsTableRow} from "../Data/ImportsTableRow";
 import {Ajax} from "./Ajax";
+import {Checklist} from "../Checklist";
+import {TableHandler} from "../TableHandler";
 
+interface newAndOldIds {
+    new: number,
+    old: string
+}
 export class SaveFunctions {
 
 
-    public static prepareSaveData(productionTableRows: ProductionTableRow[], powerTableRows: PowerTableRow[], importsTableRows: ImportsTableRow[]): Record<string, any> {
+    public static prepareSaveData(productionTableRows: ProductionTableRow[], powerTableRows: PowerTableRow[], importsTableRows: ImportsTableRow[], checklist: Checklist|null): Record<string, any> {
         return {
             productionTableRows: productionTableRows,
             powerTableRows: powerTableRows,
-            importsTableRows: importsTableRows
+            importsTableRows: importsTableRows,
+            checklist: checklist?.getChecklist()
         };
     }
 
-    public static saveProductionLine(jsonData: Record<string, any>) {
+    public static saveProductionLine(jsonData: Record<string, any>, tableHandler: TableHandler, isQuickSave: boolean = true): Promise<boolean> {
         try {
             const url = new URL(window.location.href);
             const id = parseInt(url.searchParams.get('id') as string);
 
-
-            Ajax.saveData(jsonData, id).then((response) => {
+            return Ajax.saveData(jsonData, id).then((response) => {
                 if (response['success']) {
+                    if (!isQuickSave) {
+                        return true
+                    }
+
                     this.showSuccessMessage('Data successfully saved.');
-                    return;
+                    const newAndOldIds: newAndOldIds[] = response.data.newAndOldIds;
+
+                    if (newAndOldIds.length > 0) {
+                        this.updateProductionIds(newAndOldIds, tableHandler);
+                    }
+                    return true;
                 }
                 this.showErrorMessage('An error occurred while saving the data. Please try again.');
+                return false;
             }).catch((error) => {
                 this.showErrorMessage('An error occurred while saving the data. Please try again.');
+                return false;
             });
         } catch (error) {
             this.showErrorMessage('An error occurred while saving the data. Please try again.');
+            return Promise.resolve(false);
         }
     }
 
@@ -68,5 +86,22 @@ export class SaveFunctions {
                 }, 150); // Time to wait for the fade-out to complete
             }, 5000); // Display duration before fading out
         }
+    }
+
+    private static updateProductionIds(newAndOldIds: newAndOldIds[], tableHandler: TableHandler) {
+        console.log(tableHandler)
+        newAndOldIds.forEach( (newAndOldId) => {
+            const newId = newAndOldId.new;
+            const oldId = newAndOldId.old;
+            $(`#recipes input[type="hidden"][name="production_id[]"][value="${oldId}"]`).val(newId);
+
+            const productionRow = tableHandler.productionTableRows.find( (row) =>  row.row_id === oldId)
+
+            if (productionRow) {
+                productionRow.row_id = newId;
+            }
+        });
+
+        console.log(tableHandler)
     }
 }

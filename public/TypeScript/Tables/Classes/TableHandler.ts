@@ -12,6 +12,7 @@ import {Visualization} from "./Visualization";
 import {SaveFunctions} from "./Functions/SaveFunctions";
 import {Building} from "./Types/Building";
 import {Recipe} from "./Types/Recipe";
+import {Checklist} from "./Checklist";
 
 
 /**
@@ -22,6 +23,7 @@ export class TableHandler {
     public productionTableRows: ProductionTableRow[] = [];
     public powerTableRows: PowerTableRow[] = [];
     public settings: Settings = new Settings();
+    public checklist: Checklist | null = null;
 
     private visualisation: Visualization | null = null;
     private updated: boolean = false;
@@ -62,9 +64,9 @@ export class TableHandler {
 
         this.loadFromLocal();
         await this.getTableData();
-        await this.addEventListeners();
-        await this.addButtonEventListeners();
-        await this.addShortcuts();
+        this.addEventListeners();
+        this.addButtonEventListeners();
+        this.addShortcuts();
 
         // wait for a little bit so the user can see the 100% progress
         setTimeout(() => {
@@ -72,8 +74,7 @@ export class TableHandler {
             this.enableButtons();
         }, timeOutTime);
 
-
-
+        this.checklist = new Checklist(this);
     }
 
     private async getTableData() {
@@ -109,11 +110,11 @@ export class TableHandler {
         new(...args: any[]): T
     }, useProgress: boolean = false): Promise<T[]> {
         const table = $(`#${id} tbody tr`);
-        const rows: T[] = [];
         let lengthReduction = 0;
         if (id === 'power') {
             lengthReduction = 1;
         }
+        const rowPromises: Promise<T>[] = [];
 
         for (let i = 0; i < table.length - lengthReduction; i++) {
             const row = table[i];
@@ -161,12 +162,16 @@ export class TableHandler {
             }
 
             // @ts-ignore
-            rows.push(await rowClass.create(...rowValues));
-            if (useProgress) {
-                this.updateProgress();
-            }
+            const rowPromise = rowClass.create(...rowValues).then((row) => {
+                if (useProgress) {
+                    this.updateProgress();
+                }
+                return row;
+            });
+            rowPromises.push(rowPromise);
         }
-        return rows;
+        return await Promise.all(rowPromises);
+
     }
 
     /**
@@ -224,9 +229,23 @@ export class TableHandler {
      * @returns {void}
      * @private
      */
-    private hideLoading() {
+    public hideLoading() {
         $('#loading').addClass('d-none');
         $('#main-content').removeClass('d-none');
+    }
+
+    /**
+     * Shows the loading screen and hides the main content.
+     * @returns {void}
+     * @private
+     */
+    public showLoading(showLoadingBar: boolean = true) {
+        this.progressBar.parent().removeClass('d-none');
+        $('#loading').removeClass('d-none');
+        $('#main-content').addClass('d-none');
+        if (!showLoadingBar) {
+            this.progressBar.parent().addClass('d-none');
+        }
     }
 
     /**
@@ -298,6 +317,7 @@ export class TableHandler {
                     break;
                 case 'recipes':
                     await this.HandleProductionTable(row, rowIndex, value, tableId, target);
+                    this.checklist?.updateCheckList(row);
                     break;
                 case 'power':
                     await this.HandlePowerTable(row, rowIndex, value, tableId, target);
@@ -348,7 +368,6 @@ export class TableHandler {
     private updateRowInTable(tableId: string, rowIndex: number, row: any) {
         const table = $(`#${tableId} tbody tr`);
         let rowToUpdate = $(table[rowIndex]);
-
         rowToUpdate.find('input, select').each((index, element) => {
             const key = Object.keys(row)[index];
             let value: any;
@@ -357,8 +376,8 @@ export class TableHandler {
                 value = row.recipe[key];  // Use value from recipe
             } else {
                 value = row[key];  // Use value from row
-            }
 
+            }
             $(element).val(value);
         });
         if (tableId === 'recipes') {
@@ -520,6 +539,9 @@ export class TableHandler {
         $('#edit_product_line').removeClass('disabled');
         $('#edit_product_line').prop('disabled', false);
 
+        $('#showCheckList').removeClass('disabled');
+        $('#showCheckList').prop('disabled', false);
+
     }
 
     /**
@@ -534,13 +556,16 @@ export class TableHandler {
      */
     private async HandleProductionTable(row: ProductionTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
         this.updated = true;
+
         await ProductionLineFunctions.calculateProductionExport(row);
 
         if (this.checkIfSelect(target)) {
             await ProductionLineFunctions.updateRecipe(row, value);
         }
+        console.log(row)
 
         this.updateRowInTable(tableId, rowIndex, row);
+        console.log(row)
 
         if (this.settings.autoImportExport) {
             const data: {
@@ -581,8 +606,10 @@ export class TableHandler {
                         SaveFunctions.prepareSaveData(
                             tableHandler.productionTableRows,
                             tableHandler.powerTableRows,
-                            tableHandler.importsTableRows
-                        )
+                            tableHandler.importsTableRows,
+                            tableHandler.checklist
+                        ),
+                        tableHandler
                     );
                 }
 

@@ -3,8 +3,11 @@ import {Recipe} from "../Types/Recipe";
 import {Ajax} from "../Functions/Ajax";
 import {ProductionLineFunctions} from "../Functions/ProductionLineFunctions";
 import {Import} from "./Import";
+import { v4 as uuidv4 } from 'uuid';
+
 
 export class ProductionTableRow {
+    public row_id: number | string;
     public recipeId: number;
     public quantity: number;
     public product: string;
@@ -17,6 +20,7 @@ export class ProductionTableRow {
     public productionImports: Import[];
 
     constructor(
+        id: number | string = uuidv4(),
         recipeId: string = '',
         quantity: number = 0,
         product: string = '',
@@ -25,6 +29,7 @@ export class ProductionTableRow {
         doubleExport: boolean = false,
         extraCells: ExtraProductionRow | null = null,
     ) {
+        this.row_id = id;
         this.recipeId = +recipeId;
         this.quantity = quantity;
         this.product = product;
@@ -38,6 +43,7 @@ export class ProductionTableRow {
     }
 
     static async create(
+        id: number = 0,
         recipeId: string = '',
         quantity: number = 0,
         product: string = '',
@@ -48,6 +54,7 @@ export class ProductionTableRow {
         recipeCache: Recipe[] = []
     ): Promise<ProductionTableRow> {
         const instance = new ProductionTableRow(
+            id,
             recipeId,
             quantity,
             product,
@@ -61,7 +68,9 @@ export class ProductionTableRow {
             instance.recipe = recipeCache.find(r => r.id === +recipeId) || null;
             if (instance.recipe == null && recipeId) {
                 instance.recipe = await Ajax.getRecipe(+recipeId);
-                recipeCache.push(instance.recipe);
+                if (instance.recipe && !recipeCache.find(r => r.id === instance.recipe?.id)) {
+                    recipeCache.push(instance.recipe);
+                }
             }
         }
 

@@ -1,5 +1,20 @@
 [
   {
+    "version": "1.8.0",
+    "date": "March 21 2025",
+    "changes": [
+      "Fixed: Output accordion not being able to close.",
+      "Improved: The speed of loading recipes and buildings.",
+      "Improved: File size of tables.js reduced by 75%+. This will make the production line page load faster. (It will load more files when opening the visualisation.)",
+      "Improved: Saving of the production line. It will now save the production line faster.",
+      "Added: Checklist for the production line page. This will help you to keep track of what you have done and what you still need to do.",
+      "Added: Button to open the checklist on the production line page.",
+      "Added: Search bar to the checklist.",
+      "Added: Loading spinner when saving the production line.",
+      "Changed: Saving of the production line. It will now save using the api instead of the form post request."
+    ]
+  },
+  {
     "version": "1.7.9",
     "date": "March 10 2025",
     "changes": [

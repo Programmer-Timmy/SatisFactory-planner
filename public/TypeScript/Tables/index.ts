@@ -8,10 +8,37 @@ const saveButton = $("#save_button");
 saveButton.on("click", (event: JQuery.ClickEvent) => {
     if (event.shiftKey) {
         event.preventDefault();
-        SaveFunctions.saveProductionLine(SaveFunctions.prepareSaveData(tableHandler.productionTableRows, tableHandler.powerTableRows, tableHandler.importsTableRows));
+        SaveFunctions.saveProductionLine(
+            SaveFunctions.prepareSaveData(
+                tableHandler.productionTableRows,
+                tableHandler.powerTableRows,
+                tableHandler.importsTableRows,
+                tableHandler.checklist
+            ),
+            tableHandler
+        );
 
         saveButton.tooltip('hide');
         saveButton.blur();
+    } else {
+        event.preventDefault();
+        tableHandler.showLoading(false);
+        SaveFunctions.saveProductionLine(
+            SaveFunctions.prepareSaveData(
+                tableHandler.productionTableRows,
+                tableHandler.powerTableRows,
+                tableHandler.importsTableRows,
+                tableHandler.checklist
+            ),
+            tableHandler,
+            false
+        ).then((success) => {
+            if (success) {
+                window.location.href = "/game_save?id=" + encodeURIComponent(<string>$("#gameSaveId").val());
+            } else {
+                tableHandler.hideLoading();
+            }
+        });
     }
 })
 

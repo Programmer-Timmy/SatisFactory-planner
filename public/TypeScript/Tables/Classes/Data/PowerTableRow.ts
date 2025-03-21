@@ -55,7 +55,10 @@ export class PowerTableRow {
             instance.building = buildingCache.find(b => b.id === +buildingId) || null;
             if (!instance.building) {
                 const building = await Ajax.getBuilding(buildingId);
-                buildingCache.push(building);
+                // if not in cache, add it
+                if (building && !buildingCache.find(b => b.id === building.id)) {
+                    buildingCache.push(building);
+                }
                 instance.building = building;
             }
         }

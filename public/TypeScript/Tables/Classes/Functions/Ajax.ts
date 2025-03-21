@@ -1,9 +1,12 @@
 import {Recipe} from "../Types/Recipe";
 import {Building} from "../Types/Building";
+import {IChecklist} from "../Checklist";
 
 
 export class Ajax {
     private static gameSaveId: number = Number($('#gameSaveId').val()) ?? 0;
+    private static url: URL = new URL(window.location.href);
+    private static productionLineId: number = parseInt(this.url.searchParams.get('id') as string);
 
     /**
      * Get a recipe by its ID.
@@ -123,5 +126,25 @@ export class Ajax {
             throw new Error('CSRF token not found');
         }
         return <string>meta.attr('content');
+    }
+
+    static saveChecklist(checklists:IChecklist[], ): void {
+
+        $.ajax({
+            url: "/saveChecklist",
+            method: "POST",
+            data: {
+                checklist: JSON.stringify(checklists),
+                productionLineId: this.productionLineId
+            },
+            headers: {'X-CSRF-Token': Ajax._getCsrfToken()},
+            success: (data) => {
+                console.log(data);
+            },
+            error: (err) => {
+                console.error(err);
+            }
+        });
+
     }
 }

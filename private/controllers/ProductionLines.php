@@ -36,7 +36,7 @@ class ProductionLines
 
     public static function getProductionByProductionLine(int $productionLineId)
     {
-        return Database::getAll("production", ['items.name AS item_name_1', ' items2.name AS item_name_2', 'local_usage2', 'export_ammount_per_min2', 'recipes.id as recipe_id', 'production.local_usage', 'recipes.name as recipe_name', 'production.export_ammount_per_min as export_amount_per_min', 'buildings.name as building_name', 'buildings.power_used', 'production.quantity as product_quantity'], ["recipes" => "recipes.id = production.recipe_id", 'buildings' => 'buildings.id = recipes.buildings_id', 'items' => 'recipes.item_id = items.id left join items as items2 on recipes.item_id2 = items2.id'], ["production_lines_id" => $productionLineId]);
+        return Database::getAll("production", ['production.id' ,'items.name AS item_name_1', ' items2.name AS item_name_2', 'local_usage2', 'export_ammount_per_min2', 'recipes.id as recipe_id', 'production.local_usage', 'recipes.name as recipe_name', 'production.export_ammount_per_min as export_amount_per_min', 'buildings.name as building_name', 'buildings.power_used', 'production.quantity as product_quantity'], ["recipes" => "recipes.id = production.recipe_id", 'buildings' => 'buildings.id = recipes.buildings_id', 'items' => 'recipes.item_id = items.id left join items as items2 on recipes.item_id2 = items2.id'], ["production_lines_id" => $productionLineId]);
     }
 
     public static function getPowerByProductionLine(int $productionLineId)
@@ -46,34 +46,82 @@ class ProductionLines
 
     public static function saveProductionLine(array $imports, array $production, array $power, string $totalConsumption, int $id)
     {
-        $database = Database::beginTransaction();
-
+        $database = new NewDatabase();
+        $database->beginTransaction();
         try {
-            Database::delete("input", ['production_lines_id' => $id], $database);
-            Database::delete("production", ['production_lines_id' => $id], $database);
-            Database::delete("power", ['production_lines_id' => $id], $database);
-            Database::delete("output", ['production_lines_id' => $id], $database);
+            $database->delete("input", ['production_lines_id' => $id]);
+            $database->delete("power", ['production_lines_id' => $id]);
+            $database->delete("output", ['production_lines_id' => $id]);
 
-            Database::update("production_lines",['power_consumbtion', 'updated_at'], [$totalConsumption, date('Y-m-d H:i:s')], ['id' => $id], $database);
+            $database->update("production_lines",['power_consumbtion', 'updated_at'], [$totalConsumption, date('Y-m-d H:i:s')], ['id' => $id]);
             foreach ($imports as $import) {
-                Database::insert("input", ['production_lines_id', 'items_id', 'ammount'], [$id, $import->id, $import->ammount], $database);
+                $database->insert("input", ['production_lines_id', 'items_id', 'ammount'], [$id, $import->id, $import->ammount]);
             }
+
+            $updatedAndNewProduction = [];
+            $newAndOldIds = [];
+            $allProduction = Database::getAll("production", ['id'], [], ['production_lines_id' => $id]);
             foreach ($production as $prod) {
                 $recipes = Recipes::getRecipeById($prod->recipe_id);
-                Database::insert("production", ['production_lines_id', 'recipe_id', 'quantity', 'local_usage', 'export_ammount_per_min', 'export_ammount_per_min2', 'local_usage2'], [$id, $prod->recipe_id, $prod->product_quantity, $prod->usage, $prod->export_amount_per_min, $prod->export_ammount_per_min2, $prod->local_usage2], $database);
-                Database::insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id, $prod->export_amount_per_min], $database);
+
+                $existingProduction = $database->get("production", ['id'], [], ['id' => $prod->id]);
+
+                if ($existingProduction) {
+                    $database->update(
+                        "production",
+                        [
+                            'recipe_id',
+                            'quantity',
+                            'local_usage',
+                            'export_ammount_per_min',
+                            'export_ammount_per_min2',
+                            'local_usage2'
+                        ],
+                        [
+                            $prod->recipe_id,
+                            $prod->product_quantity,
+                            $prod->usage,
+                            $prod->export_amount_per_min,
+                            $prod->export_ammount_per_min2,
+                            $prod->local_usage2
+                        ],
+                        [
+                            'id' => $prod->id
+                        ]
+                    );
+                    $updatedAndNewProduction[] = $prod->id;
+
+                } else {
+                    $database->insert("production", ['production_lines_id', 'recipe_id', 'quantity', 'local_usage', 'export_ammount_per_min', 'export_ammount_per_min2', 'local_usage2'], [$id, $prod->recipe_id, $prod->product_quantity, $prod->usage, $prod->export_amount_per_min, $prod->export_ammount_per_min2, $prod->local_usage2]);
+                    $updatedAndNewProduction[] = $database->connection->lastInsertId();
+                    $newAndOldIds[] = [
+                        'new' => (int) $database->connection->lastInsertId(),
+                        'old' => $prod->id
+                    ];
+                }
+
+
+                $database->delete("output", ['production_lines_id' => $id]);
+                $database->insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id, $prod->export_amount_per_min]);
+
                 if ($recipes->item_id2) {
-                    Database::insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id2, $prod->export_ammount_per_min2], $database);
+                    $database->insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id2, $prod->export_ammount_per_min2]);
                 }
             }
-            foreach ($power as $pow) {
-                Database::insert("power", ['production_lines_id', 'buildings_id', 'building_ammount', 'clock_speed', 'power_used', 'user'], [$id, $pow->buildings_id, $pow->building_ammount, $pow->clock_speed, $pow->power_used, $pow->user ? 1 : 0], $database);
-            }
-            Database::commit($database);
 
-            return true;
+            $deleteProduction = array_diff(array_column($allProduction, 'id'), $updatedAndNewProduction);
+            foreach ($deleteProduction as $delete) {
+                $database->delete("production", ['id' => $delete]);
+            }
+
+            foreach ($power as $pow) {
+                $database->insert("power", ['production_lines_id', 'buildings_id', 'building_ammount', 'clock_speed', 'power_used', 'user'], [$id, $pow->buildings_id, $pow->building_ammount, $pow->clock_speed, $pow->power_used, $pow->user ? 1 : 0]);
+            }
+            $database->commit();
+
+            return $newAndOldIds;
         } catch (Exception $e) {
-            Database::rollBack($database);
+            $database->rollBack();
             return false;
         }
     }

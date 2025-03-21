@@ -19,6 +19,7 @@ $firstProduction = Users::checkIfFirstProduction($_SESSION['userId']);
 $imports = ProductionLines::getImportsByProductionLine($productLine->id);
 $production = ProductionLines::getProductionByProductionLine($productLine->id);
 $powers = ProductionLines::getPowerByProductionLine($productLine->id);
+$checklist = Checklist::getChecklist($productLine->id);
 
 $items = Items::getAllItems();
 $Recipes = Recipes::getAllRecipes();
@@ -60,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
             }
 
             $productionData[] = (object)[
+                'id' => $data['production_id'][$i],
                 'recipe_id' => $data['production_recipe_id'][$i],
                 'product_quantity' => $data['production_quantity'][$i],
                 'usage' => $data['production_usage'][$i],
@@ -91,15 +93,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['total_consumption']))
     if (ProductionLines::saveProductionLine($importsData, $productionData, $powerData, $total_consumption, $productLine->id)) {
         header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
         exit();
-    }else{
+    } else {
         $error = 'Something went wrong while saving the production line. Please try again. If the problem persists, please contact the administrator.';
     }
-}elseif (isset($_POST['total_consumption'])) {
+} elseif (isset($_POST['total_consumption'])) {
     $error = 'Please fill all the fields';
 }
 
 global $changelog;
 
+function generateUUID(): string {
+    $data = random_bytes(16);
+
+    // Versie instellen (4) en variant instellen (RFC 4122)
+    $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // Versie 4
+    $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // Variant RFC 4122
+
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
 
 ?>
 
@@ -116,7 +127,7 @@ global $changelog;
         -moz-appearance: textfield;
     }
 
-    .form-control:focus{
+    .form-control:focus {
         box-shadow: none;
         border-color: #4a4a4a;
     }
@@ -125,8 +136,8 @@ global $changelog;
         cursor: default;
     }
 </style>
-    <input type="hidden" id="dataVersion" value="<?= SiteSettings::getDataVersion() ?>">
-    <input type="hidden" id="gameSaveId" value="<?= $productLine->game_saves_id ?>">
+<input type="hidden" id="dataVersion" value="<?= SiteSettings::getDataVersion() ?>">
+<input type="hidden" id="gameSaveId" value="<?= $productLine->game_saves_id ?>">
 
 <div class="px-3 px-lg-5">
     <form method="post" onkeydown="return event.key != 'Enter';">
@@ -160,6 +171,9 @@ global $changelog;
                     <button type="button" id="showVisualizationButton" class="btn btn-info mb-1 disabled"
                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show visualization"><i
                                 class="fa-solid fa-project-diagram"></i></button>
+                    <button type="button" id="showCheckList" class="btn btn-info mb-1 disabled" data-bs-toggle="tooltip"
+                            data-bs-placement="top" data-bs-title="Checklist"><i class="fa-solid fa-list-check"></i>
+                    </button>
                     <button type="button" id="showHelp" class="btn btn-info mb-1" data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-title="Need help? Click here!"><i
                                 class="fa-regular fa-question-circle"></i></button>
@@ -205,14 +219,16 @@ global $changelog;
                                 </select>
                             </td>
                             <td class="m-0 p-0 w-25">
-                                <input min="0" type="number" step="any" name="imports_ammount[]" class="form-control rounded-0"
+                                <input min="0" type="number" step="any" name="imports_ammount[]"
+                                       class="form-control rounded-0"
                                        value="<?= $import->ammount ?>">
                             </td>
                         </tr>
                     <?php endforeach; ?>
                     <tr>
                         <td class="m-0 p-0 w-75">
-                            <select name="imports_item_id[]" step="any" class="form-control rounded-0 input-item-id">
+                            <select name="imports_item_id[]" step="any"
+                                    class="form-control rounded-0 input-item-id">
                                 <option value="" disabled selected>Select an item</option>
                                 <?php foreach ($items as $item) : ?>
                                     <option value="<?= $item->id ?>"><?= $item->name ?></option>
@@ -231,97 +247,133 @@ global $changelog;
             <div class="col-md-9">
                 <h2>Production</h2>
                 <div class="overflow-x-auto">
-                <table class="table table-striped " id="recipes">
-                    <thead class="table-dark">
-                    <tr>
-                        <th scope="col">Recipe</th>
-                        <th scope="col">Quantity Per/min</th>
-                        <th scope="col">Product</th>
-                        <th scope="col">Local Usage Per/min</th>
-                        <th scope="col">Export Per/min</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($production as $product) : ?>
+                    <table class="table table-striped " id="recipes">
+                        <thead class="table-dark">
                         <tr>
-                            <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
+                            <th scope="col">Recipe</th>
+                            <th scope="col">Quantity Per/min</th>
+                            <th scope="col">Product</th>
+                            <th scope="col">Local Usage Per/min</th>
+                            <th scope="col">Export Per/min</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($production as $product) : ?>
+                            <tr>
+                                <td class="hidden">
+                                    <input type="hidden" name="production_id[]" value="<?= $product->id ?>">
+                                </td>
+                                <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
 
-                                <select name="production_recipe_id[]" class="form-control rounded-0 recipe"<?php if ($product->item_name_2) echo 'style="height: 78px"'?>>
-                                <?php foreach ($Recipes as $recipe) : ?>
-                                        <option <?php if ($product->recipe_id == $recipe->id) echo 'selected' ?>
-                                                value="<?= $recipe->id ?>"><?= $recipe->name ?></option>
+                                    <select name="production_recipe_id[]"
+                                            class="form-control rounded-0 recipe"<?php if ($product->item_name_2) echo 'style="height: 78px"' ?>>
+                                        <?php foreach ($Recipes as $recipe) : ?>
+                                            <option <?php if ($product->recipe_id == $recipe->id) echo 'selected' ?>
+                                                    value="<?= $recipe->id ?>"><?= $recipe->name ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                                <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
+                                    <input min="0" type="number" name="production_quantity[]"
+                                           step="any" <?php if ($product->item_name_2) echo 'style="height: 78px"' ?>
+                                           required class="form-control rounded-0 production-quantity" "
+                                    value="<?= $product->product_quantity ?>">
+                                </td>
+                                <td class="m-0 p-0">
+                                    <input type="text" readonly class="form-control rounded-0 product-name"
+                                           value="<?= $product->item_name_1 ?>">
+                                </td>
+                                <td class="m-0 p-0">
+                                    <input min="0" type="number" name="production_usage[]" step="any" required
+                                           readonly
+                                           class="form-control rounded-0 usage-amount"
+                                           value="<?= $product->local_usage ?>">
+                                </td>
+                                <td class="m-0 p-0">
+                                    <input min="0" type="number" name="production_export[]" step="any" required
+                                           readonly class="form-control rounded-0 export-amount"
+                                           value="<?= $product->export_amount_per_min ?>">
+                                </td>
+                            </tr>
+                            <?php if ($product->item_name_2) : ?>
+
+                                <tr class="extra-output">
+                                    <td class="m-0 p-0">
+                                        <input type="text" readonly class="form-control rounded-0 product-name"
+                                               value="<?= $product->item_name_2 ?>">
+                                    </td>
+                                    <td class="m-0 p-0">
+                                        <input min="0" type="number" name="production_usage2[]" step="any" required
+                                               readonly
+                                               class="form-control rounded-0 usage-amount" "
+                                        value="<?= $product->local_usage2 ?>">
+                                    </td>
+                                    <td class="m-0 p-0">
+                                        <input min="0" type="number" name="production_export2[]" step="any" required
+                                               readonly class="form-control rounded-0 export-amount"
+                                               value="<?= $product->export_ammount_per_min2 ?>">
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                        <tr>
+                            <td class="hidden">
+                                <input type="hidden" name="production_id[]" value="<?= generateUUID() ?>">
+                            </td>
+                            <td class="m-0 p-0">
+                                <select name="production_recipe_id[]"
+                                        class="form-control rounded-0 item-recipe-id recipe">
+                                    <option value="" disabled selected>Select a recipe</option>
+                                    <?php foreach ($Recipes as $recipe) : ?>
+                                        <option value="<?= $recipe->id ?>"><?= $recipe->name ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
-                            <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
-                                <input min="0"  type="number" name="production_quantity[]" step="any" <?php if ($product->item_name_2) echo 'style="height: 78px"'?> required class="form-control rounded-0 production-quantity" "
-                                       value="<?= $product->product_quantity ?>">
-                            </td>
-                                                       <td class="m-0 p-0">
-                                <input type="text"  readonly class="form-control rounded-0 product-name"
-                                       value="<?= $product->item_name_1 ?>">
+                            <td class="m-0 p-0">
+                                <input min="0" type="number" step="any" name="production_quantity[]" value="0"
+                                       required class="form-control rounded-0 production-quantity">
                             </td>
                             <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_usage[]" step="any" required readonly
-                                       class="form-control rounded-0 usage-amount"
-                                       value="<?= $product->local_usage ?>">
+                                <input type="text" readonly class="form-control rounded-0 product-name">
                             </td>
                             <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_export[]" step="any" required readonly class="form-control rounded-0 export-amount"
-                                       value="<?= $product->export_amount_per_min ?>">
+                                <input min="0" type="number" step="any" name="production_usage[]" value="0" required
+                                       readonly class="form-control rounded-0 usage-amount">
+                            </td>
+                            <td class="m-0 p-0">
+                                <input min="0" type="number" step="any" name="production_export[]" value="0"
+                                       required
+                                       readonly class="form-control rounded-0 export-amount">
                             </td>
                         </tr>
-                        <?php if ($product->item_name_2) : ?>
-
-                            <tr class="extra-output">
-                                <td class="m-0 p-0">
-                                <input type="text" readonly class="form-control rounded-0 product-name"
-                                       value="<?= $product->item_name_2 ?>">
-                            </td>
-                            <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_usage2[]" step="any" required readonly
-                                       class="form-control rounded-0 usage-amount" "
-                                       value="<?= $product->local_usage2 ?>">
-                            </td>
-                            <td class="m-0 p-0">
-                                <input min="0" type="number" name="production_export2[]" step="any" required readonly class="form-control rounded-0 export-amount"
-                                       value="<?= $product->export_ammount_per_min2 ?>">
-                            </td>
-                            </tr>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                    <tr>
-                        <td class="m-0 p-0">
-                            <select name="production_recipe_id[]" class="form-control rounded-0 item-recipe-id recipe">
-                                <option value="" disabled selected>Select a recipe</option>
-                                <?php foreach ($Recipes as $recipe) : ?>
-                                    <option value="<?= $recipe->id ?>"><?= $recipe->name ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td class="m-0 p-0">
-                            <input min="0" type="number" step="any" name="production_quantity[]" value="0" required class="form-control rounded-0 production-quantity">
-                        </td>
-                        <td class="m-0 p-0">
-                            <input type="text" readonly class="form-control rounded-0 product-name">
-                        </td>
-                        <td class="m-0 p-0">
-                            <input min="0" type="number" step="any" name="production_usage[]" value="0" required
-                                   readonly class="form-control rounded-0 usage-amount">
-                        </td>
-                        <td class="m-0 p-0">
-                            <input min="0" type="number" step="any" name="production_export[]" value="0" required
-                                   readonly class="form-control rounded-0 export-amount">
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
         <?php require_once '../private/views/Popups/productionLine/showPower.php'; ?>
     </form>
 </div>
+<div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="Checklist"
+     aria-labelledby="offcanvasChecklist">
+    <div class="offcanvas-header pb-1">
+        <h5 class="offcanvas-title" id="offcanvasChecklist">Checklist</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="input-group p-3 pt-0">
+        <input type="search" class="form-control mt-2" id="searchChecklist" placeholder="Search">
+        <button class="btn btn-primary mt-2" id="resetSearchChecklist"><i class="fa-solid fa-undo"></i></button>
+    </div>
+    <div class="offcanvas-body overflow-y-auto">
+        <?php if (!empty($checklist)) : ?>
+            <data class="hidden" id="checkListData">
+                <?= json_encode($checklist) ?>
+            </data>
+        <?php endif ?>
+    </div>
+</div>
+
+
 <?php
 if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
     <script src="js/dedicatedServer.js"></script>
@@ -329,7 +381,7 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
         new DedicatedServer(<?= $_SESSION['lastVisitedSaveGame'] ?>);
     </script>
 <?php endif; ?>
-<script type="module" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
+<script type="" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
 <?php require_once '../private/views/Popups/productionLine/editProductinoLine.php'; ?>
 
 <!-- Help Modal -->
@@ -345,3 +397,11 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
         });
     </script>
 <?php endif; ?>
+
+<script>
+    <!--    open off canvas-->
+    var offcanvasChecklist = new bootstrap.Offcanvas(document.getElementById('Checklist'));
+    document.getElementById('showCheckList').addEventListener('click', function () {
+        offcanvasChecklist.show();
+    });
+</script>
