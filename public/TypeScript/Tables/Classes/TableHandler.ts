@@ -229,9 +229,23 @@ export class TableHandler {
      * @returns {void}
      * @private
      */
-    private hideLoading() {
+    public hideLoading() {
         $('#loading').addClass('d-none');
         $('#main-content').removeClass('d-none');
+    }
+
+    /**
+     * Shows the loading screen and hides the main content.
+     * @returns {void}
+     * @private
+     */
+    public showLoading(showLoadingBar: boolean = true) {
+        this.progressBar.parent().removeClass('d-none');
+        $('#loading').removeClass('d-none');
+        $('#main-content').addClass('d-none');
+        if (!showLoadingBar) {
+            this.progressBar.parent().addClass('d-none');
+        }
     }
 
     /**

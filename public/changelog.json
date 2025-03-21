@@ -9,7 +9,8 @@
       "Improved: Saving of the production line. It will now save the production line faster.",
       "Added: Checklist for the production line page. This will help you to keep track of what you have done and what you still need to do.",
       "Added: Button to open the checklist on the production line page.",
-      "Added: Search bar to the checklist."
+      "Added: Search bar to the checklist.",
+      "Changed: Saving of the production line. It will now save using the api instead of the form post request."
     ]
   },
   {

@@ -21,27 +21,34 @@ export class SaveFunctions {
         };
     }
 
-    public static saveProductionLine(jsonData: Record<string, any>, tableHandler: TableHandler) {
+    public static saveProductionLine(jsonData: Record<string, any>, tableHandler: TableHandler, isQuickSave: boolean = true): Promise<boolean> {
         try {
             const url = new URL(window.location.href);
             const id = parseInt(url.searchParams.get('id') as string);
 
-            Ajax.saveData(jsonData, id).then((response) => {
+            return Ajax.saveData(jsonData, id).then((response) => {
                 if (response['success']) {
+                    if (!isQuickSave) {
+                        return true
+                    }
+
                     this.showSuccessMessage('Data successfully saved.');
                     const newAndOldIds: newAndOldIds[] = response.data.newAndOldIds;
 
                     if (newAndOldIds.length > 0) {
                         this.updateProductionIds(newAndOldIds, tableHandler);
                     }
-                    return;
+                    return true;
                 }
                 this.showErrorMessage('An error occurred while saving the data. Please try again.');
+                return false;
             }).catch((error) => {
                 this.showErrorMessage('An error occurred while saving the data. Please try again.');
+                return false;
             });
         } catch (error) {
             this.showErrorMessage('An error occurred while saving the data. Please try again.');
+            return Promise.resolve(false);
         }
     }
 

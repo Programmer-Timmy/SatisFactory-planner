@@ -20,6 +20,25 @@ saveButton.on("click", (event: JQuery.ClickEvent) => {
 
         saveButton.tooltip('hide');
         saveButton.blur();
+    } else {
+        event.preventDefault();
+        tableHandler.showLoading(false);
+        SaveFunctions.saveProductionLine(
+            SaveFunctions.prepareSaveData(
+                tableHandler.productionTableRows,
+                tableHandler.powerTableRows,
+                tableHandler.importsTableRows,
+                tableHandler.checklist
+            ),
+            tableHandler,
+            false
+        ).then((success) => {
+            if (success) {
+                window.location.href = "/game_save?id=" + $("#gameSaveId").val();
+            } else {
+                tableHandler.hideLoading();
+            }
+        });
     }
 })
 
