@@ -34,7 +34,7 @@ saveButton.on("click", (event: JQuery.ClickEvent) => {
             false
         ).then((success) => {
             if (success) {
-                window.location.href = "/game_save?id=" + $("#gameSaveId").val();
+                window.location.href = "/game_save?id=" + encodeURIComponent(<string>$("#gameSaveId").val());
             } else {
                 tableHandler.hideLoading();
             }
