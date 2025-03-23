@@ -234,6 +234,9 @@ class AuthControler
         return Database::insert('blocked_ips', ['ip_address', 'blocked_until', 'reason'], [$ip, $time, $reason]);
     }
 
+    public static function getLoginAttempts($userId) {
+        return Database::getAll(table: 'login_attempts', where: ['users_id' => $userId]);
+    }
 
 
 }

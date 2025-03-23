@@ -159,5 +159,9 @@ class ErrorHandeler {
         return false;
     }
 
+    public static function getUserErrorLogs($userId) {
+        return Database::query("SELECT * FROM error_404_logs WHERE users_id = ? UNION SELECT * FROM error_403_logs WHERE users_id = ?", [$userId, $userId]);
+    }
+
 
 }

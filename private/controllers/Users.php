@@ -229,4 +229,55 @@ class Users
     public static function disconnectGoogleAccount(mixed $userId) {
         Database::update("users", ['google_id', 'google_email'], [null, null], ['id' => $userId]);
     }
+
+    public static function handleProfileUpdate($user) {
+        if (!isset($_POST['username']) || !isset($_POST['email'])) {
+            return ['error' => 'Missing required fields'];
+        }
+
+        $username = $_POST['username'];
+        $email = $_POST['email'];
+        $updates = isset($_POST['updates']) ? 1 : 0;
+
+        if (strlen($username) > 45) {
+            return ['error' => 'Username exceeds the maximum allowed length. Please use up to 45 characters.'];
+        } elseif (strlen($email) > 200) {
+            return ['error' => 'Email is too lengthy. Please use an email under 200 characters.'];
+        } elseif ($username !== strip_tags($username)) {
+            return ['error' => 'Security Alert: Unauthorized characters detected in username.'];
+        } elseif ($email !== strip_tags($email)) {
+            return ['error' => 'Security Alert: The email contains restricted characters.'];
+        } elseif (self::getUserByEmail($email) && $email !== $user->email) {
+            return ['error' => 'Email already in use'];
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return ['error' => 'Invalid email'];
+        } elseif (self::getUserByUsername($username) && $username !== $user->username) {
+            return ['error' => 'Username already in use'];
+        }
+
+        if (self::updateUser($user->id, $username, $email, $updates)) {
+            return ['success' => true];
+        } else {
+            return ['error' => 'Error updating username'];
+        }
+    }
+
+    public static function handlePasswordUpdate($user) {
+        if (!isset($_POST['password']) || !isset($_POST['password2'])) {
+            return ['error' => 'Missing password fields'];
+        }
+
+        $password = $_POST['password'];
+        $password2 = $_POST['password2'];
+
+        if ($password !== $password2) {
+            return ['error' => 'Passwords do not match'];
+        }
+
+        if (self::updatePassword($user->id, $password)) {
+            return ['success' => true];
+        } else {
+            return ['error' => 'Error updating password'];
+        }
+    }
 }
