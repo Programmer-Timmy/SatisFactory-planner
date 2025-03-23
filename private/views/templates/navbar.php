@@ -77,7 +77,7 @@ $navItems['/helpfulLinks'] = 'Helpful Links';
 
                     </li>
 <!--                    account dropdown-->
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown me-lg-2 mt-lg-0 mt-2">
                         <a class="btn btn-secondary dropdown-toggle" href="#" id="navbarDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-user"></i>
