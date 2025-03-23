@@ -215,7 +215,6 @@ export class TableHandler {
     }
 
     private CheckCacheVersion() {
-        console.log(this.cacheVersion);
         const data = JSON.parse(localStorage.getItem('cachedData') || '{}');
         if (data.Version !== this.cacheVersion.toString()) {
             this.emptyLocal();
@@ -303,6 +302,8 @@ export class TableHandler {
         // If the last row is selected, add a new row
         if (this.checkIfLastRow(target, tableId) && this.checkIfSelect(target)) {
             this.addNewRow(tableId);
+        //     add to the checklist
+        //     this.checklist?.addCheckList(this.productionTableRows[rowIndex - amountExtra]);
         }
 
         const row = this.getRowByTableIdAndIndex(tableId, rowIndex - amountExtra);
@@ -495,6 +496,8 @@ export class TableHandler {
         } else if (this.updated) {
             this.updated = false;
             this.visualisation.update();
+        } else {
+            this.visualisation.updateNodeColors();
         }
 
         $('#showVisualization').modal('show');
@@ -562,10 +565,8 @@ export class TableHandler {
         if (this.checkIfSelect(target)) {
             await ProductionLineFunctions.updateRecipe(row, value);
         }
-        console.log(row)
 
         this.updateRowInTable(tableId, rowIndex, row);
-        console.log(row)
 
         if (this.settings.autoImportExport) {
             const data: {

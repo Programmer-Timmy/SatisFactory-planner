@@ -4,6 +4,7 @@ import {ProductionNodes} from "./Data/Visualization/ProductionNodes";
 import {ExportNodes} from "./Data/Visualization/ExportNodes";
 import {Connection} from "./Data/Visualization/Connection";
 import {Ext, LayoutOptions} from "cytoscape";
+import {IChecklist} from "./Checklist";
 
 let cytoscape: typeof import("cytoscape")
 
@@ -40,8 +41,10 @@ export class Visualization {
 
     private showExport: boolean = false;
     private showImport: boolean = true;
+    private showChecklist: boolean = true;
     private useRoots: boolean = true;
 
+    private cy: cytoscape.Core | null = null;
 
     /**
      * Constructor for the Visualization class
@@ -177,6 +180,7 @@ export class Visualization {
             cy.fit();
         });
 
+        this.cy = cy;
 
     }
 
@@ -204,6 +208,44 @@ export class Visualization {
         });
     }
 
+    // updates the node production colors based on the checklist
+    public updateNodeColors(): void {
+
+        if (!this.cy) { // Ensure `this.cy` exists
+            console.error("Cytoscape instance not found!");
+            return;
+        }
+
+        this.cy.nodes().forEach(node => {
+            const data = node.data();
+            if (data.id.startsWith('production')) {
+                const productionNode = this.productionNodes.find(n => `production_${n.id}` === data.id);
+                if (!productionNode) {
+                    return;
+                }
+
+                node.style('background-color', this.showChecklist ? this.getColor(productionNode.checklist) : 'green');
+
+            }
+
+        });
+    }
+
+    private getColor(checklist: IChecklist | undefined): string {
+        if (!checklist) {
+            return '#A0A0A0'; // Not built & not tested (Gray)
+        }
+
+        if (checklist.beenBuild && checklist.beenTested) {
+            return '#28A745'; // Built & tested (Green)
+        } else if (checklist.beenBuild) {
+            return '#FFD700'; // Built but not tested (Yellow)
+        } else {
+            return '#A0A0A0'; // Not built & not tested (Gray)
+        }
+    }
+
+
 
     /**
      * Add a node to the visualization
@@ -221,7 +263,9 @@ export class Visualization {
             data: {
                 id: `${type}_${node.id}`,
                 label: `${node.product}\n${node.quantity}${node.building ? `\n\n\n\n${node.building}\n${node.buildingAmount}` : ''}`,
-                color: type === 'import' ? 'blue' : type === 'export' ? 'red' : 'green',
+                color: type === 'import' ? 'blue' :
+                    type === 'export' ? 'red' : this.showChecklist ? this.getColor(node.checklist) : 'green',
+
                 title: `${type.charAt(0).toUpperCase() + type.slice(1)}: ${node.product}<br>Amount: ${node.quantity}${node.building ? `<br><hr>Building: ${node.building}<br>Amount of building: ${node.buildingAmount}` : ''}`
             },
             classes: type === 'production' ? 'top-text' : ''
@@ -268,6 +312,12 @@ export class Visualization {
         //     this.layout = select.val() as 'breadthfirst' | 'cose' | 'klay' | 'fcose' | 'concentric';
         //     this.createVisualization();
         // });
+
+        $('#showChecklist').on('change', (e) => {
+            const select = $(e.target);
+            this.showChecklist = select.prop('checked');
+            this.updateNodeColors();
+        });
 
         $('#export').on('change', (e) => {
             const select = $(e.target);
@@ -321,6 +371,8 @@ export class Visualization {
             const building = row.recipe?.building;
             const amount = row.quantity;
             const recipe = row.recipe;
+            const checklist = this.TableHandler.checklist?.getChecklist().find(check => check.productionRow.row_id == row.row_id);
+
 
             if (!recipe) {
                 continue;
@@ -329,7 +381,7 @@ export class Visualization {
             let amountOfBuilding = (amount / recipe.export_amount_per_min).toFixed(3);
 
             if (building && recipe) {
-                this.productionNodes.push(new ProductionNodes(i, recipe.name, row.quantity, building.name, building.id, +amountOfBuilding));
+                this.productionNodes.push(new ProductionNodes(i, recipe.name, row.quantity, building.name, building.id, +amountOfBuilding, checklist));
 
             }
 

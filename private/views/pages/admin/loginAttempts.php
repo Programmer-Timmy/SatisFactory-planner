@@ -182,7 +182,6 @@ $failedOrSuccessSelect = '
 </script>
 <script>
     // ajax search
-    console.log('search');
     const ip = document.querySelector('select[name="ip"]');
     const year = document.querySelector('select[name="year"]');
     const userName = document.querySelector('select[name="userName"]');

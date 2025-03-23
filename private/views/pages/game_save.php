@@ -242,6 +242,32 @@ if (isset($_GET['layoutType'])) {
                                                data-offstyle="danger" data-size="sm" data-onlabel="Yes"
                                                data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>>
                                     </div>
+                                    <div class="d-flex align-items-center mt-2">
+                                        <div class="w-50 pe-2">
+                                            <label>Build Progress</label>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success text-black" role="progressbar"
+                                                     style="width: <?= $productionLine->checklist[0]->been_build_percentage ?>%"
+                                                     aria-valuenow="<?= $productionLine->checklist[0]->been_build_percentage ?>"
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                    <?= round($productionLine->checklist[0]->been_build_percentage) ?>%
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="w-50 ps-2">
+                                            <label>Test Progress</label>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-warning text-black" role="progressbar"
+                                                     style="width: <?= $productionLine->checklist[0]->been_tested_percentage ?>%"
+                                                     aria-valuenow="<?= $productionLine->checklist[0]->been_tested_percentage ?>"
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                    <?= round($productionLine->checklist[0]->been_tested_percentage) ?>%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                                 <div class="card-footer d-flex justify-content-between">
                                     <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"
@@ -268,6 +294,8 @@ if (isset($_GET['layoutType'])) {
                         <tr>
                             <th scope="col">Name</th>
                             <th scope="col">Power Consumption</th>
+                            <th scope="col">build Progress</th>
+                            <th scope="col">Test Progress</th>
                             <th scope="col">Updated At</th>
                             <th scope="col">Active</th>
                             <th scope="col"></th>
@@ -279,6 +307,26 @@ if (isset($_GET['layoutType'])) {
                             <tr>
                                 <td><?= $productionLine->name ?></td>
                                 <td><?= $productionLine->power_consumbtion ?></td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success text-black" role="progressbar"
+                                             style="width: <?= $productionLine->checklist[0]->been_build_percentage ?>%"
+                                             aria-valuenow="<?= $productionLine->checklist[0]->been_build_percentage ?>"
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            <?= round($productionLine->checklist[0]->been_build_percentage) ?>%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning text-black" role="progressbar"
+                                             style="width: <?= $productionLine->checklist[0]->been_tested_percentage ?>%"
+                                             aria-valuenow="<?= $productionLine->checklist[0]->been_tested_percentage ?>"
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            <?= round($productionLine->checklist[0]->been_tested_percentage) ?>%
+                                        </div>
+                                    </div>
+                                </td>
                                 <td>
                                     <?= GlobalUtility::formatUpdatedTime($productionLine->updated_at) ?>
                                 </td>

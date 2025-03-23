@@ -23,7 +23,6 @@ export class Checklist {
         this.CheckForExistingChecklist();
 
         this.attachEvents();
-        console.log(this.checklist);
     }
 
     private CheckForExistingChecklist() {
@@ -68,16 +67,17 @@ export class Checklist {
     }
 
     private createChecklistCard(row: ProductionTableRow, index: number, beenBuild: boolean = false, beenTested: boolean = false) {
-        if (index === this.tableHandler.productionTableRows.length - 1) return
         const productionAmount = row.quantity;
         const recipeName = row.recipe?.name || "Unknown";
         const buildingName = row.recipe?.building?.name || "Unknown";
         const productionPerMin = row.recipe?.export_amount_per_min || 0;
         const buildingAmount = +Math.ceil(productionAmount / productionPerMin).toFixed(5);
 
+
         if (productionAmount <= 0) return;
 
-        this.canvasBody.append(HtmlGeneration.createCard(recipeName, productionAmount, buildingAmount, beenBuild, beenTested, buildingName));
+        this.canvasBody.append(HtmlGeneration.createCard(index, recipeName, productionAmount, buildingAmount, beenBuild, beenTested, buildingName));
+        this.attachToggleEvents(this.canvasBody.find(".card").last());
     }
 
     public updateCheckList(productionRow: ProductionTableRow) {
@@ -88,14 +88,20 @@ export class Checklist {
             const recipeName = row.recipe?.name || "Unknown";
             const buildingName = row.recipe?.building?.name || "Unknown";
             const productionPerMin = row.recipe?.export_amount_per_min || 0;
-            const buildingAmount = +Math.ceil(productionAmount / productionPerMin).toFixed(5);
+            const buildingAmount = +(productionAmount / productionPerMin).toFixed(5);
 
-            const card = this.canvasBody.find(`.card`)[check.index];
-            $(card).replaceWith(HtmlGeneration.createCard(recipeName, productionAmount, buildingAmount, false, false, buildingName));
+            const card = this.canvasBody.find(`#check-${check.index}`);
+
+            if (card.length === 0) {
+                this.createChecklistCard(productionRow, check.index);
+            } else {
+                $(card).replaceWith(HtmlGeneration.createCard(check.index, recipeName, productionAmount, buildingAmount, false, false, buildingName));
+            }
+
             this.checklist[check.index] = {index: check.index, productionRow, beenBuild: false, beenTested: false};
         } else {
-            this.createChecklistCard(productionRow, this.tableHandler.productionTableRows.length - 1);
-            this.checklist.push({index: this.tableHandler.productionTableRows.length - 1, productionRow, beenBuild: false, beenTested: false});
+            this.createChecklistCard(productionRow, this.checklist.length);
+            this.checklist.push({index: this.checklist.length, productionRow, beenBuild: false, beenTested: false});
         }
         this.initCheckBoxes();
 
@@ -114,18 +120,23 @@ export class Checklist {
             input.val("");
             this.clearSearch();
         });
+    }
 
-        const beenTested = $("#Checklist .offcanvas-body").find("input[type='checkbox'][for='tested']");
-        const beenBuild = $("#Checklist .offcanvas-body").find("input[type='checkbox'][for='build']");
+    private attachToggleEvents(card: JQuery<HTMLElement>) {
+        const beenTested = card.find("input[type='checkbox'][for='tested']");
+        const beenBuild = card.find("input[type='checkbox'][for='build']");
 
         beenTested.on("change", (event) => {
-            const index = beenTested.index(event.target);
-            this.checklist[index].beenTested = $(event.target).is(":checked");
+            // get id form card
+            const indexCard = $(event.target).closest(".card").attr("id")?.replace("check-", "");
+            if (!indexCard) return;
+            this.checklist[+indexCard].beenTested = $(event.target).is(":checked");
         });
 
         beenBuild.on("change", (event) => {
-            const index = beenBuild.index(event.target);
-            this.checklist[index].beenBuild = $(event.target).is(":checked");
+            const indexCard = $(event.target).closest(".card").attr("id")?.replace("check-", "");
+            if (!indexCard) return;
+            this.checklist[+indexCard].beenBuild = $(event.target).is(":checked");
         });
     }
 
@@ -171,7 +182,6 @@ export class Checklist {
         const checklist = this.checklist.filter(check => {
             return +check.productionRow.quantity !== 0 && check.productionRow.quantity
         });
-        console.log(checklist)
         return checklist;
     }
 

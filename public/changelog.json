@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.9.0",
+    "date": "March 23 2025",
+    "changes": [
+      "Added: Progress bars to each production line in the game save page. This will help you to see how far you are with building and testing the production line.",
+      "Added: Checklist visualisation to the visualisation of the production line. This will help you to see what you have done and what you still need to do.",
+      "Added: Option to disable the checklist visualisation in the visualisation of the production line.",
+      "Fixed: New recipe not added to the checklist when adding a new recipe to the production line.",
+      "Improved: The layout of the settings in the visualisation of the production line."
+    ]
+  },
+  {
     "version": "1.8.0",
     "date": "March 21 2025",
     "changes": [
