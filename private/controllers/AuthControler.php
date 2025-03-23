@@ -235,7 +235,7 @@ class AuthControler
     }
 
     public static function getLoginAttempts($userId) {
-        return Database::getAll(table: 'login_attempts', where: ['users_id' => $userId]);
+        return Database::getAll(table: 'login_attempts', where: ['users_id' => $userId] , orderBy: 'login_timestamp DESC');
     }
 
 
