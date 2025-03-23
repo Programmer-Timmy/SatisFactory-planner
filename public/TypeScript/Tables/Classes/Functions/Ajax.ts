@@ -127,24 +127,4 @@ export class Ajax {
         }
         return <string>meta.attr('content');
     }
-
-    static saveChecklist(checklists:IChecklist[], ): void {
-
-        $.ajax({
-            url: "/saveChecklist",
-            method: "POST",
-            data: {
-                checklist: JSON.stringify(checklists),
-                productionLineId: this.productionLineId
-            },
-            headers: {'X-CSRF-Token': Ajax._getCsrfToken()},
-            success: (data) => {
-                console.log(data);
-            },
-            error: (err) => {
-                console.error(err);
-            }
-        });
-
-    }
 }

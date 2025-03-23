@@ -17,12 +17,34 @@
 <!--                    <option value="klay" selected>klay</option>-->
 <!--                    <option value="fcose">fcose</option>-->
 <!--                </select>-->
-                <input type="checkbox" id="export" class="form-check-input" style="width: 20px; height: 20px;">
-                <label for="export" class="form-check-label">Export</label>
-                <input type="checkbox" id="import" class="form-check-input" style="width: 20px; height: 20px;" checked>
-                <label for="import" class="form-check-label">Import</label>
-                <input type="checkbox" id="roots" class="form-check-input" style="width: 20px; height: 20px;" checked>
-                <label for="roots" class="form-check-label">Roots</label>
+                <!-- Checklist -->
+                <div class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" title="Show or hide the checklist. <br> 🟢 Built and tested <br> 🟡 Built but not tested <br> ⚪ Not built" data-bs-html="true">
+                    <input type="checkbox" id="showChecklist" class="form-check-input" style="width: 20px; height: 20px;" checked>
+                    <label for="showChecklist" class="form-check-label">Checklist</label>
+                </div>
+
+                <div class="vr"></div>
+
+                <!-- Export -->
+                <div class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" title="Shows the 🔴 export nodes in the graph" data-bs-html="true">
+                    <input type="checkbox" id="export" class="form-check-input" style="width: 20px; height: 20px;">
+                    <label for="export" class="form-check-label">Export</label>
+                </div>
+
+                <!-- Import -->
+                <div class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" title="Shows the 🔵 import nodes in the graph" data-bs-html="true">
+                    <input type="checkbox" id="import" class="form-check-input" style="width: 20px; height: 20px;" checked>
+                    <label for="import" class="form-check-label">Import</label>
+                </div>
+
+                <!-- Roots -->
+                <div class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" title="Fixes the root nodes in the graph" data-bs-html="true">
+                    <input type="checkbox" id="roots" class="form-check-input" style="width: 20px; height: 20px;" checked>
+                    <label for="roots" class="form-check-label">Roots</label>
+                </div>
+
+                <div class="vr"></div>
+
                 <button type="button" class="btn btn-primary" id="refresh">Refresh</button>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
             </div>

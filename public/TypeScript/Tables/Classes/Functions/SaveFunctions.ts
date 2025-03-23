@@ -89,7 +89,6 @@ export class SaveFunctions {
     }
 
     private static updateProductionIds(newAndOldIds: newAndOldIds[], tableHandler: TableHandler) {
-        console.log(tableHandler)
         newAndOldIds.forEach( (newAndOldId) => {
             const newId = newAndOldId.new;
             const oldId = newAndOldId.old;
@@ -101,7 +100,5 @@ export class SaveFunctions {
                 productionRow.row_id = newId;
             }
         });
-
-        console.log(tableHandler)
     }
 }

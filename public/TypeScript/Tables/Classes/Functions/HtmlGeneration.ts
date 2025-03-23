@@ -198,9 +198,9 @@ export class HtmlGeneration {
         return rowsHTML + emptyRowHTML; // Combine the existing rows with the empty row
     }
 
-    public static createCard(recipeName: string, productionAmount: number, buildingAmount: number, beenBuild: boolean, beenTested: boolean, building?: string) {
+    public static createCard(index:number, recipeName: string, productionAmount: number, buildingAmount: number, beenBuild: boolean, beenTested: boolean, building?: string) {
         return `
-        <div class="card mb-2">
+        <div class="card mb-2" id="check-${index}">
             <div class="card-body p-3">
                 <h5 class="card-title recipeName">${recipeName}</h5>
                 <p class="card-text"><span class="productionAmount">${productionAmount}</span> per min - <span class="buildingAmount">${buildingAmount}</span> <span class="buildingName">${building}</span></p>

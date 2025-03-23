@@ -12,7 +12,16 @@ class ProductionLines
 
     public static function getProductionLinesByGameSave(int $gameSaveId)
     {
-        return Database::getAll("production_lines", ['production_lines.id as id', 'production_lines.title as name', 'power_consumbtion as `power_consumbtion`', 'production_lines.updated_at', 'active'], ['game_saves' => 'game_saves.id = production_lines.game_saves_id'], ['production_lines.game_saves_id' => $gameSaveId], 'production_lines.updated_at DESC');
+        $productionLines = Database::getAll("production_lines", ['production_lines.id as id', 'production_lines.title as name', 'power_consumbtion as `power_consumbtion`', 'production_lines.updated_at', 'active'], ['game_saves' => 'game_saves.id = production_lines.game_saves_id'], ['production_lines.game_saves_id' => $gameSaveId], 'production_lines.updated_at DESC');
+
+        foreach ($productionLines as $productionLine) {
+            $productionLine->checklist = Database::getAll("checklist", [
+                'SUM(been_build) / COUNT(*) * 100 as been_build_percentage',
+                'SUM(been_tested) / COUNT(*) * 100 as been_tested_percentage'
+            ], [], ['production_lines_id' => $productionLine->id]);
+        }
+
+        return $productionLines;
     }
 
     public static function checkProductionLineVisability(int $gameSaveId, int $userId)
