@@ -3,24 +3,10 @@
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $_SESSION['userId'];
 
-    $database = new NewDatabase();
-    $database->beginTransaction();
-    try {
-
-        $database->delete(table: "login_attempts", where: ["users_id" => $userId]);
-        $database->delete(table: "error_404_logs", where: ["users_id" => $userId]);
-        $database->delete(table: "error_403_logs", where: ["users_id" => $userId]);
-
-        $database->commit();
-    } catch (Exception $e) {
-        $database->rollBack();
-        $_SESSION['error'] = "An error occurred while deleting your personal data. Please try again later.";
-        header('Location: /account/delete-data');
+    if (Users::deletePersonalData($userId)) {
+        header('Location: /account');
+        exit;
     }
-
-    $_SESSION['success'] = "Your personal data has been successfully deleted!";
-    header('Location: /account');
-    exit;
 }
 ?>
 

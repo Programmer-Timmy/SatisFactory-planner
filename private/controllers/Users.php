@@ -280,4 +280,30 @@ class Users
             return ['error' => 'Error updating password'];
         }
     }
+
+    /**
+     * @param int $userId
+     *
+     * @return bool
+     */
+    public static function deletePersonalData(int $userId): bool {
+        $database = new NewDatabase();
+        $database->beginTransaction();
+        try {
+
+            $database->delete(table: "login_attempts", where: ["users_id" => $userId]);
+            $database->delete(table: "error_404_logs", where: ["users_id" => $userId]);
+            $database->delete(table: "error_403_logs", where: ["users_id" => $userId]);
+
+            $database->commit();
+        } catch (Exception $e) {
+            $database->rollBack();
+            $_SESSION['error'] = "An error occurred while deleting your personal data. Please try again later.";
+            return false;
+        }
+
+        $_SESSION['success'] = "Your personal data has been successfully deleted!";
+
+        return true;
+    }
 }
