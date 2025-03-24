@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.9.1",
+    "date": "March 24 2025",
+    "changes": [
+      "Improved: The information displayed on the account page.",
+      "Added: Option to delete user data on the account page.",
+      "Added: 5 last logins to the account page.",
+      "Added: Overview of personal saved data on the account page."
+    ]
+  },
+  {
     "version": "1.9.0",
     "date": "March 23 2025",
     "changes": [

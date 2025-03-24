@@ -1,7 +1,7 @@
 <?php
 global $theme, $changelog;
-ob_start();
 global $require;
+
 $lastVisitedSaveGame = '';
 if (isset($_SESSION['userId'])){
     if ($_SESSION['userId'] != '' && $_SESSION['userId'] != null){
@@ -20,7 +20,6 @@ if ($lastVisitedSaveGame != '') {
     $navItems['/game_save?id=' . $lastVisitedSaveGame] = 'Game Save';
 }
 
-$navItems['/account'] = 'Account';
 $navItems['/helpfulLinks'] = 'Helpful Links';
 
 
@@ -77,9 +76,22 @@ $navItems['/helpfulLinks'] = 'Helpful Links';
                             <?php if ($theme === 'styles-dark') echo 'checked'; ?>>
 
                     </li>
-                    <li class="nav-item mt-lg-0 mt-2">
-                        <a class="btn btn-danger" aria-current="page" href="/logout"><i
-                                    class="fa-solid fa-sign-out"></i></a>
+<!--                    account dropdown-->
+                    <li class="nav-item dropdown me-lg-2 mt-lg-0 mt-2">
+                        <a class="btn btn-secondary dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-user"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item <?= ($require === '/account') ? 'active' : ''; ?>" href="/account" >Account</a>
+                            <div class="dropdown-divider"></div>
+                            <?php if (isset($_SESSION['userId'])) : ?>
+                                <a class="dropdown-item" href="/logout">Logout</a>
+                            <?php else : ?>
+                                <a class="dropdown-item" href="/login">Login</a>
+                                <a class="dropdown-item" href="/register">Register</a>
+                            <?php endif; ?>
+                        </div>
                     </li>
                 </ul>
             </div>
