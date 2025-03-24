@@ -24,7 +24,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (empty($recipe)) {
         $response = array(
             'success' => false,
-            'error' => 'Recipe not found'
+            'error' => [
+                "code" => "RECIPE_NOT_FOUND",
+                "message" => "The requested recipe was not found"
+            ]
         );
         http_response_code(404);
         echo json_encode($response);
@@ -40,5 +43,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 } else {
     // Handle invalid request method
     http_response_code(405); // Method Not Allowed
-    echo json_encode(array('error' => 'Invalid request method'));
+    echo json_encode(
+        [
+            'success' => false,
+            'error' => [
+                "code" => "INVALID_REQUEST_METHOD",
+                "message" => "Invalid request method"
+            ]
+        ]
+    );
 }
