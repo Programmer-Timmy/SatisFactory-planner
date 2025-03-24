@@ -1,27 +1,32 @@
 <?php
+header('Content-Type: application/json');
+
 // get and web request
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $requestData = $_GET;
+    $recipe = null;
     // Extracting data from JSON request
     if (empty($requestData['id'])) {
+        $recipes = Recipes::fetchRecipesWithDetails();
         $response = array(
             'success' => true,
-            'recipes' => Recipes::getAllRecipeWithResources()
+            'count' => count($recipes),
+            'recipes' => $recipes
         );
-        header('Content-Type: application/json');
         echo json_encode($response);
         exit();
     }
-
-    $id = $requestData['id'];
-    $recipe = Recipes::getRecipeWithResources($id);
+    if (intval($requestData['id']) == $requestData['id']) {
+        $id = $requestData['id'];
+        $recipe = Recipes::getRecipeWithDetails($id);
+    }
 
     if (empty($recipe)) {
         $response = array(
             'success' => false,
             'error' => 'Recipe not found'
         );
-        header('Content-Type: application/json');
+        http_response_code(404);
         echo json_encode($response);
         exit();
     }
@@ -31,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'recipe' => $recipe
     );
 
-    header('Content-Type: application/json');
     echo json_encode($response);
 } else {
     // Handle invalid request method
