@@ -22,4 +22,9 @@ class Buildings
     {
         return Database::get("buildings", ['id'], [], ['name' => $name]);
     }
+
+    public static function getPowerAndPowerUsedByBuildings()
+    {
+        return Database::getAll("buildings");
+    }
 }

@@ -48,7 +48,7 @@ class Recipes {
         return $recipes ? self::processRecipe($recipes[0]) : null;
     }
 
-    private static function getRecipeQuery() {
+    private static function getRecipeQuery($where = '') {
         return "SELECT 
                 r.id AS recipe_id, 
                 r.name AS recipe_name, 
@@ -78,7 +78,9 @@ class Recipes {
               FROM recipes r
               LEFT JOIN buildings b ON r.buildings_id = b.id
               LEFT JOIN items i1 ON r.item_id = i1.id
-              LEFT JOIN items i2 ON r.item_id2 = i2.id";
+              LEFT JOIN items i2 ON r.item_id2 = i2.id"
+            . ($where ? " WHERE $where" : '');
+
     }
 
     private static function processRecipe($recipe) {
@@ -122,6 +124,13 @@ class Recipes {
         return $recipe;
     }
 
+    public static function getRecipeByItemId($id) {
+        $recipesIds = Database::query("SELECT id from recipes WHERE item_id = :id OR item_id2 = :id", ['id' => $id]);
+        foreach ($recipesIds as $recipeId) {
+            $recipeId->url = "/api/recipes?id=" . $recipeId->id;
+        }
+        return $recipesIds;
+    }
 
 
 }
