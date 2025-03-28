@@ -17,7 +17,7 @@ jobs:
           curl -X POST https://satisfactoryplanner.timmygamer.nl/api/maintenance \
             -H "Authorization: Bearer ${{ secrets.MAINTENANCE_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d '{"enabled": true}' \       
+            -d '{"enabled": true}' 
 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -84,7 +84,7 @@ jobs:
           curl -X POST https://satisfactoryplanner.timmygamer.nl/api/maintenance \
             -H "Authorization: Bearer ${{ secrets.MAINTENANCE_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d '{"enabled": false}' \  
+            -d '{"enabled": false}'  
 
       - name: Send Update Email
         run: |
