@@ -238,5 +238,25 @@ class AuthControler
         return Database::getAll(table: 'login_attempts', where: ['users_id' => $userId] , orderBy: 'login_timestamp DESC');
     }
 
+    public static function validateAdminToken($headers) {
+        $dotenv = parse_ini_file(__DIR__ . '/../../.env');
+        $ADMIN_TOKEN = $dotenv['ADMIN_API_KEY'];
+
+        $authHeader = $headers['Authorization'] ?? '';
+
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            http_response_code(403);
+            return['success' => false, 'error' => ['code' => 403, 'message' => 'No access (no token)']];
+        }
+
+        $token = substr($authHeader, 7);
+        if ($token !== $ADMIN_TOKEN) {
+            http_response_code(403);
+            return['success' => false, 'error' => ['code' => 403, 'message' => 'No access (wrong token)']];
+        }
+
+        return ['success' => true];
+
+    }
 
 }

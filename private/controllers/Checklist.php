@@ -27,6 +27,7 @@ class Checklist {
             $database->commit();
             return true;
         } catch (Exception $e) {
+            var_dump($e);
             $database->rollBack();
             return false;
         }

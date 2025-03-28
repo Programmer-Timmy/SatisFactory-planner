@@ -12,6 +12,12 @@ jobs:
   deploy_satisfactory_planner:
     runs-on: ubuntu-latest
     steps:
+      - name: Enable Maintenance Mode
+        run: |
+          curl -X POST https://satisfactoryplanner.timmygamer.nl/api/maintenance \
+            -H "Authorization: Bearer ${{ secrets.MAINTENANCE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"enable": true}'
       - name: Checkout Code
         uses: actions/checkout@v2
 
@@ -71,3 +77,15 @@ jobs:
           remote_path: /home/timmy/domains/satisfactoryplanner.timmygamer.nl
           delete_remote_files: false
           sftp_only: true
+
+      - name: Disable Maintenance Mode
+        run: |
+          curl -X POST https://satisfactoryplanner.timmygamer.nl/api/maintenance \
+            -H "Authorization: Bearer ${{ secrets.MAINTENANCE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"enable": false}'
+      - name: Send Update Email
+        run: |
+          curl -X POST https://satisfactoryplanner.timmygamer.nl/api/send-update-email \
+            -H "Authorization: Bearer ${{ secrets.MAINTENANCE_TOKEN }}" \
+            -H "Content-Type: application/json" \
