@@ -15,3 +15,6 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+

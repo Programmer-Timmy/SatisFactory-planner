@@ -36,6 +36,7 @@ $site = [
     'siteName' => 'Satisfactory Planner',
     'debug' => $siteSettings->debug ?? false,
     'maintenance' => $siteSettings->maintenance ?? false,
+    'excludeMaintenancePages' => ['/api/maintenance'], // pages that are excluded from the maintenance mode
 
     // ajax on or off
     'ajax' => true, // if true the site will only load the ajax pages

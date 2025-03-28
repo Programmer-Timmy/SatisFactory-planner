@@ -22,7 +22,7 @@ if (AuthControler::isIPBlocked($_SERVER['REMOTE_ADDR'])) {
 
 
 // handle maintenance mode
-if ($site['maintenance'] && !in_array($_SERVER['REMOTE_ADDR'], $allowedIPs)) {
+if ($site['maintenance'] && !in_array($_SERVER['REMOTE_ADDR'], $allowedIPs) && !in_array($_SERVER['REQUEST_URI'], $site['excludeMaintenancePages'])) {
     // Include the maintenance page
     include __DIR__ . '/../private/views/templates/header.php';
     include __DIR__ . '/../private/views/pages/maintenance.php';

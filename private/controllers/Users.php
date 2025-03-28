@@ -306,4 +306,8 @@ class Users
 
         return true;
     }
+
+    public static function getUpdateEmailUsers() {
+        return Database::query("SELECT * FROM users WHERE updates = 1 AND verified = 1");
+    }
 }

@@ -32,4 +32,17 @@ class SiteSettings {
         $database->update('site_settings', array_keys($data), array_values($data), ['id' => 1]);
     }
 
+    // maintenance settings
+    public static function getMaintenanceMode() {
+        $database = new NewDatabase();
+        $maintenance = $database->get('site_settings', ['maintenance'], where: ['id' => 1]);
+        return $maintenance->maintenance;
+    }
+
+    public static function setMaintenanceMode(bool $enabled) {
+        $enabled = $enabled ? 1 : 0;
+        $database = new NewDatabase();
+        $database->update('site_settings', ['maintenance'], [$enabled], ['id' => 1]);
+    }
+
 }
