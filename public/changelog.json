@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.9.2",
+    "date": "March 28 2025",
+    "changes": [
+      "Added: api/items endpoint to get all the items in the game.",
+      "Added: api/items?id={id} endpoint to get a specific item.",
+      "Added: api/recipes endpoint to get all the recipes in the game.",
+      "Added: api/recipes?id={id} endpoint to get a specific recipe.",
+      "Added: api/buildings endpoint to get all the buildings in the game.",
+      "Added: api/buildings?id={id} endpoint to get a specific building."
+    ]
+  },
+  {
     "version": "1.9.1",
     "date": "March 24 2025",
     "changes": [
