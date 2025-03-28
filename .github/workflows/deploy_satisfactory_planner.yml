@@ -87,7 +87,9 @@ jobs:
             -d '{"enabled": false}'  
 
       - name: Send Update Email
+        if: "!contains(github.event.pull_request.labels.*.name, 'skip-email')"
         run: |
           curl -X POST https://satisfactoryplanner.timmygamer.nl/api/send-update-email \
             -H "Authorization: Bearer ${{ secrets.MAINTENANCE_TOKEN }}" \
-            -H "Content-Type: application/json" \
+            -H "Content-Type: application/json"
+
