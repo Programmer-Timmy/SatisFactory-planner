@@ -122,7 +122,7 @@ if ($site['accounts']['enabled']) {
                 $continue = false;
                 include __DIR__ . '/../private/views/templates/header.php';
                 include __DIR__ . '/../private/views/templates/navbar.php';
-                require_once __DIR__ . '/../private/views/pages/login.php';
+                require_once __DIR__ . '/../private/views/pages/login/index.php';
                 include __DIR__ . '/../private/views/templates/footer.php';
             }
         }
@@ -142,6 +142,11 @@ if ($continue) {
     $requestedPage = $require;
     if ($requestedPage == "/") {
         $requestedPage = 'home';
+    }
+
+    // Check if the requested page is a directory
+    if (is_dir(__DIR__ . "/../private/views/pages$requestedPage")) {
+        $requestedPage = $requestedPage . '/index';
     }
 
     // Include the specific page content

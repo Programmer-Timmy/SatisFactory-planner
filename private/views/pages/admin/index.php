@@ -1,9 +1,9 @@
 <?php
 // Get all the files from the admin folder and store file names in an array
-$files = scandir(__DIR__ . '/admin');
+$files = scandir(__DIR__ );
 $pages = [];
 foreach ($files as $file) {
-    if (is_file(__DIR__ . '/admin/' . $file)) {
+    if (is_file(__DIR__ . '/' . $file) && $file != 'index.php') {
         $fileName = pathinfo($file, PATHINFO_FILENAME);
         $fileName = preg_replace('/(?<!^)([A-Z])/', ' $1', $fileName);
         $fileName = str_replace(['_', '-'], ' ', $fileName);
