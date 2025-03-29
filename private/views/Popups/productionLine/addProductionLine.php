@@ -20,7 +20,7 @@ if ($_POST && isset($_POST['productionLineName'])) {
         // Insert into database
         $id = ProductionLines::addProductionline($gameSaveId, $productionLineName);
         if ($id) {
-            header('Location: production_line?id=' . $id);
+            header('Location: /production_line/' . $id);
             exit();
         } else {
             $error = 'Error adding production line. Please try again or contact support.';

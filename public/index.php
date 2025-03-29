@@ -144,6 +144,11 @@ if ($continue) {
         $requestedPage = 'home';
     }
 
+    $detected = detectIdInUrl($requestedPage);
+    if ($detected) {
+        $requestedPage = $detected['page'];
+    }
+
     // Check if the requested page is a directory
     if (is_dir(__DIR__ . "/../private/views/pages$requestedPage")) {
         $requestedPage = $requestedPage . '/index';
@@ -151,6 +156,7 @@ if ($continue) {
 
     // Include the specific page content
     $pageTemplate = __DIR__ . "/../private/views/pages/$requestedPage.php";
+
 
     if (file_exists($pageTemplate)) {
         include $pageTemplate;
@@ -187,4 +193,21 @@ function sendJsonResponse(int $statusCode, string $message): void {
     header('Content-Type: application/json');
     echo json_encode(['error' => $message]);
     exit();
+}
+
+function detectIdInUrl($url): ?array {
+    $url = $_SERVER['REQUEST_URI'];
+    $position = strpos($url, "?");
+    if ($position !== false) {
+        $newString = substr($url, 0, $position);
+        $url = $newString; // Output: "Hello "
+    }
+    // Match "/something/123/"
+    if (preg_match('~^/([^/]+)/(\d+)/?$~', $url, $matches)) {
+//        $_GET['page'] = $matches[1]; // Store the page name in $_GET['page']
+        $_GET['id'] = (int) $matches[2]; // Store the ID in $_GET['id']
+        return ['page' => $matches[1], 'id' => (int) $matches[2]];
+    }
+
+    return null;
 }

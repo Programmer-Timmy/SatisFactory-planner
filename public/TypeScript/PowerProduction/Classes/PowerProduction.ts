@@ -234,7 +234,7 @@ export class PowerProduction {
         const powerProductionId = cardId.replace('powerProductionCard', '');
 
         const url = new URL(window.location.href);
-        const gameSaveId = url.searchParams.get('id');
+        const gameSaveId = url.pathname.split('/')[2];
 
         switch (action) {
             case ActionType.Add:
@@ -244,7 +244,7 @@ export class PowerProduction {
 
                 return new Promise(function (resolve, reject) {
                     $.ajax({
-                        url: 'powerProduction/add',
+                        url: '/powerProduction/add',
                         type: 'POST',
                         dataType: 'json',
                         headers: {'X-CSRF-Token': PowerProduction._getCsrfToken()},
@@ -262,7 +262,7 @@ export class PowerProduction {
             case ActionType.Delete:
                 return new Promise(function (resolve, reject) {
                     $.ajax({
-                        url: 'powerProduction/delete',
+                        url: '/powerProduction/delete',
                         type: 'POST',
                         dataType: 'json',
                         headers: {'X-CSRF-Token': PowerProduction._getCsrfToken()},
@@ -283,7 +283,7 @@ export class PowerProduction {
 
                 return new Promise(function (resolve, reject) {
                     $.ajax({
-                        url: 'powerProduction/update',
+                        url: '/powerProduction/update',
                         type: 'POST',
                         dataType: 'json',
                         headers: {'X-CSRF-Token': PowerProduction._getCsrfToken()},
@@ -301,7 +301,7 @@ export class PowerProduction {
             case ActionType.Calculate:
                 return new Promise(function (resolve, reject) {
                     $.ajax({
-                        url: 'powerProduction/calculate',
+                        url: '/powerProduction/calculate',
                         type: 'POST',
                         dataType: 'json',
                         headers: {'X-CSRF-Token': PowerProduction._getCsrfToken()},

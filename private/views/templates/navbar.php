@@ -17,7 +17,7 @@ $navItems = [
 ];
 
 if ($lastVisitedSaveGame != '') {
-    $navItems['/game_save?id=' . $lastVisitedSaveGame] = 'Game Save';
+    $navItems['/game_save/' . $lastVisitedSaveGame] = 'Game Save';
 }
 
 $navItems['/helpfulLinks'] = 'Helpful Links';

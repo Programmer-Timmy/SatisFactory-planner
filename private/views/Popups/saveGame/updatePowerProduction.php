@@ -118,4 +118,4 @@ $powerProduction = PowerProduction::getPowerProduction($gameSave->id);
     });
 </script>
 
-<script src="js/powerProduction.js?v=<?=$changelog['version']?>"></script>
+<script src="/js/powerProduction.js?v=<?=$changelog['version']?>"></script>

@@ -23,7 +23,7 @@ foreach ($productionLines as $productionLine) {
 
 if (isset($_GET['productDelete'])) {
     ProductionLines::deleteProductionLine($_GET['productDelete']);
-    header('Location: game_save?id=' . $_GET['id']);
+    header('Location: /game_save/' . $_GET['id']);
     exit();
 }
 
@@ -31,7 +31,7 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
 
 if (isset($_GET['layoutType'])) {
     GameSaves::changeCardView($_GET['id'], $_GET['layoutType']);
-    header('Location: game_save?id=' . $_GET['id']);
+    header('Location: /game_save/' . $_GET['id']);
     exit();
 }
 ?>
@@ -73,7 +73,7 @@ if (isset($_GET['layoutType'])) {
         return new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'POST',
-                url: 'powerProduction/get',
+                url: '/powerProduction/get',
                 dataType: 'json',
                 headers: {'X-CSRF-Token': getCsrfToken()},
                 data: {
@@ -270,12 +270,12 @@ if (isset($_GET['layoutType'])) {
 
                                 </div>
                                 <div class="card-footer d-flex justify-content-between">
-                                    <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"
+                                    <a href="/production_line/<?= $productionLine->id ?>" class="btn btn-primary"
                                        data-bs-toggle="tooltip" data-bs-placement="top"
                                        data-bs-title="Open Production Line">
                                         <i class="fa-solid fa-gears"></i> Open
                                     </a>
-                                    <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"
+                                    <a href="/game_save/<?= $gameSave->id ?>?productDelete=<?= $productionLine->id ?>"
                                        data-bs-toggle="tooltip" data-bs-placement="top"
                                        data-bs-title="Delete Production Line"
                                        onclick="return confirm('Are you sure you want to delete this production line?')"
@@ -338,13 +338,13 @@ if (isset($_GET['layoutType'])) {
                                 </td>
                                 <td>
                                     <div>
-                                        <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"
+                                        <a href="/production_line/<?= $productionLine->id ?>" class="btn btn-primary"
                                            data-bs-toggle="tooltip" data-bs-placement="top"
                                            data-bs-title="Open Production Line"><i
                                                     class="fa-solid fa-gears"></i></a>
                                 </td>
                                 <td>
-                                    <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"
+                                    <a href="game_save/<?= $gameSave->id ?>?productDelete=<?= $productionLine->id ?>"
                                        data-bs-toggle="tooltip" data-bs-placement="top"
                                        data-bs-title="Delete Production Line"
                                        onclick="return confirm('Are you sure you want to delete this production line?')"
@@ -474,7 +474,7 @@ if (empty($productionLines)) {
 <?php
 global $changelog;
 if (DedicatedServer::getBySaveGameId($gameSave->id)) : ?>
-    <script src="js/dedicatedServer.js?v=<?= $changelog['version'] ?>"></script>
+    <script src="/js/dedicatedServer.js?v=<?= $changelog['version'] ?>"></script>
     <script>
         new DedicatedServer(<?= $gameSave->id ?>);
     </script>

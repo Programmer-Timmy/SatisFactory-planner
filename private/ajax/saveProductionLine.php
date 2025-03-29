@@ -30,7 +30,7 @@ $productionData = [];
 $powerData = [];
 $totalPower = 0;
 
-$productionLineId = $_POST['id'];
+$productionLineId = (int)$_POST['id'];
 
 $importRows = $data['importsTableRows'];
 foreach ($importRows as $row) {

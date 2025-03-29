@@ -177,7 +177,7 @@ function generateUUID(): string {
                     <button type="button" id="showHelp" class="btn btn-info mb-1" data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-title="Need help? Click here!"><i
                                 class="fa-regular fa-question-circle"></i></button>
-                    <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary mb-1"
+                    <a href="/game_save/<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary mb-1"
                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i
                                 class="fa-solid fa-arrow-left"></i></a>
                 </div>
@@ -376,12 +376,12 @@ function generateUUID(): string {
 
 <?php
 if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
-    <script src="js/dedicatedServer.js"></script>
+    <script src="/js/dedicatedServer.js"></script>
     <script>
         new DedicatedServer(<?= $_SESSION['lastVisitedSaveGame'] ?>);
     </script>
 <?php endif; ?>
-<script type="" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
+<script type="" src="/js/tables.js?v=<?= $changelog['version'] ?>"></script>
 <?php require_once '../private/views/Popups/productionLine/editProductinoLine.php'; ?>
 
 <!-- Help Modal -->

@@ -213,7 +213,7 @@ if (count($gameSaves) <= 2) {
                 $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
                 ?>
                 <div class="d-flex align-items-stretch <?= $class ?> mt-3">
-                    <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
+                    <a href="/game_save/<?= $gameSave->game_saves_id ?>"
                        class="card-link text-black text-decoration-none">
                         <div class="card h-100 w-100">
                             <div class="position-relative">
