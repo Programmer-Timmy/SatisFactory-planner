@@ -6,7 +6,7 @@ $error = null;
 $showFullScreenError = false;
 
 // load .env file
-$env = parse_ini_file(__DIR__ . '../../../../../.env');
+$env = parse_ini_file(__DIR__ . '../../../../../../.env');
 
 $google_oauth_client_id = $env['GOOGLE_OAUTH_CLIENT_ID'];
 $google_oauth_client_secret = $env['GOOGLE_OAUTH_CLIENT_SECRET'];
@@ -70,7 +70,7 @@ if (isset($_GET['code']) && !empty($_GET['code']) && !isset($_POST['type'])) {
     curl_close($ch);
     $response = json_decode($response, true);
     // Code goes here...
-
+    var_dump($response);
     if (!isset($response['access_token'])) {
         $error = 'An error occurred while retrieving the access token';
     } else {
