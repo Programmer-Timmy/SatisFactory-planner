@@ -70,7 +70,6 @@ if (isset($_GET['code']) && !empty($_GET['code']) && !isset($_POST['type'])) {
     curl_close($ch);
     $response = json_decode($response, true);
     // Code goes here...
-    var_dump($response);
     if (!isset($response['access_token'])) {
         $error = 'An error occurred while retrieving the access token';
     } else {
