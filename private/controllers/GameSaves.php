@@ -306,4 +306,14 @@ class GameSaves {
 
         return false;
     }
+
+    /**
+     * Checks if an user has access to a game save
+     *
+     * @param $id int The id of the game save
+     * @return mixed
+     */
+    public static function getSaveGameShares(int $id): mixed {
+        return Database::getAll("users_has_game_saves", ['users_id', 'username'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $id, 'accepted' => 1]);
+    }
 }

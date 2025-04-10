@@ -15,6 +15,12 @@ if (empty($users)) {
 }
 
 $saveGames = GameSaves::getSaveGamesByUser($id);
+
+foreach ($saveGames as $saveGame) {
+    $hasDedicatedServer = (bool)DedicatedServer::getBySaveGameId($saveGame->id);
+    $saveGame->shares = count(GameSaves::getSaveGameShares($saveGame->id));
+    $saveGame->dedicated_server = $hasDedicatedServer ? 0 : 1;
+}
 ?>
 <div class="container">
     <div class="row align-items-center mb-3">
@@ -28,8 +34,7 @@ $saveGames = GameSaves::getSaveGamesByUser($id);
     </div>
     <?= GlobalUtility::createTable(
         $saveGames,
-        ['title', 'created_at', 'owner', 'production_lines']
-        ,
+        ['title', 'created_at', 'owner', 'production_lines', 'dedicated_server', 'shares'],
         [
             ['class' => 'btn btn-success', 'action' => '/admin/users/game-saves/production-lines?user=' . $id . '&id=', 'label' => 'Production Lines'],
         ],
