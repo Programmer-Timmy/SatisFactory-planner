@@ -9,7 +9,6 @@ require_once __DIR__ . '/../private/config/settings.php';
 
 // Start a session
 session_start();
-
 // Global variables
 global $site;
 global $allowedIPs;
@@ -86,8 +85,8 @@ if (str_contains($require, '/api')) {
 if ($site['admin']['enabled']) {
     $admin = $site['admin'];
     $pageTemplate = __DIR__ . "/../private/Views/pages$require.php";
-    if (file_exists($pageTemplate)) {
-        //
+    $pageDirectory = __DIR__ . "/../private/Views/pages$require";
+    if (file_exists($pageTemplate) || is_dir($pageDirectory)) {
         if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && !in_array($require, $admin['skipChecks'])) {
             if (!isset($_SESSION[$admin['sessionName']])) {
 //                if already logged in show the 403 page
@@ -111,8 +110,9 @@ if ($site['accounts']['enabled']) {
     $accounts = $site['accounts'];
 
     $pageTemplate = __DIR__ . "/../private/views/pages$require.php";
+    $pageDirectory = __DIR__ . "/../private/Views/pages$require";
 
-    if (file_exists($pageTemplate)) {
+    if (file_exists($pageTemplate) || is_dir($pageDirectory)) {
         if (str_contains($require, $accounts['filterInUrl']) && !str_contains($require, $site['redirect']) && !in_array(substr($require, 1), $accounts['skipChecks'])) {
             if (!isset($_SESSION[$accounts['sessionName']])) {
                 if ($site['saveUrl']) {
@@ -122,7 +122,7 @@ if ($site['accounts']['enabled']) {
                 $continue = false;
                 include __DIR__ . '/../private/views/templates/header.php';
                 include __DIR__ . '/../private/views/templates/navbar.php';
-                require_once __DIR__ . '/../private/views/pages/login.php';
+                require_once __DIR__ . '/../private/views/pages/login/index.php';
                 include __DIR__ . '/../private/views/templates/footer.php';
             }
         }
@@ -142,6 +142,11 @@ if ($continue) {
     $requestedPage = $require;
     if ($requestedPage == "/") {
         $requestedPage = 'home';
+    }
+
+    // check if its an directory
+    if (is_dir(__DIR__ . "/../private/views/pages$requestedPage")) {
+        $requestedPage = $requestedPage . '/index';
     }
 
     // Include the specific page content

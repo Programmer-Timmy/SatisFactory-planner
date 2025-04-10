@@ -18,7 +18,11 @@ class SiteSettings {
     public static function isOwner(): bool {
         $database = new NewDatabase();
         $owner = $database->get('site_settings', ['owner_id'], where: ['id' => 1]);
-        return $owner->owner_id == $_SESSION['userId'];
+        if (isset($_SESSION['userId'])) {
+            return $owner->owner_id == $_SESSION['userId'];
+        } else {
+            return false;
+        }
     }
 
     public static function getSettings() {

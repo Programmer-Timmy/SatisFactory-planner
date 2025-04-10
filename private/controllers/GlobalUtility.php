@@ -6,10 +6,13 @@ class GlobalUtility
      * @param array $data
      * @param array $shownTables ['*'] for all columns or ['name', 'date', 'removed'] for specific columns
      * @param array $customButtons [['class' => '{Style Classes}', 'action'=> '{page url whit get}={id wil always be at the end}', 'label' => '{The button text}'], [...]]
+     * @param array $excludeBools ['column_name'] for columns that are bools and should not be shown as true/false
      * @param bool $bootstrap
+     * @param bool $enableBool
+     * @param string|null $customId
      * @return string
-     */
-    public static function createTable(array $data, array $shownTables = ['*'], array $customButtons = [], bool $bootstrap = true, bool $enableBool = true, ?string $customId = null): string
+        */
+    public static function createTable(array $data, array $shownTables = ['*'], array $customButtons = [], array $excludeBools = [] , bool $bootstrap = true, bool $enableBool = true, ?string $customId = null): string
     {
         $tableClass = $bootstrap ? 'table table-striped table-hover table-responsive' : '';
         $customId = $customId ? "id='$customId'" : '';
@@ -21,10 +24,12 @@ class GlobalUtility
 
         if (!empty($data)) {
             foreach (get_object_vars($data[0]) as $column => $value) {
+                $oldColumn = $column;
+                $column = str_replace('_', ' ', $column);
                 if ($shownTables[0] == '*') {
                     $table .= '<th>' . $column . '</th>';
                 } else {
-                    if (in_array($column, $shownTables)) {
+                    if (in_array($oldColumn, $shownTables)) {
                         $table .= '<th>' . ucfirst($column) . '</th>';
                     }
                 }
@@ -40,7 +45,7 @@ class GlobalUtility
             foreach ($data as $row) {
                 $table .= '<tr>';
                 foreach (get_object_vars($row) as $column => $value) {
-                    if (($value == 1 || $value == 0) && $enableBool) {
+                    if (($value == 1 || $value == 0) && $enableBool && !in_array($column, $excludeBools)) {
                         $value = $value ? 'True' : 'False';
                     }
                     if ($shownTables[0] == '*') {
@@ -64,7 +69,9 @@ class GlobalUtility
 
             $table .= '</tbody>';
         } else {
-            $table .= '<th>No data</th>';
+            $table .= '<div class="alert alert-info text-center" role="alert">
+                        No data available.
+                    </div>';
         }
 
         $table .= '</table>';

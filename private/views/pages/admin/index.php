@@ -1,15 +1,22 @@
 <?php
 // Get all the files from the admin folder and store file names in an array
-$files = scandir(__DIR__ . '/admin');
+$files = scandir(__DIR__);
 $pages = [];
+$files = array_diff($files, ['.', '..', 'index.php']);
 foreach ($files as $file) {
-    if (is_file(__DIR__ . '/admin/' . $file)) {
+    if (is_file(__DIR__ . '/' . $file)) {
         $fileName = pathinfo($file, PATHINFO_FILENAME);
         $fileName = preg_replace('/(?<!^)([A-Z])/', ' $1', $fileName);
         $fileName = str_replace(['_', '-'], ' ', $fileName);
         $fileName = ucwords($fileName);
         $pages[] = (object)['name' => $fileName, 'file' => $file];
-        if ($fileName === 'Site Settings' && !SiteSettings::isOwner()) {
+    } elseif (is_dir(__DIR__ . '/' . $file)) {
+        $dirName = pathinfo($file, PATHINFO_FILENAME);
+        $dirName = preg_replace('/(?<!^)([A-Z])/', ' $1', $dirName);
+        $dirName = str_replace(['_', '-'], ' ', $dirName);
+        $dirName = ucwords($dirName);
+        $pages[] = (object)['name' => $dirName, 'file' => $file];
+        if ($dirName === 'Site Settings' && !SiteSettings::isOwner()) {
             unset($pages[count($pages) - 1]);
         }
     }
