@@ -300,7 +300,7 @@ function generateIpFilterDropdown(array $ipAddresses, ?string $selectedIp = null
  * @return string HTML for the URL filter dropdown.
  */
 function generateUrlFilterDropdown(array $urls, ?string $selectedUrl = null, string $type = '404'): string {
-    $html = '<select class="form-select w-auto mx-3 mb-2" id="' . $type . 'urlFilter" onchange="applyFilters(\'' . $type . '\')">';
+    $html = '<select class="form-select w-50 mx-3 mb-2" id="' . $type . 'urlFilter" onchange="applyFilters(\'' . $type . '\')">';
     $html .= '<option value="">Filter by URL</option>';
 
     foreach ($urls as $page) {

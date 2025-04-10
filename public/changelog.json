@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.9.3",
+    "date": "April 10 2025",
+    "changes": [
+      "Added: new admin panel information about the user.",
+    ]
+  },
+  {
     "version": "1.9.2",
     "date": "March 28 2025",
     "changes": [

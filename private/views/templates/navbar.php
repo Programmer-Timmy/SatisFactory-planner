@@ -84,7 +84,10 @@ $navItems['/helpfulLinks'] = 'Helpful Links';
                         </a>
                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item <?= ($require === '/account') ? 'active' : ''; ?>" href="/account" >Account</a>
-                            <div class="dropdown-divider"></div>
+                            <?php if (isset($_SESSION['userId']) && isset($_SESSION['admin']) && $_SESSION['admin']) : ?>
+                                <a class="dropdown-item <?= ($require === '/admin') ? 'active' : ''; ?>" href="/admin">Admin Panel</a>                           <?php endif; ?>
+
+                            <hr class="dropdown-divider">
                             <?php if (isset($_SESSION['userId'])) : ?>
                                 <a class="dropdown-item" href="/logout">Logout</a>
                             <?php else : ?>
