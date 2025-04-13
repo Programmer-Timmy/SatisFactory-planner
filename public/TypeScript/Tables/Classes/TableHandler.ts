@@ -13,6 +13,7 @@ import {SaveFunctions} from "./Functions/SaveFunctions";
 import {Building} from "./Types/Building";
 import {Recipe} from "./Types/Recipe";
 import {Checklist} from "./Checklist";
+import {RecipeSettings} from "./RecipeSettings";
 
 
 /**
@@ -32,7 +33,6 @@ export class TableHandler {
     private cacheVersion: number = <number>$('#dataVersion').val();
     private buildingCache: Building[] = [];
     private recipeCache: Recipe[] = [];
-
 
     // progress bar
     private progressBar = $('#loading-progress');
@@ -169,6 +169,12 @@ export class TableHandler {
                 return row;
             });
             rowPromises.push(rowPromise);
+            if (id === 'recipes') {
+                rowPromise.then((productionTableRow: ProductionTableRow) => {
+                   new RecipeSettings(this, productionTableRow, $(row));
+                });
+            }
+
         }
         return await Promise.all(rowPromises);
 
