@@ -22,8 +22,7 @@ export class PowerTableFunctions {
                 const amount = row.quantity;
                 const existingRow = powerTableRows.find(row => row.buildingId === building.id);
 
-                const maxClockSpeed = row.recipeSetting?.maxClockSpeed || 100;
-                const minClockSpeed = row.recipeSetting?.minClockSpeed || 0; // TODO: make this suported
+                const maxClockSpeed = row.recipeSetting?.clockSpeed || 100;
                 const useSomersloop = row.recipeSetting?.useSomersloop || false;
 
                 let amountOfBuilding = amount / (recipe.export_amount_per_min * (maxClockSpeed / 100));

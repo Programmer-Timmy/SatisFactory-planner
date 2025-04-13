@@ -2,8 +2,7 @@ import {TableHandler} from "./TableHandler";
 import {ProductionTableRow} from "./Data/ProductionTableRow";
 
 export class RecipeSetting {
-    minClockSpeed: number = 0;
-    maxClockSpeed: number = 100;
+    clockSpeed: number = 100;
     useSomersloop: boolean = false;
 
     productionTableRow: ProductionTableRow
@@ -122,11 +121,8 @@ export class RecipeSetting {
      * @param renderElement - The element to render the options in.
      */
     showOptions(renderElement: JQuery<HTMLElement>) {
-        const minClockSpeedInput = $(`
-        <input type="number" class="form-control" id="minClockSpeed" min="0" max="250" value="${this.minClockSpeed}">
-    `);
         const maxClockSpeedInput = $(`
-        <input type="number" class="form-control" id="maxClockSpeed" min="0" max="250"  value="${this.maxClockSpeed}">
+        <input type="number" class="form-control" id="maxClockSpeed" min="0" max="250"  value="${this.clockSpeed}">
     `);
         const useSomersloopInput = $(`
         <input type="checkbox" class="form-check-input" id="useSomersloop" ${this.useSomersloop ? 'checked' : ''}>
@@ -134,29 +130,14 @@ export class RecipeSetting {
 
         const wrapper = $('<div class="context-menu-wrapper">');
 
-        const minMax = $('<div class="row mb-3">');
-        const colMin = $('<div class="col-6">').append(`
-        <div class="form-group">
-            <label for="minClockSpeed">Min Clock Speed</label>
-        </div>
-    `);
-        colMin.find('.form-group').append(minClockSpeedInput);
 
-        const colMax = $('<div class="col-6">').append(`
-        <div class="form-group">
-            <label for="maxClockSpeed">Max Clock Speed</label>
-        </div>
-    `);
-        colMax.find('.form-group').append(maxClockSpeedInput);
-
-        minMax.append(colMin, colMax);
-
-
+        const ClockSpeedWrapper = $('<div class="form-group">').append('<label class="form-check-label me-2" for="useSomersloop">Clock Speed</label>');
+        ClockSpeedWrapper.append(maxClockSpeedInput);
         const checkboxWrapper = $('<div class="form-group">');
         checkboxWrapper.append('<label class="form-check-label me-2" for="useSomersloop">Use Somersloop</label>');
         checkboxWrapper.append(useSomersloopInput);
 
-        wrapper.append(minMax, `<hr>`, checkboxWrapper);
+        wrapper.append(ClockSpeedWrapper, `<hr>`, checkboxWrapper);
         wrapper.appendTo(renderElement);
 
         // Optional: If you're using Bootstrap Toggle (plugin), initialize it
@@ -173,10 +154,6 @@ export class RecipeSetting {
 
         const rowIndex = this.tableHandler.productionTableRows.findIndex((row) => row.row_id === this.productionTableRow.row_id);
         // Add event listeners for the inputs
-        minClockSpeedInput.on('change', () => {
-            this.updateSettings();
-            this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
-        });
         maxClockSpeedInput.on('change', () => {
             this.updateSettings();
             this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
@@ -193,18 +170,12 @@ export class RecipeSetting {
      * @private
      */
     private updateSettings() {
-        const minClockSpeedInput = $('#minClockSpeed');
         const maxClockSpeedInput = $('#maxClockSpeed');
         const useSomersloopInput = $('#useSomersloop');
 
-        if (minClockSpeedInput.length > 0) {
-            this.minClockSpeed = this.validateClockSpeed(parseInt(minClockSpeedInput.val() as string));
-            minClockSpeedInput.val(this.minClockSpeed);
-        }
-
         if (maxClockSpeedInput.length > 0) {
-            this.maxClockSpeed = this.validateClockSpeed(parseInt(maxClockSpeedInput.val() as string));
-            maxClockSpeedInput.val(this.maxClockSpeed);
+            this.clockSpeed = this.validateClockSpeed(parseInt(maxClockSpeedInput.val() as string));
+            maxClockSpeedInput.val(this.clockSpeed);
         }
 
         if (useSomersloopInput.length > 0) {
