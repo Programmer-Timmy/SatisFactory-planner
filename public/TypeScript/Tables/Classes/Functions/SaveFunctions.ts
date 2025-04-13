@@ -2,7 +2,7 @@ import {ProductionTableRow} from "../Data/ProductionTableRow";
 import {PowerTableRow} from "../Data/PowerTableRow";
 import {ImportsTableRow} from "../Data/ImportsTableRow";
 import {Ajax} from "./Ajax";
-import {Checklist} from "../Checklist";
+import {Checklist, IChecklist} from "../Checklist";
 import {TableHandler} from "../TableHandler";
 
 interface newAndOldIds {
@@ -13,14 +13,32 @@ export class SaveFunctions {
 
 
     public static prepareSaveData(productionTableRows: ProductionTableRow[], powerTableRows: PowerTableRow[], importsTableRows: ImportsTableRow[], checklist: Checklist|null): Record<string, any> {
+        console.log(this.cloneWithoutCircularReferences(productionTableRows));
+
         return {
-            productionTableRows: productionTableRows,
+            productionTableRows: this.cloneWithoutCircularReferences(productionTableRows),
             powerTableRows: powerTableRows,
             importsTableRows: importsTableRows,
-            checklist: checklist?.getChecklist()
+            checklist: this.cloneWithoutCircularReferences(checklist?.getChecklist() || []),
         };
     }
 
+    public static cloneWithoutCircularReferences(rows: ProductionTableRow[] | IChecklist[]): any[] {
+        return rows.map(row => {
+            // Deep clone without circular reference
+            const clonedRow = JSON.parse(JSON.stringify(row, (key, value) => {
+                // Break the circular reference
+                if (key === 'productionTableRow' && value?.constructor?.name === 'ProductionTableRow') {
+                    return undefined;
+                }
+                if (key === 'tableHandler' && value?.constructor?.name === 'TableHandler') {
+                    return undefined;
+                }
+                return value;
+            }));
+            return clonedRow;
+        });
+    }
     public static saveProductionLine(jsonData: Record<string, any>, tableHandler: TableHandler, isQuickSave: boolean = true): Promise<boolean> {
         try {
             const url = new URL(window.location.href);
@@ -43,10 +61,12 @@ export class SaveFunctions {
                 this.showErrorMessage('An error occurred while saving the data. Please try again.');
                 return false;
             }).catch((error) => {
+                console.error('Error while saving data:', error);
                 this.showErrorMessage('An error occurred while saving the data. Please try again.');
                 return false;
             });
         } catch (error) {
+            console.error('Error while saving data:', error);
             this.showErrorMessage('An error occurred while saving the data. Please try again.');
             return Promise.resolve(false);
         }

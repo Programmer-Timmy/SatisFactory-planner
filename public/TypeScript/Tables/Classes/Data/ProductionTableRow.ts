@@ -4,6 +4,7 @@ import {Ajax} from "../Functions/Ajax";
 import {ProductionLineFunctions} from "../Functions/ProductionLineFunctions";
 import {Import} from "./Import";
 import { v4 as uuidv4 } from 'uuid';
+import {RecipeSetting} from "../RecipeSetting";
 
 
 export class ProductionTableRow {
@@ -18,6 +19,8 @@ export class ProductionTableRow {
     public recipe: Recipe | null;
     public imports: Import[];
     public productionImports: Import[];
+
+    public recipeSetting: RecipeSetting | null = null;
 
     constructor(
         id: number | string = uuidv4(),

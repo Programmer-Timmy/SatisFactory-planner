@@ -1,7 +1,7 @@
 import {TableHandler} from "./TableHandler";
 import {ProductionTableRow} from "./Data/ProductionTableRow";
 
-export class RecipeSettings {
+export class RecipeSetting {
     minClockSpeed: number = 0;
     maxClockSpeed: number = 100;
     useSomersloop: boolean = false;
@@ -13,6 +13,13 @@ export class RecipeSettings {
     contextMenu: JQuery<HTMLElement> | null = null;
 
 
+    /**
+     * Constructor for the RecipeSettings class.
+     *
+     * @param tableHandler - The TableHandler instance.
+     * @param productionTableRow - The ProductionTableRow instance.
+     * @param htmlElement - The HTML element to attach the context menu to.
+     */
     constructor(tableHandler: TableHandler, productionTableRow: ProductionTableRow, htmlElement: JQuery<HTMLElement>) {
         this.tableHandler = tableHandler;
         this.productionTableRow = productionTableRow;
@@ -22,10 +29,12 @@ export class RecipeSettings {
         console.log(this)
     }
 
-
+    /**
+     * Add event listeners to the context menu and the window.
+     */
     private addEventListeners() {
     //     on tr right click
-        this.htmlElement.on('contextmenu', (event: JQuery.Event) => {
+        this.htmlElement.on('contextmenu', (event: JQuery.ContextMenuEvent) => {
             // if somthing is selected, do not show the context menu
             if (window.getSelection()?.toString()) {
                 return;
@@ -54,8 +63,25 @@ export class RecipeSettings {
             }
         });
 
+        $(document).on('contextmenu', (event: JQuery.ContextMenuEvent) => {
+            console.log(event.target.closest('tr'))
+            if ($(event.target).closest('tr').length) {
+                return;
+            }
+            if (!$(event.target).closest('.context-menu').length) {
+                event.stopPropagation();
+                this.hideSettings();
+            }
+        });
+
     }
 
+    /**
+     * Show the settings menu for the recipe.
+     *
+     * @param event - The event that triggered the context menu.
+     * @private
+     */
     private showSettings(event: JQuery.Event) {
         // create new element
         const tr = this.htmlElement;
@@ -90,12 +116,17 @@ export class RecipeSettings {
         console.log('show settings');
     }
 
+    /**
+     * Show the options in the context menu.
+     *
+     * @param renderElement - The element to render the options in.
+     */
     showOptions(renderElement: JQuery<HTMLElement>) {
         const minClockSpeedInput = $(`
-        <input type="number" class="form-control" id="minClockSpeed" value="${this.minClockSpeed}">
+        <input type="number" class="form-control" id="minClockSpeed" min="0" max="250" value="${this.minClockSpeed}">
     `);
         const maxClockSpeedInput = $(`
-        <input type="number" class="form-control" id="maxClockSpeed" value="${this.maxClockSpeed}">
+        <input type="number" class="form-control" id="maxClockSpeed" min="0" max="250"  value="${this.maxClockSpeed}">
     `);
         const useSomersloopInput = $(`
         <input type="checkbox" class="form-check-input" id="useSomersloop" ${this.useSomersloop ? 'checked' : ''}>
@@ -140,10 +171,62 @@ export class RecipeSettings {
             }).bootstrapToggle();
         }
 
-        // Add event listeners here if needed
+        const rowIndex = this.tableHandler.productionTableRows.findIndex((row) => row.row_id === this.productionTableRow.row_id);
+        // Add event listeners for the inputs
+        minClockSpeedInput.on('change', () => {
+            this.updateSettings();
+            this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
+        });
+        maxClockSpeedInput.on('change', () => {
+            this.updateSettings();
+            this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
+        });
+        useSomersloopInput.on('change', () => {
+            this.updateSettings();
+            this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
+        });
     }
 
+    /**
+     * Update the settings based on the inputs.
+     *
+     * @private
+     */
+    private updateSettings() {
+        const minClockSpeedInput = $('#minClockSpeed');
+        const maxClockSpeedInput = $('#maxClockSpeed');
+        const useSomersloopInput = $('#useSomersloop');
 
+        if (minClockSpeedInput.length > 0) {
+            this.minClockSpeed = this.validateClockSpeed(parseInt(minClockSpeedInput.val() as string));
+            minClockSpeedInput.val(this.minClockSpeed);
+        }
+
+        if (maxClockSpeedInput.length > 0) {
+            this.maxClockSpeed = this.validateClockSpeed(parseInt(maxClockSpeedInput.val() as string));
+            maxClockSpeedInput.val(this.maxClockSpeed);
+        }
+
+        if (useSomersloopInput.length > 0) {
+            this.useSomersloop = useSomersloopInput.is(':checked');
+        }
+    }
+
+    private validateClockSpeed(clockSpeed: number): number {
+        if (clockSpeed > 250) {
+            clockSpeed = 250;
+        }
+
+        if (clockSpeed < 0) {
+            clockSpeed = 0;
+        }
+
+        return clockSpeed
+    }
+
+    /**
+     * Hide the settings menu.
+     */
     hideSettings() {
         const contextMenu = this.contextMenu;
         if (!contextMenu) return;
@@ -154,6 +237,11 @@ export class RecipeSettings {
         }
     }
 
+    /**
+     * Initialize the checkboxes in the context menu.
+     *
+     * @private
+     */
     private initCheckBoxes() {
             if (!this.contextMenu) return;
             const checkboxes = this.contextMenu.find('input[type="checkbox"]');

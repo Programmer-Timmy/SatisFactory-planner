@@ -13,7 +13,7 @@ import {SaveFunctions} from "./Functions/SaveFunctions";
 import {Building} from "./Types/Building";
 import {Recipe} from "./Types/Recipe";
 import {Checklist} from "./Checklist";
-import {RecipeSettings} from "./RecipeSettings";
+import {RecipeSetting} from "./RecipeSetting";
 
 
 /**
@@ -171,7 +171,7 @@ export class TableHandler {
             rowPromises.push(rowPromise);
             if (id === 'recipes') {
                 rowPromise.then((productionTableRow: ProductionTableRow) => {
-                   new RecipeSettings(this, productionTableRow, $(row));
+                   productionTableRow.recipeSetting = new RecipeSetting(this, productionTableRow, $(row));
                 });
             }
 
@@ -422,7 +422,9 @@ export class TableHandler {
                 this.importsTableRows.push(new ImportsTableRow());
                 break;
             case 'recipes':
-                this.productionTableRows.push(new ProductionTableRow());
+                const productionRow = new ProductionTableRow();
+                productionRow.recipeSetting = new RecipeSetting(this, productionRow, newRow);
+                this.productionTableRows.push(productionRow);
                 break;
             case 'power':
                 this.powerTableRows.push(new PowerTableRow());
@@ -563,7 +565,7 @@ export class TableHandler {
      * @constructor
      * @private
      */
-    private async HandleProductionTable(row: ProductionTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
+    async HandleProductionTable(row: ProductionTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
         this.updated = true;
 
         await ProductionLineFunctions.calculateProductionExport(row);

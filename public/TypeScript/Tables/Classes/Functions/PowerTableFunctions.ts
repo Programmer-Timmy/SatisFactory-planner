@@ -18,15 +18,18 @@ export class PowerTableFunctions {
             const row = productionTableRows[i];
             const recipe = row.recipe;
             if (recipe !== null) {
-
                 const building = recipe.building;
                 const amount = row.quantity;
                 const existingRow = powerTableRows.find(row => row.buildingId === building.id);
 
-                let amountOfBuilding = amount / recipe.export_amount_per_min;
+                const maxClockSpeed = row.recipeSetting?.maxClockSpeed || 100;
+                const minClockSpeed = row.recipeSetting?.minClockSpeed || 0; // TODO: make this suported
+                const useSomersloop = row.recipeSetting?.useSomersloop || false;
+
+                let amountOfBuilding = amount / (recipe.export_amount_per_min * (maxClockSpeed / 100));
                 let exes = 0;
 
-                const consumption = +PowerTableFunctions.calculateConsumption(amountOfBuilding, 100, building.power_used);
+                const consumption = +PowerTableFunctions.calculateConsumption(amountOfBuilding, maxClockSpeed, building.power_used);
 
                 if (amountOfBuilding % 1 !== 0) {
                     exes = amountOfBuilding % 1;
@@ -35,9 +38,10 @@ export class PowerTableFunctions {
 
                 if (existingRow) {
                     existingRow.quantity += amountOfBuilding;
-                    existingRow.Consumption = +PowerTableFunctions.calculateConsumption(existingRow.quantity, 100, building.power_used);
+                    existingRow.Consumption = +PowerTableFunctions.calculateConsumption(existingRow.quantity, maxClockSpeed, building.power_used);
+                    existingRow.clockSpeed = maxClockSpeed;
                 } else {
-                    powerTableRows.push(new PowerTableRow(building.id, amountOfBuilding, 100, consumption, false, building));
+                    powerTableRows.push(new PowerTableRow(building.id, amountOfBuilding, maxClockSpeed, consumption, false, building));
 
                 }
 
