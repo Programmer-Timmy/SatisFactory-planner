@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.10.1",
+    "date": "April 14 2025",
+    "changes": [
+      "Fixed: production line not being able to save.",
+      "Changed: Gear icon color to more grayish so you can focus on the production line."
+    ]
+  },
+  {
     "version": "1.10.0",
     "date": "April 14 2025",
     "changes": [

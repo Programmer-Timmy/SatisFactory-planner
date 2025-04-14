@@ -50,6 +50,7 @@ export class RecipeSetting {
             }
             if (this.contextMenu) {
                 this.hideSettings();
+                return;
             }
             this.checkIfAnyOpenAndClose();
             event.preventDefault();
@@ -60,11 +61,14 @@ export class RecipeSetting {
             if (window.getSelection()?.toString()) {
                 return;
             }
+
+            event.preventDefault();
             if (this.contextMenu) {
                 this.hideSettings();
+                return;
             }
+
             this.checkIfAnyOpenAndClose();
-            event.preventDefault();
             this.showSettings(event);
         });
 
