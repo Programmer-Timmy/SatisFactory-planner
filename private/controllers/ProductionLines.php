@@ -72,9 +72,8 @@ class ProductionLines
             $allProduction = Database::getAll("production", ['id'], [], ['production_lines_id' => $id]);
             foreach ($production as $prod) {
                 $recipes = Recipes::getRecipeById($prod->recipe_id);
-
-                $existingProduction = $database->get("production", ['id'], [], ['id' => $prod->id]);
-
+                $existingProduction = $database->get("production", ['id', 'production_settings_id'], [], ['id' => $prod->id]);
+                $production_settings_id = self::insertUpdateProductionSettings($existingProduction->production_settings_id, $prod->produciton_settings);
                 if ($existingProduction) {
                     $database->update(
                         "production",
@@ -84,7 +83,8 @@ class ProductionLines
                             'local_usage',
                             'export_ammount_per_min',
                             'export_ammount_per_min2',
-                            'local_usage2'
+                            'local_usage2',
+                            'production_settings_id'
                         ],
                         [
                             $prod->recipe_id,
@@ -92,16 +92,18 @@ class ProductionLines
                             $prod->usage,
                             $prod->export_amount_per_min,
                             $prod->export_ammount_per_min2,
-                            $prod->local_usage2
+                            $prod->local_usage2,
+                            $production_settings_id
+
                         ],
                         [
                             'id' => $prod->id
                         ]
                     );
                     $updatedAndNewProduction[] = $prod->id;
-
                 } else {
-                    $database->insert("production", ['production_lines_id', 'recipe_id', 'quantity', 'local_usage', 'export_ammount_per_min', 'export_ammount_per_min2', 'local_usage2'], [$id, $prod->recipe_id, $prod->product_quantity, $prod->usage, $prod->export_amount_per_min, $prod->export_ammount_per_min2, $prod->local_usage2]);
+                    $production_settings_id = self::insertUpdateProductionSettings(null, $prod->produciton_settings);
+                    $database->insert("production", ['production_lines_id', 'recipe_id', 'quantity', 'local_usage', 'export_ammount_per_min', 'export_ammount_per_min2', 'local_usage2', 'production_settings_id'], [$id, $prod->recipe_id, $prod->product_quantity, $prod->usage, $prod->export_amount_per_min, $prod->export_ammount_per_min2, $prod->local_usage2, $production_settings_id]);
                     $updatedAndNewProduction[] = $database->connection->lastInsertId();
                     $newAndOldIds[] = [
                         'new' => (int) $database->connection->lastInsertId(),
@@ -130,6 +132,7 @@ class ProductionLines
 
             return $newAndOldIds;
         } catch (Exception $e) {
+            var_dump($e);
             $database->rollBack();
             return false;
         }
@@ -168,6 +171,19 @@ class ProductionLines
     {
         $updated_at = Database::get("production_lines", ['updated_at'],[], ['id' => $productLineId]);
         Database::update("production_lines", ['active', 'updated_at'], [$active, $updated_at->updated_at], ['id' => $productLineId]);
+    }
+
+    private static function insertUpdateProductionSettings($id, $produciton_settings) {
+        $clockSpeed = $produciton_settings['clock_speed'];
+        $useSomersloop = $produciton_settings['use_somersloop'] ? 1 : 0;
+
+        if ($id) {
+            Database::update(table:"production_settings", columns:['clock_speed', 'use_somersloop'], values:[$clockSpeed, $useSomersloop], where:['id' => $id]);
+        } else {
+            $id = Database::insert(table:"production_settings", columns:['clock_speed', 'use_somersloop'], values:[$clockSpeed, $useSomersloop]);
+        }
+
+        return $id;
     }
 
 

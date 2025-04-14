@@ -41,9 +41,8 @@ export class RecipeSetting {
             if (this.contextMenu) {
                 this.hideSettings();
             }
-
+            console.log("clicked")
             event.preventDefault();
-            console.log('right click on tr');
             this.showSettings(event);
         });
 
@@ -63,7 +62,6 @@ export class RecipeSetting {
         });
 
         $(document).on('contextmenu', (event: JQuery.ContextMenuEvent) => {
-            console.log(event.target.closest('tr'))
             if ($(event.target).closest('tr').length) {
                 return;
             }
@@ -122,7 +120,7 @@ export class RecipeSetting {
      */
     showOptions(renderElement: JQuery<HTMLElement>) {
         const maxClockSpeedInput = $(`
-        <input type="number" class="form-control" id="maxClockSpeed" min="0" max="250"  value="${this.clockSpeed}">
+        <input type="number" class="form-control" id="maxClockSpeed" step="any" min="0" max="250"  value="${this.clockSpeed}">
     `);
         const useSomersloopInput = $(`
         <input type="checkbox" class="form-check-input" id="useSomersloop" ${this.useSomersloop ? 'checked' : ''}>
@@ -174,12 +172,13 @@ export class RecipeSetting {
         const useSomersloopInput = $('#useSomersloop');
 
         if (maxClockSpeedInput.length > 0) {
-            this.clockSpeed = this.validateClockSpeed(parseInt(maxClockSpeedInput.val() as string));
+            this.clockSpeed = this.validateClockSpeed(Number(maxClockSpeedInput.val() as string));
             maxClockSpeedInput.val(this.clockSpeed);
         }
 
         if (useSomersloopInput.length > 0) {
             this.useSomersloop = useSomersloopInput.is(':checked');
+            console.log(this.useSomersloop)
         }
     }
 

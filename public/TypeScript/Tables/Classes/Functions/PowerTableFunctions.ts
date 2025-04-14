@@ -23,12 +23,12 @@ export class PowerTableFunctions {
                 const existingRow = powerTableRows.find(row => row.buildingId === building.id);
 
                 const maxClockSpeed = row.recipeSetting?.clockSpeed || 100;
-                const useSomersloop = row.recipeSetting?.useSomersloop || false;
+                const useSomersloop = row.recipeSetting?.useSomersloop || false; // dubbels the output
 
-                let amountOfBuilding = amount / (recipe.export_amount_per_min * (maxClockSpeed / 100));
+                let amountOfBuilding = amount / (recipe.export_amount_per_min * (maxClockSpeed / 100)) / (useSomersloop ? 2 : 1);
                 let exes = 0;
 
-                const consumption = +PowerTableFunctions.calculateConsumption(amountOfBuilding, maxClockSpeed, building.power_used);
+                const consumption = +PowerTableFunctions.calculateConsumption(amountOfBuilding, maxClockSpeed, building.power_used, useSomersloop);
 
                 if (amountOfBuilding % 1 !== 0) {
                     exes = amountOfBuilding % 1;
@@ -37,7 +37,7 @@ export class PowerTableFunctions {
 
                 if (existingRow) {
                     existingRow.quantity += amountOfBuilding;
-                    existingRow.Consumption = +PowerTableFunctions.calculateConsumption(existingRow.quantity, maxClockSpeed, building.power_used);
+                    existingRow.Consumption = +PowerTableFunctions.calculateConsumption(existingRow.quantity, maxClockSpeed, building.power_used, useSomersloop);
                     existingRow.clockSpeed = maxClockSpeed;
                 } else {
                     powerTableRows.push(new PowerTableRow(building.id, amountOfBuilding, maxClockSpeed, consumption, false, building));
@@ -49,7 +49,7 @@ export class PowerTableFunctions {
                     if (clockSpeed < 1) {
                         continue;
                     }
-                    const consumption = +PowerTableFunctions.calculateConsumption(1, clockSpeed, building.power_used);
+                    const consumption = +PowerTableFunctions.calculateConsumption(1, clockSpeed, building.power_used, useSomersloop);
                     powerTableRows.push(new PowerTableRow(building.id, 1, +clockSpeed.toFixed(5), consumption, false, building));
                 }
             }
@@ -67,11 +67,13 @@ export class PowerTableFunctions {
 
     }
 
-    private static calculateConsumption(amount: number, ClockSpeed: number, Consumption: number) {
+    private static calculateConsumption(amount: number, ClockSpeed: number, Consumption: number, useSomersloop: boolean): number {
+        // (1 + filledSlots / totalSlots) ^ 2
+        const powerMultiplier = Math.pow((1 + (useSomersloop ? 4 : 0) / 4), 2);
+        console.log(powerMultiplier)
         // tot de maght van 1,321928
         const clockSpeed = Math.pow(ClockSpeed / 100, 1.321928);
-        // to 1 decimal
-        return (amount * Consumption * clockSpeed).toFixed(5);
+        return +(amount * Consumption * powerMultiplier * clockSpeed).toFixed(5);
     }
 
     static calculateTotalConsumption(table: PowerTableRow[]): number {

@@ -11,10 +11,8 @@ interface newAndOldIds {
 }
 export class SaveFunctions {
 
-
     public static prepareSaveData(productionTableRows: ProductionTableRow[], powerTableRows: PowerTableRow[], importsTableRows: ImportsTableRow[], checklist: Checklist|null): Record<string, any> {
-        console.log(this.cloneWithoutCircularReferences(productionTableRows));
-
+        console.log( this.cloneWithoutCircularReferences(productionTableRows));
         return {
             productionTableRows: this.cloneWithoutCircularReferences(productionTableRows),
             powerTableRows: powerTableRows,
