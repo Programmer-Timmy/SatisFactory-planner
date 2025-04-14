@@ -2,14 +2,14 @@ import {TableHandler} from "./TableHandler";
 import {ProductionTableRow} from "./Data/ProductionTableRow";
 
 export class RecipeSetting {
-    clockSpeed: number = 100;
-    useSomersloop: boolean = false;
+    public clockSpeed: number;
+    public useSomersloop: boolean;
 
-    productionTableRow: ProductionTableRow
-    tableHandler: TableHandler
+    private readonly productionTableRow: ProductionTableRow
+    private tableHandler: TableHandler
 
-    htmlElement: JQuery<HTMLElement>
-    contextMenu: JQuery<HTMLElement> | null = null;
+    private readonly htmlElement: JQuery<HTMLElement>
+    public contextMenu: JQuery<HTMLElement> | null = null;
 
 
     /**
@@ -18,14 +18,24 @@ export class RecipeSetting {
      * @param tableHandler - The TableHandler instance.
      * @param productionTableRow - The ProductionTableRow instance.
      * @param htmlElement - The HTML element to attach the context menu to.
+     * @param clockSpeed - The clock speed for the recipe.
+     * @param useSomersloop - Whether to use Somersloop or not.
      */
-    constructor(tableHandler: TableHandler, productionTableRow: ProductionTableRow, htmlElement: JQuery<HTMLElement>) {
+    constructor(
+        tableHandler: TableHandler,
+        productionTableRow: ProductionTableRow,
+        htmlElement: JQuery<HTMLElement>,
+        clockSpeed: number = 100,
+        useSomersloop: boolean = false
+    ) {
+        this.clockSpeed = clockSpeed;
+        this.useSomersloop = useSomersloop;
+
         this.tableHandler = tableHandler;
         this.productionTableRow = productionTableRow;
         this.htmlElement = htmlElement;
-        this.addEventListeners();
 
-        console.log(this)
+        this.addEventListeners();
     }
 
     /**
@@ -41,7 +51,7 @@ export class RecipeSetting {
             if (this.contextMenu) {
                 this.hideSettings();
             }
-            console.log("clicked")
+            this.checkIfAnyOpenAndClose();
             event.preventDefault();
             this.showSettings(event);
         });
@@ -95,7 +105,6 @@ export class RecipeSetting {
         contextMenu.css('height', 'auto');
         contextMenu.css('position', 'absolute');
 
-
         // on outside click hide the context menu
         $(document).on('click', (event: JQuery.ClickEvent) => {
             if (!$(event.target).closest('.context-menu').length) {
@@ -110,7 +119,6 @@ export class RecipeSetting {
         contextMenu.appendTo('body');
         this.contextMenu = contextMenu;
         this.initCheckBoxes();
-        console.log('show settings');
     }
 
     /**
@@ -128,7 +136,6 @@ export class RecipeSetting {
 
         const wrapper = $('<div class="context-menu-wrapper">');
 
-
         const ClockSpeedWrapper = $('<div class="form-group">').append('<label class="form-check-label me-2" for="useSomersloop">Clock Speed</label>');
         ClockSpeedWrapper.append(maxClockSpeedInput);
         const checkboxWrapper = $('<div class="form-group">');
@@ -144,8 +151,8 @@ export class RecipeSetting {
                 'data-toggle': 'toggle',
                 'data-onstyle': 'success',
                 'data-offstyle': 'danger',
-                'data-on': 'Yes',
-                'data-off': 'No',
+                'data-onlabel': 'Yes',
+                'data-offlabel': 'No',
                 // @ts-ignore
             }).bootstrapToggle();
         }
@@ -155,10 +162,12 @@ export class RecipeSetting {
         maxClockSpeedInput.on('change', () => {
             this.updateSettings();
             this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
+            this.tableHandler.checklist?.updateCheckList(this.productionTableRow);
         });
         useSomersloopInput.on('change', () => {
             this.updateSettings();
             this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
+            this.tableHandler.checklist?.updateCheckList(this.productionTableRow);
         });
     }
 
@@ -178,7 +187,6 @@ export class RecipeSetting {
 
         if (useSomersloopInput.length > 0) {
             this.useSomersloop = useSomersloopInput.is(':checked');
-            console.log(this.useSomersloop)
         }
     }
 
@@ -220,5 +228,15 @@ export class RecipeSetting {
                 // @ts-ignore
                 $checkbox.bootstrapToggle();
             });
+    }
+
+    private checkIfAnyOpenAndClose() {
+        const openContextMenus = this.tableHandler.productionTableRows.filter(row => row.recipeSetting?.contextMenu !== null);
+
+        if (openContextMenus.length > 0) {
+            openContextMenus.forEach((row) => {
+                row.recipeSetting?.hideSettings();
+            });
+        }
     }
 }

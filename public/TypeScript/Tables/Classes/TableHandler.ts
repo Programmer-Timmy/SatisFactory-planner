@@ -39,6 +39,8 @@ export class TableHandler {
     private progressInterval: number = 0;
     private totalRows = 0;
     private finishedRows = 0;
+    private recipeSettings: {"id":number, "clockSpeed":number, "useSomersloop":boolean}[] = [];
+
 
     constructor() {
         this.initialize();
@@ -78,9 +80,9 @@ export class TableHandler {
     }
 
     private async getTableData() {
-        // if page is reloaded
         this.totalRows = $('#recipes tbody tr').length;
-        this.progressInterval = 100 / this.totalRows;
+        this.progressInterval = 100 / this.totalRows;0
+        this.recipeSettings = JSON.parse($("#settings-data").text() ?? {})
 
         this.productionTableRows = await this.readTable<ProductionTableRow>('recipes', ProductionTableRow, true);
 
@@ -170,8 +172,9 @@ export class TableHandler {
             });
             rowPromises.push(rowPromise);
             if (id === 'recipes') {
+                const settings = this.recipeSettings.find((setting) => setting.id === +rowValues[0]);
                 rowPromise.then((productionTableRow: ProductionTableRow) => {
-                   productionTableRow.recipeSetting = new RecipeSetting(this, productionTableRow, $(row));
+                   productionTableRow.recipeSetting = new RecipeSetting(this, productionTableRow, $(row), settings?.clockSpeed || 100, settings?.useSomersloop || false);
                 });
             }
 

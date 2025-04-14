@@ -3,6 +3,7 @@ import {PowerTableRow} from "../Data/PowerTableRow";
 import {buildingOptions} from "../Data/BuildingOptions";
 import {HtmlGeneration} from "./HtmlGeneration";
 import {Ajax} from "./Ajax";
+import {Recipe} from "../Types/Recipe";
 
 export class PowerTableFunctions {
 
@@ -19,13 +20,12 @@ export class PowerTableFunctions {
             const recipe = row.recipe;
             if (recipe !== null) {
                 const building = recipe.building;
-                const amount = row.quantity;
                 const existingRow = powerTableRows.find(row => row.buildingId === building.id);
 
                 const maxClockSpeed = row.recipeSetting?.clockSpeed || 100;
                 const useSomersloop = row.recipeSetting?.useSomersloop || false; // dubbels the output
 
-                let amountOfBuilding = amount / (recipe.export_amount_per_min * (maxClockSpeed / 100)) / (useSomersloop ? 2 : 1);
+                let amountOfBuilding = PowerTableFunctions.calculateBuildingAmount(recipe, row);
                 let exes = 0;
 
                 const consumption = +PowerTableFunctions.calculateConsumption(amountOfBuilding, maxClockSpeed, building.power_used, useSomersloop);
@@ -67,11 +67,18 @@ export class PowerTableFunctions {
 
     }
 
+    public static calculateBuildingAmount(recipe: Recipe, row: ProductionTableRow): number {
+        const amount = row.quantity;
+
+        const maxClockSpeed = row.recipeSetting?.clockSpeed || 100;
+        const useSomersloop = row.recipeSetting?.useSomersloop || false; // dubbels the output
+
+        return amount / (recipe.export_amount_per_min * (maxClockSpeed / 100)) / (useSomersloop ? 2 : 1);
+    }
+
     private static calculateConsumption(amount: number, ClockSpeed: number, Consumption: number, useSomersloop: boolean): number {
         // (1 + filledSlots / totalSlots) ^ 2
         const powerMultiplier = Math.pow((1 + (useSomersloop ? 4 : 0) / 4), 2);
-        console.log(powerMultiplier)
-        // tot de maght van 1,321928
         const clockSpeed = Math.pow(ClockSpeed / 100, 1.321928);
         return +(amount * Consumption * powerMultiplier * clockSpeed).toFixed(5);
     }

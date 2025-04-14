@@ -112,7 +112,27 @@ function generateUUID(): string {
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
+$jsonArray = [];
+foreach ($production as $product) {
+    if ($product->clock_speed === null) {
+        $product->clock_speed = 100;
+    }
+    if ($product->use_somersloop === null) {
+        $product->use_somersloop = 0;
+    }
+
+    $jsonArray[] = [
+        'id' => $product->id,
+        'clockSpeed' => (int)$product->clock_speed,
+        'useSomersloop' => $product->use_somersloop == 1
+    ];
+}
 ?>
+
+<script id="settings-data" type="application/json">
+<?= json_encode($jsonArray, JSON_PRETTY_PRINT) ?>
+</script>
+
 
 <style>
     /* Chrome, Safari, Edge, Opera */
@@ -405,3 +425,5 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
         offcanvasChecklist.show();
     });
 </script>
+
+
