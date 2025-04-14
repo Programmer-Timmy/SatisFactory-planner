@@ -2,6 +2,7 @@ import {TableHandler} from "./TableHandler";
 import {Ajax} from "./Functions/Ajax";
 import {HtmlGeneration} from "./Functions/HtmlGeneration";
 import {ProductionTableRow} from "./Data/ProductionTableRow";
+import {PowerTableFunctions} from "./Functions/PowerTableFunctions";
 
 export interface IChecklist {
     index: number;
@@ -68,10 +69,10 @@ export class Checklist {
 
     private createChecklistCard(row: ProductionTableRow, index: number, beenBuild: boolean = false, beenTested: boolean = false) {
         const productionAmount = row.quantity;
+        if (!row.recipe) return;
         const recipeName = row.recipe?.name || "Unknown";
         const buildingName = row.recipe?.building?.name || "Unknown";
-        const productionPerMin = row.recipe?.export_amount_per_min || 0;
-        const buildingAmount = +Math.ceil(productionAmount / productionPerMin).toFixed(5);
+        const buildingAmount = PowerTableFunctions.calculateBuildingAmount(row.recipe, row);
 
 
         if (productionAmount <= 0) return;
@@ -84,11 +85,12 @@ export class Checklist {
         const check = this.checklist.find(check => check.productionRow.row_id == productionRow.row_id);
         if (check) {
             const row = check.productionRow;
+            if (!row.recipe) return;
+
             const productionAmount = row.quantity;
             const recipeName = row.recipe?.name || "Unknown";
             const buildingName = row.recipe?.building?.name || "Unknown";
-            const productionPerMin = row.recipe?.export_amount_per_min || 0;
-            const buildingAmount = +(productionAmount / productionPerMin).toFixed(5);
+            const buildingAmount = PowerTableFunctions.calculateBuildingAmount(row.recipe, row);
 
             const card = this.canvasBody.find(`#check-${check.index}`);
 

@@ -112,7 +112,27 @@ function generateUUID(): string {
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
+$jsonArray = [];
+foreach ($production as $product) {
+    if ($product->clock_speed === null) {
+        $product->clock_speed = 100;
+    }
+    if ($product->use_somersloop === null) {
+        $product->use_somersloop = 0;
+    }
+
+    $jsonArray[] = [
+        'id' => $product->id,
+        'clockSpeed' => (int)$product->clock_speed,
+        'useSomersloop' => $product->use_somersloop == 1
+    ];
+}
 ?>
+
+<script id="settings-data" type="application/json">
+<?= json_encode($jsonArray, JSON_PRETTY_PRINT) ?>
+</script>
+
 
 <style>
     /* Chrome, Safari, Edge, Opera */
@@ -263,8 +283,8 @@ function generateUUID(): string {
                                 <td class="hidden">
                                     <input type="hidden" name="production_id[]" value="<?= $product->id ?>">
                                 </td>
-                                <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
-
+                                <td class="m-0 p-0 position-relative" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
+                                    <i class="fa-solid fa-gear open-p-settings position-absolute link-primary" style="font-size: 11px; top:2px; left:2px;"></i>
                                     <select name="production_recipe_id[]"
                                             class="form-control rounded-0 recipe"<?php if ($product->item_name_2) echo 'style="height: 78px"' ?>>
                                         <?php foreach ($Recipes as $recipe) : ?>
@@ -320,7 +340,8 @@ function generateUUID(): string {
                             <td class="hidden">
                                 <input type="hidden" name="production_id[]" value="<?= generateUUID() ?>">
                             </td>
-                            <td class="m-0 p-0">
+                            <td class="m-0 p-0 position-relative">
+                                <i class="fa-solid fa-gear open-p-settings position-absolute link-primary" style="font-size: 11px; top:2px; left:2px;"></i>
                                 <select name="production_recipe_id[]"
                                         class="form-control rounded-0 item-recipe-id recipe">
                                     <option value="" disabled selected>Select a recipe</option>
@@ -405,3 +426,5 @@ if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
         offcanvasChecklist.show();
     });
 </script>
+
+

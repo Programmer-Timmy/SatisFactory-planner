@@ -13,6 +13,7 @@ import {SaveFunctions} from "./Functions/SaveFunctions";
 import {Building} from "./Types/Building";
 import {Recipe} from "./Types/Recipe";
 import {Checklist} from "./Checklist";
+import {RecipeSetting} from "./RecipeSetting";
 
 
 /**
@@ -33,12 +34,13 @@ export class TableHandler {
     private buildingCache: Building[] = [];
     private recipeCache: Recipe[] = [];
 
-
     // progress bar
     private progressBar = $('#loading-progress');
     private progressInterval: number = 0;
     private totalRows = 0;
     private finishedRows = 0;
+    private recipeSettings: {"id":number, "clockSpeed":number, "useSomersloop":boolean}[] = [];
+
 
     constructor() {
         this.initialize();
@@ -78,9 +80,9 @@ export class TableHandler {
     }
 
     private async getTableData() {
-        // if page is reloaded
         this.totalRows = $('#recipes tbody tr').length;
-        this.progressInterval = 100 / this.totalRows;
+        this.progressInterval = 100 / this.totalRows;0
+        this.recipeSettings = JSON.parse($("#settings-data").text() ?? {})
 
         this.productionTableRows = await this.readTable<ProductionTableRow>('recipes', ProductionTableRow, true);
 
@@ -169,6 +171,13 @@ export class TableHandler {
                 return row;
             });
             rowPromises.push(rowPromise);
+            if (id === 'recipes') {
+                const settings = this.recipeSettings.find((setting) => setting.id === +rowValues[0]);
+                rowPromise.then((productionTableRow: ProductionTableRow) => {
+                   productionTableRow.recipeSetting = new RecipeSetting(this, productionTableRow, $(row), settings?.clockSpeed || 100, settings?.useSomersloop || false);
+                });
+            }
+
         }
         return await Promise.all(rowPromises);
 
@@ -416,7 +425,9 @@ export class TableHandler {
                 this.importsTableRows.push(new ImportsTableRow());
                 break;
             case 'recipes':
-                this.productionTableRows.push(new ProductionTableRow());
+                const productionRow = new ProductionTableRow();
+                productionRow.recipeSetting = new RecipeSetting(this, productionRow, newRow);
+                this.productionTableRows.push(productionRow);
                 break;
             case 'power':
                 this.powerTableRows.push(new PowerTableRow());
@@ -557,7 +568,7 @@ export class TableHandler {
      * @constructor
      * @private
      */
-    private async HandleProductionTable(row: ProductionTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
+    async HandleProductionTable(row: ProductionTableRow, rowIndex: number, value: any, tableId: string, target: JQuery) {
         this.updated = true;
 
         await ProductionLineFunctions.calculateProductionExport(row);

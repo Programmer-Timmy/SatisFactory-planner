@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.10.0",
+    "date": "April 14 2025",
+    "changes": [
+      "Added: recipe settings / production settings to the production line page. This will allow users to set the clock speed and if they want to use Somersloop.",
+      "Added: Checkbox to enable or disable the Somersloop.",
+      "Added: Input field to set the clock speed.",
+      "Added: Popup to show the settings for the production line.",
+        "Added: Gearbox to the top right of each production row."
+    ]
+  },
+  {
     "version": "1.9.3",
     "date": "April 10 2025",
     "changes": [

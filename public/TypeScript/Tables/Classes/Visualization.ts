@@ -5,6 +5,7 @@ import {ExportNodes} from "./Data/Visualization/ExportNodes";
 import {Connection} from "./Data/Visualization/Connection";
 import {Ext, LayoutOptions} from "cytoscape";
 import {IChecklist} from "./Checklist";
+import {PowerTableFunctions} from "./Functions/PowerTableFunctions";
 
 let cytoscape: typeof import("cytoscape")
 
@@ -378,7 +379,7 @@ export class Visualization {
                 continue;
             }
 
-            let amountOfBuilding = (amount / recipe.export_amount_per_min).toFixed(3);
+            let amountOfBuilding = PowerTableFunctions.calculateBuildingAmount(recipe, row).toFixed(5);
 
             if (building && recipe) {
                 this.productionNodes.push(new ProductionNodes(i, recipe.name, row.quantity, building.name, building.id, +amountOfBuilding, checklist));

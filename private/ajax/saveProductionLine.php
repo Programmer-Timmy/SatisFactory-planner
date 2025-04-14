@@ -57,7 +57,11 @@ foreach ($productionRows as $row) {
         'usage' => $row['Usage'],
         'export_amount_per_min' => $row['exportPerMin'],
         'local_usage2' => $secondUsage,
-        'export_ammount_per_min2' => $secondExport
+        'export_ammount_per_min2' => $secondExport,
+        'produciton_settings' => [
+            'clock_speed' => $row['recipeSetting']['clockSpeed'],
+            'use_somersloop'=> $row['recipeSetting']['useSomersloop'],
+        ]
     ];
 }
 

@@ -203,7 +203,7 @@ export class HtmlGeneration {
         <div class="card mb-2" id="check-${index}">
             <div class="card-body p-3">
                 <h5 class="card-title recipeName">${recipeName}</h5>
-                <p class="card-text"><span class="productionAmount">${productionAmount}</span> per min - <span class="buildingAmount">${buildingAmount}</span> <span class="buildingName">${building}</span></p>
+                <p class="card-text"><span class="productionAmount">${productionAmount}</span> per min - <span class="buildingAmount">${+buildingAmount.toFixed(5)}</span> <span class="buildingName">${building}</span></p>
                 <div style="display: flex; justify-content: space-between;">
                     <div>
                         <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark" for="build" class="beenBuild"
