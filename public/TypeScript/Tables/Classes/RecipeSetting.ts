@@ -169,12 +169,12 @@ export class RecipeSetting {
         // Add event listeners for the inputs
         maxClockSpeedInput.on('change', () => {
             this.updateSettings();
-            this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
+            this.htmlElement.find("input[name='production_quantity[]'").trigger('change');
             this.tableHandler.checklist?.updateCheckList(this.productionTableRow);
         });
         useSomersloopInput.on('change', () => {
             this.updateSettings();
-            this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
+            this.htmlElement.find("input[name='production_quantity[]'").trigger('change');
             this.tableHandler.checklist?.updateCheckList(this.productionTableRow);
         });
     }
