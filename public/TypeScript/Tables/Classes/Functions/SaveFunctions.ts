@@ -25,10 +25,10 @@ export class SaveFunctions {
             // Deep clone without circular reference
             const clonedRow = JSON.parse(JSON.stringify(row, (key, value) => {
                 // Break the circular reference
-                if (key === 'productionTableRow' && value?.constructor?.name === 'ProductionTableRow') {
+                if (key === 'productionTableRow') {
                     return undefined;
                 }
-                if (key === 'tableHandler' && value?.constructor?.name === 'TableHandler') {
+                if (key === 'tableHandler') {
                     return undefined;
                 }
                 return value;
