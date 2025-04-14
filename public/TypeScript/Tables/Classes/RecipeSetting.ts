@@ -43,6 +43,18 @@ export class RecipeSetting {
      */
     private addEventListeners() {
     //     on tr right click
+        this.htmlElement.find('.open-p-settings').on('click', (event: JQuery.ClickEvent) => {
+            // if somthing is selected, do not show the context menu
+            if (window.getSelection()?.toString()) {
+                return;
+            }
+            if (this.contextMenu) {
+                this.hideSettings();
+            }
+            this.checkIfAnyOpenAndClose();
+            event.preventDefault();
+            this.showSettings(event);
+        });
         this.htmlElement.on('contextmenu', (event: JQuery.ContextMenuEvent) => {
             // if somthing is selected, do not show the context menu
             if (window.getSelection()?.toString()) {
@@ -65,7 +77,7 @@ export class RecipeSetting {
 
         // on click hide the context menu
         $(document).on('click', (event: JQuery.ClickEvent) => {
-            if (!$(event.target).closest('.context-menu').length) {
+            if (!$(event.target).closest('.context-menu').length && !$(event.target).closest('.open-p-settings').length) {
                 event.stopPropagation();
                 this.hideSettings();
             }
@@ -104,14 +116,6 @@ export class RecipeSetting {
         contextMenu.css('width', tr.width() + 'px');
         contextMenu.css('height', 'auto');
         contextMenu.css('position', 'absolute');
-
-        // on outside click hide the context menu
-        $(document).on('click', (event: JQuery.ClickEvent) => {
-            if (!$(event.target).closest('.context-menu').length) {
-                event.stopPropagation();
-                this.hideSettings();
-            }
-        });
 
         this.showOptions(contextMenu);
 

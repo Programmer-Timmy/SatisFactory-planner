@@ -283,8 +283,8 @@ foreach ($production as $product) {
                                 <td class="hidden">
                                     <input type="hidden" name="production_id[]" value="<?= $product->id ?>">
                                 </td>
-                                <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
-
+                                <td class="m-0 p-0 position-relative" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
+                                    <i class="fa-solid fa-gear open-p-settings position-absolute link-primary" style="font-size: 11px; top:2px; left:2px;"></i>
                                     <select name="production_recipe_id[]"
                                             class="form-control rounded-0 recipe"<?php if ($product->item_name_2) echo 'style="height: 78px"' ?>>
                                         <?php foreach ($Recipes as $recipe) : ?>
@@ -340,7 +340,8 @@ foreach ($production as $product) {
                             <td class="hidden">
                                 <input type="hidden" name="production_id[]" value="<?= generateUUID() ?>">
                             </td>
-                            <td class="m-0 p-0">
+                            <td class="m-0 p-0 position-relative">
+                                <i class="fa-solid fa-gear open-p-settings position-absolute link-primary" style="font-size: 11px; top:2px; left:2px;"></i>
                                 <select name="production_recipe_id[]"
                                         class="form-control rounded-0 item-recipe-id recipe">
                                     <option value="" disabled selected>Select a recipe</option>
