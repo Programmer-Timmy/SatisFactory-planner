@@ -132,7 +132,7 @@ export class RecipeSetting {
      */
     showOptions(renderElement: JQuery<HTMLElement>) {
         const maxClockSpeedInput = $(`
-        <input type="number" class="form-control" id="maxClockSpeed" step="any" min="0" max="250"  value="${this.clockSpeed}">
+        <input type="number" class="form-control" id="maxClockSpeed" step="any" min="0" max="250"  value="${String(this.clockSpeed)}">
     `);
         const useSomersloopInput = $(`
         <input type="checkbox" class="form-check-input" id="useSomersloop" ${this.useSomersloop ? 'checked' : ''}>
