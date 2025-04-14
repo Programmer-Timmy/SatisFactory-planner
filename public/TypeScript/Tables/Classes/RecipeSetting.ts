@@ -170,13 +170,11 @@ export class RecipeSetting {
         maxClockSpeedInput.on('change', () => {
             this.updateSettings();
             this.htmlElement.find("input[name='production_quantity[]'").trigger('change');
-            // this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
             this.tableHandler.checklist?.updateCheckList(this.productionTableRow);
         });
         useSomersloopInput.on('change', () => {
             this.updateSettings();
             this.htmlElement.find("input[name='production_quantity[]'").trigger('change');
-            // this.tableHandler.HandleProductionTable(this.productionTableRow, rowIndex, this.productionTableRow.quantity, 'recipes', this.htmlElement);
             this.tableHandler.checklist?.updateCheckList(this.productionTableRow);
         });
     }
