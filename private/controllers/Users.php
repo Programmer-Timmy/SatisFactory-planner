@@ -213,7 +213,6 @@ class Users
 
     public static function linkGoogleAccount($googleId, $googleEmail, $password, $userId = null) {
         $user = $userId ? self::getUserById($userId) : self::getUserByEmail($googleEmail);
-        var_dump($user);
         if ($user) {
             if (password_verify($password, $user->password_hash)) {
                 Database::update("users", ['google_id', 'google_email'], [$googleId, $googleEmail], ['id' => $user->id]);

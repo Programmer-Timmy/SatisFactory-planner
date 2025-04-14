@@ -19,7 +19,6 @@ if ($method === 'POST') {
         $users = Users::getUpdateEmailUsers();
         foreach ($users as $user) {
             $success = Mailer::sendWebsiteUpdateEmail($user);
-            var_dump($success);
         }
     } catch (Exception $e) {
         http_response_code(500);

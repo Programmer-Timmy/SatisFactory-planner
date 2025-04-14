@@ -132,7 +132,7 @@ export class ImportsTableFunctions {
 
 
             // If there is still a need for imports after using available production
-            const amountToImport = amountNeeded - totalUsed;
+            const amountToImport = (amountNeeded - totalUsed) / (row.recipeSetting?.useSomersloop ? 2 : 1);
             if (amountToImport > 0) {
                 this.addToImportsTable(importsTableRows, requiredItem.itemId, amountToImport, row, requiredItem.name);
             }

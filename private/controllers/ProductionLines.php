@@ -90,7 +90,7 @@ class ProductionLines {
             foreach ($production as $prod) {
                 $recipes = Recipes::getRecipeById($prod->recipe_id);
                 $existingProduction = $database->get("production", ['id', 'production_settings_id'], [], ['id' => $prod->id]);
-                $production_settings_id = self::insertUpdateProductionSettings($existingProduction->production_settings_id, $prod->produciton_settings);
+                $production_settings_id = self::insertUpdateProductionSettings($existingProduction->production_settings_id, $prod->produciton_settings, $database);
                 if ($existingProduction) {
                     $database->update(
                         "production",
@@ -119,7 +119,7 @@ class ProductionLines {
                     );
                     $updatedAndNewProduction[] = $prod->id;
                 } else {
-                    $production_settings_id = self::insertUpdateProductionSettings(null, $prod->produciton_settings);
+                    $production_settings_id = self::insertUpdateProductionSettings(null, $prod->produciton_settings, $database);
                     $database->insert("production", ['production_lines_id', 'recipe_id', 'quantity', 'local_usage', 'export_ammount_per_min', 'export_ammount_per_min2', 'local_usage2', 'production_settings_id'], [$id, $prod->recipe_id, $prod->product_quantity, $prod->usage, $prod->export_amount_per_min, $prod->export_ammount_per_min2, $prod->local_usage2, $production_settings_id]);
                     $updatedAndNewProduction[] = $database->connection->lastInsertId();
                     $newAndOldIds[] = [
@@ -149,7 +149,6 @@ class ProductionLines {
 
             return $newAndOldIds;
         } catch (Exception $e) {
-            var_dump($e);
             $database->rollBack();
             return false;
         }
@@ -186,14 +185,15 @@ class ProductionLines {
         Database::update("production_lines", ['active', 'updated_at'], [$active, $updated_at->updated_at], ['id' => $productLineId]);
     }
 
-    private static function insertUpdateProductionSettings($id, $produciton_settings) {
+    private static function insertUpdateProductionSettings(int | null $id,array $produciton_settings,NewDatabase $database ) {
         $clockSpeed = $produciton_settings['clock_speed'];
         $useSomersloop = $produciton_settings['use_somersloop'] ? 1 : 0;
 
         if ($id) {
-            Database::update(table: "production_settings", columns: ['clock_speed', 'use_somersloop'], values: [$clockSpeed, $useSomersloop], where: ['id' => $id]);
+            $database->update(table: "production_settings", columns: ['clock_speed', 'use_somersloop'], values: [$clockSpeed, $useSomersloop], where: ['id' => $id]);
         } else {
-            $id = Database::insert(table: "production_settings", columns: ['clock_speed', 'use_somersloop'], values: [$clockSpeed, $useSomersloop]);
+            $database->insert(table: "production_settings", columns: ['clock_speed', 'use_somersloop'], values: [$clockSpeed, $useSomersloop]);
+            $id = $database->lastInsertId();
         }
 
         return $id;
