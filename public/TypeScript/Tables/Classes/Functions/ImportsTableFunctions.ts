@@ -103,7 +103,7 @@ export class ImportsTableFunctions {
         updatedIndexes: number[]
     ): void {
         for (const requiredItem of requiredItems) {
-            let amountNeeded = requiredItem.importAmount * productionRate;
+            let amountNeeded = (requiredItem.importAmount * productionRate) / (row.recipeSetting?.useSomersloop ? 2 : 1);
 
             // Get produced rows that match the required item
             const producedRows = productionTableRows.filter(r => r.product === requiredItem.name);
@@ -132,7 +132,7 @@ export class ImportsTableFunctions {
 
 
             // If there is still a need for imports after using available production
-            const amountToImport = (amountNeeded - totalUsed) / (row.recipeSetting?.useSomersloop ? 2 : 1);
+            const amountToImport = amountNeeded - totalUsed
             if (amountToImport > 0) {
                 this.addToImportsTable(importsTableRows, requiredItem.itemId, amountToImport, row, requiredItem.name);
             }
