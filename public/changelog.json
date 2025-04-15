@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.10.4",
+    "date": "April 15 2025",
+    "changes": [
+      "Fixed: power row not calculating correctly."
+    ]
+  },
+  {
     "version": "1.10.3",
     "date": "April 14 2025",
     "changes": [
