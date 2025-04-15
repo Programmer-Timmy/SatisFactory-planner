@@ -20,10 +20,11 @@ export class PowerTableFunctions {
             const recipe = row.recipe;
             if (recipe !== null) {
                 const building = recipe.building;
-                const existingRow = powerTableRows.find(row => row.buildingId === building.id);
 
                 const maxClockSpeed = row.recipeSetting?.clockSpeed || 100;
                 const useSomersloop = row.recipeSetting?.useSomersloop || false; // dubbels the output
+
+                const existingRow = powerTableRows.find(row => row.buildingId === building.id && row.clockSpeed === maxClockSpeed);
 
                 let amountOfBuilding = PowerTableFunctions.calculateBuildingAmount(recipe, row);
                 let exes = 0;
