@@ -41,14 +41,14 @@ class AuthControler
                 if (isset($_SESSION['redirect'])) {
 
                     $_SESSION['lastVisitedSaveGame'] = GameSaves::getSaveGamesByUser($user->id)[0]->id;
-                    return str_contains($_SESSION['redirect'], '/login') ? '/home' : $_SESSION['redirect'];
+                    return str_contains($_SESSION['redirect'], '/login') ? '/game_saves' : $_SESSION['redirect'];
                     exit();
                 }else{
-                    return '/home';
+                    return '/game_saves';
                     exit();
                 }
             }
-            return 'home';
+            return 'game_saves';
             exit();
         } else {
             self::setLoginAttempt($user->id, false);
@@ -89,14 +89,14 @@ class AuthControler
         if ($site['saveUrl']) {
             if (isset($_SESSION['redirect'])) {
                 $_SESSION['lastVisitedSaveGame'] = GameSaves::getSaveGamesByUser($user->id)[0]->id;
-                return str_contains($_SESSION['redirect'], '/login') ? '/home' : $_SESSION['redirect'];
+                return str_contains($_SESSION['redirect'], '/login') ? '/game_saves' : $_SESSION['redirect'];
                 exit();
             }else{
-                return '/home';
+                return '/game_saves';
                 exit();
             }
         }
-        return 'home';
+        return 'game_saves';
         exit();
 
 
