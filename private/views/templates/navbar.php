@@ -29,15 +29,22 @@ class DropdownNavItem {
 }
 
 $navItems = [
-        new NavItem('/home', 'Home', $require === '/home'),
+    new NavItem('/home', 'Home', $require === '/home'),
 ];
 
 if (isset($_SESSION['userId'])) {
     $saveGamesDropdownItems = [];
-    foreach (GameSaves::getSaveGamesByUser($_SESSION['userId']) as $saveGame) {
-        $saveGamesDropdownItems[] = new NavItem('/game_save?id=' . $saveGame->id, htmlspecialchars($saveGame->title), $require === '/game_save' && $_GET['id'] == $saveGame->id);
+    $saveGames = GameSaves::getSaveGamesByUser($_SESSION['userId']);
+    if (!$saveGames) {
+        $navItems[] = new NavItem('/game_saves', 'Save Games', $require === '/game_saves');
+    } else {
+        foreach ($saveGames as $saveGame) {
+            $saveGamesDropdownItems[] = new NavItem('/game_save?id=' . $saveGame->id, htmlspecialchars($saveGame->title), $require === '/game_save' && $_GET['id'] == $saveGame->id);
+        }
+        $navItems[] = new DropdownNavItem('/game_saves', 'Save Games', $saveGamesDropdownItems, $require === '/game_saves');
     }
-    $navItems[] = new DropdownNavItem('/game_saves', 'Save Games', $saveGamesDropdownItems, $require === '/game_saves');
+} else {
+    $navItems[] = new NavItem('/game_saves', 'Save Games', $require === '/game_saves');
 }
 
 $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpfulLinks');
@@ -138,16 +145,17 @@ $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpf
                             <?php if ($theme === 'styles-dark') echo 'checked'; ?>>
 
                     </li>
-<!--                    account dropdown-->
+                    <!--                    account dropdown-->
                     <li class="nav-item dropdown me-lg-2 mt-lg-0 mt-2">
                         <a class="btn btn-secondary dropdown-toggle" href="#" id="navbarDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-user"></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item <?= ($require === '/account') ? 'active' : ''; ?>" href="/account" >Account</a>
+                            <a class="dropdown-item <?= ($require === '/account') ? 'active' : ''; ?>" href="/account">Account</a>
                             <?php if (isset($_SESSION['userId']) && isset($_SESSION['admin']) && $_SESSION['admin']) : ?>
-                                <a class="dropdown-item <?= ($require === '/admin') ? 'active' : ''; ?>" href="/admin">Admin Panel</a>                           <?php endif; ?>
+                                <a class="dropdown-item <?= ($require === '/admin') ? 'active' : ''; ?>" href="/admin">Admin
+                                    Panel</a>                           <?php endif; ?>
 
                             <hr class="dropdown-divider">
                             <?php if (isset($_SESSION['userId'])) : ?>

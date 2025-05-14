@@ -52,7 +52,7 @@ $site = [
         'sessionName' => 'admin', // the session name that will be used to store that the user is a admin check by isset function
         'filterInUrl' => 'admin', // empty string means no filter
         'redirect' => '/login', // redirect to this page if the user is not a admin
-        'skipChecks' => ['login', 'register', 'logout', '404', 'maintenance', '403', 'changelog', 'phpinfo'], // skip the checks for these pages
+        'skipChecks' => ['login', 'home', 'register', 'logout', '404', 'maintenance', '403', 'changelog', 'phpinfo'], // skip the checks for these pages
     ],
 
     // Accounts settings
@@ -60,7 +60,7 @@ $site = [
         'enabled' => true   ,
         'sessionName' => 'userId', // the session name that will be used to store that the user is logged in check by isset function
         'filterInUrl' => '', // empty string means no filter
-        'skipChecks' => ['login', 'register', 'logout', '404', 'maintenance', '403', 'changelog', 'phpinfo', 'logout', 'login/google-oauth', 'privacy'], // skip the checks for these pages
+        'skipChecks' => ['login', 'home', 'register', 'logout', '404', 'maintenance', '403', 'changelog', 'phpinfo', 'logout', 'login/google-oauth', 'privacy'], // skip the checks for these pages
     ],
 
     // popup settings
