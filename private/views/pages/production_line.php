@@ -1,7 +1,7 @@
 <?php
 ob_start();
 $error = null;
-$productLineId = isset($_GET['id']) ? $_GET['id'] : null;
+$productLineId = $_GET['id'] ?? null;
 $production = null;
 if (!$productLineId == null) {
 //    header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
@@ -20,7 +20,7 @@ if (!$productLineId == null) {
     $powers = ProductionLines::getPowerByProductionLine($productLine->id);
     $checklist = Checklist::getChecklist($productLine->id);
 } else {
-    $firstProduction = false;
+    $firstProduction = true;
 }
 
 
@@ -62,11 +62,6 @@ if ($production) {
 
 <script id="settings-data" type="application/json">
 <?= json_encode($jsonArray, JSON_PRETTY_PRINT) ?>
-
-
-
-
-
 
 </script>
 
@@ -134,7 +129,7 @@ if ($production) {
                     <button type="button" id="showHelp" class="btn btn-info mb-1" data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-title="Need help? Click here!"><i
                                 class="fa-regular fa-question-circle"></i></button>
-                    <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary mb-1"
+                    <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?? null ?>" class="btn btn-secondary mb-1"
                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i
                                 class="fa-solid fa-arrow-left"></i></a>
                 </div>
@@ -339,7 +334,7 @@ if ($production) {
 
 
 <?php
-if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
+if (isset($_SESSION['lastVisitedSaveGame']) && DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
     <script src="js/dedicatedServer.js"></script>
     <script>
         new DedicatedServer(<?= $_SESSION['lastVisitedSaveGame'] ?>);

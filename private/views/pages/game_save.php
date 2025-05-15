@@ -1,7 +1,7 @@
 <?php
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: /');
+    header('Location: /game_saves');
     exit();
 }
 
@@ -9,7 +9,7 @@ $gameSave = GameSaves::getSaveGameById($_GET['id']);
 $outputs = Outputs::getAllOutputs($_GET['id']);
 
 if (empty($gameSave)) {
-    header('Location: /');
+    header('Location: /game_saves');
     exit();
 }
 
