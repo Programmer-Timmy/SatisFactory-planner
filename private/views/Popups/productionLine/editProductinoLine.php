@@ -26,7 +26,7 @@ if ($_POST && isset($_POST['productionLineName'])) {
     }
 }
 
-$productionLineSettings = ProductionLineSettings::getProductionLineSettings(intval($_GET['id']));
+$productionLineSettings = ProductionLineSettings::getProductionLineSettings(intval($_GET['id'] ?? null));
 ?>
 
 <div class="modal fade <?= $error ? 'show' : '' ?>" id="editProductionLine" tabindex="-1"

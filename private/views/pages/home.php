@@ -3,8 +3,12 @@
     <div class="jumbotron text-center py-5 mb-5">
         <h1 class="display-4">Welcome to Satisfactory Planner</h1>
         <p class="lead">Design. Optimize. Collaborate.</p>
-        <a href="/production_line" class="btn btn-primary btn-lg mt-3">Start Planning</a>
+        <div class="mt-4">
+            <a href="/production_line" class="btn btn-primary mr-2">Start Planning</a>
+            <a href="/login" class="btn btn-outline-secondary">Login</a>
+        </div>
     </div>
+
 
     <!-- What is it -->
     <div class="container mb-5">
@@ -39,7 +43,7 @@
     </div>
 
     <!-- Carousel (optional, replace images with your own) -->
-    <div class="container mb-5">
+    <div class="container mb-5 p-4 bg-light rounded shadow">
         <div id="carouselScreenshots" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner rounded shadow">
                 <div class="carousel-item active">
@@ -52,12 +56,12 @@
                     <img src="/image/screen3.png" class="d-block w-100" alt="The visualization page">
                 </div>
             </div>
-            <button class="carousel-control-prev" type="button" aria-label="previous image" data-bs-target="#carouselScreenshots" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
+            <button class="carousel-control-prev " type="button" aria-label="previous image" data-bs-target="#carouselScreenshots" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" style="filter:invert(0) grayscale(0);"></span>
             </button>
-            <button class="carousel-control-next" type="button" aria-label="next image"
+            <button class="carousel-control-next " type="button" aria-label="next image"
                     data-bs-target="#carouselScreenshots" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
+                <span class="carousel-control-next-icon" style="filter:invert(0) grayscale(0);"></span>
             </button>
         </div>
     </div>
@@ -76,6 +80,9 @@
             <div class="col-md-4">
                 <h5>3. Save & Share</h5>
                 <p>Save your project and share it with your friends.</p>
+            </div>
+            <div class="col-12 text-center">
+                <a href="/production_line" class="btn btn-primary btn">Get Started</a>
             </div>
         </div>
     </div>
