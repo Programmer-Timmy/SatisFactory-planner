@@ -168,12 +168,14 @@ if (isset($_GET['dedicatedServerId'])) {
     </div>
 </div>
 <script>
-    const token = $('meta[name="csrf-token"]').attr('content');
-    if (!token) {
-        console.error('CSRF token not found');
-    }
+
     // Function to handle AJAX requests
     function handleRequest(buttonId, requestData) {
+        const token = $('meta[name="csrf-token"]').attr('content');
+        if (!token) {
+            console.error('CSRF token not found');
+            return;
+        }
         // preventing default
 
         // in userlist
@@ -222,6 +224,12 @@ if (isset($_GET['dedicatedServerId'])) {
     handleRequest('send_request', 'addId');
 
     function handleSearch() {
+        const token = $('meta[name="csrf-token"]').attr('content');
+        if (!token) {
+            console.error('CSRF token not found');
+            return;
+        }
+
         // add search event listener
         const input = document.getElementById('search_<?= $gameSave->id ?>')
         // Check if the input exists

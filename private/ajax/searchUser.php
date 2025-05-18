@@ -5,7 +5,7 @@ if (!isset($_POST['search']) && !isset($_POST['gameId'])) {
     exit();
 }
 
-if (!GameSaves::checkAccessOwner($_POST['gameId'])) {
+if (isset($_POST['gameId']) && !GameSaves::checkAccessOwner($_POST['gameId'])) {
     http_response_code(403);
     echo json_encode(['error' => 'You do not have access to this save game']);
     exit();
