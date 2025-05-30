@@ -1,5 +1,7 @@
 <?php
 global $gameSave;
+require_once '../private/views/components/SaveGameView.php';
+
 $users = Users::getAllValidatedUsers();
 $allowedUsers = GameSaves::getAllowedUsers($gameSave->id);
 $requestUsers = GameSaves::getRequestedUsers($gameSave->id);
@@ -8,6 +10,8 @@ $data = Users::filterUsers($users, $allowedUsers, $requestUsers);
 $users = $data['users'];
 $allowedUsers = $data['allowedUsers'];
 $requestUsers = $data['requestUsers'];
+
+$roles = Roles::getAllRoles();
 
 $dedicatedServer = DedicatedServer::getBySaveGameId($gameSave->id);
 
@@ -45,67 +49,14 @@ if (isset($_GET['dedicatedServerId'])) {
                         <label for="UpdatedSaveGameImage" class="form-label">Save Game Image</label>
                         <input type="file" class="form-control" name="UpdatedSaveGameImage">
                     </div>
-                    <div id="userList_<?= $gameSave->id ?>">
-                        <?php if ($allowedUsers): ?>
-                            <div class="mb-3">
-                                <h6>Allowed users</h6>
-                                <?php foreach ($allowedUsers as $user) : ?>
-                                    <div class="card mb-2 p-2">
-                                        <div class="card-body d-flex justify-content-between align-items-center p-0">
-                                            <h6 class="mb-1"><?= $user->username ?></h6>
-                                            <button type="button" class="btn btn-danger remove_user"
-                                                    user-id="<?= $user->users_id ?>"
-                                                    game-id="<?= $gameSave->id ?>">Remove user
-                                            </button>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                        <?php if ($requestUsers): ?>
-                            <div class="mb-3">
-                                <h6>Requested users</h6>
-                                <?php foreach ($requestUsers as $user) : ?>
-                                    <div class="card mb-2 p-2">
-                                        <div class="card-body d-flex justify-content-between align-items-center p-0">
-                                            <h6 class="mb-1"><?= $user->username ?></h6>
-                                            <button type="button" class="btn btn-warning cancel_request"
-                                                    user-id="<?= $user->users_id ?>"
-                                                    game-id="<?= $gameSave->id ?>">Cancel request
-                                            </button>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                        <?php if ($users): ?>
-                            <div class="mb-3">
-                                <h6>Add user</h6>
-                                <input type="text" style="display:none">
-                                <input type="search" name="Search345" class="form-control mb-2"
-                                       id="search_<?= $gameSave->id ?>"
-                                       placeholder="Search for user" autocomplete="SearchUser1232">
-                                <div class="users">
-                                    <?php foreach (array_slice($users, 0, 4) as $user) : ?>
-                                        <div class="card mb-2 p-2">
-                                            <div class="card-body d-flex justify-content-between align-items-center p-0">
-                                                <h6 class="mb-1"><?= $user->username ?></h6>
-                                                <button type="button" class="btn btn-success send_request"
-                                                        user-id="<?= $user->id ?>" game-id="<?= $gameSave->id ?>">Send
-                                                    request
-                                                </button>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        <?php else: ?>
-                            <div class="mb-3">
-                                <h6>Add user</h6>
-                                <p>No users available</p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                    <?php
+                    (new SaveGameView())->renderUserList(
+                        $allowedUsers,
+                        $requestUsers,
+                        $users,
+                        $roles,
+                        $gameSave,
+                    ); ?>
                     <div class="mb-3">
                         <button class="btn btn-primary w-100 dedicatedServerButton" type="button"
                                 data-bs-toggle="collapse"
@@ -170,7 +121,7 @@ if (isset($_GET['dedicatedServerId'])) {
 <script>
 
     // Function to handle AJAX requests
-    function handleRequest(buttonId, requestData) {
+    function handleRequest<?= $gameSave->id ?>(buttonId, requestData) {
         const token = $('meta[name="csrf-token"]').attr('content');
         if (!token) {
             console.error('CSRF token not found');
@@ -180,8 +131,11 @@ if (isset($_GET['dedicatedServerId'])) {
 
         // in userlist
         const buttons = document.getElementById('userList_<?= $gameSave->id ?>').querySelectorAll('.' + buttonId);
+        console.log(buttons);
         for (let button of buttons) {
+            console.log(button);
             if (button) {  // Check if the button exists
+
                 button.addEventListener('click', function () {
                     // Get the search value if it exists or set it to an empty string
                     const search = document.getElementById('search_<?= $gameSave->id ?>')
@@ -207,10 +161,10 @@ if (isset($_GET['dedicatedServerId'])) {
                             // apply changes to the user list
                             document.getElementById('userList_<?= $gameSave->id ?>').innerHTML = response;
                             // Add event listeners for each button
-                            handleRequest('remove_user', 'removeId');
-                            handleRequest('cancel_request', 'cancelId');
-                            handleRequest('send_request', 'addId');
-                            handleSearch();
+                            handleRequest<?= $gameSave->id ?>('remove_user', 'removeId');
+                            handleRequest<?= $gameSave->id ?>('cancel_request', 'cancelId');
+                            handleRequest<?= $gameSave->id ?>('send_request', 'addId');
+                            handleSearch<?= $gameSave->id ?>();
                         }
                     });
                 });
@@ -219,11 +173,11 @@ if (isset($_GET['dedicatedServerId'])) {
     }
 
     // Add event listeners for each button
-    handleRequest('remove_user', 'removeId');
-    handleRequest('cancel_request', 'cancelId');
-    handleRequest('send_request', 'addId');
+    handleRequest<?= $gameSave->id ?>('remove_user', 'removeId');
+    handleRequest<?= $gameSave->id ?>('cancel_request', 'cancelId');
+    handleRequest<?= $gameSave->id ?>('send_request', 'addId');
 
-    function handleSearch() {
+    function handleSearch<?= $gameSave->id ?>() {
         const token = $('meta[name="csrf-token"]').attr('content');
         if (!token) {
             console.error('CSRF token not found');
@@ -251,12 +205,12 @@ if (isset($_GET['dedicatedServerId'])) {
                 success: function (response) {
                     // apply changes to the user list
                     document.getElementById('userList_<?= $gameSave->id ?>').querySelector('.users').innerHTML = response;
-                    handleRequest('send_request', 'addId');
+                    handleRequest<?= $gameSave->id ?>('send_request', 'addId');
                 }
             });
         });
     }
-    handleSearch();
+    handleSearch<?= $gameSave->id ?>();
 </script>
 
 <script>
@@ -265,5 +219,4 @@ if (isset($_GET['dedicatedServerId'])) {
         popupModal.show();
     });
 </script>
-
 

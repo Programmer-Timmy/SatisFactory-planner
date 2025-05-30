@@ -184,7 +184,15 @@ class GameSaves {
      * @return array
      */
     public static function getAllowedUsers(int $gameSaveId): array {
-        $allowedUsers = Database::getAll("users_has_game_saves", ['users_id', 'username'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 1]);
+        $allowedUsers = Database::getAll(
+            "users_has_game_saves",
+            ['users_id', 'username', 'role_id'],
+            [
+                'users' => 'users.id = users_has_game_saves.users_id',
+                'roles' => 'roles.id = users_has_game_saves.role_id'
+            ],
+            ['game_saves_id' => $gameSaveId, 'accepted' => 1]
+        );
         return $allowedUsers;
     }
 
@@ -193,7 +201,14 @@ class GameSaves {
      * @return array
      */
     public static function getRequestedUsers(int $gameSaveId): array {
-        return Database::getAll("users_has_game_saves", ['users_id', 'username'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 0]);
+        return Database::getAll(
+            "users_has_game_saves",
+            ['users_id', 'username', 'role_id'],
+            [
+                'users' => 'users.id = users_has_game_saves.users_id'
+            ],
+            ['game_saves_id' => $gameSaveId, 'accepted' => 0]
+        );
     }
 
     /**
