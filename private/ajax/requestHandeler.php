@@ -28,7 +28,21 @@ $search = $_POST['search'];
 // Handle add, remove, and cancel requests
 if (isset($_POST['addId'])) {
     $user_id = $_POST['addId'];
-    GameSaves::addUserToSaveGame($user_id, $game_id);
+    if (isset($_POST['rolesId'])) {
+        $role_id = $_POST['rolesId'];
+        $role = Roles::getRoleById((int)$role_id);
+        if (!$role) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid role id']);
+            exit();
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(['error' => 'No role id provided']);
+        exit();
+    }
+
+    GameSaves::addUserToSaveGame($user_id, $game_id, $role_id);
 }
 
 if (isset($_POST['removeId'])) {

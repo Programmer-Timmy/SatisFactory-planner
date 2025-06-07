@@ -144,9 +144,13 @@ if (isset($_GET['dedicatedServerId'])) {
 
                     const userId = this.getAttribute('user-id');
                     const gameId = this.getAttribute('game-id');
+                    const roleSelector = $('select[name="role_' + userId + '"]');
+                    const rolesId = roleSelector.length > 0 ?
+                        roleSelector.val() : null;
                     const data = {
                         search: search,
                         gameId: gameId,
+                        rolesId: rolesId,
                     };
                     data[requestData] = userId; // Dynamically set the request parameter (addId, removeId, cancelId)
 

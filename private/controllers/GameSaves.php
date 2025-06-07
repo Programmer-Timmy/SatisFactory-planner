@@ -74,9 +74,9 @@ class GameSaves {
      * @return null
      * @throws ErrorException
      */
-    public static function addUserToSaveGame(int $user_id, int $game_save_id) {
+    public static function addUserToSaveGame(int $user_id, int $game_save_id, int $role_id = 2) {
 
-        return Database::insert("users_has_game_saves", ['users_id', 'game_saves_id', 'accepted'], [$user_id, $game_save_id, 0]);
+        return Database::insert("users_has_game_saves", ['users_id', 'game_saves_id', 'accepted', 'role_id'], [$user_id, $game_save_id, 0, $role_id]);
 
     }
 

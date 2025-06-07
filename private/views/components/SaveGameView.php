@@ -28,7 +28,7 @@ class SaveGameView {
             <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 rounded p-0">
                 <div class="flex-fill">
                     <h6 class="mb-1"><?= htmlspecialchars($user->username) ?></h6>
-                    <select class="form-select" name="role_<?= $user->users_id ?>"
+                    <select class="form-select" name="role_<?= $user->id ?>"
                             aria-label="Select role for <?= htmlspecialchars($user->username) ?>">
                         <?php foreach ($roles as $role): ?>
                             <option value="<?= $role->id ?>"
