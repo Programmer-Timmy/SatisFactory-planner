@@ -100,9 +100,6 @@ global $allowedIPs;
     <!-- crsf token -->
     <?php if (isset($_SESSION['csrf_token'])) : ?>
         <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?>">
-    <?php else : ?>
-        <meta name="csrf-token" content="<?= bin2hex(random_bytes(32)) ?>">
-        <?php $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); ?>
     <?php endif; ?>
 
     <!-- icon -->
