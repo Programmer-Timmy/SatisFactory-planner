@@ -12,7 +12,7 @@ import {Visualization} from "./Visualization";
 import {SaveFunctions} from "./Functions/SaveFunctions";
 import {Building} from "./Types/Building";
 import {Recipe} from "./Types/Recipe";
-import {Checklist} from "./Checklist";
+import {Checklist, IChecklist} from "./Checklist";
 import {RecipeSetting} from "./RecipeSetting";
 
 
@@ -514,15 +514,26 @@ export class TableHandler {
         $('#showVisualization').modal('show');
     }
 
-    public saveData(productionTable: ProductionTableRow[], powerTable: PowerTableRow[], importTable: ImportsTableRow[]) {
+    public saveData(productionTable: ProductionTableRow[], powerTable: PowerTableRow[], importTable: ImportsTableRow[], checklist: IChecklist[] | null = null) {
         this.productionTableRows = productionTable.pop() ? productionTable : productionTable;
         this.powerTableRows = powerTable.pop() ? powerTable : powerTable;
         this.importsTableRows = importTable.pop() ? importTable : importTable;
+        this.checklist?.setChecklist(checklist)
         this.generateTables();
 
         this.powerTableRows.push(new PowerTableRow());
         this.productionTableRows.push(new ProductionTableRow());
         this.importsTableRows.push(new ImportsTableRow());
+
+        SaveFunctions.saveProductionLine(
+            SaveFunctions.prepareSaveData(
+                this.productionTableRows,
+                this.powerTableRows,
+                this.importsTableRows,
+                this.checklist
+            ),
+            this
+        );
     }
 
     private generateTables() {
