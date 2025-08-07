@@ -213,32 +213,35 @@ if (count($gameSaves) <= 2) {
                 $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
                 ?>
                 <div class="d-flex align-items-stretch <?= $class ?> mt-3">
-                    <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
-                       class="card-link text-black text-decoration-none w-100">
-                        <div class="card h-100 w-100">
-                            <div class="position-relative">
-                                <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover" style="max-height: 300px" alt="...">
-                                <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
-                                    <a class="btn btn-danger position-absolute top-0 end-0"
-                                       href="game_saves?delete=<?= $gameSave->game_saves_id ?>"
-                                       onclick="return confirm('Delete this game save?')"
-                                       data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><i
-                                                class="fa-solid fa-trash"></i></a>
-                                    <button class="btn btn-primary position-absolute top-0 start-0"
-                                            id="update_save_game_line_<?= $gameSave->id ?>"
-                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i
-                                                class="fa-solid fa-pencil"></i></button>
-                                <?php endif; ?>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title"><?= $gameSave->title ?></h5>
-                                <p class="card-text">Owner: <?= $gameSave->Owner ?></p>
-                            </div>
-                            <div class="card-footer">
-                                <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
-                            </div>
+                    <div class="card h-100 w-100">
+                        <div class="position-relative">
+                            <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
+                               class="card-link text-black text-decoration-none">
+                                <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover" style="max-height: 400px" alt="...">
+                            </a>
+                            <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
+                                <a class="btn btn-danger position-absolute top-0 end-0"
+                                   href="game_saves?delete=<?= $gameSave->game_saves_id ?>"
+                                   onclick="return confirm('Delete this game save?')"
+                                   data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><i
+                                            class="fa-solid fa-trash"></i></a>
+                                <button class="btn btn-primary position-absolute top-0 start-0"
+                                        id="update_save_game_line_<?= $gameSave->id ?>"
+                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i
+                                            class="fa-solid fa-pencil"></i></button>
+                            <?php endif; ?>
                         </div>
-                    </a>
+                        <div class="card-body">
+                            <h5 class="card-title"><?= $gameSave->title ?></h5>
+                            <p class="card-text">Owner: <?= $gameSave->Owner ?></p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                            <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
+                            <a href="game_save?id=<?= $gameSave->game_saves_id ?>" class="btn btn-outline-primary btn-sm">
+                                Open
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <?php if ($gameSave->owner_id == $_SESSION['userId']) require '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
             <?php endforeach; ?>

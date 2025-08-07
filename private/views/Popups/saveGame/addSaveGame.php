@@ -78,12 +78,14 @@ $users = Users::getAllValidatedUsers();
                     <div class="mb-3">
                         <label for="saveGameName" class="form-label">Save Game Name</label>
                         <input type="text" class="form-control" id="saveGameName" name="saveGameName" required
-                               maxlength="45"
+                               maxlength="45" placeholder="e.g. Big Little Factory"
                                value="<?= isset($saveGameName) ? htmlspecialchars($saveGameName) : '' ?>">
                     </div>
                     <div class="mb-3">
-                        <label for="saveGameImage" class="form-label">Save Game Image</label>
+                        <label for="saveGameImage" class="form-label">Save Game Image <small class="text-muted">(optional)</small></label>
                         <input type="file" class="form-control" id="saveGameImage" name="saveGameImage">
+                        <div class="form-text">Uploading an image is optional but helps identify your save.</div>
+
                     </div>
                     <div id="selectedUsers" class="mt-3">
                         <h6 class="requested hidden">Requested Users</h6>
@@ -96,7 +98,7 @@ $users = Users::getAllValidatedUsers();
                             <h6>Add Users</h6>
                             <input type="text" style="display:none">
                             <input type="search" name="Search1232" class="form-control mb-2" id="addSearch"
-                                   placeholder="Search for user" autocomplete="off">
+                                   placeholder="Type to find a user..." autocomplete="off">
                             <div class="users">
                                 <!--                                max of 5-->
                                 <?php foreach (array_slice($users, 0, 5) as $user) : ?>
@@ -111,7 +113,9 @@ $users = Users::getAllValidatedUsers();
                                     </div>
                                 <?php endforeach; ?>
                             </div>
-                        </div>
+                            <div class="form-text">
+                                <?= count($users) > 5 ? 'And ' . (count($users) - 5) . ' more users...' : '' ?>
+                            </div>                        </div>
                         <!-- Hidden input to store selected user IDs -->
                         <input type="hidden" name="selectedUsers" id="selectedUsersInput">
                     </div>
@@ -160,6 +164,10 @@ $users = Users::getAllValidatedUsers();
 
                             </div>
                         </div>
+                        <div class="form-text">
+                            Connect your save game to a dedicated server. This allows you to monitor the status of your dedicated server directly within your save game dashboard.
+                        </div>
+
                     </div>
                 </div>
                 <div class="modal-footer">

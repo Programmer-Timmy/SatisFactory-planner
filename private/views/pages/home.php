@@ -100,7 +100,7 @@
             <!-- Feedback -->
             <div class="col-md-6">
                 <h2>Got Feedback?</h2>
-                <p class="lead">I'd love to hear from you! Whether it's a bug report, a new feature idea, or just a kind word — your input helps make Satisfactory Planner even better for everyone.</p>
+                <p class="lead">I'd love to hear from you! Whether it's a bug report, a new feature idea, or just a kind word. Your input helps make Satisfactory Planner even better for everyone.</p>
                 <a href="https://forms.gle/fAd5LrGRATYwFHzr7" class="btn btn-outline-success">Leave Feedback</a>
             </div>
         </div>
