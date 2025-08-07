@@ -4,9 +4,6 @@ $error = null;
 $productLineId = $_GET['id'] ?? null;
 $production = null;
 if (!$productLineId == null) {
-//    header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
-//    exit();
-
     $productLine = ProductionLines::getProductionLineById($productLineId);
 
     if (empty($productLine) || !ProductionLines::checkProductionLineVisability($productLine->game_saves_id, $_SESSION['userId'])) {
@@ -20,7 +17,8 @@ if (!$productLineId == null) {
     $powers = ProductionLines::getPowerByProductionLine($productLine->id);
     $checklist = Checklist::getChecklist($productLine->id);
 } else {
-    $firstProduction = true;
+    header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
+    exit();
 }
 
 

@@ -4,8 +4,8 @@
         <h1 class="display-4">Welcome to Satisfactory Planner</h1>
         <p class="lead">Design. Optimize. Collaborate.</p>
         <div class="mt-4">
-            <a href="/production_line" class="btn btn-primary mr-2">Start Planning</a>
-            <a href="/login" class="btn btn-outline-secondary">Login</a>
+            <a href="/game_saves" class="btn btn-primary mr-2">Start Planning</a>
+<!--            <a href="/login" class="btn btn-outline-secondary">Login</a>-->
         </div>
     </div>
 
