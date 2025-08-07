@@ -214,10 +214,10 @@ if (count($gameSaves) <= 2) {
                 ?>
                 <div class="d-flex align-items-stretch <?= $class ?> mt-3">
                     <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
-                       class="card-link text-black text-decoration-none">
+                       class="card-link text-black text-decoration-none w-100">
                         <div class="card h-100 w-100">
                             <div class="position-relative">
-                                <img src="image/<?= $gameSave->image ?>" class="card-img-top" alt="...">
+                                <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover" style="max-height: 300px" alt="...">
                                 <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
                                     <a class="btn btn-danger position-absolute top-0 end-0"
                                        href="game_saves?delete=<?= $gameSave->game_saves_id ?>"

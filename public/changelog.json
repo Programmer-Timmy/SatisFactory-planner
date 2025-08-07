@@ -6,7 +6,8 @@
       "Added: New landing page `home`.",
       "Moved: Moved game saves from `home` page to `game_saves` page.",
       "Fixed: Import export buttons not responding.",
-      "Fixed: Import export not saving correctly."
+      "Fixed: Import export not saving correctly.",
+      "Fixed: game save card not being full 100% width."
     ]
   },
   {
