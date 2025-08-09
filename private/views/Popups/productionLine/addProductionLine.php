@@ -46,7 +46,7 @@ if ($_POST && isset($_POST['productionLineName'])) {
                     <div class="mb-3">
                         <label for="productionLineName" class="form-label">Production Line Name</label>
                         <input type="text" class="form-control" id="productionLineName" name="productionLineName"
-                               required maxlength="45"
+                               required maxlength="45" placeholder="e.g. 'Copper Production'"
                                value="<?= isset($productionLineName) ? htmlspecialchars($productionLineName) : '' ?>">
                     </div>
                 </div>

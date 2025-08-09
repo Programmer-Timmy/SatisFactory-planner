@@ -76,13 +76,13 @@ $users = Users::getAllValidatedUsers();
                         <div class="alert alert-danger"><?= $error ?></div>
                     <?php endif; ?>
                     <div class="mb-3">
-                        <label for="saveGameName" class="form-label">Save Game Name</label>
+                        <label for="saveGameName" class="form-label fw-semibold">Save Game Name</label>
                         <input type="text" class="form-control" id="saveGameName" name="saveGameName" required
                                maxlength="45" placeholder="e.g. Big Little Factory"
                                value="<?= isset($saveGameName) ? htmlspecialchars($saveGameName) : '' ?>">
                     </div>
                     <div class="mb-3">
-                        <label for="saveGameImage" class="form-label">Save Game Image <small class="text-muted">(optional)</small></label>
+                        <label for="saveGameImage" class="form-label fw-semibold">Save Game Image <small class="text-muted">(optional)</small></label>
                         <input type="file" class="form-control" id="saveGameImage" name="saveGameImage">
                         <div class="form-text">Uploading an image is optional but helps identify your save.</div>
 
