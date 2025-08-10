@@ -80,7 +80,6 @@ foreach ($powerRows as $row) {
     $totalPower += $row['Consumption'];
 }
 $oldAndNewIds = ProductionLines::saveProductionLine($importsData, $productionData, $powerData, $totalPower, $productionLineId);
-var_dump($oldAndNewIds);
 $checklist = $data['checklist'];
 $checklists = [];
 foreach ($checklist as $check) {
