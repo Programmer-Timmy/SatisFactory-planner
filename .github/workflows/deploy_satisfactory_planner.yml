@@ -95,7 +95,7 @@ jobs:
       - name: Get Version
         id: version
         run: |
-          version=$(jq -r '.[0].version' changelog.json)
+          version=$(jq -r '.[0].version' public/changelog.json)
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Check if Round Version
