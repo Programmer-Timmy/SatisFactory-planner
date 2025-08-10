@@ -90,8 +90,16 @@ class ProductionLines {
             foreach ($production as $prod) {
                 $recipes = Recipes::getRecipeById($prod->recipe_id);
                 $existingProduction = $database->get("production", ['id', 'production_settings_id'], [], ['id' => $prod->id]);
-                $production_settings_id = self::insertUpdateProductionSettings($existingProduction->production_settings_id, $prod->produciton_settings, $database);
+                $production_settings_id = self::insertUpdateProductionSettings($existingProduction->production_settings_id ?? null, $prod->produciton_settings, $database);
                 if ($existingProduction) {
+                    // if prod id is uuid
+                    if( !is_numeric($prod->id) && $existingProduction->id !== $prod->id) {
+                        $newAndOldIds[] = [
+                            'new' => (int)$existingProduction->id,
+                            'old' => $prod->id
+                        ];
+                    }
+                    $prod->id = $existingProduction->id;
                     $database->update(
                         "production",
                         [
@@ -150,6 +158,7 @@ class ProductionLines {
             return $newAndOldIds;
         } catch (Exception $e) {
             $database->rollBack();
+            error_log('Failed to save production line ID: ' . $id . ' - ' . $e->getMessage());
             return false;
         }
     }

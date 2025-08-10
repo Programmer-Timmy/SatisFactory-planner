@@ -28,6 +28,7 @@ class Checklist {
             return true;
         } catch (Exception $e) {
             $database->rollBack();
+            error_log('Failed to save checklist for production line ID: ' . $productionLineId . ' - ' . $e->getMessage());
             return false;
         }
     }

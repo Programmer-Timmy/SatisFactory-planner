@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.11.1",
+    "date": "August 10 2025",
+    "changes": [
+      "Fixed: Saving returning error."
+    ]
+  },
+  {
     "version": "1.11.0",
     "date": "August 8 2025",
     "changes": [
