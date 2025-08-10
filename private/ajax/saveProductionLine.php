@@ -79,15 +79,14 @@ foreach ($powerRows as $row) {
     ];
     $totalPower += $row['Consumption'];
 }
-
 $oldAndNewIds = ProductionLines::saveProductionLine($importsData, $productionData, $powerData, $totalPower, $productionLineId);
-
 $checklist = $data['checklist'];
 $checklists = [];
 foreach ($checklist as $check) {
 //    if id is in old id change it to the new id
     $newId = null;
     if ($oldAndNewIds !== false) {
+
         foreach ($oldAndNewIds as $oldAndNewId) {
             if ($oldAndNewId['old'] == $check['productionRow']['row_id']) {
                 $newId = $oldAndNewId['new'];
@@ -106,7 +105,9 @@ foreach ($checklist as $check) {
 if ($checklists) {
 
     if (!Checklist::saveChecklist($checklists, $productionLineId)) {
-        echo json_encode(['error' => 'Failed to update production line']);
+        echo json_encode(['error' => 'Failed to update production line checklist']);
+        http_response_code(500);
+        error_log('Failed to update production line checklist for production line ID: ' . $productionLineId);
         exit();
     }
 }
@@ -118,4 +119,5 @@ if ($oldAndNewIds !== false) {
 
 
 echo json_encode(['error' => 'Failed to update production line']);
+http_response_code(500);
 exit();
