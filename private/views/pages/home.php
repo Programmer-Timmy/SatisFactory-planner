@@ -82,7 +82,7 @@
                 <p>Save your project and share it with your friends.</p>
             </div>
             <div class="col-12 text-center">
-                <a href="/production_line" class="btn btn-primary btn">Get Started</a>
+                <a href="/game_saves" class="btn btn-primary btn">Get Started</a>
             </div>
         </div>
     </div>
