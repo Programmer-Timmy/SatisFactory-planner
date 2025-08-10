@@ -98,16 +98,23 @@ jobs:
           version=$(jq -r '.[0].version' changelog.json)
           echo "version=$version" >> $GITHUB_OUTPUT
 
+      - name: Check if Round Version
+        id: round
+        run: |
+          if [[ "${{ steps.version.outputs.version }}" =~ ^[0-9]+\.[0-9]+\.0$ ]]; then
+            echo "is_round=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_round=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send Update Email
         if: >
           (
             (github.event_name == 'workflow_dispatch' && inputs.disable_email != 'true') ||
             (github.event_name == 'push' && !contains(github.event.head_commit.message, '[no email]'))
           )
-          && matches(steps.version.outputs.version, '^[0-9]+\\.[0-9]+\\.0$')
+          && steps.round.outputs.is_round == 'true'
         run: |
           curl -X POST https://satisfactoryplanner.timmygamer.nl/api/send-update-email \
             -H "Authorization: Bearer ${{ secrets.MAINTENANCE_TOKEN }}" \
             -H "Content-Type: application/json"
-
-
