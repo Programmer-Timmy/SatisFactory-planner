@@ -97,8 +97,8 @@ if (isset($_GET['dedicatedServerId'])) {
                                 <input type="search" name="Search345" class="form-control mb-2"
                                        id="search_<?= $gameSave->id ?>"
                                        placeholder="Search for user" autocomplete="SearchUser1232">
-                                <div class="users">
-                                    <?php foreach (array_slice($users, 0, 4) as $user) : ?>
+                                <div class="users" data-sp-gamesave-id="<?= $gameSave->id ?>">
+                                    <?php foreach (array_slice($users, 0, 5) as $user) : ?>
                                         <div class="card mb-2 p-2">
                                             <div class="card-body d-flex justify-content-between align-items-center p-0">
                                                 <h6 class="mb-1"><?= $user->username ?></h6>
@@ -109,8 +109,13 @@ if (isset($_GET['dedicatedServerId'])) {
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
+                                    <div class="form-text">
+                                        <?= count($users) > 5 ? 'And ' . (count($users) - 5) . ' more. Search for more users.' : ''?>
+                                    </div>
                                 </div>
+
                             </div>
+
                         <?php else: ?>
                             <div class="mb-3">
                                 <h6>Add user</h6>
@@ -182,12 +187,13 @@ if (isset($_GET['dedicatedServerId'])) {
     </div>
 </div>
 <script>
-    const token = $('meta[name="csrf-token"]').attr('content');
-    if (!token) {
-        console.error('CSRF token not found');
-    }
+
     // Function to handle AJAX requests
-    function handleRequest(buttonId, requestData) {
+    function handleRequest<?= $gameSave->id ?>(buttonId, requestData) {
+        const token = $('meta[name="csrf-token"]').attr('content');
+        if (!token) {
+            console.error('CSRF token not found');
+        }
         // preventing default
 
         // in userlist
@@ -219,9 +225,9 @@ if (isset($_GET['dedicatedServerId'])) {
                             // apply changes to the user list
                             document.getElementById('userList_<?= $gameSave->id ?>').innerHTML = response;
                             // Add event listeners for each button
-                            handleRequest('remove_user', 'removeId');
-                            handleRequest('cancel_request', 'cancelId');
-                            handleRequest('send_request', 'addId');
+                            handleRequest<?= $gameSave->id ?>('remove_user', 'removeId');
+                            handleRequest<?= $gameSave->id ?>('cancel_request', 'cancelId');
+                            handleRequest<?= $gameSave->id ?>('send_request', 'addId');
                             handleSearch();
                         }
                     });
@@ -231,11 +237,15 @@ if (isset($_GET['dedicatedServerId'])) {
     }
 
     // Add event listeners for each button
-    handleRequest('remove_user', 'removeId');
-    handleRequest('cancel_request', 'cancelId');
-    handleRequest('send_request', 'addId');
+    handleRequest<?= $gameSave->id ?>('remove_user', 'removeId');
+    handleRequest<?= $gameSave->id ?>('cancel_request', 'cancelId');
+    handleRequest<?= $gameSave->id ?>('send_request', 'addId');
 
     function handleSearch() {
+        const token = $('meta[name="csrf-token"]').attr('content');
+        if (!token) {
+            console.error('CSRF token not found');
+        }
         // add search event listener
         const input = document.getElementById('search_<?= $gameSave->id ?>')
         // Check if the input exists
@@ -257,7 +267,7 @@ if (isset($_GET['dedicatedServerId'])) {
                 success: function (response) {
                     // apply changes to the user list
                     document.getElementById('userList_<?= $gameSave->id ?>').querySelector('.users').innerHTML = response;
-                    handleRequest('send_request', 'addId');
+                    handleRequest<?= $gameSave->id ?>('send_request', 'addId');
                 }
             });
         });

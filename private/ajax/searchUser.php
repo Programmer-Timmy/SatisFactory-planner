@@ -33,6 +33,9 @@ if (!$gameIdProvided) {
     if (empty($users)) {
         echo '<h6 class="text-center">No users found</h6>';
     } else {
+        // Limit to 5 users
+        $orUsers = $users;
+        $users = array_slice($users, 0, 5);
         foreach ($users as $user) {
             echo '<div class="card mb-2 p-2">
                 <input type="text" style="display:none">
@@ -41,6 +44,9 @@ if (!$gameIdProvided) {
                     <button type="button" class="btn btn-success add_user" data-user-id="' . $user->id . '">Add User</button>
                 </div>
             </div>';
+        }
+        if (count($orUsers) > 5) {
+            echo '<div class="form-text">' . 'And ' . (count($orUsers) - 5) . ' more. Search for more users</div>';
         }
     }
 } else {
@@ -55,7 +61,10 @@ if (!$gameIdProvided) {
     $users = $data['users'];
 
     if (!empty($users)) {
-        echo Users::generateUserListHTML(array_slice($users, 0, 4), $game_id, 'btn-success send_request', 'Send request', 'addId');
+        echo Users::generateUserListHTML(array_slice($users, 0, 5), $game_id, 'btn-success send_request', 'Send request', 'addId');
+        if (count($users) > 5){
+            echo '<div class="form-text">' . 'And ' . (count($users) - 5) . ' more. Search for more users</div>';
+        }
     } else {
         echo '<h6 class="text-center">No users found</h6>';
     }

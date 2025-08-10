@@ -64,7 +64,7 @@ $site = [
     ],
 
     // popup settings
-    'showPopup' => true,
+    'showPopup' => false,
     'popupTitle' => 'Welcome to the site!',
     'popupMessage' => 'This is Satisfactory Planner, a site that helps you plan and organize your factories in the game Satisfactory.',
     'popupButtons' => [
