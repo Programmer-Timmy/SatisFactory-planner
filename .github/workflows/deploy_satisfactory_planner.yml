@@ -92,8 +92,19 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"enabled": false}'  
 
+      - name: Get Version
+        id: version
+        run: |
+          version=$(jq -r '.[0].version' changelog.json)
+          echo "version=$version" >> $GITHUB_OUTPUT
+
       - name: Send Update Email
-        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.disable_email != 'true') || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[no email]')) }}
+        if: >
+          (
+            (github.event_name == 'workflow_dispatch' && inputs.disable_email != 'true') ||
+            (github.event_name == 'push' && !contains(github.event.head_commit.message, '[no email]'))
+          )
+          && matches(steps.version.outputs.version, '^[0-9]+\\.[0-9]+\\.0$')
         run: |
           curl -X POST https://satisfactoryplanner.timmygamer.nl/api/send-update-email \
             -H "Authorization: Bearer ${{ secrets.MAINTENANCE_TOKEN }}" \
