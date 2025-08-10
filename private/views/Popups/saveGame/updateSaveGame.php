@@ -193,6 +193,7 @@ if (isset($_GET['dedicatedServerId'])) {
         const token = $('meta[name="csrf-token"]').attr('content');
         if (!token) {
             console.error('CSRF token not found');
+            return;
         }
         // preventing default
 
@@ -245,7 +246,9 @@ if (isset($_GET['dedicatedServerId'])) {
         const token = $('meta[name="csrf-token"]').attr('content');
         if (!token) {
             console.error('CSRF token not found');
+            return;
         }
+
         // add search event listener
         const input = document.getElementById('search_<?= $gameSave->id ?>')
         // Check if the input exists

@@ -11,6 +11,13 @@
     ]
   },
   {
+    "version": "1.10.5",
+    "date": "May 18 2025",
+    "changes": [
+      "Fixed: user search not working."
+    ]
+  },
+  {
     "version": "1.10.4",
     "date": "April 15 2025",
     "changes": [

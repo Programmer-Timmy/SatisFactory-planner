@@ -93,9 +93,10 @@ jobs:
             -d '{"enabled": false}'  
 
       - name: Send Update Email
-        if: "!contains(github.event.pull_request.labels.*.name, 'skip-email') && github.event.inputs.disable_email == 'false'"
+        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.disable_email != 'true') || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[no email]')) }}
         run: |
           curl -X POST https://satisfactoryplanner.timmygamer.nl/api/send-update-email \
             -H "Authorization: Bearer ${{ secrets.MAINTENANCE_TOKEN }}" \
             -H "Content-Type: application/json"
+
 
