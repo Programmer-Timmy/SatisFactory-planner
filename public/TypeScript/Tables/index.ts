@@ -42,13 +42,18 @@ saveButton.on("click", (event: JQuery.ClickEvent) => {
     }
 })
 
-const exportButton = $("#exportButton");
-const importButton = $("#importButton");
-exportButton.on("click", () => {
-    ImportExport.exportData(tableHandler);
-});
 
-importButton.on("click", (event: JQuery.ClickEvent) => {
-    event.preventDefault();
-    ImportExport.importData(tableHandler);
-});
+// on page load
+$(document).on("DOMContentLoaded", () => {
+
+    const exportButton = $("#exportButton");
+    const importButton = $("#importButton");
+    exportButton.on("click", () => {
+        ImportExport.exportData(tableHandler);
+    });
+
+    importButton.on("click", (event: JQuery.ClickEvent) => {
+        event.preventDefault();
+        ImportExport.importData(tableHandler);
+    });
+})

@@ -1,272 +1,108 @@
-<?php
-ob_start();
-$gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
-$error = '';
-$success = '';
-if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
-    if (!GameSaves::checkAccessOwner($_POST['id'])) {
-        header('Location:/home');
-        exit();
-    }
-
-    $updatedSaveGameName = $_POST['UpdatedSaveGameName'];
-
-
-    if (strlen($updatedSaveGameName) > 45) {
-        $error = 'Save Game Name is too lengthy. Please use up to 45 characters.';
-    } elseif ($updatedSaveGameName !== strip_tags($updatedSaveGameName)) {
-        $error = 'Security Alert: Unauthorized characters detected in Save Game Name. Nice try, but FICSIT Security has blocked that!';
-    } elseif (isset($_FILES['saveGameImage']['tmp_name']) && $_FILES['saveGameImage']['tmp_name'] &&
-        !in_array(mime_content_type($_FILES['saveGameImage']['tmp_name']), ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
-        $error = 'Invalid image format. Please upload an image in JPEG, PNG, GIF, or WebP format.';
-    } elseif (isset($_FILES['saveGameImage']['tmp_name']) && $_FILES['saveGameImage']['tmp_name'] && $_FILES['saveGameImage']['size'] > 2097152) {
-        $error = 'Image size is too large. Please upload an image under 2MB.';
-    } elseif (isset($_FILES['saveGameImage']['name']) && $_FILES['saveGameImage']['name'] !== strip_tags($_FILES['saveGameImage']['name'])) {
-        $error = 'Security Alert: Unauthorized characters detected in image name. Nice try, but FICSIT Security has blocked that!';
-    }
-
-    if (!$error) {
-        $gameSave_id = $_POST['id'];
-
-        if (!isset($_POST['AllowedUsers'])) {
-            $_POST['AllowedUsers'] = [];
-        }
-
-        try {
-            $gameSaveId = GameSaves::updateSaveGame($gameSave_id, $_SESSION['userId'], $updatedSaveGameName, $_FILES['UpdatedSaveGameImage']);
-        } catch (Exception $e) {
-            $error = 'Error updating save game. Please try again or contact support.';
-        }
-
-
-        if ($_POST['dedicatedServerIp'] && $_POST['dedicatedServerPort']) {
-            if (!filter_var($_POST['dedicatedServerIp'], FILTER_VALIDATE_IP)) {
-                if (!preg_match('/^(?!:\/\/)([a-zA-Z0-9-_]{1,63}\.)+[a-zA-Z]{2,6}$/', $_POST['dedicatedServerIp'])) {
-                    $error = 'Invalid IP address or domain name';
-                }
-            } elseif (!is_numeric($_POST['dedicatedServerPort'])) {
-                $error = 'Invalid port number';
-            }
-
-            if (!$error) {
-                $data = DedicatedServer::saveServer($gameSave_id, $_POST['dedicatedServerIp'], $_POST['dedicatedServerPort'], $_POST['dedicatedServerPassword']);
-                if ($data) {
-                    if ($data['status'] === 'error') {
-                        $error = $data['message'];
-                    } else {
-                        $success = $data['message'];
-                    }
-                }
-            }
-        }
-
-        header('Location:/home');
-        exit();
-    }
-}
-
-if ($_GET && isset($_GET['delete'])) {
-    $gameSaveId = $_GET['delete'];
-    if (!GameSaves::checkAccessOwner($gameSaveId)) {
-        header('Location:/home');
-        exit();
-    }
-    GameSaves::deleteSaveGame($gameSaveId);
-    header('Location:/home');
-    exit();
-}
-
-if ($_GET && isset($_GET['request'])) {
-    $requestId = $_GET['request'];
-    if (isset($_GET['decline'])) {
-        GameSaves::declineRequest($requestId);
-    } else {
-        GameSaves::acceptRequest($requestId);
-    }
-    header('Location:/home');
-    exit();
-}
-
-$Invites = GameSaves::getRequests($_SESSION['userId']);
-
-$class = 'col-md-6 col-lg-4';
-if (count($gameSaves) <= 2) {
-    $class = 'col-md-6';
-}
-
-
-?>
-<div class="container">
-    <div class="row align-items-center">
-        <div class="d-none d-md-block col-3 "></div>
-        <div class="col-9 col-md-6 text-md-center text-start">
-            <h1>Game Saves</h1>
+<div class="container-fluid p-0">
+    <!-- Hero Section -->
+    <div class="jumbotron text-center py-5 mb-5">
+        <h1 class="display-4">Welcome to Satisfactory Planner</h1>
+        <p class="lead">Design. Optimize. Collaborate.</p>
+        <div class="mt-4">
+            <a href="/game_saves" class="btn btn-primary mr-2">Start Planning</a>
+<!--            <a href="/login" class="btn btn-outline-secondary">Login</a>-->
         </div>
-        <div class="col-3">
-            <div class="d-flex justify-content-end">
-                <div class="dropdown mega-dropdown me-2" data-bs-auto-close="outside">
-                    <div class="position-relative" data-bs-toggle="dropdown" aria-expanded="false">
-                        <?php if ($Invites) : ?>
-                            <p class="pinned position-absolute translate-middle p-2 bg-danger border border-light rounded-circle"
-                               aria-hidden="true" id="request-count"><?= count($Invites) ?></p>
-                        <?php endif; ?>
-                        <button id="Invites" class="btn btn-secondary" data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                data-bs-title="Invites">
-                            <i class="fa-solid fa-envelope"></i>
-                        </button>
+    </div>
 
-                    </div>
-                    <div id="InvitesDropdown" class="dropdown-menu p-2 mt-2 fade" aria-labelledby="Invites"
-                         style="width: 300px;">
-                        <h5 class="dropdown-header">Invites</h5>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <div id="InvitesList">
-                            <?php if ($Invites) : ?>
 
-                                <div class="d-flex justify-content-between p-1">
-                                    <p class="m-0">Username</p>
-                                    <p class="m-0">Game Save</p>
-                                    <p class="m-0">Action</p>
-                                </div>
-                                <?php foreach ($Invites as $request) : ?>
-                                    <div class="card">
-                                        <div class="card-body d-flex justify-content-between p-2 align-items-center">
-                                            <p class="m-0"><?= $request->username ?></p>
-                                            <p class="m-0"><?= $request->title ?></p>
-                                            <div>
-                                                <a href="?request=<?= $request->id ?>"
-                                                   class="btn btn-success btn-sm"
-                                                   style="width: 30px;"
-                                                   data-bs-toggle="tooltip" data-bs-placement="top"
-                                                   data-bs-title="Accept Request"><i class="fa-solid fa-check"></i>
-                                                </a>
-                                                <a href="?request=<?= $request->id ?>&decline=true"
-                                                   class="btn btn-danger btn-sm" style="width: 30px;"
-                                                   data-bs-toggle="tooltip" data-bs-placement="top"
-                                                   data-bs-title="Decline Request"><i class="fa-solid fa-times"></i>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php else : ?>
-                                <h6 class="text-center">No Invites found</h6>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-
-                <button id="add_game_save" class="btn btn-primary" data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-title="Add Game Save"><i class="fa-solid fa-plus"></i>
-                </button>
-
+    <!-- What is it -->
+    <div class="container mb-5">
+        <div class="row">
+            <div class="col text-center">
+                <h2>What is Satisfactory Planner?</h2>
+                <p class="lead">Satisfactory Planner helps you design and organize your factories in the game Satisfactory.
+                    Create production lines, manage inputs and outputs, and collaborate with your friends.</p>
             </div>
         </div>
     </div>
-    <?php if ($error) : ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert" id="error">
-            <?= $error ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            <script>
-                setTimeout(() => {
-                    $('#error').remove();
-                }, 5000);
-            </script>
-        </div>
 
-    <?php endif; ?>
-    <?php if ($success) : ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert" id="success">
-            <?= $success ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            <script>
-                setTimeout(() => {
-                    // fade out after 5 seconds
-                    $('#success').remove();
-                }, 5000);
-            </script>
-        </div>
-    <?php endif; ?>
-    <?php if (empty($gameSaves)) : ?>
-        <div class="row">
-            <div class="col-12 text-center">
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <i class="fa-solid fa-warning"></i>
-                    Oops! You don't have any game saves yet. You can add a game save by clicking the button below, or a
-                    friend can invite you to a game save.
-
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#popupModal">Add Game Save
-                </button>
+    <!-- Features Section -->
+    <div class="container mb-5">
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <i class="fas fa-cogs fa-3x mb-3 text-primary"></i>
+                <h4>Plan Efficiently</h4>
+                <p>Plan and calculate your factory's production lines to maximize efficiency.</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <i class="fas fa-users fa-3x mb-3 text-success"></i>
+                <h4>Collaborate</h4>
+                <p>Work together with friends on shared projects.</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <i class="fas fa-share-alt fa-3x mb-3 text-warning"></i>
+                <h4>Share Your Plans</h4>
+                <p>Save your work and share it with your friends or keep it private.</p>
             </div>
         </div>
-    <?php else : ?>
-        <!--    show cards-->
-        <div class="row <?= count($gameSaves) == 1 ? "justify-content-center" : "" ?>">
-            <?php foreach ($gameSaves as $gameSave) :
-                $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
-                ?>
-                <div class="d-flex align-items-stretch <?= $class ?> mt-3">
-                    <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
-                       class="card-link text-black text-decoration-none">
-                        <div class="card h-100 w-100">
-                            <div class="position-relative">
-                                <img src="image/<?= $gameSave->image ?>" class="card-img-top" alt="...">
-                                <?php if ($gameSave->owner_id == $_SESSION['userId']) : ?>
-                                    <a class="btn btn-danger position-absolute top-0 end-0"
-                                       href="home?delete=<?= $gameSave->game_saves_id ?>"
-                                       onclick="return confirm('Delete this game save?')"
-                                       data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><i
-                                                class="fa-solid fa-trash"></i></a>
-                                    <button class="btn btn-primary position-absolute top-0 start-0"
-                                            id="update_save_game_line_<?= $gameSave->id ?>"
-                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i
-                                                class="fa-solid fa-pencil"></i></button>
-                                <?php endif; ?>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title"><?= $gameSave->title ?></h5>
-                                <p class="card-text">Owner: <?= $gameSave->Owner ?></p>
-                            </div>
-                            <div class="card-footer">
-                                <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
-                            </div>
-                        </div>
-                    </a>
+    </div>
+
+    <!-- Carousel (optional, replace images with your own) -->
+    <div class="container mb-5 p-4 bg-light rounded shadow">
+        <div id="carouselScreenshots" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner rounded shadow">
+                <div class="carousel-item active">
+                    <img src="/image/screen1.png" class="d-block w-100" alt="The game save page">
                 </div>
-                <?php if ($gameSave->owner_id == $_SESSION['userId']) require '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
-            <?php endforeach; ?>
+                <div class="carousel-item">
+                    <img src="/image/screen2.png" class="d-block w-100" alt="The production line page">
+                </div>
+                <div class="carousel-item">
+                    <img src="/image/screen3.png" class="d-block w-100" alt="The visualization page">
+                </div>
+            </div>
+            <button class="carousel-control-prev " type="button" aria-label="previous image" data-bs-target="#carouselScreenshots" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" style="filter:invert(0) grayscale(0);"></span>
+            </button>
+            <button class="carousel-control-next " type="button" aria-label="next image"
+                    data-bs-target="#carouselScreenshots" data-bs-slide="next">
+                <span class="carousel-control-next-icon" style="filter:invert(0) grayscale(0);"></span>
+            </button>
         </div>
-    <?php endif; ?>
+    </div>
+
+    <!-- How it Works -->
+    <div class="container mb-5">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h5>1. Create a Project</h5>
+                <p>Start a new save and give it a name.</p>
+            </div>
+            <div class="col-md-4">
+                <h5>2. Add Production Lines</h5>
+                <p>Choose your recipes and set up your production lines.</p>
+            </div>
+            <div class="col-md-4">
+                <h5>3. Save & Share</h5>
+                <p>Save your project and share it with your friends.</p>
+            </div>
+            <div class="col-12 text-center">
+                <a href="/game_saves" class="btn btn-primary btn">Get Started</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Creator & Feedback Section -->
+    <div class="container mb-5">
+        <div class="row text-center align-items-start gy-4">
+            <!-- Created by -->
+            <div class="col-md-6">
+                <h2>About the Creator</h2>
+                <p class="lead">Hi, I'm <strong>Programmer Timmy</strong> — a passionate developer and gamer. I built Satisfactory Planner to make factory building more intuitive and fun for players like us. Whether you're a min-maxer or a casual builder, I hope this tool makes your planning easier and more enjoyable.</p>
+                <a href="https://github.com/Programmer-Timmy" class="btn btn-outline-primary">Check out my GitHub</a>
+            </div>
+
+            <!-- Feedback -->
+            <div class="col-md-6">
+                <h2>Got Feedback?</h2>
+                <p class="lead">I'd love to hear from you! Whether it's a bug report, a new feature idea, or just a kind word. Your input helps make Satisfactory Planner even better for everyone.</p>
+                <a href="https://forms.gle/fAd5LrGRATYwFHzr7" class="btn btn-outline-success">Leave Feedback</a>
+            </div>
+        </div>
+    </div>
 </div>
-
-<?php require_once '../private/views/Popups/saveGame/addSaveGame.php'; ?>
-
-<script>
-    document.getElementById('InvitesDropdown').addEventListener('click', function (event) {
-        event.stopPropagation();
-    });
-</script>
-<script>
-    $('.dedicatedServerButton').on('click', function () {
-        this.classList.toggle('rounded-bottom-0');
-    });
-</script>
-<script>
-    const togglePassword = $('.togglePassword');
-    togglePassword.on('click', function () {
-        const passwordInput = $(this).prev();
-        const eyeIcon = $(this).find('i');
-
-        const type = passwordInput.attr('type') === 'password' ? 'text' : 'password';
-        passwordInput.attr('type', type);
-        eyeIcon.toggleClass('fa-eye-slash');
-        eyeIcon.toggleClass('fa-eye');
-    });
-</script>

@@ -36,15 +36,27 @@ if (isset($_GET['dedicatedServerId'])) {
                     <input type="hidden" name="id" value="<?= $gameSave->id ?>">
 
                     <div class="mb-3">
-                        <label for="UpdatedSaveGameName" class="form-label">Save Game Name</label>
+                        <label for="UpdatedSaveGameName" class="form-label fw-semibold">Save Game Name</label>
                         <input type="text" class="form-control" name="UpdatedSaveGameName"
-                               value="<?= $gameSave->title ?>"
+                               value="<?= $gameSave->title ?>" placeholder="e.g. Big Little Factory"
                                required>
                     </div>
-                    <div class="mb-3">
-                        <label for="UpdatedSaveGameImage" class="form-label">Save Game Image</label>
-                        <input type="file" class="form-control" name="UpdatedSaveGameImage">
+                    <div class="mb-4">
+                        <label for="UpdatedSaveGameImage" class="form-label fw-semibold">Save Game Image <small class="text-muted">(optional)</small></label>
+                        <?php if ($gameSave->image && $gameSave->image !== 'default_img.png'): ?>
+                            <div class="mb-3">
+                                <div class="card w-100">
+                                    <img src="/image/<?= htmlspecialchars($gameSave->image) ?>" alt="Save Game Image" class="card-img-top img-fluid" style="max-height: 200px; object-fit: cover;">
+                                    <div class="card-body p-2">
+                                        <p class="card-text text-center mb-0">Current Save Image</p>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" class="form-control" id="UpdatedSaveGameImage" name="UpdatedSaveGameImage" accept="image/*">
+                        <div class="form-text">Uploading an image is optional but helps identify your save.</div>
                     </div>
+
                     <div id="userList_<?= $gameSave->id ?>">
                         <?php if ($allowedUsers): ?>
                             <div class="mb-3">
@@ -85,8 +97,8 @@ if (isset($_GET['dedicatedServerId'])) {
                                 <input type="search" name="Search345" class="form-control mb-2"
                                        id="search_<?= $gameSave->id ?>"
                                        placeholder="Search for user" autocomplete="SearchUser1232">
-                                <div class="users">
-                                    <?php foreach (array_slice($users, 0, 4) as $user) : ?>
+                                <div class="users" data-sp-gamesave-id="<?= $gameSave->id ?>">
+                                    <?php foreach (array_slice($users, 0, 5) as $user) : ?>
                                         <div class="card mb-2 p-2">
                                             <div class="card-body d-flex justify-content-between align-items-center p-0">
                                                 <h6 class="mb-1"><?= $user->username ?></h6>
@@ -97,8 +109,13 @@ if (isset($_GET['dedicatedServerId'])) {
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
+                                    <div class="form-text">
+                                        <?= count($users) > 5 ? 'And ' . (count($users) - 5) . ' more. Search for more users.' : ''?>
+                                    </div>
                                 </div>
+
                             </div>
+
                         <?php else: ?>
                             <div class="mb-3">
                                 <h6>Add user</h6>
@@ -148,12 +165,14 @@ if (isset($_GET['dedicatedServerId'])) {
                                         </button>
                                     </div>
                                 </div>
-
                                 <?php if ($dedicatedServer): ?>
-                                    <a href="home?dedicatedServerId=<?= $gameSave->id ?>"
+                                    <a href="game_saves?dedicatedServerId=<?= $gameSave->id ?>"
                                        class="btn btn-danger">Remove dedicated server</a>
                                 <?php endif; ?>
                             </div>
+                        </div>
+                        <div class="form-text">
+                            Connect your save game to a dedicated server. This allows you to monitor the status of your dedicated server directly within your save game dashboard.
                         </div>
                     </div>
                 </form>
@@ -170,7 +189,7 @@ if (isset($_GET['dedicatedServerId'])) {
 <script>
 
     // Function to handle AJAX requests
-    function handleRequest(buttonId, requestData) {
+    function handleRequest<?= $gameSave->id ?>(buttonId, requestData) {
         const token = $('meta[name="csrf-token"]').attr('content');
         if (!token) {
             console.error('CSRF token not found');
@@ -207,9 +226,9 @@ if (isset($_GET['dedicatedServerId'])) {
                             // apply changes to the user list
                             document.getElementById('userList_<?= $gameSave->id ?>').innerHTML = response;
                             // Add event listeners for each button
-                            handleRequest('remove_user', 'removeId');
-                            handleRequest('cancel_request', 'cancelId');
-                            handleRequest('send_request', 'addId');
+                            handleRequest<?= $gameSave->id ?>('remove_user', 'removeId');
+                            handleRequest<?= $gameSave->id ?>('cancel_request', 'cancelId');
+                            handleRequest<?= $gameSave->id ?>('send_request', 'addId');
                             handleSearch();
                         }
                     });
@@ -219,9 +238,9 @@ if (isset($_GET['dedicatedServerId'])) {
     }
 
     // Add event listeners for each button
-    handleRequest('remove_user', 'removeId');
-    handleRequest('cancel_request', 'cancelId');
-    handleRequest('send_request', 'addId');
+    handleRequest<?= $gameSave->id ?>('remove_user', 'removeId');
+    handleRequest<?= $gameSave->id ?>('cancel_request', 'cancelId');
+    handleRequest<?= $gameSave->id ?>('send_request', 'addId');
 
     function handleSearch() {
         const token = $('meta[name="csrf-token"]').attr('content');
@@ -251,7 +270,7 @@ if (isset($_GET['dedicatedServerId'])) {
                 success: function (response) {
                     // apply changes to the user list
                     document.getElementById('userList_<?= $gameSave->id ?>').querySelector('.users').innerHTML = response;
-                    handleRequest('send_request', 'addId');
+                    handleRequest<?= $gameSave->id ?>('send_request', 'addId');
                 }
             });
         });

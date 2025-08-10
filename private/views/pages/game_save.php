@@ -1,7 +1,7 @@
 <?php
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: /');
+    header('Location: /game_saves');
     exit();
 }
 
@@ -9,7 +9,7 @@ $gameSave = GameSaves::getSaveGameById($_GET['id']);
 $outputs = Outputs::getAllOutputs($_GET['id']);
 
 if (empty($gameSave)) {
-    header('Location: /');
+    header('Location: /game_saves');
     exit();
 }
 
@@ -223,7 +223,18 @@ if (isset($_GET['layoutType'])) {
                 </div>
             <?php elseif ($gameSave->card_view) : ?>
                 <div class="row">
-                    <?php foreach ($productionLines as $productionLine) : ?>
+                    <?php foreach ($productionLines as $productionLine) : 
+                        $buildProgress = $productionLine->checklist[0]->been_build_percentage;
+                        $testProgress = $productionLine->checklist[0]->been_tested_percentage;
+
+                        if ($buildProgress === null) {
+                            $buildProgress = 0;
+                        }
+
+                        if ($testProgress === null) {
+                            $testProgress = 0;
+                        }
+                        ?>
                         <div class="col-md-6 col-xl-4 mb-4">
                             <div class="card h-100">
                                 <div class="card-header bg-dark text-white">
@@ -247,10 +258,10 @@ if (isset($_GET['layoutType'])) {
                                             <label>Build Progress</label>
                                             <div class="progress">
                                                 <div class="progress-bar bg-success text-black" role="progressbar"
-                                                     style="width: <?= $productionLine->checklist[0]->been_build_percentage ?>%"
-                                                     aria-valuenow="<?= $productionLine->checklist[0]->been_build_percentage ?>"
+                                                     style="width: <?= $buildProgress ?>%"
+                                                     aria-valuenow="<?= $buildProgress?>"
                                                      aria-valuemin="0" aria-valuemax="100">
-                                                    <?= round($productionLine->checklist[0]->been_build_percentage) ?>%
+                                                    <?= round($buildProgress) ?>%
                                                 </div>
                                             </div>
                                         </div>
@@ -259,10 +270,10 @@ if (isset($_GET['layoutType'])) {
                                             <label>Test Progress</label>
                                             <div class="progress">
                                                 <div class="progress-bar bg-warning text-black" role="progressbar"
-                                                     style="width: <?= $productionLine->checklist[0]->been_tested_percentage ?>%"
-                                                     aria-valuenow="<?= $productionLine->checklist[0]->been_tested_percentage ?>"
+                                                     style="width: <?= $testProgress?>%"
+                                                     aria-valuenow="<?= $testProgress?>"
                                                      aria-valuemin="0" aria-valuemax="100">
-                                                    <?= round($productionLine->checklist[0]->been_tested_percentage) ?>%
+                                                    <?= round($testProgress) ?>%
                                                 </div>
                                             </div>
                                         </div>
@@ -303,27 +314,38 @@ if (isset($_GET['layoutType'])) {
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($productionLines as $productionLine) : ?>
+                        <?php foreach ($productionLines as $productionLine) :
+                            $buildProgress = $productionLine->checklist[0]->been_build_percentage;
+                            $testProgress = $productionLine->checklist[0]->been_tested_percentage;
+
+                            if ($buildProgress === null) {
+                                $buildProgress = 0;
+                            }
+
+                            if ($testProgress === null) {
+                                $testProgress = 0;
+                            }
+                            ?>
                             <tr>
                                 <td><?= $productionLine->name ?></td>
                                 <td><?= $productionLine->power_consumbtion ?></td>
                                 <td>
                                     <div class="progress">
                                         <div class="progress-bar bg-success text-black" role="progressbar"
-                                             style="width: <?= $productionLine->checklist[0]->been_build_percentage ?>%"
-                                             aria-valuenow="<?= $productionLine->checklist[0]->been_build_percentage ?>"
+                                             style="width: <?= $buildProgress ?>%"
+                                             aria-valuenow="<?= $buildProgress?>"
                                              aria-valuemin="0" aria-valuemax="100">
-                                            <?= round($productionLine->checklist[0]->been_build_percentage) ?>%
+                                            <?= round($buildProgress) ?>%
                                         </div>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="progress">
                                         <div class="progress-bar bg-warning text-black" role="progressbar"
-                                             style="width: <?= $productionLine->checklist[0]->been_tested_percentage ?>%"
-                                             aria-valuenow="<?= $productionLine->checklist[0]->been_tested_percentage ?>"
+                                             style="width: <?= $testProgress ?>%"
+                                             aria-valuenow="<?= $testProgress ?>"
                                              aria-valuemin="0" aria-valuemax="100">
-                                            <?= round($productionLine->checklist[0]->been_tested_percentage) ?>%
+                                            <?= round($testProgress)  ?>%
                                         </div>
                                     </div>
                                 </td>

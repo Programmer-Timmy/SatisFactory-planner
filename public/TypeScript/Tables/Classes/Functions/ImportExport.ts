@@ -1,4 +1,7 @@
 import {TableHandler} from "../TableHandler";
+import {SaveFunctions} from "./SaveFunctions";
+import { v4 as uuidv4 } from 'uuid';
+
 
 export class ImportExport {
     public static async importData(tableHandler: TableHandler) {
@@ -18,8 +21,13 @@ export class ImportExport {
                 return;
             }
 
-            tableHandler.saveData(jsonData.productionTable, jsonData.powerTable, jsonData.importTable);
+            tableHandler.saveData(jsonData.productionTable, jsonData.powerTable, jsonData.importTable, jsonData.checklist || []);
             this.showSuccessMessage('Data successfully imported.');
+            $('#importFile').val('');
+        }
+
+        reader.onerror = () => {
+            this.showErrorMessage('An error occurred while reading the file. Please try again.');
         }
     }
 
@@ -27,12 +35,25 @@ export class ImportExport {
         const productionTableData = tableHandler.productionTableRows;
         const importTableData = tableHandler.importsTableRows;
         const powerTableData = tableHandler.powerTableRows;
+        const checklistData = tableHandler.checklist?.getChecklist() || [];
+
+        // set the id's to uuid's
+        productionTableData.forEach((row) => {
+
+            // find matching checklistdata
+            const checklist = checklistData.find((check) => check.productionRow.row_id === row.row_id);
+            row.row_id = uuidv4();
+            if (checklist) {
+                checklist.productionRow = row; // Update the productionRow reference
+            }
+        })
 
 
         const dataToExport = {
-            productionTable: productionTableData,
+            productionTable: SaveFunctions.cloneWithoutCircularReferences(productionTableData),
             powerTable: powerTableData,
-            importTable: importTableData
+            importTable: importTableData,
+            checklist: SaveFunctions.cloneWithoutCircularReferences(checklistData)
         }
 
         const bytes = new TextEncoder().encode(JSON.stringify(dataToExport));

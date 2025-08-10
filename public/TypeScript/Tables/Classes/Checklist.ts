@@ -187,6 +187,16 @@ export class Checklist {
         return checklist;
     }
 
+    public setChecklist(checklist: IChecklist[] | null) {
+        if (checklist) {
+            this.checklist = checklist;
+            this.canvasBody.empty();
+            this.buildChecklist();
+        } else {
+            this.createChecklist();
+        }
+    }
+
     private initCheckBoxes() {
         this.canvasBody.find("input[type='checkbox']").each((index, checkbox) => {
             // @ts-ignore
