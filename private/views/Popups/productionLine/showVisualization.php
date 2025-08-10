@@ -7,15 +7,18 @@
                 <h5 class="modal-title" id="showVisualizationLabel">Visualization</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-0">
+            <div class="modal-body p-0 overflow-hidden">
+                <div class="d-flex justify-content-center align-items-center flex-column px-5" id="loadingScreenGraph" style="height: 100%; width: 100%;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="progress w-100 mt-3">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0;" id="loadingProgressGraph"></div>
+                    </div>
+                </div>
                 <div id="graph" class="border-0" style="height: 100%"></div>
             </div>
             <div class="modal-footer">
-<!--                <select id="layout" class="form-select" style="width: 200px;">-->
-<!--                    <option value="breadthfirst">Breadthfirst</option>-->
-<!--                    <option value="cose">Cose</option>-->
-<!--                    <option value="klay" selected>klay</option>-->
-<!--                    <option value="fcose">fcose</option>-->
 <!--                </select>-->
                 <!-- Checklist -->
                 <div class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" title="Show or hide the checklist. <br> 🟢 Built and tested <br> 🟡 Built but not tested <br> ⚪ Not built" data-bs-html="true">

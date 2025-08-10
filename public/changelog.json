@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.11.2",
+    "date": "August 10 2025",
+    "changes": [
+      "Fixed: Exports not being saved correctly.",
+      "Added: Loading screen for loading the visualisation of the production line."
+    ]
+  },
+  {
     "version": "1.11.1",
     "date": "August 10 2025",
     "changes": [

@@ -87,6 +87,7 @@ class ProductionLines {
             $updatedAndNewProduction = [];
             $newAndOldIds = [];
             $allProduction = Database::getAll("production", ['id'], [], ['production_lines_id' => $id]);
+            $database->delete("output", ['production_lines_id' => $id]);
             foreach ($production as $prod) {
                 $recipes = Recipes::getRecipeById($prod->recipe_id);
                 $existingProduction = $database->get("production", ['id', 'production_settings_id'], [], ['id' => $prod->id]);
@@ -137,7 +138,6 @@ class ProductionLines {
                 }
 
 
-                $database->delete("output", ['production_lines_id' => $id]);
                 $database->insert("output", ['production_lines_id', 'items_id', 'ammount'], [$id, $recipes->item_id, $prod->export_amount_per_min]);
 
                 if ($recipes->item_id2) {

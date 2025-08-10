@@ -74,7 +74,11 @@ export class Visualization {
      * Create the visualization of the production line
      */
     public async createVisualization(): Promise<void> {
-        await this.loadCytoscapeExtensions();
+        // check if the extensions are loaded, if not, load them
+        if (!cytoscape) {
+            await this.showLoadingScreen();
+            await this.loadCytoscapeExtensions();
+        }
 
         let elements = [];
         let roots = [];
@@ -182,7 +186,6 @@ export class Visualization {
         });
 
         this.cy = cy;
-
     }
 
     private applyQTip(element: cytoscape.NodeSingular | cytoscape.EdgeSingular, content: string): void {
@@ -436,15 +439,67 @@ export class Visualization {
     }
 
     private async loadCytoscapeExtensions() {
+        const progress = (percent: number) => {
+            $('#loadingProgressGraph').css('width', percent + '%');
+        };
+
+        progress(10);
         cytoscape = (await import("cytoscape")).default;
+        progress(40);
 
         //@ts-ignore
         const { default: qtip } = await import("cytoscape-qtip");
+        progress(70);
+
         const { default: klay } = await import("cytoscape-klay");
+        progress(90);
 
         cytoscape.use(qtip);
         cytoscape.use(klay);
+        progress(100);
+
+        await this.hideLoadingScreen();
     }
+
+
+    private async hideLoadingScreen() {
+        return new Promise<void>((resolve) => {
+            const loadingScreen = $('#loadingScreenGraph');
+            const graph = $('#graph');
+
+            // Fade out only opacity, keep other styles intact
+            loadingScreen.css('transition', 'opacity 0.5s');
+            loadingScreen.css('opacity', '0');
+
+            setTimeout(() => {
+                loadingScreen.addClass('d-none'); // Hide the loading screen after fade out
+
+                // Show the graph by removing a "hidden" class, instead of using fadeIn
+                graph.removeClass('hidden-graph'); // This class can handle opacity/display safely
+                resolve();
+            }, 500);
+        });
+    }
+
+    private async showLoadingScreen() {
+        return new Promise<void>((resolve) => {
+            const loadingScreen = $('#loadingScreenGraph');
+            const graph = $('#graph');
+            const loadingProgress = $('#loadingProgressGraph');
+
+            // Reset the loading progress bar
+            loadingProgress.css('width', '0%');
+
+            // Show the loading screen
+            loadingScreen.removeClass('d-none'); // Ensure it's visible
+            loadingScreen.css('opacity', '1'); // Reset opacity to 1
+
+            // Hide the graph by adding a "hidden" class, instead of using fadeOut
+            graph.addClass('hidden-graph'); // This class can handle opacity/display safely
+            resolve();
+        });
+    }
+
 
 
 }
