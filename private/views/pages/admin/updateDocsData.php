@@ -5,7 +5,7 @@ function extractNativeClass($nativeClass) {
     return $item_name;
 }
 
-$filePath = __DIR__ . '/../../../../static/Docs.json';
+$filePath = __DIR__ . '/../../../../static/Docs.jsont';
 
 // Check if the file exists before attempting to read it
 if (file_exists($filePath)) {

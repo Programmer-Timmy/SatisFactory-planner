@@ -14,6 +14,7 @@ import {Building} from "./Types/Building";
 import {Recipe} from "./Types/Recipe";
 import {Checklist, IChecklist} from "./Checklist";
 import {RecipeSetting} from "./RecipeSetting";
+import {ProductionSelect} from "./ProductionSelect";
 
 
 /**
@@ -129,6 +130,10 @@ export class TableHandler {
                     rowValues.push(Number($(value).val()));
                 } else {
                     rowValues.push($(value).val());
+                }
+                // if select
+                if ($(value).is('select') && id === 'recipes') {
+                    new ProductionSelect($(value));
                 }
             });
 

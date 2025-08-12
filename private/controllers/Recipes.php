@@ -2,8 +2,77 @@
 
 class Recipes {
 
+
     public static function getAllRecipes() {
-        return Database::getAll("recipes", ['*'], [], [], 'LTRIM(SUBSTRING_INDEX(`name`, "(", 1)) ASC');
+        $sql = "
+    SELECT 
+        r.*,
+        IF(COUNT(i.id) > 0,
+           JSON_ARRAYAGG(JSON_OBJECT(
+                'id', i.id,
+                'name', i.name,
+                'class_name', i.class_name,
+                'form', i.form,
+                'quantity', ri.import_amount_per_min
+           )),
+           JSON_ARRAY()
+        ) AS ingredients,
+        
+        IF(COUNT(b.id) > 0,
+           JSON_ARRAYAGG(JSON_OBJECT(
+                'id', b.id,
+                'name', b.name,
+                'class_name', b.class_name,
+                'power_used', b.power_used,
+                'power_generated', b.power_generation
+           )),
+           JSON_ARRAY()
+        ) AS building,
+        IF(i3.id IS NOT NULL, JSON_ARRAY(
+                JSON_OBJECT(
+                  'id', i2.id,
+                  'name', i2.name,
+                  'class_name', i2.class_name,
+                  'form', i2.form,
+                  'quantity', r.export_amount_per_min
+                ),
+                JSON_OBJECT(
+                  'id', i3.id,
+                  'name', i3.name,
+                  'class_name', i3.class_name,
+                  'form', i3.form,
+                  'quantity', r.export_amount_per_min2
+                )
+              ), JSON_ARRAY(
+                JSON_OBJECT(
+                  'id', i2.id,
+                  'name', i2.name,
+                  'class_name', i2.class_name,
+                  'form', i2.form,
+                  'quantity', r.export_amount_per_min
+                )
+              )) AS products
+    FROM recipes r
+    LEFT JOIN recipe_ingredients ri ON ri.recipes_id = r.id
+    LEFT JOIN items i ON i.id = ri.items_id
+    left join buildings b ON b.id = r.buildings_id
+    left join items i2 ON i2.id = r.item_id
+    left join items i3 ON i3.id = r.item_id2
+    
+    WHERE r.class_name != 'building'
+    GROUP BY r.name
+    ORDER BY LTRIM(SUBSTRING_INDEX(r.name, '(', 1)) ASC
+";
+        $database = new Database();
+        $recipes = $database->query($sql);
+
+        foreach ($recipes as $recipe) {
+            $recipe->ingredients = json_decode($recipe->ingredients) ?: [];
+            $recipe->building = json_decode($recipe->building) ?: [];
+            $recipe->products = json_decode($recipe->products) ?: [];
+        }
+
+        return $recipes;
     }
 
     public static function getRecipeById(int $id) {
