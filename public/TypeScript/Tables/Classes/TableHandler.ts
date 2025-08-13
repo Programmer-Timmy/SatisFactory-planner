@@ -78,7 +78,6 @@ export class TableHandler {
         }, timeOutTime);
 
         this.checklist = new Checklist(this);
-        console.log(this.checklist);
     }
 
     private async getTableData() {
@@ -133,7 +132,6 @@ export class TableHandler {
                     return
                 }
                 if ($value.data('sp-skip') === true) {
-                    console.warn('Skipping value:', value);
                     return;
                 }
                 const type = $value.attr('type');
@@ -291,9 +289,7 @@ export class TableHandler {
             const inputsAndSelects = $(`#${tableId} tbody`).find('input, select');
 
             inputsAndSelects.each((_, element) => {
-                // if has skip data attribute, skip it
                 if ($(element).data('sp-skip') === true) {
-                    console.warn('Skipping element:', element);
                     return;
                 }
                 $(element).on('change', (event) => {
@@ -434,6 +430,8 @@ export class TableHandler {
                 this.handleInputChange(event, tableId);
             });
         });
+
+        new ProductionSelect(newRow.find('.recipe-select'));
 
         switch (tableId) {
             case 'imports':
@@ -602,8 +600,6 @@ export class TableHandler {
         if (this.checkIfSelect(target)) {
             await ProductionLineFunctions.updateRecipe(row, value);
         }
-
-        console.log('Row after update:', row);
 
         this.updateRowInTable(tableId, rowIndex, row);
 

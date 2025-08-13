@@ -202,12 +202,12 @@ class GlobalUtility {
         ?>
         <div class="bg-white recipe-select position-relative">
             <input type="text" data-sp-skip="true" class="form-control rounded-0 search-input" name="recipeSearch"
-                   placeholder="Search by product or recipe" value="<?= htmlspecialchars($recipeName) ?>">
-            <input type="hidden" name="recipeId" class="recipe-id" value="<?= $selectedRecipeId ?>">
-            <div class="select-items collapse position-absolute child bg-white overflow-y-auto z-2 border border-black" style="max-height: 300px; min-width: 300px;">
+                   placeholder="Search by product or recipe" value="<?= htmlspecialchars($recipeName) ?>" autocomplete="off">
+            <input type="hidden" name="recipeId" class="recipe-id" value="<?= $selectedRecipeId ?>" autocomplete="off">
+            <div class="select-items collapse position-absolute child bg-white overflow-y-auto z-2" style="max-height: 300px; min-width: 300px;">
                 <?php foreach ($recipes as $recipe): ?>
 
-                    <div class="border-bottom border-black  p-1 select-item" data-recipe-id="<?= $recipe->id ?>"
+                    <div class="p-1 select-item" data-recipe-id="<?= $recipe->id ?>"
                          data-recipe-name="<?= htmlspecialchars($recipe->name) ?>">
                         <h6 class="m-0 text-center small recipe-name"><?= $recipe->name ?></h6>
 

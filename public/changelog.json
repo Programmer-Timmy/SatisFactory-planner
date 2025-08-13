@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.12.0",
+    "date": "August 13 2025",
+    "changes": [
+      "Improved: Search functionality for the recipes now shows what your typing, shows recipes that match the search term based on name and what it produces.",
+      "Updated: Guid for the production line page to include the new search functionality."
+    ]
+  },
+  {
     "version": "1.11.2",
     "date": "August 10 2025",
     "changes": [

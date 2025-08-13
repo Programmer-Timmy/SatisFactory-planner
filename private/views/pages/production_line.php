@@ -261,15 +261,9 @@ foreach ($production as $product) {
                                 <input type="hidden" name="production_id[]" value="<?= generateUUID() ?>">
                             </td>
                             <td class="m-0 p-0 position-relative">
-                                <i class="fa-solid fa-gear open-p-settings position-absolute link-primary text-muted"
+                                <i class="fa-solid fa-gear open-p-settings position-absolute link-primary text-muted z-1"
                                    style="font-size: 11px; top:2px; left:2px;"></i>
-                                <select name="production_recipe_id[]"
-                                        class="form-control rounded-0 item-recipe-id recipe">
-                                    <option value="" disabled selected>Select a recipe</option>
-                                    <?php foreach ($recipes as $recipe) : ?>
-                                        <option value="<?= $recipe->id ?>"><?= $recipe->name ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <?= GlobalUtility::generateRecipeSelect($recipes) ?>
                             </td>
                             <td class="m-0 p-0">
                                 <input min="0" type="number" step="any" name="production_quantity[]" value="0"
