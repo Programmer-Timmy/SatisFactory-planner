@@ -8,10 +8,13 @@ $info: #4a90e2; // Deeper blue
 $light: #f0f4f8; // Clean light gray
 $dark: #2e2e2e; // Modern dark gray
 
+$primary-emphasis: transparentize($primary, 0.35); // Slightly lighter primary color for emphasis
+
 // Body and global background
 $body-bg: #1e1e1e; // Dark background color
 $body-bg-dark: #1e1e1e; // Darker background color for contrast
 $body-color: #f0f4f8; // Light text color for contrast
+$bg-dark-gray: #383838; // Pure white background for specific elements
 
 // Text colors
 $text-color: #f0f4f8; // Light text color

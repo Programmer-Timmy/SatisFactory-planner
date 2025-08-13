@@ -25,3 +25,9 @@ footer{
   align-items: center;
 
 }
+
+.select-item{
+  &:hover, &.active {
+    background-color: $primary-emphasis;
+  }
+}

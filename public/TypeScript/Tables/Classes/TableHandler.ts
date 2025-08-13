@@ -122,19 +122,25 @@ export class TableHandler {
 
         for (let i = 0; i < table.length - lengthReduction; i++) {
             const row = table[i];
-            const values = $(row).find('input, select');
+            const values = $(row).find('input, select, .recipe-select');
             const rowValues: any[] = [];
 
             values.each((_, value) => {
-                if ($(value).data('sp-skip') === true) {
+
+                const $value = $(value);
+                if ($value.hasClass('recipe-select')) {
+                    new ProductionSelect($value);
+                    return
+                }
+                if ($value.data('sp-skip') === true) {
                     console.warn('Skipping value:', value);
                     return;
                 }
-                const type = $(value).attr('type');
+                const type = $value.attr('type');
                 if (type === 'number') {
-                    rowValues.push(Number($(value).val()));
+                    rowValues.push(Number($value.val()));
                 } else {
-                    rowValues.push($(value).val());
+                    rowValues.push($value.val());
                 }
             });
 

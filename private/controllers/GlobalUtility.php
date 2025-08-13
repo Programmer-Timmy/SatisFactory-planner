@@ -201,15 +201,15 @@ class GlobalUtility {
         }
         ?>
         <div class="bg-white recipe-select position-relative">
-            <input type="text" data-sp-skip="true" class="form-control rounded-0" name="recipeSearch"
+            <input type="text" data-sp-skip="true" class="form-control rounded-0 search-input" name="recipeSearch"
                    placeholder="Search by product or recipe" value="<?= htmlspecialchars($recipeName) ?>">
-            <input type="hidden" name="recipeId" value="<?= $selectedRecipeId ?>">
-            <div class="select-items collapse position-absolute child bg-white start-0 overflow-y-auto w-100 z-2" style="max-height: 300px; min-width: 300px;">
+            <input type="hidden" name="recipeId" class="recipe-id" value="<?= $selectedRecipeId ?>">
+            <div class="select-items collapse position-absolute child bg-white overflow-y-auto z-2 border border-black" style="max-height: 300px; min-width: 300px;">
                 <?php foreach ($recipes as $recipe): ?>
 
-                    <div class="border border-black border-top-0 p-1" data-recipe-id="<?= $recipe->id ?>"
+                    <div class="border-bottom border-black  p-1 select-item" data-recipe-id="<?= $recipe->id ?>"
                          data-recipe-name="<?= htmlspecialchars($recipe->name) ?>">
-                        <h6 class="m-0 text-center small"><?= $recipe->name ?></h6>
+                        <h6 class="m-0 text-center small recipe-name"><?= $recipe->name ?></h6>
 
                         <div class="d-flex justify-content-center align-items-center mt-1 flex-wrap" style="gap:4px;">
 
@@ -236,7 +236,7 @@ class GlobalUtility {
                             <?php if ($recipe->products): ?>
                                 <i class="fa-solid fa-arrow-right" style="font-size:12px;"></i>
                                 <?php foreach ($recipe->products as $product): ?>
-                                    <div class="d-flex align-items-center" style="gap:2px;">
+                                    <div class="d-flex align-items-center recipe-product" style="gap:2px;" data-product-id="<?= $product->id ?>" data-product-name="<?= htmlspecialchars($product->name) ?>">
                                         <img src="/image/items/<?= strtolower(str_replace('_', '-', $product->class_name)) ?>_256.png"
                                              title="<?= $product->name ?>"
                                              class="img-fluid" style="width: 26px; height: 26px;">
