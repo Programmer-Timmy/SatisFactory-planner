@@ -371,6 +371,7 @@ foreach ($production as $product) {
                 const productName = this.querySelector('h6').textContent;
                 const input = document.querySelector('input[name="recipeId"]');
                 input.value = recipeId;
+                input.dispatchEvent(new Event('change'));
                 searchInput.value = productName;
                 const selectItems = searchInput.closest('.bg-white').querySelector('.select-items');
                 selectItems.classList.remove('show');

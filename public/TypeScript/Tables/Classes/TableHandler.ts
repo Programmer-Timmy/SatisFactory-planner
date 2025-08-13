@@ -78,6 +78,7 @@ export class TableHandler {
         }, timeOutTime);
 
         this.checklist = new Checklist(this);
+        console.log(this.checklist);
     }
 
     private async getTableData() {
@@ -125,15 +126,15 @@ export class TableHandler {
             const rowValues: any[] = [];
 
             values.each((_, value) => {
+                if ($(value).data('sp-skip') === true) {
+                    console.warn('Skipping value:', value);
+                    return;
+                }
                 const type = $(value).attr('type');
                 if (type === 'number') {
                     rowValues.push(Number($(value).val()));
                 } else {
                     rowValues.push($(value).val());
-                }
-                // if select
-                if ($(value).is('select') && id === 'recipes') {
-                    new ProductionSelect($(value));
                 }
             });
 
@@ -284,6 +285,11 @@ export class TableHandler {
             const inputsAndSelects = $(`#${tableId} tbody`).find('input, select');
 
             inputsAndSelects.each((_, element) => {
+                // if has skip data attribute, skip it
+                if ($(element).data('sp-skip') === true) {
+                    console.warn('Skipping element:', element);
+                    return;
+                }
                 $(element).on('change', (event) => {
                     this.handleInputChange(event, tableId);
                 });
@@ -316,8 +322,6 @@ export class TableHandler {
         // If the last row is selected, add a new row
         if (this.checkIfLastRow(target, tableId) && this.checkIfSelect(target)) {
             this.addNewRow(tableId);
-        //     add to the checklist
-        //     this.checklist?.addCheckList(this.productionTableRows[rowIndex - amountExtra]);
         }
 
         const row = this.getRowByTableIdAndIndex(tableId, rowIndex - amountExtra);
@@ -383,7 +387,7 @@ export class TableHandler {
     private updateRowInTable(tableId: string, rowIndex: number, row: any) {
         const table = $(`#${tableId} tbody tr`);
         let rowToUpdate = $(table[rowIndex]);
-        rowToUpdate.find('input, select').each((index, element) => {
+        rowToUpdate.find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])').each((index, element) => {
             const key = Object.keys(row)[index];
             let value: any;
 
@@ -461,7 +465,7 @@ export class TableHandler {
      * @returns {boolean} True if the element is a <select>, false otherwise.
      */
     private checkIfSelect(target: JQuery): boolean {
-        return target.is('select');
+        return target.parent().hasClass('recipe-select')
     }
 
     private UpdateOnIndex(indexes: number[]) {
@@ -592,6 +596,8 @@ export class TableHandler {
         if (this.checkIfSelect(target)) {
             await ProductionLineFunctions.updateRecipe(row, value);
         }
+
+        console.log('Row after update:', row);
 
         this.updateRowInTable(tableId, rowIndex, row);
 
