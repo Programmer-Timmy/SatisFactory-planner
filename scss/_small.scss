@@ -52,6 +52,12 @@ footer {
     background-clip: content-box;
   }
 
+  .search-by-menu-button{
+    &:hover, &:focus {
+      color: $secondary !important;
+    }
+  }
+
   .select-item {
     //border bottom exempt last item that is visible
     border-bottom: 1px solid $border-color;

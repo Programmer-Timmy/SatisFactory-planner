@@ -7,6 +7,7 @@ export class ProductionSelect {
     private searchElement: JQuery<HTMLElement>;
     private selectItemsElement: JQuery<HTMLElement>;
     private onResizeEvent?: any;
+    private open = false;
 
     public constructor(element: JQuery<HTMLElement>) {
         this.element = element;
@@ -43,6 +44,24 @@ export class ProductionSelect {
         this.searchElement.on('input', (event: JQuery.TriggeredEvent) => {
             this.handleSearchInput(event);
         });
+
+        let ticking = false;
+
+        this.selectItemsElement.on('scroll', () => {
+            const scrollTop = this.selectItemsElement.scrollTop();
+
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    this.selectItemsElement
+                        .find('.search-by-menu-button')
+                        .css('transform', `translateY(${scrollTop}px)`);
+
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
     }
 
     private positionSelectItems() {
@@ -80,7 +99,13 @@ export class ProductionSelect {
     }
 
     private handeFocus(event: JQuery.ClickEvent) {
-        // move the selected items to the top of the dom so it will overlap and not couse a scroll
+        if (this.open) {
+            // if the select items are already open, do nothing
+            return;
+        }
+        this.selectItemsElement.scrollTop(0);
+        this.selectItemsElement.trigger('scroll');
+
         this.selectItemsElement.detach().appendTo('body');
         this.selectItemsElement.addClass('show');
 
@@ -90,19 +115,21 @@ export class ProductionSelect {
         this.onResizeEvent = $(window).on('resize', () => {
             this.positionSelectItems();
         });
+        this.open = true;
     }
 
     private handleBlur(event: JQuery.ClickEvent) {
         // hide the select items
         if ((
-            $(event.target).closest(this.selectItemsElement).length > 0 ||
-            $(event.target).closest(this.searchElement).length > 0 ) &&
+                $(event.target).closest(this.selectItemsElement).length > 0 ||
+                $(event.target).closest(this.searchElement).length > 0) &&
             event.button === 0 // only hide if the left mouse button is not pressed
         ) {
             return;
         }
 
         this.hideSelectItems();
+        this.open = false;
     }
 
     private hideSelectItems() {
@@ -145,7 +172,7 @@ export class ProductionSelect {
         const searchValue = this.searchElement.val() as string;
         let items = this.selectItemsElement.find('.select-item');
 
-        const fullMatch: {element: JQuery<HTMLElement>, weight: number}[] = [];
+        const fullMatch: { element: JQuery<HTMLElement>, weight: number }[] = [];
 
         const sortedItems = items.toArray().sort((a, b) => {
             const aName = $(a).find('.recipe-name').text().toLowerCase();
@@ -153,7 +180,9 @@ export class ProductionSelect {
             return aName.localeCompare(bName);
         });
 
-        this.selectItemsElement.empty().append(sortedItems);
+        // delete all elements exept from .search-by-menu items
+        this.selectItemsElement.find('.select-item').not('.search-by-menu').remove();
+        this.selectItemsElement.append(sortedItems);
 
         items = this.selectItemsElement.find('.select-item'); // re-fetch items after sorting
 
@@ -170,7 +199,7 @@ export class ProductionSelect {
                     element: $item,
                     weight: 2 // full match has a higher weight
                 })
-            } else if ( productNames.some(name => name.toLowerCase() === searchValue.toLowerCase())) {
+            } else if (productNames.some(name => name.toLowerCase() === searchValue.toLowerCase())) {
                 fullMatch.push({
                     element: $item,
                     weight: 1 // partial match has a lower weight

@@ -39,7 +39,7 @@ LEFT JOIN (
           'quantity', ri.import_amount_per_min
       )) AS ingredients
   FROM recipe_ingredients ri
-  JOIN items i ON i.id = ri.items_id
+  INNER JOIN items i ON i.id = ri.items_id
   GROUP BY ri.recipes_id
 ) ing ON ing.recipes_id = r.id
 LEFT JOIN (

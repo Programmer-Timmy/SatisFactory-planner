@@ -187,6 +187,7 @@ class GlobalUtility {
     public static function generateRecipeSelect(array $recipes, int | null $selectedRecipeId = null): string {
         ob_start();
         $recipeName = '';
+        $randomNumber = rand(1000, 9999);
         if ($selectedRecipeId === null) {
             $selectedRecipeId = '';
         } else {
@@ -205,9 +206,12 @@ class GlobalUtility {
                    placeholder="Search by product or recipe" value="<?= htmlspecialchars($recipeName) ?>" autocomplete="off">
             <input type="hidden" name="recipeId" class="recipe-id" value="<?= $selectedRecipeId ?>" autocomplete="off">
             <div class="select-items collapse position-absolute child bg-white overflow-y-auto z-2" style="max-height: 300px; min-width: 300px;">
+                <button name="searchByMenu" class="btn btn-sm bg-transparent border-0 text-dark search-by-menu-button position-absolute top-0 end-0 rounded-0" type="button">
+                    <i class="fa-solid fa-filter"></i>
+                </button>
                 <?php foreach ($recipes as $recipe): ?>
 
-                    <div class="p-1 select-item" data-recipe-id="<?= $recipe->id ?>"
+                    <div class="p-1 select-item z-2" data-recipe-id="<?= $recipe->id ?>"
                          data-recipe-name="<?= htmlspecialchars($recipe->name) ?>">
                         <h6 class="m-0 text-center small recipe-name"><?= $recipe->name ?></h6>
 
