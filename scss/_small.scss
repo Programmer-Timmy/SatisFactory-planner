@@ -36,40 +36,72 @@ footer {
   }
 }
 
-.select-items {
-  border: 1px solid $border-primary;
-  border-radius: 0.25rem;
+.select-items-menu {
 
-  &::-webkit-scrollbar {
-    width: 8px;
-    border-radius: 12px;
+  &.has-scrollbar .icon-group {
+    margin-right: 8px;
   }
 
-  &::-webkit-scrollbar-thumb {
-    background-color: $primary-emphasis;
-    border-radius: 12px;
-    border: 2px solid transparent; /* keeps it inside border-radius */
-    background-clip: content-box;
-  }
-
-  .search-by-menu-button{
-    &:hover, &:focus {
-      color: $secondary !important;
+  &.hide-visuals {
+    .recipe-visuals{
+      display: none !important;
     }
   }
 
-  .select-item {
-    //border bottom exempt last item that is visible
-    border-bottom: 1px solid $border-color;
-    cursor: pointer;
+  .icon-group {
+    &.flex-column {
+      .search-by-menu-button {
+        padding: 0 0.25rem !important; /* horizontal padding only */
+      }
 
+      .search-by-menu-button:first-child {
+        padding-top: 0.25rem !important; /* add top padding to first */
+      }
 
-    &:last-child {
-      border-bottom: none;
+      .search-by-menu-button:last-child {
+        padding-bottom: 0.25rem !important; /* add bottom padding to last */
+      }
+
+    }
+  }
+
+  .select-items {
+    border: 1px solid $border-primary;
+    border-radius: 0.25rem;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+      border-radius: 12px;
     }
 
-    &:hover, &.active {
+    &::-webkit-scrollbar-thumb {
       background-color: $primary-emphasis;
+      border-radius: 12px;
+      border: 2px solid transparent; /* keeps it inside border-radius */
+      background-clip: content-box;
+    }
+
+    .search-by-menu-button {
+      top: 0;
+      will-change: transform;
+
+      &:hover, &:focus {
+        color: $secondary !important;
+      }
+    }
+
+    .select-item {
+      //border bottom exempt last item that is visible
+      border-bottom: 1px solid $border-color;
+      cursor: pointer;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover, &.active {
+        background-color: $primary-emphasis;
+      }
     }
   }
 }

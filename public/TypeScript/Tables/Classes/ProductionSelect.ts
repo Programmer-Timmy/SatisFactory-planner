@@ -6,6 +6,7 @@ export class ProductionSelect {
     private recipeIdElement: JQuery<HTMLElement>;
     private searchElement: JQuery<HTMLElement>;
     private selectItemsElement: JQuery<HTMLElement>;
+    private selectItemsMenu: JQuery<HTMLElement>;
     private onResizeEvent?: any;
     private open = false;
 
@@ -13,6 +14,7 @@ export class ProductionSelect {
         this.element = element;
         this.recipeIdElement = this.element.find('.recipe-id');
         this.searchElement = this.element.find('.search-input');
+        this.selectItemsMenu = this.element.find('.select-items-menu');
         this.selectItemsElement = this.element.find('.select-items');
 
         this.handleEvents();
@@ -44,29 +46,11 @@ export class ProductionSelect {
         this.searchElement.on('input', (event: JQuery.TriggeredEvent) => {
             this.handleSearchInput(event);
         });
-
-        let ticking = false;
-
-        this.selectItemsElement.on('scroll', () => {
-            const scrollTop = this.selectItemsElement.scrollTop();
-
-            if (!ticking) {
-                window.requestAnimationFrame(() => {
-                    this.selectItemsElement
-                        .find('.search-by-menu-button')
-                        .css('transform', `translateY(${scrollTop}px)`);
-
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        });
-
     }
 
     private positionSelectItems() {
-        this.selectItemsElement.detach().appendTo('body');
-        this.selectItemsElement.addClass('show');
+        this.selectItemsMenu.detach().appendTo('body');
+        this.selectItemsMenu.addClass('show');
 
         // fully select the existing serach input
         this.searchElement.trigger("select");
@@ -78,24 +62,23 @@ export class ProductionSelect {
         const outerHeight = this.searchElement.outerHeight() || 0;
         const outerWidth = this.searchElement.outerWidth() || 0;
 
-        const selectItemsHeight = this.selectItemsElement.outerHeight() || 0;
+        const selectItemsHeight = this.selectItemsMenu.outerHeight() || 0;
 
         if (position.top + outerHeight + selectItemsHeight > windowInnerHeight) {
-            this.selectItemsElement.css({
+            this.selectItemsMenu.css({
                 bottom: windowInnerHeight - position.top,
                 top: 'auto',
                 left: position.left,
                 width: outerWidth
             });
         } else {
-            this.selectItemsElement.css({
+            this.selectItemsMenu.css({
                 top: position.top + outerHeight,
                 bottom: 'auto',
                 left: position.left,
                 width: outerWidth
             });
         }
-
     }
 
     private handeFocus(event: JQuery.ClickEvent) {
@@ -106,8 +89,8 @@ export class ProductionSelect {
         this.selectItemsElement.scrollTop(0);
         this.selectItemsElement.trigger('scroll');
 
-        this.selectItemsElement.detach().appendTo('body');
-        this.selectItemsElement.addClass('show');
+        this.selectItemsMenu.detach().appendTo('body');
+        this.selectItemsMenu.addClass('show');
 
         // set the position of the select items to the position of the search input
         this.positionSelectItems();
@@ -115,15 +98,19 @@ export class ProductionSelect {
         this.onResizeEvent = $(window).on('resize', () => {
             this.positionSelectItems();
         });
+
         this.open = true;
+
+        this.checkForScrollbar();
     }
 
     private handleBlur(event: JQuery.ClickEvent) {
         // hide the select items
         if ((
                 $(event.target).closest(this.selectItemsElement).length > 0 ||
-                $(event.target).closest(this.searchElement).length > 0) &&
-            event.button === 0 // only hide if the left mouse button is not pressed
+                $(event.target).closest(this.searchElement).length > 0 ||
+                $(event.target).closest(this.selectItemsMenu).length > 0
+            ) && event.button === 0 // only hide if the left mouse button is not pressed
         ) {
             return;
         }
@@ -134,18 +121,20 @@ export class ProductionSelect {
 
     private hideSelectItems() {
         // hide the select items
-        this.selectItemsElement.removeClass('show');
-        this.selectItemsElement.detach().appendTo(this.element);
+        this.selectItemsMenu.removeClass('show');
+        this.selectItemsMenu.detach().appendTo(this.element);
 
         if (this.onResizeEvent) {
             this.onResizeEvent.off('resize');
         }
         // reset the position of the select items
-        this.selectItemsElement.css({
+        this.selectItemsMenu.css({
             top: '',
             left: '',
             width: ''
         });
+
+        this.open = false;
     }
 
     private handleSelectItemClick(event: JQuery.ClickEvent) {
@@ -238,6 +227,8 @@ export class ProductionSelect {
         } else {
             this.selectItemsElement.find('.no-results').remove();
         }
+
+        this.checkForScrollbar();
     }
 
     private activateSelectedRecipe(recipeId: string) {
@@ -246,6 +237,30 @@ export class ProductionSelect {
         if (selectedItem.length > 0) {
             // Add the active class to the selected item
             selectedItem.addClass('active').siblings().removeClass('active');
+        }
+    }
+
+    private checkForScrollbar() {
+        this.selectItemsMenu.removeClass('has-scrollbar');
+        const outerHeight = this.selectItemsElement.outerHeight() || 0;
+        const scrollHeight = this.selectItemsElement[0].scrollHeight || 0;
+
+        if (scrollHeight > outerHeight) {
+            this.selectItemsMenu.addClass('has-scrollbar');
+        }
+
+        // Move icons based on the height of the select items
+        this.moveIcons();
+    }
+
+    private moveIcons() {
+        const selectItemsHeight = this.selectItemsElement.outerHeight() || 0;
+        console.log('Select items height:', selectItemsHeight);
+        const iconGroup = this.selectItemsMenu.find('.icon-group');
+        if (selectItemsHeight > 50) {
+            iconGroup.addClass(['flex-column'])
+        } else {
+            iconGroup.removeClass(['flex-column']);
         }
     }
 }

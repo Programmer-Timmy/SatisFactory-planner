@@ -184,10 +184,10 @@ class GlobalUtility {
         }
     }
 
-    public static function generateRecipeSelect(array $recipes, int | null $selectedRecipeId = null): string {
+    public static function generateRecipeSelect(array $recipes, int|null $selectedRecipeId = null): string {
         ob_start();
         $recipeName = '';
-        $randomNumber = rand(1000, 9999);
+        $selectedRecipe = null;
         if ($selectedRecipeId === null) {
             $selectedRecipeId = '';
         } else {
@@ -195,62 +195,82 @@ class GlobalUtility {
             foreach ($recipes as $recipe) {
                 if ($recipe->id == $selectedRecipeId) {
                     $recipeName = $recipe->name;
+                    $selectedRecipe = $recipe;
+
                     break;
                 }
             }
 
         }
+
         ?>
         <div class="bg-white recipe-select position-relative">
-            <input type="text" data-sp-skip="true" class="form-control rounded-0 search-input" name="recipeSearch"
-                   placeholder="Search by product or recipe" value="<?= htmlspecialchars($recipeName) ?>" autocomplete="off">
+            <input type="text" data-sp-skip="true" class="form-control rounded-0 search-input"
+                   name="recipeSearch" <?= $selectedRecipe ? (count($selectedRecipe->products) > 1 ? 'style="height: 78px"' : '') : '' ?>
+                   placeholder="Search by product or recipe" value="<?= htmlspecialchars($recipeName) ?>"
+                   autocomplete="off">
             <input type="hidden" name="recipeId" class="recipe-id" value="<?= $selectedRecipeId ?>" autocomplete="off">
-            <div class="select-items collapse position-absolute child bg-white overflow-y-auto z-2" style="max-height: 300px; min-width: 300px;">
-                <button name="searchByMenu" class="btn btn-sm bg-transparent border-0 text-dark search-by-menu-button position-absolute top-0 end-0 rounded-0" type="button">
-                    <i class="fa-solid fa-filter"></i>
-                </button>
-                <?php foreach ($recipes as $recipe): ?>
+            <div class="select-items-menu collapse position-absolute child bg-white z-2 rounded hide-visuals"
+                 style="min-width: 300px; max-height: 300px;">
+                <div class="d-flex justify-content-between align-items-center position-absolute end-0 icon-group">
+                    <button name="searchByMenu"
+                            class="btn btn-sm bg-transparent border-0 text-dark search-by-menu-button p-1 rounded-0"
+                            type="button">
+                        <i class="fa-solid fa-filter"></i>
+                    </button>
+                    <button name="showHideRecipesVisuals"
+                            class="btn btn-sm bg-transparent border-0 text-dark search-by-menu-button p-1 rounded-0"
+                            type="button">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <div class="select-items overflow-y-auto" style="max-height: 300px; min-width: 300px;">
+                    <?php foreach ($recipes as $recipe): ?>
 
-                    <div class="p-1 select-item z-2" data-recipe-id="<?= $recipe->id ?>"
-                         data-recipe-name="<?= htmlspecialchars($recipe->name) ?>">
-                        <h6 class="m-0 text-center small recipe-name"><?= $recipe->name ?></h6>
+                        <div class="p-1 select-item z-2" data-recipe-id="<?= $recipe->id ?>"
+                             data-recipe-name="<?= htmlspecialchars($recipe->name) ?>">
+                            <h6 class="m-0 text-center small recipe-name"><?= $recipe->name ?></h6>
 
-                        <div class="d-flex justify-content-center align-items-center mt-1 flex-wrap" style="gap:4px;">
+                            <div class="d-flex justify-content-center align-items-center mt-1 flex-wrap recipe-visuals"
+                                 style="gap:4px;">
 
-                            <?php if ($recipe->ingredients): ?>
-                                <?php foreach ($recipe->ingredients as $ingredient): ?>
-                                    <div class="d-flex align-items-center" style="gap:2px;">
-                                        <img src="/image/items/<?= strtolower(str_replace('_', '-', $ingredient->class_name)) ?>_256.png"
-                                             title="<?= $ingredient->name ?>"
-                                             class="img-fluid" style="width: 26px; height: 26px;">
-                                        <small class="text-muted"><?= round($ingredient->quantity, 5) ?></small>
-                                    </div>
-                                <?php endforeach; ?>
+                                <?php if ($recipe->ingredients): ?>
+                                    <?php foreach ($recipe->ingredients as $ingredient): ?>
+                                        <div class="d-flex align-items-center" style="gap:2px;">
+                                            <img src="/image/items/<?= strtolower(str_replace('_', '-', $ingredient->class_name)) ?>_256.png"
+                                                 title="<?= $ingredient->name ?>"
+                                                 class="img-fluid" style="width: 26px; height: 26px;">
+                                            <small class="text-muted"><?= round($ingredient->quantity, 5) ?></small>
+                                        </div>
+                                    <?php endforeach; ?>
 
-                                <i class="fa-solid fa-arrow-right" style="font-size:12px;"></i>
+                                    <i class="fa-solid fa-arrow-right" style="font-size:12px;"></i>
 
-                            <?php endif; ?>
+                                <?php endif; ?>
 
-                            <?php if ($recipe->building): ?>
-                                <img src="/image/items/<?= strtolower(str_ireplace('build', 'desc', str_replace('_', '-', $recipe->building[0]->class_name))) ?>_256.png"
-                                     title="<?= $recipe->building[0]->name ?>"
-                                     class="img-fluid" style="width: 26px; height: 26px;">
-                            <?php endif; ?>
+                                <?php if ($recipe->building): ?>
+                                    <img src="/image/items/<?= strtolower(str_ireplace('build', 'desc', str_replace('_', '-', $recipe->building[0]->class_name))) ?>_256.png"
+                                         title="<?= $recipe->building[0]->name ?>"
+                                         class="img-fluid" style="width: 26px; height: 26px;">
+                                <?php endif; ?>
 
-                            <?php if ($recipe->products): ?>
-                                <i class="fa-solid fa-arrow-right" style="font-size:12px;"></i>
-                                <?php foreach ($recipe->products as $product): ?>
-                                    <div class="d-flex align-items-center recipe-product" style="gap:2px;" data-product-id="<?= $product->id ?>" data-product-name="<?= htmlspecialchars($product->name) ?>">
-                                        <img src="/image/items/<?= strtolower(str_replace('_', '-', $product->class_name)) ?>_256.png"
-                                             title="<?= $product->name ?>"
-                                             class="img-fluid" style="width: 26px; height: 26px;">
-                                        <small class="text-muted"><?= round($product->quantity, 5) ?></small>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+                                <?php if ($recipe->products): ?>
+                                    <i class="fa-solid fa-arrow-right" style="font-size:12px;"></i>
+                                    <?php foreach ($recipe->products as $product): ?>
+                                        <div class="d-flex align-items-center recipe-product" style="gap:2px;"
+                                             data-product-id="<?= $product->id ?>"
+                                             data-product-name="<?= htmlspecialchars($product->name) ?>">
+                                            <img src="/image/items/<?= strtolower(str_replace('_', '-', $product->class_name)) ?>_256.png"
+                                                 title="<?= $product->name ?>"
+                                                 class="img-fluid" style="width: 26px; height: 26px;">
+                                            <small class="text-muted"><?= round($product->quantity, 5) ?></small>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </div>
         <?php
