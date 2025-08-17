@@ -313,10 +313,6 @@ foreach ($production as $product) {
     </div>
 </div>
 
-<template id="recipe-select-template">
-    <?= GlobalUtility::generateRecipeSelect($recipes); ?>
-</template>
-
 
 <?php
 if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
