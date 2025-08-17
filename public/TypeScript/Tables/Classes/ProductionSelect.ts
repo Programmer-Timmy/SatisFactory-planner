@@ -12,6 +12,12 @@ export class ProductionSelect {
     private open = false;
     private showVisuals: boolean = true;
 
+    /**
+     * Constructs a new ProductionSelect instance.
+     * It initializes the element, recipe ID element, search input, select items menu, and icon group.
+     * It also sets up event handlers for user interactions such as clicks and input changes.
+     * @param element The jQuery-wrapped HTML element representing the production select component.
+     */
     public constructor(element: JQuery<HTMLElement>) {
         this.element = element;
         this.recipeIdElement = this.element.find('.recipe-id');
@@ -28,6 +34,11 @@ export class ProductionSelect {
 
     }
 
+    /**
+     * Handles the events for the production select component.
+     * It binds click events to the search input, body, select items, and icon group.
+     * It also handles input events on the search input for filtering select items.
+     */
     private handleEvents() {
         // Example of handling a focus event
         // @ts-ignore
@@ -64,6 +75,11 @@ export class ProductionSelect {
         })
     }
 
+    /**
+     * Toggles the visibility of visuals in the select items menu based on the showVisuals variable.
+     * It updates the class of the select items menu and the icon in the icon group accordingly.
+     * The state is also saved to localStorage.
+     */
     private showHideVisuals() {
         this.showVisuals = localStorage.getItem('showVisuals') === 'true' || localStorage.getItem('showVisuals') === null;
         if (this.showVisuals) {
@@ -78,7 +94,11 @@ export class ProductionSelect {
         this.moveIcons();
     }
 
-
+    /**
+     * Positions the select items menu relative to the search input.
+     * It calculates the position based on the search input's offset and the window's inner height.
+     * If the select items menu would overflow the window, it adjusts its position accordingly.
+     */
     private positionSelectItems() {
         this.selectItemsMenu.detach().appendTo('body');
         this.selectItemsMenu.addClass('show');
@@ -112,6 +132,11 @@ export class ProductionSelect {
         }
     }
 
+    /**
+     * Handles the focus event on the search input, which is triggered when the user clicks on the search input.
+     * It opens the select items menu and positions it relative to the search input.
+     * @param event The click event triggered by focusing on the search input.
+     */
     private handeFocus(event: JQuery.ClickEvent) {
         if (this.open) {
             // if the select items are already open, do nothing
@@ -135,6 +160,11 @@ export class ProductionSelect {
         this.checkForScrollbar();
     }
 
+    /**
+     * Handles the blur event on the body, which is triggered when the user clicks outside the select items menu.
+     * It hides the select items if the click is outside of the select items menu, search input, or select items element.
+     * @param event The click event triggered by clicking outside the select items menu.
+     */
     private handleBlur(event: JQuery.ClickEvent) {
         // hide the select items
         if ((
@@ -150,6 +180,10 @@ export class ProductionSelect {
         this.open = false;
     }
 
+    /**
+     * Hides the select items menu and resets its position.
+     * It also removes the resize event listener if it exists.
+     */
     private hideSelectItems() {
         // hide the select items
         this.selectItemsMenu.removeClass('show');
@@ -168,6 +202,12 @@ export class ProductionSelect {
         this.open = false;
     }
 
+    /**
+     * Handles the click event on a select item.
+     * It retrieves the recipe ID and name from the clicked item, updates the search input and recipe ID element,
+     * hides the select items, and adds the 'active' class to the selected item.
+     * @param event The click event triggered by selecting an item.
+     */
     private handleSelectItemClick(event: JQuery.ClickEvent) {
         const target = $(event.currentTarget);
         if (target.closest('.select-item').length > 0) {
@@ -188,6 +228,11 @@ export class ProductionSelect {
 
     }
 
+    /**
+     * Handles the search input event, filtering the select items based on the search value.
+     * It sorts the items alphabetically and prioritizes full matches over partial matches.
+     * @param event The triggered event from the search input.
+     */
     private handleSearchInput(event: JQuery.TriggeredEvent) {
         const searchValue = this.searchElement.val() as string;
         let items = this.selectItemsElement.find('.select-item');
@@ -262,6 +307,10 @@ export class ProductionSelect {
         this.checkForScrollbar();
     }
 
+    /**
+     * Activates the selected recipe by adding the 'active' class to the corresponding select item.
+     * @param recipeId The ID of the recipe to activate.
+     */
     private activateSelectedRecipe(recipeId: string) {
         // Find the select item with the matching recipe ID
         const selectedItem = this.selectItemsElement.find(`.select-item[data-recipe-id="${recipeId}"]`);
@@ -271,6 +320,10 @@ export class ProductionSelect {
         }
     }
 
+    /**
+     * Checks if the select items menu has a scrollbar and adds/removes the 'has-scrollbar' class accordingly.
+     * Also moves icons based on the height of the select items and shows/hides visuals.
+     */
     private checkForScrollbar() {
         this.selectItemsMenu.removeClass('has-scrollbar');
         const outerHeight = this.selectItemsElement.outerHeight() || 0;
@@ -286,6 +339,11 @@ export class ProductionSelect {
         this.showHideVisuals();
     }
 
+    /**
+     * Moves the icons in the select items menu based on the height of the select items.
+     * If the height is greater than 50px, it adds a flex-column class to the icon group.
+     * Otherwise, it removes the flex-column class.
+     */
     private moveIcons() {
         const selectItemsHeight = this.selectItemsElement.outerHeight() || 0;
         const iconGroup = this.selectItemsMenu.find('.icon-group');
