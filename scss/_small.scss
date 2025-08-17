@@ -1,14 +1,14 @@
-body{
+body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-footer{
+footer {
   margin-top: auto;
 }
 
-.hidden{
+.hidden {
   display: none;
 }
 
@@ -24,4 +24,88 @@ footer{
   justify-content: center;
   align-items: center;
 
+}
+
+.recipe-select {
+  input[type="text"] {
+    transition: border-color 0.15s ease-in-out;
+
+    &:focus, &:hover {
+      border-color: $border-primary !important;
+    }
+  }
+}
+
+.select-items-menu {
+
+  .search-by-menu{
+    z-index: -1;
+    border: 1px solid $border-primary;
+    top: 0;
+    left: 299px;
+    width: 300px;
+  }
+
+  &.has-scrollbar .icon-group {
+    margin-right: 8px;
+  }
+
+  &.hide-visuals {
+    .recipe-visuals{
+      display: none !important;
+    }
+  }
+
+  .icon-group {
+    &.flex-column {
+      .search-by-menu-button {
+        padding: 0 0.25rem !important; /* horizontal padding only */
+
+        &:first-child {
+          padding-top: 0.25rem !important; /* add top padding to first */
+        }
+
+        &:last-child {
+          padding-bottom: 0.25rem !important; /* add bottom padding to last */
+        }
+      }
+    }
+  }
+
+  .search-by-menu-button {
+    &:hover, &:focus {
+      color: $dark-hover !important;
+    }
+  }
+
+  .select-items {
+    border: 1px solid $border-primary;
+    border-radius: 0.25rem;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+      border-radius: 12px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: $primary-emphasis;
+      border-radius: 12px;
+      border: 2px solid transparent; /* keeps it inside border-radius */
+      background-clip: content-box;
+    }
+
+    .select-item {
+      //border bottom exempt last item that is visible
+      border-bottom: 1px solid $border-color;
+      cursor: pointer;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: $primary-emphasis;
+      }
+    }
+  }
 }

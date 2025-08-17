@@ -1,7 +1,6 @@
 <?php
 
-class GlobalUtility
-{
+class GlobalUtility {
     /**
      * @param array $data
      * @param array $shownTables ['*'] for all columns or ['name', 'date', 'removed'] for specific columns
@@ -11,16 +10,15 @@ class GlobalUtility
      * @param bool $enableBool
      * @param string|null $customId
      * @return string
-        */
-    public static function createTable(array $data, array $shownTables = ['*'], array $customButtons = [], array $excludeBools = [] , bool $bootstrap = true, bool $enableBool = true, ?string $customId = null): string
-    {
+     */
+    public static function createTable(array $data, array $shownTables = ['*'], array $customButtons = [], array $excludeBools = [], bool $bootstrap = true, bool $enableBool = true, ?string $customId = null): string {
         $tableClass = $bootstrap ? 'table table-striped table-hover table-responsive' : '';
         $customId = $customId ? "id='$customId'" : '';
 
 
         $table = "<div $customId class=' " . ($bootstrap ? 'table-responsive' : '') . "'>";
         $table .= '<table class="' . $tableClass . '">';
-        $table .= '<thead class="' .($bootstrap ? 'table-dark' : '') . '"><tr>';
+        $table .= '<thead class="' . ($bootstrap ? 'table-dark' : '') . '"><tr>';
 
         if (!empty($data)) {
             foreach (get_object_vars($data[0]) as $column => $value) {
@@ -82,8 +80,7 @@ class GlobalUtility
 
     }
 
-    public static function formatUpdatedTime($updated_at): string
-    {
+    public static function formatUpdatedTime($updated_at): string {
         // Convert updated_at to a DateTime object
         $updatedTime = new DateTime($updated_at);
 
@@ -95,13 +92,13 @@ class GlobalUtility
 
         // Format the time difference
         if ($interval->days > 0) {
-             return $interval->format('%a days ago');
+            return $interval->format('%a days ago');
         } elseif ($interval->h > 0) {
             return $interval->format('%h hours ago');
         } elseif ($interval->i > 0) {
-            return  $interval->format('%i minutes ago');
+            return $interval->format('%i minutes ago');
         } else {
-            return  'Just now';
+            return 'Just now';
         }
     }
 
@@ -114,10 +111,10 @@ class GlobalUtility
     /**
      * Renders a dynamic, reusable card layout with customizable title, content, controls, and footer.
      *
-     * @param string $title           The title of the card.
-     * @param string|null $content     The main content of the card as HTML (e.g., charts, tables).
-     * @param array $controls          An array of controls, like dropdowns or buttons, to add to the card header.
-     * @param string|null $footer      Optional footer content as HTML.
+     * @param string $title The title of the card.
+     * @param string|null $content The main content of the card as HTML (e.g., charts, tables).
+     * @param array $controls An array of controls, like dropdowns or buttons, to add to the card header.
+     * @param string|null $footer Optional footer content as HTML.
      * @param bool $foreBottomControls Whether to render the controls at the bottom of the card.
      */
     public static function renderCard(string $title, ?string $content = null, array $controls = [], ?string $footer = null, bool $foreBottomControls = false
@@ -185,6 +182,113 @@ class GlobalUtility
             <?php
             unset($_SESSION['success']);
         }
+    }
+
+    public static function generateRecipeSelect(array $recipes, int|null $selectedRecipeId = null): string {
+        ob_start();
+        $recipeName = '';
+        $selectedRecipe = null;
+        if ($selectedRecipeId === null) {
+            $selectedRecipeId = '';
+        } else {
+            // get recipe from array
+            foreach ($recipes as $recipe) {
+                if ($recipe->id == $selectedRecipeId) {
+                    $recipeName = $recipe->name;
+                    $selectedRecipe = $recipe;
+
+                    break;
+                }
+            }
+
+        }
+
+        ?>
+        <div class="bg-white recipe-select position-relative">
+            <input type="text" data-sp-skip="true" class="form-control rounded-0 search-input"
+                   name="recipeSearch" <?= $selectedRecipe ? (count($selectedRecipe->products) > 1 ? 'style="height: 78px"' : '') : '' ?>
+                   placeholder="Search by product or recipe" value="<?= htmlspecialchars($recipeName) ?>"
+                   autocomplete="off">
+            <input type="hidden" name="recipeId" class="recipe-id" value="<?= $selectedRecipeId ?>" autocomplete="off">
+            <div class="select-items-menu collapse position-absolute child bg-white z-2 rounded"
+                 style="min-width: 300px; max-height: 300px;">
+                <div class="d-flex justify-content-between align-items-center position-absolute end-0 icon-group">
+                    <button name="searchByMenu"
+                            class="btn btn-sm bg-transparent border-0 text-dark search-by-menu-button p-1 rounded-0"
+                            type="button">
+                        <i class="fa-solid fa-filter"></i>
+                    </button>
+                    <button name="showHideRecipesVisuals"
+                            class="btn btn-sm bg-transparent border-0 text-dark search-by-menu-button p-1 rounded-0"
+                            type="button">
+                        <i class="fa-solid fa-eye-slash"></i>
+                    </button>
+                </div>
+                <div class="search-by-menu collapse position-absolute bg-white rounded-end z-1">
+                    <div class="d-flex justify-content-between align-items-center p-1">
+                        <label class="form-check form-check-inline mb-0">
+                            <input type="checkbox" class="form-check-input search-by-products" name="searchByProduct" data-sp-skip="true" checked>
+                            <span class="form-check-label">By product</span>
+                        </label>
+                        <label class="form-check form-check-inline mb-0">
+                            <input type="checkbox" class="form-check-input search-by-ingredients" name="searchByIngredients" data-sp-skip="true">
+                            <span class="form-check-label">By ingredients</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="select-items overflow-y-auto z-2" style="max-height: 300px; min-width: 300px;">
+                    <?php foreach ($recipes as $recipe): ?>
+
+                        <div class="p-1 select-item z-2" data-recipe-id="<?= $recipe->id ?>"
+                             data-recipe-name="<?= htmlspecialchars($recipe->name) ?>">
+                            <h6 class="m-0 text-center small recipe-name"><?= $recipe->name ?></h6>
+
+                            <div class="d-flex justify-content-center align-items-center mt-1 flex-wrap recipe-visuals"
+                                 style="gap:4px;">
+
+                                <?php if ($recipe->ingredients): ?>
+                                    <?php foreach ($recipe->ingredients as $ingredient): ?>
+                                        <div class="d-flex align-items-center recipe-ingredient" style="gap:2px;"
+                                             data-ingredient-id="<?= $ingredient->id ?>"
+                                             data-ingredient-name="<?= htmlspecialchars($ingredient->name) ?>">
+                                            <img src="/image/items/<?= strtolower(str_replace('_', '-', $ingredient->class_name)) ?>_256.png"
+                                                 title="<?= $ingredient->name ?>"
+                                                 class="img-fluid" style="width: 26px; height: 26px;">
+                                            <small class="text-muted"><?= round($ingredient->quantity, 5) ?></small>
+                                        </div>
+                                    <?php endforeach; ?>
+
+                                    <i class="fa-solid fa-arrow-right" style="font-size:12px;"></i>
+
+                                <?php endif; ?>
+
+                                <?php if ($recipe->building): ?>
+                                    <img src="/image/items/<?= strtolower(str_ireplace('build', 'desc', str_replace('_', '-', $recipe->building[0]->class_name))) ?>_256.png"
+                                         title="<?= $recipe->building[0]->name ?>"
+                                         class="img-fluid" style="width: 26px; height: 26px;">
+                                <?php endif; ?>
+
+                                <?php if ($recipe->products): ?>
+                                    <i class="fa-solid fa-arrow-right" style="font-size:12px;"></i>
+                                    <?php foreach ($recipe->products as $product): ?>
+                                        <div class="d-flex align-items-center recipe-product" style="gap:2px;"
+                                             data-product-id="<?= $product->id ?>"
+                                             data-product-name="<?= htmlspecialchars($product->name) ?>">
+                                            <img src="/image/items/<?= strtolower(str_replace('_', '-', $product->class_name)) ?>_256.png"
+                                                 title="<?= $product->name ?>"
+                                                 class="img-fluid" style="width: 26px; height: 26px;">
+                                            <small class="text-muted"><?= round($product->quantity, 5) ?></small>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 }
 

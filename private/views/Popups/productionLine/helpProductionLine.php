@@ -90,6 +90,29 @@
                             <li>Calculate the number and type of buildings needed.</li>
                             <li>Calculate the total power usage.</li>
                         </ul>
+                        <p>
+                            Recipe search results are displayed in the following order:
+                        </p>
+                        <ol>
+                            <li><strong>Exact matches on recipe name</strong>
+                                <ul>
+                                    <li>These appear at the very top.</li>
+                                    <li>If there are multiple, they are sorted alphabetically (A–Z).</li>
+                                </ul>
+                            </li>
+                            <li><strong>Exact matches on produced item names</strong>
+                                <ul>
+                                    <li>These appear directly below the exact recipe name matches.</li>
+                                    <li>If there are multiple, they are also sorted alphabetically (A–Z).</li>
+                                </ul>
+                            </li>
+                            <li><strong>Partial matches</strong>
+                                <ul>
+                                    <li>These include any recipes where the search term appears in the recipe name or produced items.</li>
+                                    <li>They are displayed after all exact matches.</li>
+                                </ul>
+                            </li>
+                        </ol>
                     </div>
                 </div>
 

@@ -22,7 +22,7 @@ $powers = ProductionLines::getPowerByProductionLine($productLine->id);
 $checklist = Checklist::getChecklist($productLine->id);
 
 $items = Items::getAllItems();
-$Recipes = Recipes::getAllRecipes();
+$recipes = Recipes::getAllRecipes();
 $buildings = Buildings::getAllBuildings();
 
 global $changelog;
@@ -31,7 +31,7 @@ function generateUUID(): string {
     $data = random_bytes(16);
 
     // Versie instellen (4) en variant instellen (RFC 4122)
-    $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // Versie 4
+    $data[6] = chr(ord($data[6]) & 0x0f | 0x30); // Versie 4
     $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // Variant RFC 4122
 
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
@@ -191,7 +191,7 @@ foreach ($production as $product) {
             </div>
             <div class="col-md-9">
                 <h2>Production</h2>
-                <div class="overflow-x-auto">
+                <div style="position: relative; overflow-x: auto; overflow-y: visible;">
                     <table class="table table-striped " id="recipes">
                         <thead class="table-dark">
                         <tr>
@@ -209,14 +209,9 @@ foreach ($production as $product) {
                                     <input type="hidden" name="production_id[]" value="<?= $product->id ?>">
                                 </td>
                                 <td class="m-0 p-0 position-relative" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
-                                    <i class="fa-solid fa-gear open-p-settings position-absolute link-primary text-muted" style="font-size: 11px; top:2px; left:2px;"></i>
-                                    <select name="production_recipe_id[]"
-                                            class="form-control rounded-0 recipe"<?php if ($product->item_name_2) echo 'style="height: 78px"' ?>>
-                                        <?php foreach ($Recipes as $recipe) : ?>
-                                            <option <?php if ($product->recipe_id == $recipe->id) echo 'selected' ?>
-                                                    value="<?= $recipe->id ?>"><?= $recipe->name ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
+                                    <i class="fa-solid fa-gear open-p-settings position-absolute link-primary text-muted z-1"
+                                       style="font-size: 11px; top:2px; left:2px;"></i>
+                                    <?= GlobalUtility::generateRecipeSelect($recipes, $product->recipe_id) ?>
                                 </td>
                                 <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
                                     <input min="0" type="number" name="production_quantity[]"
@@ -266,14 +261,9 @@ foreach ($production as $product) {
                                 <input type="hidden" name="production_id[]" value="<?= generateUUID() ?>">
                             </td>
                             <td class="m-0 p-0 position-relative">
-                                <i class="fa-solid fa-gear open-p-settings position-absolute link-primary text-muted" style="font-size: 11px; top:2px; left:2px;"></i>
-                                <select name="production_recipe_id[]"
-                                        class="form-control rounded-0 item-recipe-id recipe">
-                                    <option value="" disabled selected>Select a recipe</option>
-                                    <?php foreach ($Recipes as $recipe) : ?>
-                                        <option value="<?= $recipe->id ?>"><?= $recipe->name ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <i class="fa-solid fa-gear open-p-settings position-absolute link-primary text-muted z-1"
+                                   style="font-size: 11px; top:2px; left:2px;"></i>
+                                <?= GlobalUtility::generateRecipeSelect($recipes) ?>
                             </td>
                             <td class="m-0 p-0">
                                 <input min="0" type="number" step="any" name="production_quantity[]" value="0"
@@ -300,6 +290,10 @@ foreach ($production as $product) {
         <?php require_once '../private/views/Popups/productionLine/showPower.php'; ?>
     </form>
 </div>
+<!--    custom select-->
+<!-- Make sure you have Font Awesome included -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
 <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="Checklist"
      aria-labelledby="offcanvasChecklist">
     <div class="offcanvas-header pb-1">

@@ -82,7 +82,7 @@ export class ProductionLineFunctions {
                 // Modify first two columns to span 2 rows, adjust select/input height
                 rowToUpdate.find('td:nth-child(2)').attr('rowspan', 2);
                 rowToUpdate.find('td:nth-child(3)').attr('rowspan', 2);
-                rowToUpdate.find('td:nth-child(2) select').css('height', '78px');
+                rowToUpdate.find('td:nth-child(2) .search-input').css('height', '78px');
                 rowToUpdate.find('td:nth-child(3) input').css('height', '78px');
 
                 // Add extra row for double export values
@@ -118,7 +118,7 @@ export class ProductionLineFunctions {
             rowToUpdate.find('td:nth-child(3)').removeAttr('rowspan');
 
             // Reset the input/select height
-            rowToUpdate.find('td:nth-child(2) select').css('height', '');
+            rowToUpdate.find('td:nth-child(2) .search-input').css('height', '');
             rowToUpdate.find('td:nth-child(3) input').css('height', '');
         }
     }

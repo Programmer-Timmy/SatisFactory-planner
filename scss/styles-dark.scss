@@ -17,7 +17,6 @@
 }
 
 
-
 .table > tbody > tr > td > input:not(:read-only):not(:disabled),
 .table > tbody > tr > td > select {
   &:hover,
@@ -31,6 +30,23 @@
 
   &:hover {
     color: $navbar-dark-hover-color;
+  }
+}
+
+.select-items-menu {
+  &.bg-white {
+    background-color: $bg-dark-gray !important;
+  }
+
+  .select-item{
+    border-color: $border-color-light !important;
+    &:hover, &.active {
+      color: $text-color
+    }
+  }
+
+  .search-by-menu-button {
+    color: darken($text-color, 10%) !important;
   }
 }
 

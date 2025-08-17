@@ -2,8 +2,76 @@
 
 class Recipes {
 
+
     public static function getAllRecipes() {
-        return Database::getAll("recipes", ['*'], [], [], 'LTRIM(SUBSTRING_INDEX(`name`, "(", 1)) ASC');
+        $sql = "
+SELECT
+    r.*,
+    COALESCE(ing.ingredients, JSON_ARRAY()) AS ingredients,
+    COALESCE(bld.building,   JSON_ARRAY()) AS building,
+    CASE
+      WHEN i3.id IS NOT NULL THEN JSON_ARRAY(
+        JSON_OBJECT(
+          'id', i2.id, 'name', i2.name, 'class_name', i2.class_name,
+          'form', i2.form, 'quantity', r.export_amount_per_min
+        ),
+        JSON_OBJECT(
+          'id', i3.id, 'name', i3.name, 'class_name', i3.class_name,
+          'form', i3.form, 'quantity', r.export_amount_per_min2
+        )
+      )
+      ELSE JSON_ARRAY(
+        JSON_OBJECT(
+          'id', i2.id, 'name', i2.name, 'class_name', i2.class_name,
+          'form', i2.form, 'quantity', r.export_amount_per_min
+        )
+      )
+    END AS products
+FROM recipes r
+LEFT JOIN (
+  SELECT
+      ri.recipes_id,
+      JSON_ARRAYAGG(JSON_OBJECT(
+          'id', i.id,
+          'name', i.name,
+          'class_name', i.class_name,
+          'form', i.form,
+          'quantity', ri.import_amount_per_min
+      )) AS ingredients
+  FROM recipe_ingredients ri
+  INNER JOIN items i ON i.id = ri.items_id
+  GROUP BY ri.recipes_id
+) ing ON ing.recipes_id = r.id
+LEFT JOIN (
+  SELECT
+      r2.id AS recipes_id,
+      IF(b.id IS NOT NULL,
+         JSON_ARRAY(JSON_OBJECT(
+            'id', b.id,
+            'name', b.name,
+            'class_name', b.class_name,
+            'power_used', b.power_used,
+            'power_generated', b.power_generation
+         )),
+         JSON_ARRAY()
+      ) AS building
+  FROM recipes r2
+  LEFT JOIN buildings b ON b.id = r2.buildings_id
+) bld ON bld.recipes_id = r.id
+LEFT JOIN items i2 ON i2.id = r.item_id
+LEFT JOIN items i3 ON i3.id = r.item_id2
+ORDER BY LTRIM(SUBSTRING_INDEX(r.name, '(', 1)) ASC;
+";
+        $database = new Database();
+        $recipes = $database->query($sql);
+
+        foreach ($recipes as $recipe) {
+            $recipe->ingredients = json_decode($recipe->ingredients) ?: [];
+            $recipe->building = json_decode($recipe->building) ?: [];
+            $recipe->products = json_decode($recipe->products) ?: [];
+        }
+
+        return $recipes;
     }
 
     public static function getRecipeById(int $id) {

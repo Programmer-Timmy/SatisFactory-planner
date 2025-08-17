@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $recipe = null;
     // Extracting data from JSON request
     if (empty($requestData['id'])) {
-        $recipes = Recipes::fetchRecipesWithDetails();
+        $recipes = Recipes::getAllRecipes();
         $response = array(
             'success' => true,
             'count' => count($recipes),

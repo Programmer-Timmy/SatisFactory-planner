@@ -14,6 +14,7 @@ import {Building} from "./Types/Building";
 import {Recipe} from "./Types/Recipe";
 import {Checklist, IChecklist} from "./Checklist";
 import {RecipeSetting} from "./RecipeSetting";
+import {ProductionSelect} from "./ProductionSelect";
 
 
 /**
@@ -120,15 +121,24 @@ export class TableHandler {
 
         for (let i = 0; i < table.length - lengthReduction; i++) {
             const row = table[i];
-            const values = $(row).find('input, select');
+            const values = $(row).find('input, select, .recipe-select');
             const rowValues: any[] = [];
 
             values.each((_, value) => {
-                const type = $(value).attr('type');
+
+                const $value = $(value);
+                if ($value.hasClass('recipe-select')) {
+                    new ProductionSelect($value);
+                    return
+                }
+                if ($value.data('sp-skip') === true) {
+                    return;
+                }
+                const type = $value.attr('type');
                 if (type === 'number') {
-                    rowValues.push(Number($(value).val()));
+                    rowValues.push(Number($value.val()));
                 } else {
-                    rowValues.push($(value).val());
+                    rowValues.push($value.val());
                 }
             });
 
@@ -279,6 +289,9 @@ export class TableHandler {
             const inputsAndSelects = $(`#${tableId} tbody`).find('input, select');
 
             inputsAndSelects.each((_, element) => {
+                if ($(element).data('sp-skip') === true) {
+                    return;
+                }
                 $(element).on('change', (event) => {
                     this.handleInputChange(event, tableId);
                 });
@@ -311,8 +324,6 @@ export class TableHandler {
         // If the last row is selected, add a new row
         if (this.checkIfLastRow(target, tableId) && this.checkIfSelect(target)) {
             this.addNewRow(tableId);
-        //     add to the checklist
-        //     this.checklist?.addCheckList(this.productionTableRows[rowIndex - amountExtra]);
         }
 
         const row = this.getRowByTableIdAndIndex(tableId, rowIndex - amountExtra);
@@ -378,7 +389,7 @@ export class TableHandler {
     private updateRowInTable(tableId: string, rowIndex: number, row: any) {
         const table = $(`#${tableId} tbody tr`);
         let rowToUpdate = $(table[rowIndex]);
-        rowToUpdate.find('input, select').each((index, element) => {
+        rowToUpdate.find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])').each((index, element) => {
             const key = Object.keys(row)[index];
             let value: any;
 
@@ -420,6 +431,8 @@ export class TableHandler {
             });
         });
 
+        new ProductionSelect(newRow.find('.recipe-select'));
+
         switch (tableId) {
             case 'imports':
                 this.importsTableRows.push(new ImportsTableRow());
@@ -456,7 +469,7 @@ export class TableHandler {
      * @returns {boolean} True if the element is a <select>, false otherwise.
      */
     private checkIfSelect(target: JQuery): boolean {
-        return target.is('select');
+        return target.parent().hasClass('recipe-select')
     }
 
     private UpdateOnIndex(indexes: number[]) {
