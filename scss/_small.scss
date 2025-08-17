@@ -38,6 +38,14 @@ footer {
 
 .select-items-menu {
 
+  .search-by-menu{
+    z-index: -1;
+    border: 1px solid $border-primary;
+    top: 0;
+    left: 299px;
+    width: 300px;
+  }
+
   &.has-scrollbar .icon-group {
     margin-right: 8px;
   }
@@ -85,8 +93,6 @@ footer {
       border: 2px solid transparent; /* keeps it inside border-radius */
       background-clip: content-box;
     }
-
-
 
     .select-item {
       //border bottom exempt last item that is visible

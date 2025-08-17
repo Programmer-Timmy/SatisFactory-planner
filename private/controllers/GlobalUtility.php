@@ -224,7 +224,19 @@ class GlobalUtility {
                         <i class="fa-solid fa-eye-slash"></i>
                     </button>
                 </div>
-                <div class="select-items overflow-y-auto" style="max-height: 300px; min-width: 300px;">
+                <div class="search-by-menu collapse position-absolute bg-white rounded-end z-1">
+                    <div class="d-flex justify-content-between align-items-center p-1">
+                        <label class="form-check form-check-inline mb-0">
+                            <input type="checkbox" class="form-check-input search-by-products" name="searchByProduct" data-sp-skip="true" checked>
+                            <span class="form-check-label">By product</span>
+                        </label>
+                        <label class="form-check form-check-inline mb-0">
+                            <input type="checkbox" class="form-check-input search-by-ingredients" name="searchByIngredients" data-sp-skip="true">
+                            <span class="form-check-label">By ingredients</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="select-items overflow-y-auto z-2" style="max-height: 300px; min-width: 300px;">
                     <?php foreach ($recipes as $recipe): ?>
 
                         <div class="p-1 select-item z-2" data-recipe-id="<?= $recipe->id ?>"
@@ -236,7 +248,9 @@ class GlobalUtility {
 
                                 <?php if ($recipe->ingredients): ?>
                                     <?php foreach ($recipe->ingredients as $ingredient): ?>
-                                        <div class="d-flex align-items-center" style="gap:2px;">
+                                        <div class="d-flex align-items-center recipe-ingredient" style="gap:2px;"
+                                             data-ingredient-id="<?= $ingredient->id ?>"
+                                             data-ingredient-name="<?= htmlspecialchars($ingredient->name) ?>">
                                             <img src="/image/items/<?= strtolower(str_replace('_', '-', $ingredient->class_name)) ?>_256.png"
                                                  title="<?= $ingredient->name ?>"
                                                  class="img-fluid" style="width: 26px; height: 26px;">

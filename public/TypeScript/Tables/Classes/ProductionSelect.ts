@@ -11,6 +11,15 @@ export class ProductionSelect {
     private onResizeEvent?: any;
     private open = false;
     private showVisuals: boolean = true;
+    private searchByMenuSettings: {
+        show: boolean,
+        searchByProducts: boolean,
+        searchByIngredients: boolean
+    } = {
+        show: false,
+        searchByProducts: true,
+        searchByIngredients: false
+    }
 
     /**
      * Constructs a new ProductionSelect instance.
@@ -25,13 +34,15 @@ export class ProductionSelect {
         this.selectItemsMenu = this.element.find('.select-items-menu');
         this.selectItemsElement = this.element.find('.select-items');
         this.iconGroup = this.element.find('.icon-group');
-        this.showVisuals = localStorage.getItem('showVisuals') === 'true' || localStorage.getItem('showVisuals') === null;
+        this.showVisuals = localStorage.getItem('showVisuals') === 'true' || localStorage.getItem('showVisuals') === null
+        // { show: boolen, searchByProdcuts: boolean, searchByingredients: boolean } its in one object in the localStorage
+        this.searchByMenuSettings = localStorage.getItem('searchByMenuSettings') ? JSON.parse(localStorage.getItem('searchByMenuSettings') as string) : this.searchByMenuSettings;
 
         this.handleEvents();
         this.handleSearchInput({} as TriggeredEvent); // Initialize search input handling
         this.activateSelectedRecipe(this.recipeIdElement.val() as string); // Activate the selected recipe if it exists
         this.showHideVisuals(); // Set the initial state of visuals based on localStorage
-
+        this.showHideSearchByMenu(); // Set the initial state of search by menu based on localStorage
     }
 
     /**
@@ -48,6 +59,7 @@ export class ProductionSelect {
             }
 
             this.handeFocus(event);
+            this.updateSearchByMenuSettings()
         });
 
         // @ts-ignore
@@ -72,7 +84,58 @@ export class ProductionSelect {
                 localStorage.setItem('showVisuals', this.showVisuals.toString());
                 this.showHideVisuals();
             }
+
+            if(target.attr('name') === 'searchByMenu') {
+                this.searchByMenuSettings.show = !this.searchByMenuSettings.show;
+                    localStorage.setItem('searchByMenuSettings', JSON.stringify(this.searchByMenuSettings));
+
+                this.showHideSearchByMenu();
+            }
         })
+
+        // Handle search by products and ingredients toggling
+        this.selectItemsMenu.on('click', '.search-by-products', (event: JQuery.ClickEvent) => {
+            this.searchByMenuSettings.searchByProducts = !this.searchByMenuSettings.searchByProducts;
+            localStorage.setItem('searchByMenuSettings', JSON.stringify(this.searchByMenuSettings));
+            $(event.currentTarget).toggleClass('active', this.searchByMenuSettings.searchByProducts);
+            this.handleSearchInput({} as TriggeredEvent); // Re-filter items based on the new settings
+        });
+
+        this.selectItemsMenu.on('click', '.search-by-ingredients', (event: JQuery.ClickEvent) => {
+            this.searchByMenuSettings.searchByIngredients = !this.searchByMenuSettings.searchByIngredients;
+            localStorage.setItem('searchByMenuSettings', JSON.stringify(this.searchByMenuSettings));
+            $(event.currentTarget).toggleClass('active', this.searchByMenuSettings.searchByIngredients);
+            this.handleSearchInput({} as TriggeredEvent); // Re-filter items based on the new settings
+        });
+    }
+
+
+    private updateSearchByMenuSettings() {
+        this.searchByMenuSettings = localStorage.getItem('searchByMenuSettings') ? JSON.parse(localStorage.getItem('searchByMenuSettings') as string) : this.searchByMenuSettings;
+        // check the checkboxes of the inputs
+        this.selectItemsMenu.find('.search-by-products')
+            .first()
+            .prop('checked', this.searchByMenuSettings.searchByProducts);
+
+        this.selectItemsMenu.find('.search-by-ingredients')
+            .first()
+            .prop('checked', this.searchByMenuSettings.searchByIngredients);
+
+
+    }
+
+    /**
+     * Toggles the visibility of the search by menu based on the settings stored in localStorage.
+     * It adds or removes the 'show' class from the search-by-menu element in the select items menu.
+     * The state is also saved to localStorage.
+     */
+    private showHideSearchByMenu() {
+        this.searchByMenuSettings.show = localStorage.getItem('searchByMenuSettings') ? JSON.parse(localStorage.getItem('searchByMenuSettings') as string).show : false;
+        if (this.searchByMenuSettings.show) {
+            this.selectItemsMenu.find('.search-by-menu').addClass('show');
+        } else {
+            this.selectItemsMenu.find('.search-by-menu').removeClass('show');
+        }
     }
 
     /**
@@ -158,6 +221,7 @@ export class ProductionSelect {
         this.open = true;
 
         this.checkForScrollbar();
+        this.handleSearchInput({} as TriggeredEvent); // update the search input becouse of the changing factors
     }
 
     /**
@@ -234,6 +298,7 @@ export class ProductionSelect {
      * @param event The triggered event from the search input.
      */
     private handleSearchInput(event: JQuery.TriggeredEvent) {
+        this.searchByMenuSettings = localStorage.getItem('searchByMenuSettings') ? JSON.parse(localStorage.getItem('searchByMenuSettings') as string) : this.searchByMenuSettings;
         const searchValue = this.searchElement.val() as string;
         let items = this.selectItemsElement.find('.select-item');
 
@@ -254,22 +319,37 @@ export class ProductionSelect {
         items.each((index, item) => {
             const $item = $(item);
             const productNames = $item.find('.recipe-product').map((_, el) => $(el).data('product-name')).get() as string[];
-            const recipeName = $item.find('.recipe-name');
+            const ingredientNames = $item.find('.recipe-ingredient').map((_, el) => $(el).data('ingredient-name')).get() as string[];
+            const recipeName = $item.find('.recipe-name').text().toLowerCase();
             // should match both product names and recipe name
-            const matches = productNames.some(name => name.toLowerCase().includes(searchValue.toLowerCase())) ||
-                recipeName.text().toLowerCase().includes(searchValue.toLowerCase());
+            const searchByProduct = this.searchByMenuSettings.searchByProducts && productNames.length > 0;
+            const searchByIngredient = this.searchByMenuSettings.searchByIngredients && ingredientNames.length > 0;
 
-            if (searchValue.toLowerCase() === recipeName.text().toLowerCase()) {
+            const search = searchValue.toLowerCase();
+
+            const matches =
+                recipeName.includes(search) ||
+                (searchByProduct && productNames.some(name => name.toLowerCase().includes(search))) ||
+                (searchByIngredient && ingredientNames.some(name => name.toLowerCase().includes(search)));
+
+            if (searchValue.toLowerCase() === recipeName) {
                 fullMatch.push({
                     element: $item,
                     weight: 2 // full match has a higher weight
                 })
-            } else if (productNames.some(name => name.toLowerCase() === searchValue.toLowerCase())) {
+            } else if (searchByProduct && productNames.some(name => name.toLowerCase() === searchValue.toLowerCase())) {
                 fullMatch.push({
                     element: $item,
                     weight: 1 // partial match has a lower weight
                 });
             }
+            if (searchByIngredient && ingredientNames.some(name => name.toLowerCase() === searchValue.toLowerCase())) {
+                fullMatch.push({
+                    element: $item,
+                    weight: 1 // partial match has a lower weight
+                });
+            }
+
 
             if (matches) {
                 $item.show();
@@ -337,6 +417,7 @@ export class ProductionSelect {
         this.moveIcons();
         this.showHideVisuals();
         this.showHideVisuals();
+        this.showHideSearchByMenu();
     }
 
     /**
