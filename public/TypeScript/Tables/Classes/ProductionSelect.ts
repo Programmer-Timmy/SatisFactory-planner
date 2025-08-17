@@ -32,10 +32,10 @@ export class ProductionSelect {
         this.recipeIdElement = this.element.find('.recipe-id');
         this.searchElement = this.element.find('.search-input');
         this.selectItemsMenu = this.element.find('.select-items-menu');
-        this.selectItemsElement = this.element.find('.select-items');
+        this.selectItemsElement = this.selectItemsMenu.find('.select-items');
         this.iconGroup = this.element.find('.icon-group');
+
         this.showVisuals = localStorage.getItem('showVisuals') === 'true' || localStorage.getItem('showVisuals') === null
-        // { show: boolen, searchByProdcuts: boolean, searchByingredients: boolean } its in one object in the localStorage
         this.searchByMenuSettings = localStorage.getItem('searchByMenuSettings') ? JSON.parse(localStorage.getItem('searchByMenuSettings') as string) : this.searchByMenuSettings;
 
         this.handleEvents();
@@ -53,11 +53,7 @@ export class ProductionSelect {
     private handleEvents() {
         // Example of handling a focus event
         // @ts-ignore
-        this.searchElement.on('click', (event: JQuery.ClickEvent) => {
-            if (event.button !== 0) {
-                return;
-            }
-
+        this.searchElement.on('focus', (event: JQuery.FocusEvent) => {
             this.handeFocus(event);
             this.updateSearchByMenuSettings()
         });
@@ -120,8 +116,6 @@ export class ProductionSelect {
         this.selectItemsMenu.find('.search-by-ingredients')
             .first()
             .prop('checked', this.searchByMenuSettings.searchByIngredients);
-
-
     }
 
     /**
@@ -200,7 +194,7 @@ export class ProductionSelect {
      * It opens the select items menu and positions it relative to the search input.
      * @param event The click event triggered by focusing on the search input.
      */
-    private handeFocus(event: JQuery.ClickEvent) {
+    private handeFocus(event: JQuery.FocusEvent) {
         if (this.open) {
             // if the select items are already open, do nothing
             return;
@@ -274,14 +268,14 @@ export class ProductionSelect {
      */
     private handleSelectItemClick(event: JQuery.ClickEvent) {
         const target = $(event.currentTarget);
-        if (target.closest('.select-item').length > 0) {
+        if (target.hasClass('select-item') && target.attr('data-recipe-id')) {
             // get the recipe id from the data attribute
             const recipeId = target.data('recipe-id');
             const recipeName = target.data('recipe-name');
             if (recipeId) {
+                this.hideSelectItems(); // hide the select items
                 this.recipeIdElement.val(recipeId);
                 this.searchElement.val(recipeName);
-                this.hideSelectItems(); // hide the select items
                 this.handleSearchInput({} as TriggeredEvent); // update the search input
                 this.recipeIdElement.trigger('change'); // trigger change to update the recipe id
 
@@ -310,9 +304,8 @@ export class ProductionSelect {
             return aName.localeCompare(bName);
         });
 
-        // delete all elements exept from .search-by-menu items
-        this.selectItemsElement.find('.select-item').not('.search-by-menu').remove();
         this.selectItemsElement.append(sortedItems);
+
 
         items = this.selectItemsElement.find('.select-item'); // re-fetch items after sorting
 
@@ -414,8 +407,6 @@ export class ProductionSelect {
         }
 
         // Move icons based on the height of the select items
-        this.moveIcons();
-        this.showHideVisuals();
         this.showHideVisuals();
         this.showHideSearchByMenu();
     }

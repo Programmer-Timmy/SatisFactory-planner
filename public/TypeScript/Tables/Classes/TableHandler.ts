@@ -286,12 +286,9 @@ export class TableHandler {
         const tables = ['imports', 'recipes', 'power'];
 
         tables.forEach((tableId) => {
-            const inputsAndSelects = $(`#${tableId} tbody`).find('input, select');
+            const inputsAndSelects = $(`#${tableId} tbody`).find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])');
 
             inputsAndSelects.each((_, element) => {
-                if ($(element).data('sp-skip') === true) {
-                    return;
-                }
                 $(element).on('change', (event) => {
                     this.handleInputChange(event, tableId);
                 });
@@ -300,7 +297,7 @@ export class TableHandler {
     }
 
     private addSpecificEventListener(tableId: string) {
-        const inputsAndSelects = $(`#${tableId} tbody`).find('input, select');
+        const inputsAndSelects = $(`#${tableId} tbody`).find( 'input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])');
 
         inputsAndSelects.each((_, element) => {
             $(element).on('change', (event) => {
@@ -425,13 +422,12 @@ export class TableHandler {
         newRow.find('select').prop('selectedIndex', 0);
         newRow.insertAfter(lastRow);
 
-        newRow.find('input, select').each((_, element) => {
+        newRow.find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])').each((_, element) => {
             $(element).on('change', (event) => {
                 this.handleInputChange(event, tableId);
             });
         });
 
-        new ProductionSelect(newRow.find('.recipe-select'));
 
         switch (tableId) {
             case 'imports':
@@ -441,6 +437,7 @@ export class TableHandler {
                 const productionRow = new ProductionTableRow();
                 productionRow.recipeSetting = new RecipeSetting(this, productionRow, newRow);
                 this.productionTableRows.push(productionRow);
+                new ProductionSelect(newRow.find('.recipe-select'));
                 break;
             case 'power':
                 this.powerTableRows.push(new PowerTableRow());
