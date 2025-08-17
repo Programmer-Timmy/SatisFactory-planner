@@ -20,7 +20,6 @@ export class ProductionSelect {
         this.selectItemsElement = this.element.find('.select-items');
         this.iconGroup = this.element.find('.icon-group');
         this.showVisuals = localStorage.getItem('showVisuals') === 'true' || localStorage.getItem('showVisuals') === null;
-        console.log('showVisuals:', this.showVisuals);
 
         this.handleEvents();
         this.handleSearchInput({} as TriggeredEvent); // Initialize search input handling
@@ -66,7 +65,7 @@ export class ProductionSelect {
     }
 
     private showHideVisuals() {
-        console.log('showVisuals:', this.showVisuals);
+        this.showVisuals = localStorage.getItem('showVisuals') === 'true' || localStorage.getItem('showVisuals') === null;
         if (this.showVisuals) {
             this.selectItemsMenu.removeClass('hide-visuals');
             this.iconGroup.find('.search-by-menu-button[name="showHideRecipesVisuals"] i')
@@ -76,7 +75,6 @@ export class ProductionSelect {
             this.iconGroup.find('.search-by-menu-button[name="showHideRecipesVisuals"] i')
                 .removeClass('fa-eye-slash').addClass('fa-eye');
         }
-
         this.moveIcons();
     }
 
@@ -284,6 +282,7 @@ export class ProductionSelect {
 
         // Move icons based on the height of the select items
         this.moveIcons();
+        this.showHideVisuals();
         this.showHideVisuals();
     }
 
