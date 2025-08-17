@@ -33,13 +33,20 @@
   }
 }
 
-.select-items {
+.select-items-menu {
   &.bg-white {
     background-color: $bg-dark-gray !important;
   }
 
   .select-item{
     border-color: $border-color-light !important;
+    &:hover, &.active {
+      color: $text-color
+    }
+  }
+
+  .search-by-menu-button {
+    color: darken($text-color, 10%) !important;
   }
 }
 

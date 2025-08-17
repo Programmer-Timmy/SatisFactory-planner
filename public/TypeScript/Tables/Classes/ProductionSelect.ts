@@ -2,13 +2,15 @@ import TriggeredEvent = JQuery.TriggeredEvent;
 
 export class ProductionSelect {
 
-    private element: JQuery<HTMLElement>;
+    private readonly element: JQuery<HTMLElement>;
     private recipeIdElement: JQuery<HTMLElement>;
     private searchElement: JQuery<HTMLElement>;
-    private selectItemsElement: JQuery<HTMLElement>;
+    private readonly selectItemsElement: JQuery<HTMLElement>;
     private selectItemsMenu: JQuery<HTMLElement>;
+    private iconGroup: JQuery<HTMLElement>;
     private onResizeEvent?: any;
     private open = false;
+    private showVisuals: boolean = true;
 
     public constructor(element: JQuery<HTMLElement>) {
         this.element = element;
@@ -16,10 +18,14 @@ export class ProductionSelect {
         this.searchElement = this.element.find('.search-input');
         this.selectItemsMenu = this.element.find('.select-items-menu');
         this.selectItemsElement = this.element.find('.select-items');
+        this.iconGroup = this.element.find('.icon-group');
+        this.showVisuals = localStorage.getItem('showVisuals') === 'true' || localStorage.getItem('showVisuals') === null;
+        console.log('showVisuals:', this.showVisuals);
 
         this.handleEvents();
         this.handleSearchInput({} as TriggeredEvent); // Initialize search input handling
         this.activateSelectedRecipe(this.recipeIdElement.val() as string); // Activate the selected recipe if it exists
+        this.showHideVisuals(); // Set the initial state of visuals based on localStorage
 
     }
 
@@ -46,7 +52,34 @@ export class ProductionSelect {
         this.searchElement.on('input', (event: JQuery.TriggeredEvent) => {
             this.handleSearchInput(event);
         });
+
+        this.iconGroup.on('click', (event: JQuery.ClickEvent) => {
+            // check if name attr is showHideRecipeVisuals
+            const target = $(event.target).closest('.search-by-menu-button');
+            if (target.attr('name') === 'showHideRecipesVisuals') {
+                // toggle the showVisuals variable
+                this.showVisuals = !this.showVisuals;
+                localStorage.setItem('showVisuals', this.showVisuals.toString());
+                this.showHideVisuals();
+            }
+        })
     }
+
+    private showHideVisuals() {
+        console.log('showVisuals:', this.showVisuals);
+        if (this.showVisuals) {
+            this.selectItemsMenu.removeClass('hide-visuals');
+            this.iconGroup.find('.search-by-menu-button[name="showHideRecipesVisuals"] i')
+                .removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            this.selectItemsMenu.addClass('hide-visuals');
+            this.iconGroup.find('.search-by-menu-button[name="showHideRecipesVisuals"] i')
+                .removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+
+        this.moveIcons();
+    }
+
 
     private positionSelectItems() {
         this.selectItemsMenu.detach().appendTo('body');
@@ -251,11 +284,11 @@ export class ProductionSelect {
 
         // Move icons based on the height of the select items
         this.moveIcons();
+        this.showHideVisuals();
     }
 
     private moveIcons() {
         const selectItemsHeight = this.selectItemsElement.outerHeight() || 0;
-        console.log('Select items height:', selectItemsHeight);
         const iconGroup = this.selectItemsMenu.find('.icon-group');
         if (selectItemsHeight > 50) {
             iconGroup.addClass(['flex-column'])

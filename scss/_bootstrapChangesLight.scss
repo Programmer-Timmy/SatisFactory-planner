@@ -8,6 +8,17 @@ $info: #4a90e2; // Deeper blue
 $light: #f0f4f8; // Clean light gray
 $dark: #2e2e2e; // Modern dark gray
 
+// hover colors
+//$primary-hover: darken($primary, 10%); // Darker primary color for hover effect
+//$secondary-hover: darken($secondary, 10%); // Darker secondary color for hover effect
+//$success-hover: darken($success, 10%); // Darker success color for hover effect
+//$danger-hover: darken($danger, 10%); // Darker danger color for hover effect
+//$warning-hover: darken($warning, 10%); // Darker warning color for hover effect
+//$info-hover: darken($info, 10%); // Darker info color for hover effect
+//$light-hover: darken($light, 5%); // Slightly darker light color for hover effect
+$dark-hover: lighten($dark, 30%); // Lighter dark color for hover effect
+
+// emphasis colors
 $primary-emphasis: transparentize($primary, 0.25); // Slightly lighter primary color for emphasis
 
 // Body and global background
@@ -21,6 +32,7 @@ $text-color: #2e2e2e; // Dark text color
 $headings-color: #2e2e2e; // Dark headings color
 $link-color: #4db8ff; // Custom link color (same as secondary)
 $link-hover-color: #ff8a47; // Hover color for links
+
 
 // Borders
 $border-color: #d0d0d0; // Lighter border color for contrast with light background

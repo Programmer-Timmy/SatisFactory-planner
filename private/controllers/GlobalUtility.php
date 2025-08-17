@@ -210,7 +210,7 @@ class GlobalUtility {
                    placeholder="Search by product or recipe" value="<?= htmlspecialchars($recipeName) ?>"
                    autocomplete="off">
             <input type="hidden" name="recipeId" class="recipe-id" value="<?= $selectedRecipeId ?>" autocomplete="off">
-            <div class="select-items-menu collapse position-absolute child bg-white z-2 rounded hide-visuals"
+            <div class="select-items-menu collapse position-absolute child bg-white z-2 rounded"
                  style="min-width: 300px; max-height: 300px;">
                 <div class="d-flex justify-content-between align-items-center position-absolute end-0 icon-group">
                     <button name="searchByMenu"
@@ -221,7 +221,7 @@ class GlobalUtility {
                     <button name="showHideRecipesVisuals"
                             class="btn btn-sm bg-transparent border-0 text-dark search-by-menu-button p-1 rounded-0"
                             type="button">
-                        <i class="fa-solid fa-eye"></i>
+                        <i class="fa-solid fa-eye-slash"></i>
                     </button>
                 </div>
                 <div class="select-items overflow-y-auto" style="max-height: 300px; min-width: 300px;">

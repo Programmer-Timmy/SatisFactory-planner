@@ -52,16 +52,21 @@ footer {
     &.flex-column {
       .search-by-menu-button {
         padding: 0 0.25rem !important; /* horizontal padding only */
-      }
 
-      .search-by-menu-button:first-child {
-        padding-top: 0.25rem !important; /* add top padding to first */
-      }
+        &:first-child {
+          padding-top: 0.25rem !important; /* add top padding to first */
+        }
 
-      .search-by-menu-button:last-child {
-        padding-bottom: 0.25rem !important; /* add bottom padding to last */
+        &:last-child {
+          padding-bottom: 0.25rem !important; /* add bottom padding to last */
+        }
       }
+    }
+  }
 
+  .search-by-menu-button {
+    &:hover, &:focus {
+      color: $dark-hover !important;
     }
   }
 
@@ -81,14 +86,7 @@ footer {
       background-clip: content-box;
     }
 
-    .search-by-menu-button {
-      top: 0;
-      will-change: transform;
 
-      &:hover, &:focus {
-        color: $secondary !important;
-      }
-    }
 
     .select-item {
       //border bottom exempt last item that is visible
@@ -99,7 +97,7 @@ footer {
         border-bottom: none;
       }
 
-      &:hover, &.active {
+      &:hover {
         background-color: $primary-emphasis;
       }
     }
