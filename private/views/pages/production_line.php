@@ -52,6 +52,10 @@ foreach ($production as $product) {
         'useSomersloop' => $product->use_somersloop == 1
     ];
 }
+
+function trimDecimal(string $value): string {
+    return rtrim(rtrim($value, '0'), '.');
+}
 ?>
 
 <script id="settings-data" type="application/json">
@@ -217,7 +221,7 @@ foreach ($production as $product) {
                                     <input min="0" type="number" name="production_quantity[]"
                                            step="any" <?php if ($product->item_name_2) echo 'style="height: 78px"' ?>
                                            required class="form-control rounded-0 production-quantity" "
-                                    value="<?= $product->product_quantity ?>">
+                                    value="<?= trimDecimal($product->product_quantity) ?>">
                                 </td>
                                 <td class="m-0 p-0">
                                     <input type="text" readonly class="form-control rounded-0 product-name"
@@ -227,12 +231,12 @@ foreach ($production as $product) {
                                     <input min="0" type="number" name="production_usage[]" step="any" required
                                            readonly
                                            class="form-control rounded-0 usage-amount"
-                                           value="<?= $product->local_usage ?>">
+                                           value="<?= trimDecimal($product->local_usage) ?>">
                                 </td>
                                 <td class="m-0 p-0">
                                     <input min="0" type="number" name="production_export[]" step="any" required
                                            readonly class="form-control rounded-0 export-amount"
-                                           value="<?= $product->export_amount_per_min ?>">
+                                           value="<?= trimDecimal($product->export_amount_per_min) ?>">
                                 </td>
                             </tr>
                             <?php if ($product->item_name_2) : ?>
@@ -246,12 +250,12 @@ foreach ($production as $product) {
                                         <input min="0" type="number" name="production_usage2[]" step="any" required
                                                readonly
                                                class="form-control rounded-0 usage-amount" "
-                                        value="<?= $product->local_usage2 ?>">
+                                        value="<?= trimDecimal($product->local_usage2) ?>">
                                     </td>
                                     <td class="m-0 p-0">
                                         <input min="0" type="number" name="production_export2[]" step="any" required
                                                readonly class="form-control rounded-0 export-amount"
-                                               value="<?= $product->export_ammount_per_min2 ?>">
+                                               value="<?= trimDecimal($product->export_ammount_per_min2) ?>">
                                     </td>
                                 </tr>
                             <?php endif; ?>
