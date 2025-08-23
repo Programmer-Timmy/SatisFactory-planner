@@ -102,43 +102,6 @@ $roles = Roles::getAllRoles();
                             <input type="search" name="Search1232" class="form-control mb-2" id="addSearch"
                                    placeholder="Type to find a user..." autocomplete="off">
                             <div class="users">
-                                <!--                                max of 5-->
-                                <?php foreach (array_slice($users, 0, 5) as $user) : ?>
-                                    <?php if ($user->id == $_SESSION['userId']) continue; ?>
-                                    <div class="card shadow-sm rounded-3 mb-2" data-sp-user-id="<?= $user->id ?>">
-                                        <div class="card-body d-flex justify-content-between align-items-center">
-                                            <!-- Username -->
-                                            <div style="width: 300px;" class="text-truncate">
-                                                <h6 class="mb-0 fw-semibold text-primary text-truncate">
-                                                    <?= htmlspecialchars($user->username) ?>
-                                                </h6>
-                                            </div>
-
-                                            <!-- Role select with description -->
-                                            <div class="mx-3 w-100" style="flex-grow: 1;">
-                                                <select name="role" class="form-select form-select-sm text-truncate">
-                                                    <?php foreach ($roles as $role): ?>
-                                                        <option value="<?= $role->id ?>" <?= $role->role_order === 3 ? 'selected' : '' ?>>
-                                                            <?= htmlspecialchars($role->name) ?> -
-                                                            <span><?= htmlspecialchars($role->description) ?></span>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                            </div>
-
-                                            <!-- Add user button -->
-                                            <button type="button" class="btn btn-success btn-sm px-3 add_user"
-                                                    data-user-id="<?= $user->id ?>">
-                                                <i class="bi bi-person-plus"></i> Add
-                                            </button>
-                                        </div>
-                                    </div>
-
-
-                                <?php endforeach; ?>
-                                <div class="form-text">
-                                    <?= count($users) > 5 ? 'And ' . (count($users) - 5) . ' more. Search for more users.' : '' ?>
-                                </div>
                             </div>
                         </div>
                         <!-- Hidden input to store selected user IDs -->

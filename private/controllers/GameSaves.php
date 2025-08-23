@@ -74,11 +74,49 @@ class GameSaves {
      * @return null
      * @throws ErrorException
      */
-    public static function addUserToSaveGame(array $user, int $game_save_id) {
-
-        return Database::insert("users_has_game_saves", ['users_id','role_id', 'game_saves_id', 'accepted'], [$user['id'], $user['roleId'], $game_save_id, 0]);
+    public static function addUserToSaveGame(array $user, int $game_save_id, NewDatabase $database = null) {
+        $database = $database ?? new NewDatabase();
+        $database->insert("users_has_game_saves", ['users_id', 'role_id', 'game_saves_id', 'accepted'], [$user['id'], $user['roleId'], $game_save_id, 0]);
 
     }
+
+    public static function upsertUsersToSaveGame(array $users, int $game_save_id, string $type) {
+
+        $database = new NewDatabase();
+        $database->beginTransaction();
+        $accepted = ($type == 'allowed') ? 1 : 0;
+        try {
+
+
+            foreach ($users as $user) {
+
+                $existing = $database->get("users_has_game_saves", ['id'], [], ['users_id' => $user['id'], 'game_saves_id' => $game_save_id]);
+                if ($existing) {
+                    $database->update("users_has_game_saves", ['role_id', 'accepted'], [$user['roleId'], $accepted], ['id' => $existing->id]);
+                } else {
+                    self::addUserToSaveGame($user, $game_save_id, $database);
+                }
+            }
+
+            // Remove users that are not in the new list
+            $userIds = array_column($users, 'id');
+            $userIds[] = $_SESSION['userId']; // Keep the owner always
+            if (count($userIds) > 0) {
+                $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+                $query = "DELETE FROM users_has_game_saves WHERE game_saves_id = ? AND accepted = ?
+                                       AND users_id NOT IN ($placeholders)";
+                $params = [$game_save_id, $accepted];
+                $params = array_merge($params, $userIds);
+                $database->query($query, $params);
+            }
+            $database->commit();
+        } catch (Exception $e) {
+            $database->rollBack();
+            throw $e;
+        }
+
+    }
+
 
     /**
      * @param int $user_id

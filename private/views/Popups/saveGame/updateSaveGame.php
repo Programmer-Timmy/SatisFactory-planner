@@ -63,86 +63,18 @@ if (isset($_GET['dedicatedServerId'])) {
                     </div>
 
                     <div id="userList_<?= $gameSave->id ?>">
-                        <?php if ($allowedUsers): ?>
                             <div class="mb-3">
-                                <h6>Allowed users</h6>
+                                <h6 class="allowed <?= $allowedUsers ? '' : 'hidden' ?>">Allowed users</h6>
                                 <input type="hidden" name="allowed_users">
                                 <div class="allowed-users-list">
-                                    <?php foreach ($allowedUsers as $user) : ?>
-                                        <?php if ($user->id == $_SESSION['userId']) continue; ?>
-                                        <div class="card shadow-sm rounded-3 mb-2" data-sp-user-id="<?= $user->id ?>">
-                                            <div class="card-body d-flex justify-content-between align-items-center">
-                                                <!-- Username -->
-                                                <div style="width: 300px;" class="text-truncate">
-                                                    <h6 class="mb-0 fw-semibold text-primary text-truncate">
-                                                        <?= htmlspecialchars($user->username) ?>
-                                                    </h6>
-                                                </div>
-
-                                                <!-- Role select with description -->
-                                                <div class="mx-3 w-100" style="flex-grow: 1;">
-                                                    <select name="role"
-                                                            class="form-select form-select-sm text-truncate">
-                                                        <?php foreach ($roles as $role): ?>
-                                                            <option value="<?= $role->id ?>" <?= $role->id === $user->role_id ? 'selected' : '' ?>>
-                                                                <?= htmlspecialchars($role->name) ?> -
-                                                                <span><?= htmlspecialchars($role->description) ?></span>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                </div>
-
-                                                <!-- Add user button -->
-                                                <button type="button" class="btn btn-danger btn-sm px-3 remove_user"
-                                                        data-user-id="<?= $user->id ?>">
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
                                 </div>
                             </div>
-                        <?php endif; ?>
-                        <?php if ($requestUsers): ?>
-                            <div class="mb-3 selected-users-container">
+                            <div class="mb-3 requested-users-container">
                                 <h6 class="requested <?= $requestUsers ? '' : 'hidden' ?> ">Requested Users</h6>
                                 <input type="hidden" name="requested_users">
                                 <div class="requested-users-list">
-                                    <?php foreach ($requestUsers as $user) : ?>
-                                        <?php if ($user->id == $_SESSION['userId']) continue; ?>
-                                        <div class="card shadow-sm rounded-3 mb-2" data-sp-user-id="<?= $user->id ?>">
-                                            <div class="card-body d-flex justify-content-between align-items-center">
-                                                <!-- Username -->
-                                                <div style="width: 300px;" class="text-truncate">
-                                                    <h6 class="mb-0 fw-semibold text-primary text-truncate">
-                                                        <?= htmlspecialchars($user->username) ?>
-                                                    </h6>
-                                                </div>
-
-                                                <!-- Role select with description -->
-                                                <div class="mx-3 w-100" style="flex-grow: 1;">
-                                                    <select name="role"
-                                                            class="form-select form-select-sm text-truncate">
-                                                        <?php foreach ($roles as $role): ?>
-                                                            <option value="<?= $role->id ?>" <?= $role->id === $user->role_id ? 'selected' : '' ?>>
-                                                                <?= htmlspecialchars($role->name) ?> -
-                                                                <span><?= htmlspecialchars($role->description) ?></span>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                </div>
-
-                                                <!-- Add user button -->
-                                                <button type="button" class="btn btn-warning btn-sm px-3 cancel_request"
-                                                        data-user-id="<?= $user->id ?>">
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
                                 </div>
                             </div>
-                        <?php endif; ?>
                         <?php if ($users): ?>
                             <div class="mb-3 users-container">
                                 <h6>Add user</h6>
@@ -151,45 +83,8 @@ if (isset($_GET['dedicatedServerId'])) {
                                        id="search_<?= $gameSave->id ?>"
                                        placeholder="Search for user" autocomplete="SearchUser1232">
                                 <div class="users">
-                                    <?php foreach (array_slice($users, 0, 5) as $user) : ?>
-                                        <?php if ($user->id == $_SESSION['userId']) continue; ?>
-                                        <div class="card shadow-sm rounded-3 mb-2" data-sp-user-id="<?= $user->id ?>">
-                                            <div class="card-body d-flex justify-content-between align-items-center">
-                                                <!-- Username -->
-                                                <div style="width: 300px;" class="text-truncate">
-                                                    <h6 class="mb-0 fw-semibold text-primary text-truncate">
-                                                        <?= htmlspecialchars($user->username) ?>
-                                                    </h6>
-                                                </div>
-
-                                                <!-- Role select with description -->
-                                                <div class="mx-3 w-100" style="flex-grow: 1;">
-                                                    <select name="role"
-                                                            class="form-select form-select-sm text-truncate">
-                                                        <?php foreach ($roles as $role): ?>
-                                                            <option value="<?= $role->id ?>" <?= $role->role_order === 3 ? 'selected' : '' ?>>
-                                                                <?= htmlspecialchars($role->name) ?> -
-                                                                <span><?= htmlspecialchars($role->description) ?></span>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                </div>
-
-                                                <!-- Add user button -->
-                                                <button type="button" class="btn btn-success btn-sm px-3 add_user"
-                                                        data-user-id="<?= $user->id ?>">
-                                                    Add
-                                                </button>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                    <div class="form-text">
-                                        <?= count($users) > 5 ? 'And ' . (count($users) - 5) . ' more. Search for more users.' : '' ?>
-                                    </div>
                                 </div>
-
                             </div>
-
                         <?php else: ?>
                             <div class="mb-3">
                                 <h6>Add user</h6>
