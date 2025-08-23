@@ -1,10 +1,12 @@
 <?php
 global $gameSave;
+global $changelog;
 $users = Users::getAllValidatedUsers();
 $allowedUsers = GameSaves::getAllowedUsers($gameSave->id);
 $requestUsers = GameSaves::getRequestedUsers($gameSave->id);
 
 $data = Users::filterUsers($users, $allowedUsers, $requestUsers);
+$roles = Roles::getAllRoles();
 $users = $data['users'];
 $allowedUsers = $data['allowedUsers'];
 $requestUsers = $data['requestUsers'];
@@ -42,18 +44,21 @@ if (isset($_GET['dedicatedServerId'])) {
                                required>
                     </div>
                     <div class="mb-4">
-                        <label for="UpdatedSaveGameImage" class="form-label fw-semibold">Save Game Image <small class="text-muted">(optional)</small></label>
+                        <label for="UpdatedSaveGameImage" class="form-label fw-semibold">Save Game Image <small
+                                    class="text-muted">(optional)</small></label>
                         <?php if ($gameSave->image && $gameSave->image !== 'default_img.png'): ?>
                             <div class="mb-3">
                                 <div class="card w-100">
-                                    <img src="/image/<?= htmlspecialchars($gameSave->image) ?>" alt="Save Game Image" class="card-img-top img-fluid" style="max-height: 200px; object-fit: cover;">
+                                    <img src="/image/<?= htmlspecialchars($gameSave->image) ?>" alt="Save Game Image"
+                                         class="card-img-top img-fluid" style="max-height: 200px; object-fit: cover;">
                                     <div class="card-body p-2">
                                         <p class="card-text text-center mb-0">Current Save Image</p>
                                     </div>
                                 </div>
                             </div>
                         <?php endif; ?>
-                        <input type="file" class="form-control" id="UpdatedSaveGameImage" name="UpdatedSaveGameImage" accept="image/*">
+                        <input type="file" class="form-control" id="UpdatedSaveGameImage" name="UpdatedSaveGameImage"
+                               accept="image/*">
                         <div class="form-text">Uploading an image is optional but helps identify your save.</div>
                     </div>
 
@@ -61,56 +66,125 @@ if (isset($_GET['dedicatedServerId'])) {
                         <?php if ($allowedUsers): ?>
                             <div class="mb-3">
                                 <h6>Allowed users</h6>
-                                <?php foreach ($allowedUsers as $user) : ?>
-                                    <div class="card mb-2 p-2">
-                                        <div class="card-body d-flex justify-content-between align-items-center p-0">
-                                            <h6 class="mb-1"><?= $user->username ?></h6>
-                                            <button type="button" class="btn btn-danger remove_user"
-                                                    user-id="<?= $user->users_id ?>"
-                                                    game-id="<?= $gameSave->id ?>">Remove user
-                                            </button>
+                                <input type="hidden" name="allowed_users">
+                                <div class="allowed-users-list">
+                                    <?php foreach ($allowedUsers as $user) : ?>
+                                        <?php if ($user->id == $_SESSION['userId']) continue; ?>
+                                        <div class="card shadow-sm rounded-3 mb-2" data-sp-user-id="<?= $user->id ?>">
+                                            <div class="card-body d-flex justify-content-between align-items-center">
+                                                <!-- Username -->
+                                                <div style="width: 300px;" class="text-truncate">
+                                                    <h6 class="mb-0 fw-semibold text-primary text-truncate">
+                                                        <?= htmlspecialchars($user->username) ?>
+                                                    </h6>
+                                                </div>
+
+                                                <!-- Role select with description -->
+                                                <div class="mx-3 w-100" style="flex-grow: 1;">
+                                                    <select name="role"
+                                                            class="form-select form-select-sm text-truncate">
+                                                        <?php foreach ($roles as $role): ?>
+                                                            <option value="<?= $role->id ?>" <?= $role->id === $user->role_id ? 'selected' : '' ?>>
+                                                                <?= htmlspecialchars($role->name) ?> -
+                                                                <span><?= htmlspecialchars($role->description) ?></span>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Add user button -->
+                                                <button type="button" class="btn btn-danger btn-sm px-3 remove_user"
+                                                        data-user-id="<?= $user->id ?>">
+                                                    Cancel
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                <?php endforeach; ?>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
                         <?php endif; ?>
                         <?php if ($requestUsers): ?>
-                            <div class="mb-3">
-                                <h6>Requested users</h6>
-                                <?php foreach ($requestUsers as $user) : ?>
-                                    <div class="card mb-2 p-2">
-                                        <div class="card-body d-flex justify-content-between align-items-center p-0">
-                                            <h6 class="mb-1"><?= $user->username ?></h6>
-                                            <button type="button" class="btn btn-warning cancel_request"
-                                                    user-id="<?= $user->users_id ?>"
-                                                    game-id="<?= $gameSave->id ?>">Cancel request
-                                            </button>
+                            <div class="mb-3 selected-users-container">
+                                <h6 class="requested <?= $requestUsers ? '' : 'hidden' ?> ">Requested Users</h6>
+                                <input type="hidden" name="requested_users">
+                                <div class="requested-users-list">
+                                    <?php foreach ($requestUsers as $user) : ?>
+                                        <?php if ($user->id == $_SESSION['userId']) continue; ?>
+                                        <div class="card shadow-sm rounded-3 mb-2" data-sp-user-id="<?= $user->id ?>">
+                                            <div class="card-body d-flex justify-content-between align-items-center">
+                                                <!-- Username -->
+                                                <div style="width: 300px;" class="text-truncate">
+                                                    <h6 class="mb-0 fw-semibold text-primary text-truncate">
+                                                        <?= htmlspecialchars($user->username) ?>
+                                                    </h6>
+                                                </div>
+
+                                                <!-- Role select with description -->
+                                                <div class="mx-3 w-100" style="flex-grow: 1;">
+                                                    <select name="role"
+                                                            class="form-select form-select-sm text-truncate">
+                                                        <?php foreach ($roles as $role): ?>
+                                                            <option value="<?= $role->id ?>" <?= $role->id === $user->role_id ? 'selected' : '' ?>>
+                                                                <?= htmlspecialchars($role->name) ?> -
+                                                                <span><?= htmlspecialchars($role->description) ?></span>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Add user button -->
+                                                <button type="button" class="btn btn-warning btn-sm px-3 cancel_request"
+                                                        data-user-id="<?= $user->id ?>">
+                                                    Cancel
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                <?php endforeach; ?>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
                         <?php endif; ?>
                         <?php if ($users): ?>
-                            <div class="mb-3">
+                            <div class="mb-3 users-container">
                                 <h6>Add user</h6>
                                 <input type="text" style="display:none">
                                 <input type="search" name="Search345" class="form-control mb-2"
                                        id="search_<?= $gameSave->id ?>"
                                        placeholder="Search for user" autocomplete="SearchUser1232">
-                                <div class="users" data-sp-gamesave-id="<?= $gameSave->id ?>">
+                                <div class="users">
                                     <?php foreach (array_slice($users, 0, 5) as $user) : ?>
-                                        <div class="card mb-2 p-2">
-                                            <div class="card-body d-flex justify-content-between align-items-center p-0">
-                                                <h6 class="mb-1"><?= $user->username ?></h6>
-                                                <button type="button" class="btn btn-success send_request"
-                                                        user-id="<?= $user->id ?>" game-id="<?= $gameSave->id ?>">Send
-                                                    request
+                                        <?php if ($user->id == $_SESSION['userId']) continue; ?>
+                                        <div class="card shadow-sm rounded-3 mb-2" data-sp-user-id="<?= $user->id ?>">
+                                            <div class="card-body d-flex justify-content-between align-items-center">
+                                                <!-- Username -->
+                                                <div style="width: 300px;" class="text-truncate">
+                                                    <h6 class="mb-0 fw-semibold text-primary text-truncate">
+                                                        <?= htmlspecialchars($user->username) ?>
+                                                    </h6>
+                                                </div>
+
+                                                <!-- Role select with description -->
+                                                <div class="mx-3 w-100" style="flex-grow: 1;">
+                                                    <select name="role"
+                                                            class="form-select form-select-sm text-truncate">
+                                                        <?php foreach ($roles as $role): ?>
+                                                            <option value="<?= $role->id ?>" <?= $role->role_order === 3 ? 'selected' : '' ?>>
+                                                                <?= htmlspecialchars($role->name) ?> -
+                                                                <span><?= htmlspecialchars($role->description) ?></span>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Add user button -->
+                                                <button type="button" class="btn btn-success btn-sm px-3 add_user"
+                                                        data-user-id="<?= $user->id ?>">
+                                                    Add
                                                 </button>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
                                     <div class="form-text">
-                                        <?= count($users) > 5 ? 'And ' . (count($users) - 5) . ' more. Search for more users.' : ''?>
+                                        <?= count($users) > 5 ? 'And ' . (count($users) - 5) . ' more. Search for more users.' : '' ?>
                                     </div>
                                 </div>
 
@@ -172,7 +246,8 @@ if (isset($_GET['dedicatedServerId'])) {
                             </div>
                         </div>
                         <div class="form-text">
-                            Connect your save game to a dedicated server. This allows you to monitor the status of your dedicated server directly within your save game dashboard.
+                            Connect your save game to a dedicated server. This allows you to monitor the status of your
+                            dedicated server directly within your save game dashboard.
                         </div>
                     </div>
                 </form>
@@ -186,96 +261,13 @@ if (isset($_GET['dedicatedServerId'])) {
         </div>
     </div>
 </div>
+<script src="/js/userSelect.js?v=<?= $changelog['version'] ?>"></script>
 <script>
-
-    // Function to handle AJAX requests
-    function handleRequest<?= $gameSave->id ?>(buttonId, requestData) {
-        const token = $('meta[name="csrf-token"]').attr('content');
-        if (!token) {
-            console.error('CSRF token not found');
-            return;
-        }
-        // preventing default
-
-        // in userlist
-        const buttons = document.getElementById('userList_<?= $gameSave->id ?>').querySelectorAll('.' + buttonId);
-        for (let button of buttons) {
-            if (button) {  // Check if the button exists
-                button.addEventListener('click', function () {
-                    // Get the search value if it exists or set it to an empty string
-                    const search = document.getElementById('search_<?= $gameSave->id ?>')
-                        ? document.getElementById('search_<?= $gameSave->id ?>').value
-                        : '';
-
-                    const userId = this.getAttribute('user-id');
-                    const gameId = this.getAttribute('game-id');
-                    const data = {
-                        search: search,
-                        gameId: gameId,
-                    };
-                    data[requestData] = userId; // Dynamically set the request parameter (addId, removeId, cancelId)
-
-                    $.ajax({
-                        url: 'requestHandeler',
-                        type: 'POST',
-                        data: data,
-                        headers: {
-                            'X-CSRF-TOKEN': token
-                        },
-                        success: function (response) {
-                            // apply changes to the user list
-                            document.getElementById('userList_<?= $gameSave->id ?>').innerHTML = response;
-                            // Add event listeners for each button
-                            handleRequest<?= $gameSave->id ?>('remove_user', 'removeId');
-                            handleRequest<?= $gameSave->id ?>('cancel_request', 'cancelId');
-                            handleRequest<?= $gameSave->id ?>('send_request', 'addId');
-                            handleSearch();
-                        }
-                    });
-                });
-            }
-        }
-    }
-
-    // Add event listeners for each button
-    handleRequest<?= $gameSave->id ?>('remove_user', 'removeId');
-    handleRequest<?= $gameSave->id ?>('cancel_request', 'cancelId');
-    handleRequest<?= $gameSave->id ?>('send_request', 'addId');
-
-    function handleSearch() {
-        const token = $('meta[name="csrf-token"]').attr('content');
-        if (!token) {
-            console.error('CSRF token not found');
-            return;
-        }
-
-        // add search event listener
-        const input = document.getElementById('search_<?= $gameSave->id ?>')
-        // Check if the input exists
-        if (!input) return;
-
-        input.addEventListener('input', function () {
-            const search = this.value;
-            const gameId = <?= $gameSave->id ?>;
-            $.ajax({
-                url: 'searchUser',
-                type: 'POST',
-                data: {
-                    search: search,
-                    gameId: gameId
-                },
-                headers: {
-                    'X-CSRF-TOKEN': token
-                },
-                success: function (response) {
-                    // apply changes to the user list
-                    document.getElementById('userList_<?= $gameSave->id ?>').querySelector('.users').innerHTML = response;
-                    handleRequest<?= $gameSave->id ?>('send_request', 'addId');
-                }
-            });
-        });
-    }
-    handleSearch();
+    document.addEventListener('DOMContentLoaded', function () {
+        const element = $('#userList_<?= $gameSave->id ?>');
+        const form = $('#updateSaveGameForm_<?= $gameSave->id ?>');
+        const userSelect = new UserSelect(element, <?= json_encode($roles) ?>, form, <?= $gameSave->id ?> , <?= json_encode($allowedUsers) ?>, <?= json_encode($requestUsers) ?>);
+    });
 </script>
 
 <script>

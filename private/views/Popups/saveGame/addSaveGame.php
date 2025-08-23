@@ -1,4 +1,5 @@
 <?php
+global $changelog;
 $error = null;
 
 if ($_POST && isset($_POST['saveGameName'])) {
@@ -20,11 +21,9 @@ if ($_POST && isset($_POST['saveGameName'])) {
 
     if (!$error) {
         // Handle selected users
-        $selectedUsers = $_POST['selectedUsers'] ? explode(',', $_POST['selectedUsers']) : [];
-
+        $requestedUsers = json_decode($_POST['requested_users'], true);
         // Create save game
-        $gameSaveId = GameSaves::createSaveGame($_SESSION['userId'], $saveGameName, $_FILES['saveGameImage'], $selectedUsers);
-        //TODO: FIX THIS SO IT DOES NOT MAKE A SAVE GAME WHEN THERE IS AN ERROR
+        $gameSaveId = GameSaves::createSaveGame($_SESSION['userId'], $saveGameName, $_FILES['saveGameImage'], $requestedUsers);
 
         // Validate dedicated server details if provided
         if (!empty($_POST['dedicatedServerIp']) && !empty($_POST['dedicatedServerPort'])) {
@@ -59,6 +58,7 @@ if ($_POST && isset($_POST['saveGameName'])) {
 
 // Fetch users for selection
 $users = Users::getAllValidatedUsers();
+$roles = Roles::getAllRoles();
 ?>
 
 <div class="modal fade <?= $error ? 'show' : '' ?>" id="popupModal" tabindex="-1" aria-labelledby="popupModalLabel"
@@ -88,9 +88,9 @@ $users = Users::getAllValidatedUsers();
                         <div class="form-text">Uploading an image is optional but helps identify your save.</div>
 
                     </div>
-                    <div id="selectedUsers" class="mt-3">
+                    <div class="mt-3 requested-users-container">
                         <h6 class="requested hidden">Requested Users</h6>
-                        <div class="selected-users-list">
+                        <div class="requested-users-list">
                         </div>
                     </div>
 
@@ -98,23 +98,46 @@ $users = Users::getAllValidatedUsers();
                         <div class="mb-3">
                             <h6>Add Users</h6>
                             <input type="text" style="display:none">
+                            <input type="hidden" name="requested_users">
                             <input type="search" name="Search1232" class="form-control mb-2" id="addSearch"
                                    placeholder="Type to find a user..." autocomplete="off">
                             <div class="users">
                                 <!--                                max of 5-->
                                 <?php foreach (array_slice($users, 0, 5) as $user) : ?>
                                     <?php if ($user->id == $_SESSION['userId']) continue; ?>
-                                    <div class="card mb-2 p-2">
-                                        <div class="card-body d-flex justify-content-between align-items-center p-0">
-                                            <h6 class="mb-1"><?= $user->username ?></h6>
-                                            <button type="button" class="btn btn-success add_user"
-                                                    data-user-id="<?= $user->id ?>">Add User
+                                    <div class="card shadow-sm rounded-3 mb-2" data-sp-user-id="<?= $user->id ?>">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <!-- Username -->
+                                            <div style="width: 300px;" class="text-truncate">
+                                                <h6 class="mb-0 fw-semibold text-primary text-truncate">
+                                                    <?= htmlspecialchars($user->username) ?>
+                                                </h6>
+                                            </div>
+
+                                            <!-- Role select with description -->
+                                            <div class="mx-3 w-100" style="flex-grow: 1;">
+                                                <select name="role" class="form-select form-select-sm text-truncate">
+                                                    <?php foreach ($roles as $role): ?>
+                                                        <option value="<?= $role->id ?>" <?= $role->role_order === 3 ? 'selected' : '' ?>>
+                                                            <?= htmlspecialchars($role->name) ?> -
+                                                            <span><?= htmlspecialchars($role->description) ?></span>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+
+                                            <!-- Add user button -->
+                                            <button type="button" class="btn btn-success btn-sm px-3 add_user"
+                                                    data-user-id="<?= $user->id ?>">
+                                                <i class="bi bi-person-plus"></i> Add
                                             </button>
                                         </div>
                                     </div>
+
+
                                 <?php endforeach; ?>
                                 <div class="form-text">
-                                    <?= count($users) > 5 ? 'And ' . (count($users) - 5) . ' more. Search for more users.' : ''?>
+                                    <?= count($users) > 5 ? 'And ' . (count($users) - 5) . ' more. Search for more users.' : '' ?>
                                 </div>
                             </div>
                         </div>
@@ -185,150 +208,18 @@ $users = Users::getAllValidatedUsers();
         </div>
     </div>
 </div>
+<script src="/js/userSelect.js?v=<?= $changelog['version'] ?>"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const element = $('#addSaveGameForm');
+        const form = $('#addSaveGameForm');
+        const userSelect = new UserSelect(element, <?= json_encode($roles) ?>, form);
+    });
+
+
     document.getElementById('add_game_save').addEventListener('click', function () {
         const popupModal = new bootstrap.Modal(document.getElementById('popupModal'));
         popupModal.show();
-    });
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const selectedUsers = [];
-        const selectedUsersInput = document.getElementById('selectedUsersInput');
-        const token = $('meta[name="csrf-token"]').attr('content');
-        if (!token) {
-            console.error('CSRF token not found');
-        }
-
-        // Handle user search input
-        document.getElementById('addSearch').addEventListener('input', function () {
-            const search = this.value;
-            // AJAX call to search for users
-            $.ajax({
-                url: 'searchUser', // Ensure this is the correct path
-                type: 'POST',
-                data: {
-                    add: true,
-                    search: search,
-                    selectedUsers: selectedUsers.join(',')
-                },
-                headers: {
-                    'X-CSRF-Token': token
-                },
-                success: function (response) {
-                    // Populate the .users container with the search results
-                    $('#userList .users').html(response);
-                    handleAddUserButtons(); // Re-bind events to new buttons
-                },
-                error: function () {
-                    console.error('Error during search');
-                }
-            });
-        });
-
-        // Function to handle Add User button clicks
-        function handleAddUserButtons() {
-            const addUserButtons = document.querySelectorAll('.add_user');
-            addUserButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    const userId = this.getAttribute('data-user-id');
-                    const username = this.previousElementSibling.textContent;
-
-                    if (!selectedUsers.includes(userId)) {
-                        // Add user to the selected list
-                        selectedUsers.push(userId);
-                        updateSelectedUsersDisplay(username, userId);
-                        updateHiddenInput();
-
-                        // Remove user from selectable list
-                        this.closest('.card').remove();
-                    }
-
-                    // if this is the first user added, show the requested users section
-                    if (selectedUsers.length === 1) {
-                        document.querySelector('.requested').classList.remove('hidden');
-                    }
-
-                    // if users is now empty, show no users found
-                    if (document.querySelectorAll('.add_user').length === 0) {
-                        $('#userList .users').html('<h6 class="text-center">No users found</h6>');
-                    }
-                });
-            });
-        }
-
-        // Update the display for selected users
-        function updateSelectedUsersDisplay(username, userId) {
-            const selectedUsersList = document.querySelector('.selected-users-list');
-            const userElement = document.createElement('div');
-            userElement.classList.add('card', 'mb-2', 'p-2');
-            userElement.innerHTML = `
-            <div class="card-body d-flex justify-content-between align-items-center p-0">
-                <h6 class="mb-1">${username}</h6>
-                <button type="button" class="btn btn-warning remove_user" data-user-id="${userId}">Cancel request</button>
-            </div>
-        `;
-            selectedUsersList.appendChild(userElement);
-
-            // Handle remove button click
-            userElement.querySelector('.remove_user').addEventListener('click', function () {
-                removeUser(userId, userElement, username);
-            });
-        }
-
-        // Remove user from selected list and add back to selectable list
-        function removeUser(userId, userElement, username) {
-            const index = selectedUsers.indexOf(userId);
-            if (index !== -1) {
-                selectedUsers.splice(index, 1);
-                userElement.remove();
-                updateHiddenInput();
-
-                // Re-add user to the selectable list
-                const userCard = document.createElement('div');
-                userCard.classList.add('card', 'mb-2', 'p-2');
-                userCard.innerHTML = `
-                <div class="card-body d-flex justify-content-between align-items-center p-0">
-                    <h6 class="mb-1">${username}</h6>
-                    <button type="button" class="btn btn-success add_user" data-user-id="${userId}">Add User</button>
-                </div>
-            `;
-                // if this is the last user removed, hide the requested users section
-                if (selectedUsers.length === 0) {
-                    document.querySelector('.requested').classList.add('hidden');
-                }
-
-                if (document.querySelectorAll('.add_user').length === 0) {
-                    $('#userList .users').find('h6').remove();
-                }
-
-                $('#userList .users').append(userCard);
-
-
-                // Re-bind the event listener for the re-added user
-                userCard.querySelector('.add_user').addEventListener('click', function () {
-                    const userId = this.getAttribute('data-user-id');
-                    const username = this.previousElementSibling.textContent;
-
-                    if (!selectedUsers.includes(userId)) {
-                        // Add user to the selected list
-                        selectedUsers.push(userId);
-                        updateSelectedUsersDisplay(username, userId);
-                        updateHiddenInput();
-
-                        // Remove user from selectable list
-                        this.closest('.card').remove();
-                    }
-                });
-            }
-        }
-
-        // Update the hidden input with the selected user IDs
-        function updateHiddenInput() {
-            selectedUsersInput.value = selectedUsers.join(',');
-        }
-
-        // Initial binding for Add User buttons
-        handleAddUserButtons();
     });
 
     <?php if ($error): ?>

@@ -103,7 +103,7 @@ footer {
         border-bottom: none;
       }
 
-      &:hover {
+      &:hover, &.active {
         background-color: $primary-emphasis;
       }
     }

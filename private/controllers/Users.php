@@ -18,9 +18,15 @@ class Users
         return Database::getAll("users", ['*'], [], ['verified' => 1]);
     }
 
+    /**
+     * @param $search string
+     * @return array
+     * @note Only returns verified users
+     * @note Only returns id and username for privacy and security reasons
+     */
     public static function searchUsers($search)
     {
-        return Database::query("SELECT * FROM users WHERE username LIKE ? and verified = 1", ["%$search%"]);
+        return Database::query("SELECT id, username FROM users WHERE username LIKE ? and verified = 1", ["%$search%"]);
     }
 
     public static function getUserById($id)
@@ -114,11 +120,11 @@ class Users
         });
 
         $requestUsers = array_filter($requestUsers, function ($user) {
-            return $user->users_id != $_SESSION['userId'];
+            return $user->id != $_SESSION['userId'];
         });
 
         $allowedUsers = array_filter($allowedUsers, function ($user) {
-            return $user->users_id != $_SESSION['userId'];
+            return $user->id != $_SESSION['userId'];
         });
 
         return [
@@ -127,25 +133,6 @@ class Users
             'requestUsers' => $requestUsers
         ];
     }
-
-    public static function generateUserListHTML($users, $game_id, $class, $buttonText, $buttonId)
-    {
-
-        $html = '';
-        foreach ($users as $user) {
-            $userId = $user->id ?? $user->users_id;
-            $html .= '<div class="card mb-2 p-2">
-        <div class="card-body d-flex justify-content-between align-items-center p-0">
-            <h6 class="mb-1">' . htmlspecialchars($user->username) . '</h6>
-            <button type="button" class="btn ' . $class . '"
-                    user-id="' . htmlspecialchars($userId) . '"
-                    game-id="' . htmlspecialchars($game_id) . '">' . $buttonText . '</button>
-        </div>
-    </div>';
-        }
-        return $html;
-    }
-
     public static function checkIfValidated($username) {
         $user = Database::get("users", ['*'], [], ['username' => $username]);
         if ($user) {

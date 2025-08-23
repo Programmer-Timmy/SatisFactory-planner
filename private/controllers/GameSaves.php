@@ -49,7 +49,7 @@ class GameSaves {
      * @param string $title
      * @param array $image
      * @param array $allowedUsers
-     * @return null
+     * @return string
      * @throws ErrorException
      */
     public static function createSaveGame(int $user_id, string $title, array $image, array $allowedUsers) {
@@ -69,14 +69,14 @@ class GameSaves {
     }
 
     /**
-     * @param int $user_id
+     * @param array $user
      * @param int $game_save_id
      * @return null
      * @throws ErrorException
      */
-    public static function addUserToSaveGame(int $user_id, int $game_save_id) {
+    public static function addUserToSaveGame(array $user, int $game_save_id) {
 
-        return Database::insert("users_has_game_saves", ['users_id', 'game_saves_id', 'accepted'], [$user_id, $game_save_id, 0]);
+        return Database::insert("users_has_game_saves", ['users_id','role_id', 'game_saves_id', 'accepted'], [$user['id'], $user['roleId'], $game_save_id, 0]);
 
     }
 
@@ -184,7 +184,7 @@ class GameSaves {
      * @return array
      */
     public static function getAllowedUsers(int $gameSaveId): array {
-        $allowedUsers = Database::getAll("users_has_game_saves", ['users_id', 'username'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 1]);
+        $allowedUsers = Database::getAll("users_has_game_saves", ['users_id as id', 'username', 'role_id'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 1]);
         return $allowedUsers;
     }
 
@@ -193,7 +193,7 @@ class GameSaves {
      * @return array
      */
     public static function getRequestedUsers(int $gameSaveId): array {
-        return Database::getAll("users_has_game_saves", ['users_id', 'username'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 0]);
+        return Database::getAll("users_has_game_saves", ['users_id as id', 'username', 'role_id'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 0]);
     }
 
     /**
