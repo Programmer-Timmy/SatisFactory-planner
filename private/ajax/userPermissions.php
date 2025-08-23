@@ -27,7 +27,9 @@ GameSaves::upsertUsersToSaveGame($allowedUsers, $gameId, 'allowed');
 $requestedUsers = GameSaves::getRequestedUsers($gameId);
 $allowedUsers = GameSaves::getAllowedUsers($gameId);
 
+$allowedUsers = array_filter($allowedUsers, fn($user) => $user->id != $_SESSION['userId']);
+
 Response::success([
     'requestedUsers' => $requestedUsers,
-    'allowedUsers' => $allowedUsers
+    'allowedUsers' => array_values($allowedUsers)
 ]);

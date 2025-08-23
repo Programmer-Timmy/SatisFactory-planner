@@ -81,6 +81,10 @@ class UserSelect {
             this.handlerCancelRequestClick(event);
         });
 
+        this.allowedUsersList?.on("click", ".remove_user", (event: JQuery.ClickEvent) => {
+            this.handelRemoveAllowedUserClick(event);
+        });
+
         this.form.on("submit", (event: JQuery.SubmitEvent) => {
             this.onFormSubmit(event);
         });
@@ -143,7 +147,6 @@ class UserSelect {
 
 
     private handlerAddUserClick(event: JQuery.ClickEvent) {
-        console.log(event);
         const button = $(event.currentTarget);
         const userCard = button.closest('.card');
         const userId = userCard.data('sp-user-id');
@@ -151,12 +154,10 @@ class UserSelect {
         const roleId = +userCard.find('select[name="role"]').val()
         const user = this.users.find(u => u.id === userId);
         if (!user) {
-            console.error('User not found');
             return;
         }
 
         if (this.requestedUsers.some(u => u.id === user.id)) {
-            console.warn('User already requested');
             return;
         }
 
@@ -278,7 +279,21 @@ class UserSelect {
             dataType: 'json',
             success: (response) => {
                 if (response.success) {
-                    console.log('State saved successfully');
+                    const allowedUsers = response.data?.allowedUsers || [];
+                    this.allowedUsers = allowedUsers.map((user: any) => ({
+                        id: user.id,
+                        username: user.username,
+                        role: this.roles.find(r => r.id === user.role_id)
+                    }));
+                    const requestedUsers = response.data?.requestedUsers || [];
+                    this.requestedUsers = requestedUsers.map((user: any) => ({
+                        id: user.id,
+                        username: user.username,
+                        role: this.roles.find(r => r.id === user.role_id)
+                    }));
+                    this.showSelectedAllowedUsers();
+                    this.searchUsers(this.searchElement.val() as string);
+
                 } else {
                     console.error('Error saving state:', response.error);
                 }
@@ -287,6 +302,26 @@ class UserSelect {
                 console.error('Error saving state:', error);
             }
         })
+    }
+
+    private handelRemoveAllowedUserClick(event: JQuery.ClickEvent) {
+        const button = $(event.currentTarget);
+        const userCard = button.closest('.card');
+        const userId = userCard.data('sp-user-id');
+
+        const userIndex = this.allowedUsers.findIndex(u => u.id === userId);
+
+        if (userIndex === -1) {
+            console.error('User not found in allowed list');
+            return;
+        }
+
+        this.allowedUsers.splice(userIndex, 1);
+        this.users.find(u => u.id === userId)!.role = undefined; // reset role
+        this.showSelectedAllowedUsers();
+        this.searchUsers(this.searchElement.val() as string);
+        this.saveState();
+
     }
 }
 
