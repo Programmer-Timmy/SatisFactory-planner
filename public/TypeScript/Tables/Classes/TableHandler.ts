@@ -297,13 +297,41 @@ export class TableHandler {
         const tables = ['imports', 'recipes', 'power'];
 
         tables.forEach((tableId) => {
-            const inputsAndSelects = $(`#${tableId} tbody`).find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])');
+            const tableBody = $(`#${tableId} tbody`);
+            const inputsAndSelects = tableBody.find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])');
+            const deleteButton = tableBody.find('.delete-production-row');
+
+            deleteButton.each((_, element) => {
+                $(element).on('click', (event) => {
+                    event.preventDefault();
+                    const target = $(event.target);
+                    const rowIndex = target.closest('tr').index();
+                    const amountExtra = target.closest('tr').prevAll('.extra-output').length;
+                    this.deleteRow(tableId, rowIndex - amountExtra, target);
+                });
+            });
 
             inputsAndSelects.each((_, element) => {
                 $(element).on('change', (event) => {
                     this.handleInputChange(event, tableId);
                 });
             });
+        });
+    }
+
+    private async addEventListenersRow(row: JQuery<HTMLElement>, tableId: string) {
+        row.find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])').each((_, element) => {
+            $(element).on('change', (event) => {
+                this.handleInputChange(event, tableId);
+            });
+        });
+
+        row.find('.delete-production-row').on('click', (event) => {
+            event.preventDefault();
+            const target = $(event.target);
+            const rowIndex = target.closest('tr').index();
+            const amountExtra = target.closest('tr').prevAll('.extra-output').length;
+            this.deleteRow(tableId, rowIndex - amountExtra, target);
         });
     }
 
@@ -433,12 +461,7 @@ export class TableHandler {
         newRow.find('select').prop('selectedIndex', 0);
         newRow.insertAfter(lastRow);
 
-        newRow.find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])').each((_, element) => {
-            $(element).on('change', (event) => {
-                this.handleInputChange(event, tableId);
-            });
-        });
-
+        this.addEventListenersRow(newRow, tableId);
 
         switch (tableId) {
             case 'imports':
@@ -582,7 +605,7 @@ export class TableHandler {
     }
 
     private disableInputs() {
-        $(".px-3.px-lg-5").find('input, select').each((_, element) => {
+        $(".px-3.px-lg-5").find('input, select, .delete-production-row').each((_, element) => {
             const $element = $(element);
             $element.prop('disabled', true);
             $element.addClass('disabled');
@@ -752,6 +775,48 @@ export class TableHandler {
             this.loadFromLocal()
             this.showCacheAmount();
         });
+    }
+
+    private deleteRow(tableId: string, rowIndex: number, target: JQuery<HTMLElement>) {
+        console.log(`Deleting row ${rowIndex} from table ${tableId}`);
+        switch (tableId) {
+            case 'imports':
+                this.importsTableRows.splice(rowIndex, 1);
+                break;
+            case 'recipes':
+                this.productionTableRows.splice(rowIndex, 1);
+                this.checklist?.removeChecklist(rowIndex);
+                break;
+            case 'power':
+                this.powerTableRows.splice(rowIndex, 1);
+                break;
+            default:
+                break;
+        }
+        this.updated = true;
+        // if it has the class extra-output, remove one lower row too
+        const tr = target.closest('tr')
+        if (tr.next().hasClass('extra-output')) {
+            tr.next().remove();
+        }
+        tr.remove();
+        if (tableId === 'recipes') {
+            if (this.settings.autoImportExport) {
+                const data: {
+                    importsTableRows: ImportsTableRow[],
+                    indexes: number[]
+                } = ImportsTableFunctions.calculateImports(this.productionTableRows);
+                this.importsTableRows = data.importsTableRows;
+                this.UpdateOnIndex(data.indexes);
+            }
+
+            if (this.settings.autoPowerMachine) {
+                this.powerTableRows = PowerTableFunctions.calculateBuildings(this.productionTableRows, this.powerTableRows);
+                this.addSpecificEventListener('power');
+            }
+        }
+
+        console.log(this.productionTableRows);
     }
 }
 

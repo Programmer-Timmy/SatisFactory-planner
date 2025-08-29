@@ -213,6 +213,7 @@ function trimDecimal(string $value): string {
                             <th scope="col">Product</th>
                             <th scope="col">Local Usage Per/min</th>
                             <th scope="col">Export Per/min</th>
+                            <th scope="col"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -246,6 +247,14 @@ function trimDecimal(string $value): string {
                                     <input min="0" type="number" name="production_export[]" step="any" required
                                            readonly class="form-control rounded-0 export-amount"
                                            value="<?= trimDecimal($product->export_amount_per_min) ?>">
+                                </td>
+                                <td class="m-0 p-0" style="width: 30px;" <?= $product->item_name_2 ? 'rowspan="2"' : '' ?>>
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-outline-soft-red m-0 rounded-0 btn-sm delete-production-row"
+                                            style="height: <?= $product->item_name_2 ? '78' : '39' ?>px; width: 30px;"
+                                            data-id="<?= $product->id ?>">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
                             <?php if ($product->item_name_2) : ?>
@@ -293,6 +302,13 @@ function trimDecimal(string $value): string {
                                 <input min="0" type="number" step="any" name="production_export[]" value="0"
                                        required
                                        readonly class="form-control rounded-0 export-amount">
+                            </td>
+                            <td class="m-0 p-0" style="width: 30px;">
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-outline-soft-red  m-0 rounded-0 btn-sm delete-production-row"
+                                        style="height: 39px; width: 30px;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </td>
                         </tr>
                         </tbody>

@@ -27,7 +27,7 @@ foreach ($productionLines as $productionLine) {
     }
 }
 
-if (isset($_GET['productDelete'])) {
+if (isset($_GET['productDelete']) && is_numeric($_GET['productDelete']) && !$viewOnly) {
     ProductionLines::deleteProductionLine($_GET['productDelete']);
     header('Location: game_save?id=' . $_GET['id']);
     exit();
