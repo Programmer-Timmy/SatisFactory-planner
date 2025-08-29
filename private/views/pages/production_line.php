@@ -16,7 +16,9 @@ if (empty($productLine) || !ProductionLines::checkProductionLineVisability($prod
 }
 
 $viewOnly = GameSaves::checkAccess($productLine->game_saves_id, $_SESSION['userId'], Role::FACTORY_WORKER);
-var_dump($viewOnly);;
+if ($viewOnly) {
+    $_SESSION['info'] = 'You can only view this production line.';
+}
 $firstProduction = Users::checkIfFirstProduction($_SESSION['userId']);
 
 $imports = ProductionLines::getImportsByProductionLine($productLine->id);

@@ -13,6 +13,9 @@ if (empty($gameSave)) {
     exit();
 }
 $viewOnly = GameSaves::checkAccess($_GET['id'], $_SESSION['userId'], Role::FACTORY_WORKER);
+if ($viewOnly) {
+    $_SESSION['info'] = 'You have view only access to this save game.';
+}
 $productionLines = ProductionLines::getProductionLinesByGameSave($gameSave->id);
 $total_power_consumption = 0;
 foreach ($productionLines as $productionLine) {
@@ -183,6 +186,7 @@ if (isset($_GET['layoutType'])) {
 
     </script>
     <div class="container">
+        <?php GlobalUtility::displayFlashMessages()?>
         <div class="row">
             <div class="col-lg-3"></div>
             <h1 class="text-center pb-3 col-lg-6">Game Save - <?= $gameSave->title ?></h1>
