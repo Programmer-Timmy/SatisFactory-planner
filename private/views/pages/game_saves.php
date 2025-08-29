@@ -5,7 +5,7 @@ $gameSaves = GameSaves::getSaveGamesByUser($_SESSION['userId']);
 $error = '';
 $success = '';
 if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
-    if (!GameSaves::checkAccessOwner($_POST['id'])) {
+    if (!GameSaves::checkAccess($_POST['id'], $_SESSION['userId'], Permission::SAVEGAME_METADATA)) {
         header('Location:/game_saves');
         exit();
     }
@@ -68,7 +68,7 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
 
 if ($_GET && isset($_GET['delete'])) {
     $gameSaveId = $_GET['delete'];
-    if (!GameSaves::checkAccessOwner($gameSaveId)) {
+    if (!GameSaves::checkAccess($gameSaveId, $_SESSION['userId'], Permission::SAVEGAME_DELETE)) {
         $_SESSION['error'] = 'You do not have permission to delete this save game.';
         header('Location:/game_saves');
         exit();
@@ -228,12 +228,14 @@ if (count($gameSaves) <= 2) {
                                class="card-link text-black text-decoration-none">
                                 <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover" style="max-height: 400px" alt="...">
                             </a>
-                            <?php if ($gameSave->role === Role::OWNER->value) : ?>
+                            <?php if (in_array(Permission::SAVEGAME_DELETE->value, $gameSave->permissions)) : ?>
                                 <a class="btn btn-danger position-absolute top-0 end-0"
                                    href="game_saves?delete=<?= $gameSave->game_saves_id ?>"
                                    onclick="return confirm('Delete this game save?')"
                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><i
                                             class="fa-solid fa-trash"></i></a>
+                            <?php endif; ?>
+                            <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) : ?>
                                 <button class="btn btn-primary position-absolute top-0 start-0"
                                         id="update_save_game_line_<?= $gameSave->id ?>"
                                         data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i
@@ -252,7 +254,7 @@ if (count($gameSaves) <= 2) {
                         </div>
                     </div>
                 </div>
-                <?php if ($gameSave->role === Role::OWNER->value) require '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
+                <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) require '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>

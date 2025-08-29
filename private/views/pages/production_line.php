@@ -10,13 +10,12 @@ if ($productLineId == null) {
 
 $productLine = ProductionLines::getProductionLineById($productLineId);
 
-if (empty($productLine) || !ProductionLines::checkProductionLineVisability($productLine->game_saves_id, $productLineId, $_SESSION['userId'])) {
+$viewOnly = GameSaves::checkAccess($productLine->game_saves_id, $_SESSION['userId'], Permission::SAVEGAME_EDIT, negate: true);
+
+if ($viewOnly === null) {
     header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
     exit();
-}
-
-$viewOnly = GameSaves::checkAccess($productLine->game_saves_id, $_SESSION['userId'], Role::FACTORY_WORKER);
-if ($viewOnly) {
+} elseif ($viewOnly) {
     $_SESSION['info'] = 'You can only view this production line.';
 }
 $firstProduction = Users::checkIfFirstProduction($_SESSION['userId']);

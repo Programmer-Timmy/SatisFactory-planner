@@ -1,6 +1,6 @@
 <?php
 
-require_once '../private/types/role.php';
+require_once '../private/types/permission.php';
 
 
 class GameSaves {
@@ -17,16 +17,26 @@ class GameSaves {
      *
      * @param int $gameSaveId The id of the game save
      * @param int $userId The id of the user
-     * @param Role $role The role to check
+     * @param Permission $permission The permission to check
      * @param bool $negate If true, the function will return true if the user does NOT have the role
-     * @return bool True if the user has (or does not have, if $negate is true) the role for the game save, false otherwise
+     * @param bool $onlyThisPermission If true, the function will return true only if the user has exactly this permission and no others
+     * @return ?bool True if the user has the role, false if not, null if the user has no roles for this game save
      */
-    public static function checkAccess(int $gameSaveId, int $userId, Role $role, bool $negate = false): bool {
-        $gameSave = Database::get(
+    public static function checkAccess(
+        int $gameSaveId,
+        int $userId,
+        Permission $permission,
+        bool $negate = false,
+        bool $onlyThisPermission = false
+    ): ?bool {
+        // Fetch all permissions of this user for this game save
+        $permissions = Database::getAll(
             "users_has_game_saves",
-            ['game_saves_id', 'roles.name as role'],
+            ['permissions.name as permission'],
             [
-                'roles' => 'roles.id = users_has_game_saves.role_id'
+                'roles' => 'roles.id = users_has_game_saves.role_id',
+                'role_permission' => 'role_permission.role_id = roles.id',
+                'permissions' => 'permissions.id = role_permission.permission_id'
             ],
             [
                 'game_saves_id' => $gameSaveId,
@@ -35,16 +45,22 @@ class GameSaves {
             ]
         );
 
-        if (!$gameSave) {
-            return false; // No access if no record found
+        if (!$permissions) {
+            return null;
         }
 
-        if ($role->value == $gameSave->role) {
-            return !$negate; // Return based on negate flag
-        } else {
-            return $negate; // Return based on negate flag
+        $permissionNames = array_column($permissions, 'permission');
+        $hasPermission = in_array($permission->value, $permissionNames, true);
+
+        if ($onlyThisPermission) {
+            // Return true only if the user has exactly this permission and no others
+            $hasPermission = $hasPermission && count($permissionNames) === 1;
         }
+
+        return $negate ? !$hasPermission : $hasPermission;
     }
+
+
 
 
     /**
@@ -52,7 +68,7 @@ class GameSaves {
      * @return mixed
      */
     public static function getSaveGamesByUser(int $user_id) {
-        return Database::getAll(
+        $gameSaves = Database::getAll(
             "users_has_game_saves",
             [
                 'game_saves_id',
@@ -62,14 +78,32 @@ class GameSaves {
                 'image',
                 'game_saves.id',
                 'game_saves.owner_id',
-                'roles.name as role',
-                '(select count(*) from production_lines where game_saves_id = game_saves.id) as production_lines'
+                // JSON array of permission names
+                '(SELECT JSON_ARRAYAGG(p.name)
+          FROM role_permission rp
+          JOIN permissions p ON p.id = rp.permission_id
+          WHERE rp.role_id = users_has_game_saves.role_id
+        ) AS permissions',
+                '(SELECT COUNT(*) FROM production_lines WHERE game_saves_id = game_saves.id) as production_lines'
             ],
             [
-                'game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', 'users' => 'users.id = game_saves.owner_id',
+                'game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id',
+                'users' => 'users.id = game_saves.owner_id',
+                // roles are still joined to get role_id
                 'roles' => 'roles.id = users_has_game_saves.role_id'
             ],
-            ['users_has_game_saves.users_id' => $user_id, 'accepted' => 1]);
+            [
+                'users_has_game_saves.users_id' => $user_id,
+                'accepted' => 1
+            ]
+        );
+
+        // Decode the JSON array of permission names
+        foreach ($gameSaves as $gameSave) {
+            $gameSave->permissions = json_decode($gameSave->permissions, true) ?: [];
+        }
+
+        return $gameSaves;
     }
 
     /**

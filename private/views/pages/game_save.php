@@ -12,8 +12,11 @@ if (empty($gameSave)) {
     header('Location: /game_saves');
     exit();
 }
-$viewOnly = GameSaves::checkAccess($_GET['id'], $_SESSION['userId'], Role::FACTORY_WORKER);
-if ($viewOnly) {
+$viewOnly = GameSaves::checkAccess($_GET['id'], $_SESSION['userId'], Permission::SAVEGAME_EDIT, negate: true);
+if($viewOnly === null) {
+    header('Location: /game_saves');
+    exit();
+} elseif ($viewOnly) {
     $_SESSION['info'] = 'You have view only access to this save game.';
 }
 $productionLines = ProductionLines::getProductionLinesByGameSave($gameSave->id);

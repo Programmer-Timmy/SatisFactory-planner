@@ -230,7 +230,7 @@ class ProductionLines {
 
     public static function validateAccess(int $gameSaveId, int $productionLineId, int $userId): bool {
         $visable = self::checkProductionLineVisability($gameSaveId, $productionLineId, $userId);
-        $hasAccess = GameSaves::checkAccess($gameSaveId, $userId, Role::FACTORY_WORKER, negate: true);
+        $hasAccess = GameSaves::checkAccess($gameSaveId, $userId, Permission::SAVEGAME_EDIT);
 
         return $visable && $hasAccess;
     }

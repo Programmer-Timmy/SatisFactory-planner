@@ -11,7 +11,7 @@ $gameId = $_POST['gameId'];
 $requestedUsers = json_decode($_POST['requestedUsers'], true);
 $allowedUsers = json_decode($_POST['allowedUsers'], true);
 
-if (!GameSaves::checkAccessOwner($gameId)) {
+if (!GameSaves::checkAccess($gameId, $_SESSION['userId'], Permission::SAVEGAME_INVITE)) {
     Response::error('Access denied', 403);
 }
 

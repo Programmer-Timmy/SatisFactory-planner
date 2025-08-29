@@ -19,7 +19,7 @@ if (!isset($_POST['gameSaveId'])) {
 }
 $productionLineId = $_POST['id'];
 $visible = ProductionLines::checkProductionLineVisability($_POST['gameSaveId'], $productionLineId, $_SESSION['userId']);
-$hasAccess = GameSaves::checkAccess($_POST['gameSaveId'], $_SESSION['userId'], Role::FACTORY_WORKER, negate: true);
+$hasAccess = GameSaves::checkAccess($_POST['gameSaveId'], $_SESSION['userId'], Permission::SAVEGAME_EDIT);
 if (!$visible || !$hasAccess) {
     http_response_code(403);
     echo json_encode(['error' => 'You do not have permission to edit this production line']);

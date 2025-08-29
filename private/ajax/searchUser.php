@@ -7,7 +7,7 @@ if (!isset($_POST['search'])) {
 
 $gameIdProvided = !empty($_POST['gameId']);
 
-if ($gameIdProvided && !GameSaves::checkAccessOwner($_POST['gameId'])) {
+if ($gameIdProvided && !GameSaves::checkAccess(htmlspecialchars($_POST['gameId']), $_SESSION['userId'], Permission::SAVEGAME_INVITE)) {
     Response::error('You do not have access to this save game', 403);
 }
 

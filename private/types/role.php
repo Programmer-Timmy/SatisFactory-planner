@@ -1,4 +1,5 @@
 <?php
+require_once 'permission.php';
 enum Role: string {
     case OWNER = "Owner";
     case ENGINEER = "Engineer";
