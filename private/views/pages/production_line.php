@@ -328,10 +328,10 @@ function trimDecimal(string $value): string {
 
 
 <?php
-if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
+if (DedicatedServer::getBySaveGameId($productLine->game_saves_id) && GameSaves::checkAccess($productLine->game_saves_id, $_SESSION['userId'], Permission::SAVEGAME_EDIT)) : ?>
     <script src="js/dedicatedServer.js"></script>
     <script>
-        new DedicatedServer(<?= $_SESSION['lastVisitedSaveGame'] ?>);
+        new DedicatedServer(<?= $productLine->game_saves_id ?>);
     </script>
 <?php endif; ?>
 <script type="" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
