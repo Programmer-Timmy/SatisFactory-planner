@@ -198,7 +198,7 @@ class ProductionLines {
             return;
         }
 
-        if (self::validateAccess($productLine->game_saves_id, $productLineId, $_SESSION['userId']) === false) {
+        if (!self::validateAccess($productLine->game_saves_id, $productLineId, $_SESSION['userId'])) {
             $_SESSION['error'] = 'You do not have permission to update this production line';
             return;
         }

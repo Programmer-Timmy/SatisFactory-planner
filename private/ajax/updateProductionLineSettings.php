@@ -16,9 +16,9 @@ if ($_POST) {
         exit();
     }
 
-    $productionLineId = ProductionLines::getProductionLineById($_POST['productionLineId'])->id;
+    $productionLine = ProductionLines::getProductionLineById($_POST['productionLineId']);
 
-    if (empty($productLine) || !ProductionLines::validateAccess($_POST['gameSaveId'], $productionLineId, $_SESSION['userId'])) {
+    if (empty($productionLine) || !ProductionLines::validateAccess($_POST['gameSaveId'], $productionLineId, $_SESSION['userId'])) {
         echo json_encode(['error' => 'You do not have access to this production line.']);
         exit();
     }
