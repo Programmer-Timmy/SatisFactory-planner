@@ -10,7 +10,7 @@ if ($_POST) {
     $productionLineId = $_POST['productionLineId'];
 
 
-    if (!ProductionLines::checkProductionLineVisability($_POST['gameSaveId'], $productionLineId,  $_SESSION['userId'])) {
+    if (!ProductionLines::validateAccess($_POST['gameSaveId'], $productionLineId,  $_SESSION['userId'])) {
         http_response_code(403);
         echo json_encode(['error' => 'You do not have permission to edit this production line']);
         exit();

@@ -6,6 +6,15 @@ if (!isset($_POST['productionLineId']) || !isset($_POST['checklist'])) {
     exit();
 }
 
+$gameSaveId = ProductionLines::getGameSaveId($_POST['productionLineId']);
+$access = ProductionLines::validateAccess($_POST['productionLineId'], $gameSaveId, $_SESSION['userId']);
+
+if (!$access) {
+    echo json_encode(['error' => 'You do not have permission to modify this production line.']);
+    http_response_code(403);
+    exit();
+}
+
 $productionLineId = $_POST['productionLineId'];
 $checklist = $_POST['checklist'];
 

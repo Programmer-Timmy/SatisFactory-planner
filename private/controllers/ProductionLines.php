@@ -1,6 +1,12 @@
 <?php
 
 class ProductionLines {
+
+    public static function getGameSaveId(int $productionLineId) {
+        $productionLine = Database::get("production_lines", ['game_saves_id'], [], ['id' => $productionLineId]);
+        return $productionLine ? $productionLine->game_saves_id : null;
+    }
+
     public static function addProductionline($gameSaveId, $title) {
         $id = Database::insert("production_lines", ['game_saves_id', 'title'], [$gameSaveId, $title]);
         ProductionLineSettings::addProductionLineSettings($id);
@@ -222,7 +228,7 @@ class ProductionLines {
         return $id;
     }
 
-    private static function validateAccess(int $gameSaveId, int $productionLineId, int $userId): bool {
+    public static function validateAccess(int $gameSaveId, int $productionLineId, int $userId): bool {
         $visable = self::checkProductionLineVisability($gameSaveId, $productionLineId, $userId);
         $hasAccess = GameSaves::checkAccess($gameSaveId, $userId, Role::FACTORY_WORKER, negate: true);
 
