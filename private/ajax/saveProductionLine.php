@@ -17,8 +17,10 @@ if (!isset($_POST['gameSaveId'])) {
     echo json_encode(['error' => 'No game save id provided']);
     exit();
 }
-
-if (!ProductionLines::checkProductionLineVisability($_POST['gameSaveId'], $_SESSION['userId'])) {
+$productionLineId = $_POST['id'];
+$visible = ProductionLines::checkProductionLineVisability($_POST['gameSaveId'], $productionLineId, $_SESSION['userId']);
+$hasAccess = GameSaves::checkAccess($_POST['gameSaveId'], $_SESSION['userId'], Role::FACTORY_WORKER, negate: true);
+if (!$visible || !$hasAccess) {
     http_response_code(403);
     echo json_encode(['error' => 'You do not have permission to edit this production line']);
     exit();
@@ -30,7 +32,6 @@ $productionData = [];
 $powerData = [];
 $totalPower = 0;
 
-$productionLineId = $_POST['id'];
 
 $importRows = $data['importsTableRows'];
 foreach ($importRows as $row) {

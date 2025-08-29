@@ -5,6 +5,8 @@ $users = Users::getAllValidatedUsers();
 $allowedUsers = GameSaves::getAllowedUsers($gameSave->id);
 $requestUsers = GameSaves::getRequestedUsers($gameSave->id);
 
+$allowedUsers = array_filter($allowedUsers, fn($user) => $user->id !== $gameSave->owner_id);
+
 $data = Users::filterUsers($users, $allowedUsers, $requestUsers);
 $roles = Roles::getAllRoles();
 $users = $data['users'];

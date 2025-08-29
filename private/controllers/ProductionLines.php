@@ -21,9 +21,10 @@ class ProductionLines {
         return $productionLines;
     }
 
-    public static function checkProductionLineVisability(int $gameSaveId, int $userId) {
+    public static function checkProductionLineVisability(int $gameSaveId, int $productionLineId, int $userId) {
         $check = Database::get("users_has_game_saves", ['*'], [], ['game_saves_id' => $gameSaveId, 'users_id' => $userId, 'accepted' => 1]);
-        if ($check) {
+        $inGameSave = Database::get("production_lines", ['*'], [], ['id' => $productionLineId, 'game_saves_id' => $gameSaveId]);
+        if ($check && $inGameSave) {
             return true;
         }
         return false;
@@ -94,7 +95,7 @@ class ProductionLines {
                 $production_settings_id = self::insertUpdateProductionSettings($existingProduction->production_settings_id ?? null, $prod->produciton_settings, $database);
                 if ($existingProduction) {
                     // if prod id is uuid
-                    if( !is_numeric($prod->id) && $existingProduction->id !== $prod->id) {
+                    if (!is_numeric($prod->id) && $existingProduction->id !== $prod->id) {
                         $newAndOldIds[] = [
                             'new' => (int)$existingProduction->id,
                             'old' => $prod->id
@@ -172,21 +173,34 @@ class ProductionLines {
         return true;
     }
 
-    public static function deleteProductionLineOnGameId(int $id) {
-        $producitonId = Database::getAll("production_lines", ['id'], [], ['game_saves_id' => $id]);
+    public static function deleteProductionLineOnGameId(int $id, NewDatabase|null $database = null) {
+        $database = $database ?? new NewDatabase();
+        $producitonId = $database->getAll("production_lines", ['id'], [], ['game_saves_id' => $id]);
         foreach ($producitonId as $prodId) {
-            Database::delete("input", ['production_lines_id' => $prodId->id]);
-            Database::delete("production", ['production_lines_id' => $prodId->id]);
-            Database::delete("power", ['production_lines_id' => $prodId->id]);
-            Database::delete("output", ['production_lines_id' => $prodId->id]);
-            Database::delete("production_lines", ['id' => $prodId->id]);
+            $database->delete("input", ['production_lines_id' => $prodId->id]);
+            $database->delete("production", ['production_lines_id' => $prodId->id]);
+            $database->delete("power", ['production_lines_id' => $prodId->id]);
+            $database->delete("output", ['production_lines_id' => $prodId->id]);
+            $database->delete("production_lines", ['id' => $prodId->id]);
         }
     }
 
-    public static function updateProductionLine(int $productLineId, string $productionLineName, int $active) {
+    public static function updateProductionLine(int $productLineId, string $productionLineName, int $active): void {
+        $productLine = self::getProductionLineById($productLineId);
+        if (!$productLine) {
+            $_SESSION['error'] = 'Failed to update production line. Please try again later';
+            return;
+        }
+
+        if (self::validateAccess($productLine->game_saves_id, $productLineId, $_SESSION['userId']) === false) {
+            $_SESSION['error'] = 'You do not have permission to update this production line';
+            return;
+        }
+
         self::changeActiveStats($productLineId, $active);
         Database::update("production_lines", ['title', 'updated_at'], [$productionLineName, date('Y-m-d H:i:s')], ['id' => $productLineId]);
-        return true;
+
+        $_SESSION['success'] = 'Production line updated successfully';
     }
 
     public static function changeActiveStats(int $productLineId, int $active) {
@@ -194,7 +208,7 @@ class ProductionLines {
         Database::update("production_lines", ['active', 'updated_at'], [$active, $updated_at->updated_at], ['id' => $productLineId]);
     }
 
-    private static function insertUpdateProductionSettings(int | null $id,array $produciton_settings,NewDatabase $database ) {
+    private static function insertUpdateProductionSettings(int|null $id, array $produciton_settings, NewDatabase $database) {
         $clockSpeed = $produciton_settings['clock_speed'];
         $useSomersloop = $produciton_settings['use_somersloop'] ? 1 : 0;
 
@@ -206,6 +220,13 @@ class ProductionLines {
         }
 
         return $id;
+    }
+
+    private static function validateAccess(int $gameSaveId, int $productionLineId, int $userId): bool {
+        $visable = self::checkProductionLineVisability($gameSaveId, $productionLineId, $userId);
+        $hasAccess = GameSaves::checkAccess($gameSaveId, $userId, Role::FACTORY_WORKER, negate: true);
+
+        return $visable && $hasAccess;
     }
 
 

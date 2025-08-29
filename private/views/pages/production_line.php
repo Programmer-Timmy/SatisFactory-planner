@@ -1,4 +1,5 @@
 <?php
+require_once '../private/types/role.php';
 ob_start();
 $error = null;
 $productLineId = $_GET['id'];
@@ -9,11 +10,13 @@ if ($productLineId == null) {
 
 $productLine = ProductionLines::getProductionLineById($productLineId);
 
-if (empty($productLine) || !ProductionLines::checkProductionLineVisability($productLine->game_saves_id, $_SESSION['userId'])) {
+if (empty($productLine) || !ProductionLines::checkProductionLineVisability($productLine->game_saves_id, $productLineId, $_SESSION['userId'])) {
     header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
     exit();
 }
 
+$viewOnly = GameSaves::checkAccess($productLine->game_saves_id, $_SESSION['userId'], Role::FACTORY_WORKER);
+var_dump($viewOnly);;
 $firstProduction = Users::checkIfFirstProduction($_SESSION['userId']);
 
 $imports = ProductionLines::getImportsByProductionLine($productLine->id);
@@ -54,8 +57,16 @@ foreach ($production as $product) {
 }
 
 function trimDecimal(string $value): string {
-    return rtrim(rtrim($value, '0'), '.');
+    // Convert to float to remove unnecessary decimal zeros
+    if (strpos($value, '.') !== false) {
+        // Remove trailing zeros after decimal
+        $value = rtrim(rtrim($value, '0'), '.');
+    }
+
+    // If the value becomes empty (e.g., "0.0"), return '0'
+    return $value === '' ? '0' : $value;
 }
+
 ?>
 
 <script id="settings-data" type="application/json">
@@ -87,14 +98,11 @@ function trimDecimal(string $value): string {
 </style>
 <input type="hidden" id="dataVersion" value="<?= SiteSettings::getDataVersion() ?>">
 <input type="hidden" id="gameSaveId" value="<?= $productLine->game_saves_id ?>">
+<input type="hidden" id="viewOnly" value="<?= $viewOnly ?>"> <!-- i mean you can change it but ye you get errors :) -->
 
 <div class="px-3 px-lg-5">
     <form method="post" onkeydown="return event.key != 'Enter';">
-        <?php if ($error) : ?>
-            <div class="alert alert-danger text-center" role="alert">
-                <i class="fa-solid fa-exclamation-triangle"></i> <?= $error ?>
-            </div>
-        <?php endif; ?>
+        <?php GlobalUtility::displayFlashMessages() ?>
         <div class="alert alert-success d-none fade" role="alert" id="saveSuccessAlert"></div>
         <div class="alert alert-danger d-none fade" role="alert" id="saveErrorAlert"></div>
         <input type="hidden" name="total_consumption" id="total_consumption">

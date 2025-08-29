@@ -2,15 +2,16 @@
 
 class Users
 {
-    public static function getAllUsers()
+    public static function getAllUsers(bool $includeUnverified = false)
     {
+        $verified = $includeUnverified ? [] : ['verified' => 1];
         return Database::getAll(
             "users",
             [
                 '*',
                 '(SELECT COUNT(*) FROM game_saves WHERE owner_id = users.id) as saves',
                 '(SELECT COUNT(*) FROM users_has_game_saves WHERE users_id = users.id) as shared_saves',
-            ], [], ['verified' => 1]);
+            ], [], $verified);
     }
 
     public static function getAllValidatedUsers()

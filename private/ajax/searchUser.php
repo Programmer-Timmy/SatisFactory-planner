@@ -31,6 +31,12 @@ if (!$gameIdProvided) {
     $requestedUsers = GameSaves::getRequestedUsers($gameId);
     $users = Users::searchUsers($search);
 
+    // remove the user that is the owner of the game
+    $gameSave = GameSaves::getSaveGameById($gameId);
+    if ($gameSave) {
+        $users = array_filter($users, fn($user) => $user->id !== $gameSave->owner_id);
+    }
+
     $filtered = Users::filterUsers($users, $allowedUsers, $requestedUsers);
     $users = $filtered['users'] ?? [];
 

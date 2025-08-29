@@ -20,9 +20,10 @@ class ProductionLineSettings
         return Database::get("productionlinesettings", ['*'], [], ['production_line_id' => $productionLineId]);
     }
 
-    public static function deleteProductionLineSettings(int $productionLineId)
+    public static function deleteProductionLineSettings(int $productionLineId, NewDatabase | null $database = null)
     {
-        return Database::delete("productionlinesettings", ['production_line_id' => $productionLineId]);
+        $database = $database ?? new NewDatabase();
+        return$database->delete("productionlinesettings", ['production_line_id' => $productionLineId]);
     }
 
 }

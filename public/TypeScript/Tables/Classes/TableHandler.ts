@@ -29,6 +29,7 @@ export class TableHandler {
 
     private visualisation: Visualization | null = null;
     private updated: boolean = false;
+    private viewOnly: boolean = $('#viewOnly').val() === '1';
 
     // cache data
     private cacheVersion: number = <number>$('#dataVersion').val();
@@ -75,9 +76,16 @@ export class TableHandler {
         setTimeout(() => {
             this.hideLoading();
             this.enableButtons();
+
+            if (this.viewOnly) {
+                this.disableButtons();
+                this.disableInputs();
+            }
         }, timeOutTime);
 
-        this.checklist = new Checklist(this);
+        if (!this.viewOnly) {
+            this.checklist = new Checklist(this);
+        }
     }
 
     private async getTableData() {
@@ -283,6 +291,9 @@ export class TableHandler {
      * Adds event listeners for change events on all inputs and selects within tables.
      */
     private async addEventListeners() {
+        if (this.viewOnly) {
+            return;
+        }
         const tables = ['imports', 'recipes', 'power'];
 
         tables.forEach((tableId) => {
@@ -466,6 +477,9 @@ export class TableHandler {
      * @returns {boolean} True if the element is a <select>, false otherwise.
      */
     private checkIfSelect(target: JQuery): boolean {
+        if (target.is('select')) {
+            return true;
+        }
         return target.parent().hasClass('recipe-select')
     }
 
@@ -508,6 +522,9 @@ export class TableHandler {
                 importsTableRows: ImportsTableRow[],
                 indexes: number[]
             } = ImportsTableFunctions.calculateImports(this.productionTableRows);
+            if (this.viewOnly) {
+                this.disableInputs()
+            }
             this.importsTableRows = data.importsTableRows;
         }
 
@@ -557,8 +574,19 @@ export class TableHandler {
         $('#save_button').addClass('disabled');
         $('#save_button').prop('disabled', true);
 
-        $('#showPower').addClass('disabled');
-        $('#showPower').prop('disabled', true);
+        $('#edit_product_line').addClass('disabled');
+        $('#edit_product_line').prop('disabled', true);
+
+        $('#showCheckList').addClass('disabled');
+        $('#showCheckList').prop('disabled', true);
+    }
+
+    private disableInputs() {
+        $(".px-3.px-lg-5").find('input, select').each((_, element) => {
+            const $element = $(element);
+            $element.prop('disabled', true);
+            $element.addClass('disabled');
+        });
     }
 
     private enableButtons() {
@@ -634,6 +662,9 @@ export class TableHandler {
 
                 // Save production line
                 if (event.ctrlKey && event.key === 's') {
+                    if (tableHandler.viewOnly) {
+                        return;
+                    }
                     event.preventDefault();
                     SaveFunctions.saveProductionLine(
                         SaveFunctions.prepareSaveData(
@@ -659,6 +690,9 @@ export class TableHandler {
 
                 // Open edit / settings modal
                 if (event.ctrlKey && event.key === 'e') {
+                    if (tableHandler.viewOnly) {
+                        return;
+                    }
                     event.preventDefault();
                     closeModals();
                     if (editModal.is(':hidden')) {
