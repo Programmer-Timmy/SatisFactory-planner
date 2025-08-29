@@ -268,7 +268,7 @@ class GameSaves {
             $database->delete("game_saves", ['id' => $game_save_id]);
 
             if (self::getSaveGameById($game_save_id, $database)) {
-                throw new Exception("The save game with id $game_save_id failed to be deleted by user $_SESSION[userId]");
+                throw new Exception("The save game with id $game_save_id failed to be deleted by user {$_SESSION['userId']}");
             }
 
             $database->commit();
