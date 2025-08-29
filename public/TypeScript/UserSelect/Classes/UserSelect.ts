@@ -82,7 +82,7 @@ class UserSelect {
         });
 
         this.allowedUsersList?.on("click", ".remove_user", (event: JQuery.ClickEvent) => {
-            this.handelRemoveAllowedUserClick(event);
+            this.handleRemoveAllowedUserClick(event);
         });
 
         this.form.on("submit", (event: JQuery.SubmitEvent) => {
@@ -304,7 +304,7 @@ class UserSelect {
         })
     }
 
-    private handelRemoveAllowedUserClick(event: JQuery.ClickEvent) {
+    private handleRemoveAllowedUserClick(event: JQuery.ClickEvent) {
         const button = $(event.currentTarget);
         const userCard = button.closest('.card');
         const userId = userCard.data('sp-user-id');

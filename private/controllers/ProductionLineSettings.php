@@ -23,7 +23,7 @@ class ProductionLineSettings
     public static function deleteProductionLineSettings(int $productionLineId, NewDatabase | null $database = null)
     {
         $database = $database ?? new NewDatabase();
-        return$database->delete("productionlinesettings", ['production_line_id' => $productionLineId]);
+        return $database->delete("productionlinesettings", ['production_line_id' => $productionLineId]);
     }
 
 }
