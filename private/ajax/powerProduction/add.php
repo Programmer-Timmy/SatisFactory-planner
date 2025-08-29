@@ -1,4 +1,6 @@
 <?php
+require_once '../private/types/permission.php';
+
 if (!$_POST) {
     http_response_code(400);
     echo json_encode(['error' => 'No data provided']);
@@ -31,7 +33,7 @@ if (!isset($_POST['clockSpeed'])) {
 
 $gameSaveId = $_POST['gameSaveId'];
 
-if (!GameSaves::checkAccessUser($gameSaveId)) {
+if (!GameSaves::checkAccess($gameSaveId, $_SESSION['userId'], Permission::SAVEGAME_EDIT)) {
     http_response_code(403);
     echo json_encode(['error' => 'You do not have access to this save game']);
     exit;

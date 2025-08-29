@@ -19,7 +19,7 @@ function secondsToHMS($seconds)
 
 $saveGameId = $_POST['saveGameId'];
 
-if (!GameSaves::checkAccessUser($saveGameId)) {
+if (!GameSaves::checkAccess($saveGameId, $_SESSION['userId'], Permission::SERVER_VIEW)) {
     http_response_code(403);
     die(json_encode(['status' => 'error', 'message' => 'You do not have access to this save game']));
 }

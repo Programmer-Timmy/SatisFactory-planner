@@ -1,5 +1,8 @@
 <?php
 
+require_once '../private/types/permission.php';
+
+
 class GameSaves {
     /**
      * @param int $owner_id
@@ -10,11 +13,62 @@ class GameSaves {
     }
 
     /**
+     * Check if a user has a specific role for a game save
+     *
+     * @param int $gameSaveId The id of the game save
+     * @param int $userId The id of the user
+     * @param Permission $permission The permission to check
+     * @param bool $negate If true, the function will return true if the user does NOT have the role
+     * @param bool $onlyThisPermission If true, the function will return true only if the user has exactly this permission and no others
+     * @return ?bool True if the user has the role, false if not, null if the user has no roles for this game save
+     */
+    public static function checkAccess(
+        int $gameSaveId,
+        int $userId,
+        Permission $permission,
+        bool $negate = false,
+        bool $onlyThisPermission = false
+    ): ?bool {
+        // Fetch all permissions of this user for this game save
+        $permissions = Database::getAll(
+            "users_has_game_saves",
+            ['permissions.name as permission'],
+            [
+                'roles' => 'roles.id = users_has_game_saves.role_id',
+                'role_permission' => 'role_permission.role_id = roles.id',
+                'permissions' => 'permissions.id = role_permission.permission_id'
+            ],
+            [
+                'game_saves_id' => $gameSaveId,
+                'users_id' => $userId,
+                'accepted' => 1,
+            ]
+        );
+
+        if (!$permissions) {
+            return null;
+        }
+
+        $permissionNames = array_column($permissions, 'permission');
+        $hasPermission = in_array($permission->value, $permissionNames, true);
+
+        if ($onlyThisPermission) {
+            // Return true only if the user has exactly this permission and no others
+            $hasPermission = $hasPermission && count($permissionNames) === 1;
+        }
+
+        return $negate ? !$hasPermission : $hasPermission;
+    }
+
+
+
+
+    /**
      * @param int $user_id
      * @return mixed
      */
     public static function getSaveGamesByUser(int $user_id) {
-        return Database::getAll(
+        $gameSaves = Database::getAll(
             "users_has_game_saves",
             [
                 'game_saves_id',
@@ -24,16 +78,47 @@ class GameSaves {
                 'image',
                 'game_saves.id',
                 'game_saves.owner_id',
-                '(select count(*) from production_lines where game_saves_id = game_saves.id) as production_lines'
-            ], ['game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', 'users' => 'users.id = game_saves.owner_id'], ['users_has_game_saves.users_id' => $user_id, 'accepted' => 1]);
+                // JSON array of permission names
+                '(SELECT JSON_ARRAYAGG(p.name)
+          FROM role_permission rp
+          JOIN permissions p ON p.id = rp.permission_id
+          WHERE rp.role_id = users_has_game_saves.role_id
+        ) AS permissions',
+                '(SELECT COUNT(*) FROM production_lines WHERE game_saves_id = game_saves.id) as production_lines'
+            ],
+            [
+                'game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id',
+                'users' => 'users.id = game_saves.owner_id',
+                // roles are still joined to get role_id
+                'roles' => 'roles.id = users_has_game_saves.role_id'
+            ],
+            [
+                'users_has_game_saves.users_id' => $user_id,
+                'accepted' => 1
+            ]
+        );
+
+        // Decode the JSON array of permission names
+        foreach ($gameSaves as $gameSave) {
+            $gameSave->permissions = json_decode($gameSave->permissions, true) ?: [];
+        }
+
+        return $gameSaves;
     }
 
     /**
      * @param int $id
      * @return mixed
      */
-    public static function getSaveGameById(int $id) {
-        return Database::get("users_has_game_saves", ['game_saves.*', 'users.username', 'users.id as userId', 'users_has_game_saves.card_view'], ['game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', "users" => "game_saves.owner_id = users.id"], ['game_saves.id' => $id, 'accepted' => 1, 'users_has_game_saves.users_id' => $_SESSION['userId']]);
+    public static function getSaveGameById(int $id, NewDatabase|null $database = null) {
+        $database = $database ?? new NewDatabase();
+        return $database->get("users_has_game_saves",
+                              ['game_saves.*', 'users.username', 'users.id as userId', 'users_has_game_saves.card_view', 'roles.name as role'],
+                              [
+                                  'game_saves' => 'game_saves.id = users_has_game_saves.game_saves_id', "users" => "game_saves.owner_id = users.id",
+                                  'roles' => 'roles.id = users_has_game_saves.role_id'
+                              ],
+                              ['game_saves.id' => $id, 'accepted' => 1, 'users_has_game_saves.users_id' => $_SESSION['userId']]);
     }
 
     /**
@@ -49,13 +134,13 @@ class GameSaves {
      * @param string $title
      * @param array $image
      * @param array $allowedUsers
-     * @return null
+     * @return string
      * @throws ErrorException
      */
     public static function createSaveGame(int $user_id, string $title, array $image, array $allowedUsers) {
         $createdAt = date('Y-m-d H:i:s');
         $id = Database::insert("game_saves", ['owner_id', 'title', 'created_at', 'total_power_production'], [$user_id, $title, $createdAt, 0]);
-        Database::insert("users_has_game_saves", ['users_id', 'game_saves_id'], [$user_id, $id]);
+        Database::insert("users_has_game_saves", ['users_id', 'game_saves_id', 'role_id'], [$user_id, $id, 1]);
 
         if ($image['tmp_name'] != '') {
             self::uploadImage($id, $image);
@@ -69,16 +154,57 @@ class GameSaves {
     }
 
     /**
-     * @param int $user_id
+     * @param array $user
      * @param int $game_save_id
      * @return null
      * @throws ErrorException
      */
-    public static function addUserToSaveGame(int $user_id, int $game_save_id) {
-
-        return Database::insert("users_has_game_saves", ['users_id', 'game_saves_id', 'accepted'], [$user_id, $game_save_id, 0]);
+    public static function addUserToSaveGame(array $user, int $game_save_id, NewDatabase $database = null) {
+        $database = $database ?? new NewDatabase();
+        $database->insert("users_has_game_saves", ['users_id', 'role_id', 'game_saves_id', 'accepted'], [$user['id'], $user['roleId'], $game_save_id, 0]);
 
     }
+
+    public static function upsertUsersToSaveGame(array $users, int $game_save_id, string $type) {
+
+        $database = new NewDatabase();
+        $database->beginTransaction();
+        $accepted = ($type == 'allowed') ? 1 : 0;
+        $game_save = Database::get("game_saves", ['owner_id'], [], ['id' => $game_save_id]);
+        try {
+
+            foreach ($users as $user) {
+                if ($user['id'] == $_SESSION['userId'] || $user['id'] == $game_save->owner_id) {
+                    continue; // Skip current user
+                }
+                $existing = $database->get("users_has_game_saves", ['id'], [], ['users_id' => $user['id'], 'game_saves_id' => $game_save_id]);
+                if ($existing) {
+                    $database->update("users_has_game_saves", ['role_id', 'accepted'], [$user['roleId'], $accepted], ['id' => $existing->id]);
+                } else {
+                    self::addUserToSaveGame($user, $game_save_id, $database);
+                }
+            }
+
+            // Remove users that are not in the new list
+            $userIds = array_column($users, 'id');
+            $userIds[] = $_SESSION['userId']; // Keep the owner always
+            $userIds[] = $game_save->owner_id; // Keep the owner always
+            if (count($userIds) > 0) {
+                $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+                $query = "DELETE FROM users_has_game_saves WHERE game_saves_id = ? AND accepted = ?
+                                       AND users_id NOT IN ($placeholders)";
+                $params = [$game_save_id, $accepted];
+                $params = array_merge($params, $userIds);
+                $database->query($query, $params);
+            }
+            $database->commit();
+        } catch (Exception $e) {
+            $database->rollBack();
+            throw $e;
+        }
+
+    }
+
 
     /**
      * @param int $user_id
@@ -125,25 +251,41 @@ class GameSaves {
 
     /**
      * @param int $game_save_id
-     * @return false|void
+     * @return object (success: bool, message: string)
      */
-    public static function deleteSaveGame(int $game_save_id, $ownerId = null) {
-        if (!$ownerId) {
-            $ownerId = $_SESSION['userId'];
+    public static function deleteSaveGame(int $game_save_id, $ownerId = null): object {
+        if (!self::checkAccessOwner($game_save_id)) {
+            return (object)['success' => false, 'message' => 'You are not the owner of this save game'];
         }
-        if (Database::get("game_saves", ['id'], [], ['id' => $game_save_id, 'owner_id' => $ownerId]) == false) {
-            return false;
-        }
+        $database = new NewDatabase();
+        $database->beginTransaction();
         try {
             self::deleteImage($game_save_id);
-            DedicatedServer::deleteServer($game_save_id);
-            ProductionLineSettings::deleteProductionLineSettings($game_save_id);
-            ProductionLines::deleteProductionLineOnGameId($game_save_id);
-            Database::delete("users_has_game_saves", ['game_saves_id' => $game_save_id]);
-            Database::delete("game_saves", ['id' => $game_save_id, 'owner_id' => $ownerId]);
-            return true;
+            DedicatedServer::deleteServer($game_save_id, $database);
+            ProductionLineSettings::deleteProductionLineSettings($game_save_id, $database);
+            ProductionLines::deleteProductionLineOnGameId($game_save_id, $database);
+            $database->delete("users_has_game_saves", ['game_saves_id' => $game_save_id]);
+            $database->delete("game_saves", ['id' => $game_save_id]);
+
+            if (self::getSaveGameById($game_save_id, $database)) {
+                throw new Exception("The save game with id $game_save_id failed to be deleted by user {$_SESSION['userId']}");
+            }
+
+            $database->commit();
+
+
+            return (object)['success' => true];
         } catch (Exception $e) {
-            return false;
+            $database->rollBack();
+
+            global $site;
+            // Log the error message if needed
+            error_log($e->getMessage());
+            // if debug mode is on show the real error
+            if ($site['debug']) {
+                return (object)['success' => false, 'message' => $e->getMessage()];
+            }
+            return (object)['success' => false, 'message' => "Something went wrong. Please contact the administrator"];
         }
 
     }
@@ -184,8 +326,7 @@ class GameSaves {
      * @return array
      */
     public static function getAllowedUsers(int $gameSaveId): array {
-        $allowedUsers = Database::getAll("users_has_game_saves", ['users_id', 'username'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 1]);
-        return $allowedUsers;
+        return Database::getAll("users_has_game_saves", ['users_id as id', 'username', 'role_id'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 1]);
     }
 
     /**
@@ -193,7 +334,7 @@ class GameSaves {
      * @return array
      */
     public static function getRequestedUsers(int $gameSaveId): array {
-        return Database::getAll("users_has_game_saves", ['users_id', 'username'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 0]);
+        return Database::getAll("users_has_game_saves", ['users_id as id', 'username', 'role_id'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $gameSaveId, 'accepted' => 0]);
     }
 
     /**
@@ -284,7 +425,7 @@ class GameSaves {
      */
     public static function checkAccessOwner(int $gameSaveId): bool {
         $gameSave = self::getSaveGameById($gameSaveId);
-        if ($gameSave->owner_id != $_SESSION['userId']) {
+        if ($gameSave->role !== Role::OWNER->value && $gameSave->accepted != 1) {
             return false;
         }
         return true;

@@ -187,20 +187,3 @@ $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpf
         }
     });
 </script>
-<!--<script>-->
-<!--    document.addEventListener('DOMContentLoaded', function () {-->
-<!--        const dropdownLink = document.getElementById('navbarDropdown');-->
-<!--        dropdownLink.addEventListener('click', function (e) {-->
-<!--            e.preventDefault()-->
-<!--            // Go directly to href instead of toggling the dropdown-->
-<!--            window.location.href = dropdownLink.getAttribute('href');-->
-<!--        });-->
-<!--    });-->
-<!--</script>-->
-<!--<style>-->
-<!--    /* Show dropdown on hover */-->
-<!--    .nav-item.dropdown:hover .dropdown-menu {-->
-<!--        display: block;-->
-<!--        margin-top: 0;-->
-<!--    }-->
-<!--</style>-->

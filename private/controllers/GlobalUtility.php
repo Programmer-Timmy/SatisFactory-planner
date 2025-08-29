@@ -182,6 +182,16 @@ class GlobalUtility {
             <?php
             unset($_SESSION['success']);
         }
+
+        if (isset($_SESSION['info'])) {
+            ?>
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <?= htmlspecialchars($_SESSION['info']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <?php
+            unset($_SESSION['info']);
+        }
     }
 
     public static function generateRecipeSelect(array $recipes, int|null $selectedRecipeId = null): string {

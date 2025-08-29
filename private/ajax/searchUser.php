@@ -1,71 +1,47 @@
 <?php
+header('Content-Type: application/json');
+
 if (!isset($_POST['search'])) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Search term is required']);
-    exit();
+    Response::error('Search term is required', 400);
 }
 
-$gameIdProvided = isset($_POST['gameId']) && $_POST['gameId'] !== '';
+$gameIdProvided = !empty($_POST['gameId']);
 
-if ($gameIdProvided && !GameSaves::checkAccessOwner($_POST['gameId'])) {
-    http_response_code(403);
-    echo json_encode(['error' => 'You do not have access to this save game']);
-    exit();
+if ($gameIdProvided && !GameSaves::checkAccess(htmlspecialchars($_POST['gameId']), $_SESSION['userId'], Permission::SAVEGAME_INVITE)) {
+    Response::error('You do not have access to this save game', 403);
 }
 
 $search = htmlspecialchars($_POST['search']);
 $selectedUsers = isset($_POST['selectedUsers']) ? explode(',', $_POST['selectedUsers']) : [];
 
 if (!$gameIdProvided) {
-    // Search without game-related filtering
+    // Search without game context
     $users = Users::searchUsers($search);
 
-    // Remove current user
-    $users = array_filter($users, function ($user) {
-        return $user->id != $_SESSION['userId'];
-    });
+    // Remove current user and selected users
+    $users = array_filter($users, fn($user) => $user->id != $_SESSION['userId'] && !in_array($user->id, $selectedUsers));
 
-    // Remove selected users
-    $users = array_filter($users, function ($user) use ($selectedUsers) {
-        return !in_array($user->id, $selectedUsers);
-    });
+    Response::success(array_values($users));
 
-    if (empty($users)) {
-        echo '<h6 class="text-center">No users found</h6>';
-    } else {
-        // Limit to 5 users
-        $orUsers = $users;
-        $users = array_slice($users, 0, 5);
-        foreach ($users as $user) {
-            echo '<div class="card mb-2 p-2">
-                <input type="text" style="display:none">
-                <div class="card-body d-flex justify-content-between align-items-center p-0">
-                    <h6 class="mb-1">' . htmlspecialchars($user->username) . '</h6>
-                    <button type="button" class="btn btn-success add_user" data-user-id="' . $user->id . '">Add User</button>
-                </div>
-            </div>';
-        }
-        if (count($orUsers) > 5) {
-            echo '<div class="form-text">' . 'And ' . (count($orUsers) - 5) . ' more. Search for more users</div>';
-        }
-    }
 } else {
     // Game-related search
-    $game_id = htmlspecialchars($_POST['gameId']);
+    $gameId = htmlspecialchars($_POST['gameId']);
 
-    $allowedUsers = GameSaves::getAllowedUsers($game_id);
-    $requestUsers = GameSaves::getRequestedUsers($game_id);
+    $allowedUsers = GameSaves::getAllowedUsers($gameId);
+    $requestedUsers = GameSaves::getRequestedUsers($gameId);
     $users = Users::searchUsers($search);
 
-    $data = Users::filterUsers($users, $allowedUsers, $requestUsers);
-    $users = $data['users'];
-
-    if (!empty($users)) {
-        echo Users::generateUserListHTML(array_slice($users, 0, 5), $game_id, 'btn-success send_request', 'Send request', 'addId');
-        if (count($users) > 5){
-            echo '<div class="form-text">' . 'And ' . (count($users) - 5) . ' more. Search for more users</div>';
-        }
-    } else {
-        echo '<h6 class="text-center">No users found</h6>';
+    // remove the user that is the owner of the game
+    $gameSave = GameSaves::getSaveGameById($gameId);
+    if ($gameSave) {
+        $users = array_filter($users, fn($user) => $user->id !== $gameSave->owner_id);
     }
+
+    $filtered = Users::filterUsers($users, $allowedUsers, $requestedUsers);
+    $users = $filtered['users'] ?? [];
+
+    // Remove selected users
+    $users = array_filter($users, fn($user) => !in_array($user->id, $selectedUsers));
+
+    Response::success(array_values($users));
 }

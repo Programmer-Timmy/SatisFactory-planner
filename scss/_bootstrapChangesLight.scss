@@ -20,6 +20,7 @@ $dark-hover: lighten($dark, 30%); // Lighter dark color for hover effect
 
 // emphasis colors
 $primary-emphasis: transparentize($primary, 0.25); // Slightly lighter primary color for emphasis
+$danger-emphasis: transparentize($danger, 0.25); // Slightly lighter danger color for emphasis
 
 // Body and global background
 $body-bg: #f0f4f8; // Light background color

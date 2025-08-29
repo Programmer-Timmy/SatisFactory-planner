@@ -1,5 +1,5 @@
 <?php
-$users = Users::getAllUsers();
+$users = Users::getAllUsers(true);
 ?>
 
 <div class="container">

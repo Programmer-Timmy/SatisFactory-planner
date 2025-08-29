@@ -38,7 +38,7 @@ footer {
 
 .select-items-menu {
 
-  .search-by-menu{
+  .search-by-menu {
     z-index: -1;
     border: 1px solid $border-primary;
     top: 0;
@@ -51,7 +51,7 @@ footer {
   }
 
   &.hide-visuals {
-    .recipe-visuals{
+    .recipe-visuals {
       display: none !important;
     }
   }
@@ -103,9 +103,30 @@ footer {
         border-bottom: none;
       }
 
-      &:hover {
+      &:hover, &.active {
         background-color: $primary-emphasis;
       }
     }
   }
 }
+
+.btn-outline-soft-red {
+  color: $danger-emphasis;
+  background-color: transparent; /* no strong fill */
+  border: 1px solid $danger-emphasis; /* soft red border */
+
+  &:hover{
+    background-color: $danger-emphasis !important; /* fill with soft red on hover */
+    color: $text-color !important; /* white text on hover */
+    border-color: $danger-emphasis !important;
+  }
+
+  &:disabled, &.disabled {
+    color: lighten($danger-emphasis, 5%) !important;
+    border-color: lighten($danger-emphasis, 5%) !important;
+    background-color: transparent !important;
+  }
+}
+
+
+

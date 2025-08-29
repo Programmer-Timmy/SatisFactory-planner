@@ -6,31 +6,29 @@ if ($_POST && isset($_POST['productionLineName'])) {
 
     // Validate Production Line Name Length
     if (strlen($productionLineName) > 45) {
-        $error = 'Production Line Name is too lengthy. Please use up to 45 characters.';
+        $_SESSION['error'] = 'Production Line Name is too lengthy. Please use up to 45 characters.';
     } elseif ($productionLineName !== strip_tags($productionLineName)) {
-        $error = 'Security Alert: Unauthorized characters detected in Production Line Name. Nice try, but FICSIT Security has blocked that!';
+        $_SESSION['error'] = 'Security Alert: Unauthorized characters detected in Production Line Name. Nice try, but FICSIT Security has blocked that!';
     }
 
-    if (!$error) {
+    if (!isset($_SESSION['error']) || !$_SESSION['error']) {
         $productLineId = $productLine->id;
         $active = isset($_POST['productionLineActive']) ? 1 : 0;
 
         $productionLineName = htmlspecialchars($productionLineName);
 
-        if (ProductionLines::updateProductionLine($productLineId, $productionLineName, $active)) {
-            header('Location: /production_line?id=' . $productLineId);
-            exit();
-        } else {
-            $error = 'Error updating production line. Please try again or contact support.';
-        }
+        ProductionLines::updateProductionLine($productLineId, $productionLineName, $active);
+
+        header('Location: /production_line?id=' . $productLineId);
+        exit();
     }
 }
 
 $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intval($_GET['id'] ?? null));
 ?>
 
-<div class="modal fade <?= $error ? 'show' : '' ?>" id="editProductionLine" tabindex="-1"
-     aria-labelledby="popupModalLabel" aria-hidden="true" <?= $error ? 'style="display: block;"' : '' ?>>
+<div class="modal fade" id="editProductionLine" tabindex="-1"
+     aria-labelledby="popupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -38,9 +36,6 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <?php if ($error): ?>
-                    <div class="alert alert-danger"><?= $error ?></div>
-                <?php endif; ?>
                 <div id="successAlert" class="alert alert-success d-none fade" role="alert">
                     Import was successful!
                 </div>
@@ -144,11 +139,4 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
         const addProductionLine = new bootstrap.Modal(document.getElementById('editProductionLine'));
         addProductionLine.show();
     });
-
-    <?php if ($error): ?>
-    $(document).ready(function () {
-        const addProductionLine = new bootstrap.Modal(document.getElementById('editProductionLine'));
-        addProductionLine.show();
-    });
-    <?php endif; ?>
 </script>
