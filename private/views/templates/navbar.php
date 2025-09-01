@@ -172,7 +172,6 @@ $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpf
     </div>
 </nav>
 
-
 <script>
     $('#themeToggle').change(function () {
         let theme = $('#theme').attr('href');
