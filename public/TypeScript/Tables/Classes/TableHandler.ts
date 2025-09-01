@@ -309,6 +309,8 @@ export class TableHandler {
                     const amountExtra = target.closest('tr').prevAll('.extra-output').length;
                     this.deleteRow(tableId, rowIndex - amountExtra, target);
                 });
+
+
             });
 
             inputsAndSelects.each((_, element) => {
@@ -778,7 +780,9 @@ export class TableHandler {
     }
 
     private deleteRow(tableId: string, rowIndex: number, target: JQuery<HTMLElement>) {
-        console.log(`Deleting row ${rowIndex} from table ${tableId}`);
+        if (this.checkIfLastRow(target, tableId)) {
+            return;
+        }
         switch (tableId) {
             case 'imports':
                 this.importsTableRows.splice(rowIndex, 1);
