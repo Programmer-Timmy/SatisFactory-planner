@@ -529,7 +529,7 @@ if (empty($productionLines)) {
 ?>
 <?php
 global $changelog;
-if (DedicatedServer::getBySaveGameId($gameSave->id) && GameSaves::checkAccess($gameSave->id, $_SESSION['userId'], Permission::SAVEGAME_EDIT)): ?>
+if (DedicatedServer::getBySaveGameId($gameSave->id) && GameSaves::checkAccess($gameSave->id, $_SESSION['userId'], Permission::SERVER_VIEW)): ?>
     <script src="js/dedicatedServer.js?v=<?= $changelog['version'] ?>"></script>
     <script>
         new DedicatedServer(<?= $gameSave->id ?>);

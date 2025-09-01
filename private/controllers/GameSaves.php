@@ -45,7 +45,7 @@ class GameSaves {
             ]
         );
 
-        if (!$permissions) {
+        if (!$permissions || count($permissions) === 0) {
             return null;
         }
 

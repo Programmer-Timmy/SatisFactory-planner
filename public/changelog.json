@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.13.1",
+    "date": "September 1 2025",
+    "changes": [
+      "Fixed: Abel to remove add row."
+    ]
+  },
+  {
     "version": "1.13.0",
     "date": "August 31 2025",
     "changes": [
