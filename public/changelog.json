@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.13.0",
+    "date": "August 31 2025",
+    "changes": [
+      "Added: Role management for game saves. (Owner, Supervisor, Engineer, Factory Worker)",
+      "Added: New permissions for game saves based on roles (Not customizable)",
+      "Added: Delete button to a production rows.",
+      "Improved: User management for game saves. Now you can see the roles of the users.",
+      "Improved: User experience when managing users on game saves."
+    ]
+  },
+  {
     "version": "1.12.1",
     "date": "August 13 2025",
     "changes": [

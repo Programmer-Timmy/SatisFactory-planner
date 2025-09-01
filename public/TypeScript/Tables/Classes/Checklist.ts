@@ -204,4 +204,21 @@ export class Checklist {
         })
     }
 
+    public removeChecklist(index: number) {
+        const card = this.canvasBody.find(`#check-${index}`);
+        if (card.length > 0) {
+            card.remove();
+        }
+        this.checklist = this.checklist.filter(check => check.index !== index);
+        // reindex checklist
+        this.checklist.forEach((check, newIndex) => {
+            check.index = newIndex;
+            const card = this.canvasBody.find(`#check-${check.index}`);
+            if (card.length > 0) {
+                card.attr("id", `check-${newIndex}`);
+            }
+        });
+        console.log(this.checklist);
+    }
+
 }

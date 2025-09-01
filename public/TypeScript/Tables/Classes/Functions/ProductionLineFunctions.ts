@@ -84,6 +84,9 @@ export class ProductionLineFunctions {
                 rowToUpdate.find('td:nth-child(3)').attr('rowspan', 2);
                 rowToUpdate.find('td:nth-child(2) .search-input').css('height', '78px');
                 rowToUpdate.find('td:nth-child(3) input').css('height', '78px');
+                const deleteBtn = rowToUpdate.find('.delete-production-row');
+                deleteBtn.parent().attr('rowspan', 2);
+                deleteBtn.css('height', '78px');
 
                 // Add extra row for double export values
                 const extraRow = $(`
@@ -120,6 +123,10 @@ export class ProductionLineFunctions {
             // Reset the input/select height
             rowToUpdate.find('td:nth-child(2) .search-input').css('height', '');
             rowToUpdate.find('td:nth-child(3) input').css('height', '');
+
+            const deleteBtn = rowToUpdate.find('.delete-production-row');
+            deleteBtn.parent().removeAttr('rowspan');
+            deleteBtn.css('height', '39px');
         }
     }
 

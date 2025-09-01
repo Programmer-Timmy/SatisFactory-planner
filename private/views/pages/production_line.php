@@ -1,4 +1,5 @@
 <?php
+require_once '../private/types/role.php';
 ob_start();
 $error = null;
 $productLineId = $_GET['id'];
@@ -9,11 +10,14 @@ if ($productLineId == null) {
 
 $productLine = ProductionLines::getProductionLineById($productLineId);
 
-if (empty($productLine) || !ProductionLines::checkProductionLineVisability($productLine->game_saves_id, $_SESSION['userId'])) {
+$viewOnly = GameSaves::checkAccess($productLine->game_saves_id, $_SESSION['userId'], Permission::SAVEGAME_EDIT, negate: true);
+
+if ($viewOnly === null) {
     header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
     exit();
+} elseif ($viewOnly) {
+    $_SESSION['info'] = 'You can only view this production line.';
 }
-
 $firstProduction = Users::checkIfFirstProduction($_SESSION['userId']);
 
 $imports = ProductionLines::getImportsByProductionLine($productLine->id);
@@ -54,8 +58,16 @@ foreach ($production as $product) {
 }
 
 function trimDecimal(string $value): string {
-    return rtrim(rtrim($value, '0'), '.');
+    // Convert to float to remove unnecessary decimal zeros
+    if (strpos($value, '.') !== false) {
+        // Remove trailing zeros after decimal
+        $value = rtrim(rtrim($value, '0'), '.');
+    }
+
+    // If the value becomes empty (e.g., "0.0"), return '0'
+    return $value === '' ? '0' : $value;
 }
+
 ?>
 
 <script id="settings-data" type="application/json">
@@ -87,14 +99,11 @@ function trimDecimal(string $value): string {
 </style>
 <input type="hidden" id="dataVersion" value="<?= SiteSettings::getDataVersion() ?>">
 <input type="hidden" id="gameSaveId" value="<?= $productLine->game_saves_id ?>">
+<input type="hidden" id="viewOnly" value="<?= $viewOnly ?>"> <!-- i mean you can change it but ye you get errors :) -->
 
 <div class="px-3 px-lg-5">
     <form method="post" onkeydown="return event.key != 'Enter';">
-        <?php if ($error) : ?>
-            <div class="alert alert-danger text-center" role="alert">
-                <i class="fa-solid fa-exclamation-triangle"></i> <?= $error ?>
-            </div>
-        <?php endif; ?>
+        <?php GlobalUtility::displayFlashMessages() ?>
         <div class="alert alert-success d-none fade" role="alert" id="saveSuccessAlert"></div>
         <div class="alert alert-danger d-none fade" role="alert" id="saveErrorAlert"></div>
         <input type="hidden" name="total_consumption" id="total_consumption">
@@ -204,6 +213,7 @@ function trimDecimal(string $value): string {
                             <th scope="col">Product</th>
                             <th scope="col">Local Usage Per/min</th>
                             <th scope="col">Export Per/min</th>
+                            <th scope="col"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -237,6 +247,14 @@ function trimDecimal(string $value): string {
                                     <input min="0" type="number" name="production_export[]" step="any" required
                                            readonly class="form-control rounded-0 export-amount"
                                            value="<?= trimDecimal($product->export_amount_per_min) ?>">
+                                </td>
+                                <td class="m-0 p-0" style="width: 30px;" <?= $product->item_name_2 ? 'rowspan="2"' : '' ?>>
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-outline-soft-red m-0 rounded-0 btn-sm delete-production-row"
+                                            style="height: <?= $product->item_name_2 ? '78' : '39' ?>px; width: 30px;"
+                                            data-id="<?= $product->id ?>">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
                             <?php if ($product->item_name_2) : ?>
@@ -285,6 +303,13 @@ function trimDecimal(string $value): string {
                                        required
                                        readonly class="form-control rounded-0 export-amount">
                             </td>
+                            <td class="m-0 p-0" style="width: 30px;">
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-outline-soft-red  m-0 rounded-0 btn-sm delete-production-row"
+                                        style="height: 39px; width: 30px;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
@@ -319,10 +344,10 @@ function trimDecimal(string $value): string {
 
 
 <?php
-if (DedicatedServer::getBySaveGameId($_SESSION['lastVisitedSaveGame'])) : ?>
+if (DedicatedServer::getBySaveGameId($productLine->game_saves_id) && GameSaves::checkAccess($productLine->game_saves_id, $_SESSION['userId'], Permission::SAVEGAME_EDIT)) : ?>
     <script src="js/dedicatedServer.js"></script>
     <script>
-        new DedicatedServer(<?= $_SESSION['lastVisitedSaveGame'] ?>);
+        new DedicatedServer(<?= $productLine->game_saves_id ?>);
     </script>
 <?php endif; ?>
 <script type="" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
