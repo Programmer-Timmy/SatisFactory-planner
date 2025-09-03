@@ -365,11 +365,12 @@
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-        // Use saved cert to validate HTTPS
+        // SSL
         curl_setopt($ch, CURLOPT_CAINFO, $this->certPath);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 
+        // Set POST fields
         if ($apiFunction['multipart']) {
             $postFields = $this->prepareFiles($data, $files);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
@@ -380,6 +381,9 @@
 
         curl_setopt($ch, CURLOPT_POST, true);
 
+        // Capture headers as well
+        curl_setopt($ch, CURLOPT_HEADER, true);
+
         $response = curl_exec($ch);
 
         if (curl_errno($ch)) {
@@ -389,15 +393,35 @@
         }
 
         $responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+
+        $rawHeaders = substr($response, 0, $headerSize);
+        $body = substr($response, $headerSize);
+
         curl_close($ch);
 
-        $response = $this->handleResponse($response);
+        // Detect file download based on Content-Type
+        if (stripos($contentType, 'application/octet-stream') !== false ||
+            stripos($contentType, 'application/zip') !== false ||
+            stripos($contentType, 'application/pdf') !== false) {
+
+            return [
+                'response_code' => $responseCode,
+                'headers' => $rawHeaders,
+                'file_content' => $body, // raw binary data
+            ];
+        }
+
+        // Fallback: parse JSON as before
+        $parsed = $this->handleResponse($body);
 
         return [
             'response_code' => $responseCode,
-            'data' => $response['data'] ?? [],
+            'data' => $parsed['data'] ?? [],
         ];
     }
+
 
     private function validateParameters($apiFunction, $data)
     {
