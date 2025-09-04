@@ -28,9 +28,14 @@ if (!$dedicatedServer) {
 $client = new APIClient($dedicatedServer->server_ip, $dedicatedServer->server_port, $dedicatedServer->server_token);
 
 try {
-    $response = $client->post('DownloadSaveGame', [
-        'SaveName' => $saveName
-    ]);
+    $response = $client->post(
+        'DownloadSaveGame',
+        [
+            'SaveName' => $saveName
+        ],
+        // lot of data to download, give it more time
+        timeout: 120 // 2 minutes
+    );
 
     if ($response['response_code'] !== 200) {
         http_response_code(500);
