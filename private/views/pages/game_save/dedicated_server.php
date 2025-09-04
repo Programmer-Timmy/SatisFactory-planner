@@ -18,8 +18,6 @@ try {
 
     $sessions = $client->post('EnumerateSessions')['data']['sessions'] ?? [];
 
-    var_dump($sessions[0]['saveHeaders']);;
-
     $serverState = $queryState['data'] ?? null;
 } catch (Exception $e) {
     $healthy = false;
@@ -54,14 +52,14 @@ function cleanGamePhase($phaseString) {
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
                         <!-- Status -->
-                        <div class="text-center mb-4">
+                        <div class="text-center mt-4">
                             <div class="server-status-item d-flex justify-content-center mb-3">
                                 <div class="status-indicator <?= $healthy ? 'online' : 'offline' ?>"
                                      style="width: 130px; height: 130px;">
                                     <div class="status-blink <?= $healthy ? 'blink-online' : 'blink-offline' ?>"></div>
                                 </div>
                             </div>
-                            <h4 class="fw-bold mb-0"><?= $healthy ? 'Server Online' : 'Server Offline' ?></h4>
+                            <h4 class="fw-bold mb-0 mt-3"><?= $healthy ? 'Server Online' : 'Server Offline' ?></h4>
                         </div>
 
                         <hr>
@@ -210,6 +208,16 @@ function cleanGamePhase($phaseString) {
                         </div>
                         <span>Preparing download...</span>
                     </div>
+                    <div class="form-text text-muted mt-2 text-center">
+                        Depending on the save size, this may take a few moments. You can close this dialog while the
+                        download is being prepared.
+                    </div>
+                </div>
+                <div class="modal-body d-none" id="downloadCompleted">
+                    <div class="d-flex justify-content-center align-items-center flex-column">
+                        <i class="fa-solid fa-check-circle text-success fa-2x mb-2 text-center" id="downloadSuccessIcon" style="font-size: 100px"></i>
+                        <span id="downloadSuccessMessage" class="text-center">Download completed successfully!</span>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -295,7 +303,12 @@ function cleanGamePhase($phaseString) {
                                 a.click();
                                 a.remove();
                                 window.URL.revokeObjectURL(url);
-                                showLoading(false);
+                                showDownloadCompleted(true);
+                                setTimeout(() => {
+                                    resetModal();
+                                    showDownloadCompleted(false);
+                                    $('#downloadSaveModal').modal('hide');
+                                }, 3000); // hide after
                             },
                             error: function (xhr, status, error) {
                                 alert('Error downloading save: ' + (xhr.responseJSON?.error || error));
@@ -313,11 +326,13 @@ function cleanGamePhase($phaseString) {
 
                     function showLoading(show) {
                         const loadingDiv = document.getElementById('downloadSaveModalLoading');
+                        const completedDiv = document.getElementById('downloadCompleted');
                         const contentDiv = loadingDiv.previousElementSibling; // The modal body
                         const button = document.getElementById('downloadSaveLink');
                         if (show) {
                             loadingDiv.classList.remove('d-none');
                             contentDiv.classList.add('d-none');
+                            completedDiv.classList.add('d-none');
                             button.classList.add('disabled');
                             button.setAttribute('aria-disabled', 'true');
                             button.querySelector('span').classList.remove('d-none');
@@ -325,10 +340,34 @@ function cleanGamePhase($phaseString) {
                         } else {
                             loadingDiv.classList.add('d-none');
                             contentDiv.classList.remove('d-none');
+                            completedDiv.classList.add('d-none');
                             button.querySelector('span').classList.add('d-none');
                             button.classList.remove('disabled');
                             button.setAttribute('aria-disabled', 'false');
                             button.querySelector('span').classList.add('d-none');
+                        }
+                    }
+
+                    function showDownloadCompleted(show) {
+                        const completedDiv = document.getElementById('downloadCompleted');
+                        const loadingDiv = document.getElementById('downloadSaveModalLoading');
+                        const contentDiv = loadingDiv.previousElementSibling; // The modal body
+                        const button = document.getElementById('downloadSaveLink');
+                        if (show) {
+                            completedDiv.classList.remove('d-none');
+                            loadingDiv.classList.add('d-none');
+                            contentDiv.classList.add('d-none');
+                            button.classList.add('disabled');
+                            button.setAttribute('aria-disabled', 'true');
+                            button.querySelector('span').classList.add('d-none');
+
+                        } else {
+                            completedDiv.classList.add('d-none');
+                            loadingDiv.classList.add('d-none');
+                            contentDiv.classList.remove('d-none');
+                            button.querySelector('span').classList.add('d-none');
+                            button.classList.remove('disabled');
+                            button.setAttribute('aria-disabled', 'false');
                         }
                     }
 

@@ -1,7 +1,4 @@
 <?php
-//                                    gameSaveId:
-//                                    sessionName:
-//                                    saveName:
 if (!isset($_POST['gameSaveId']) || !isset($_POST['sessionName']) || !isset($_POST['saveName'])) {
     http_response_code(400);
     echo json_encode(['error' => 'Missing parameters']);
