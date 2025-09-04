@@ -24,19 +24,19 @@ if (!$dedicatedServer) {
 
 $client = new APIClient($dedicatedServer->server_ip, $dedicatedServer->server_port, $dedicatedServer->server_token);
 
-//try {
-//    $response = $client->post('shutdonwServer');
-//
-//    if ($response['response_code'] !== 200) {
-//        Response::error($response['data'], $response['response_code']);
-//        exit;
-//    }
-//
-//    $output = $response['data'];
-//    Response::success($output);
-//    exit;
-//} catch (Exception $e) {
-//    http_response_code(500);
-//    Response::error($e->getMessage());
-//}
+try {
+    $response = $client->post('Shutdown');
+
+    if ($response['response_code'] !== 200 && $response['response_code'] !== 204) {
+        Response::error('Failed to shutdown server', 500);
+        exit;
+    }
+
+    $output = $response['data'];
+    Response::success($output);
+    exit;
+} catch (Exception $e) {
+    http_response_code(500);
+    Response::error($e->getMessage());
+}
 

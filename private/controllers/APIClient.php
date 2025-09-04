@@ -341,8 +341,13 @@
 
     /**
      * Example of using the downloaded certificate in cURL
+     *
+     * @param string $function API function to call
+     * @param array $data Parameters to send
+     * @param array $files Files to upload (for multipart requests)
+     * @param int $timeout Request timeout in seconds (default 30)
      */
-    public function post($function, $data = [], $files = [])
+    public function post($function, $data = [], $files = [], $timeout = 30)
     {
         $this->initCertificate(); // Ensure cert exists
 
@@ -369,6 +374,7 @@
         curl_setopt($ch, CURLOPT_CAINFO, $this->certPath);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
 
         // Set POST fields
         if ($apiFunction['multipart']) {

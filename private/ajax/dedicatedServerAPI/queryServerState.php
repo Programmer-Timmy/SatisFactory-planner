@@ -1,5 +1,5 @@
 <?php
-
+header('Content-Type: application/json');
 if (!isset($_POST)) {
     die(json_encode(['status' => 'error', 'message' => 'Invalid request']));
 }

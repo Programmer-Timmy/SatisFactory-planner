@@ -10,7 +10,7 @@ $dedicatedServer = DedicatedServer::getBySaveGameId($saveGameId);
 
 try {
     $client = new APIClient($dedicatedServer->server_ip, $dedicatedServer->server_port, $dedicatedServer->server_token);
-    $response = $client->post('HealthCheck', ['ClientCustomData' => '']);
+    $response = $client->post('HealthCheck', ['ClientCustomData' => ''], timeout: 3);
 
     $healthy = $response['response_code'] === 200 && $response['data']['health'] === 'healthy';
 
@@ -135,7 +135,9 @@ function cleanGamePhase($phaseString) {
                         <div class="d-flex flex-column flex-md-row gap-3">
                             <!--                      actions:       stop server, download save game, upload save game, update server settings, update advanged game settings -->
                             <button id="stopServerBtn"
-                                    class="btn btn-danger flex-fill" <?= !$healthy ? 'disabled' : '' ?>>
+                                    class="btn btn-danger flex-fill" <?= !$healthy ? 'disabled' : '' ?>
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#stopServerModal">
                                 <i class="fa-solid fa-stop me-2"></i> Stop Server
                             </button>
                             <button id="downloadSaveBtn" class="btn btn-secondary flex-fill" data-bs-toggle="modal"
@@ -215,7 +217,8 @@ function cleanGamePhase($phaseString) {
                 </div>
                 <div class="modal-body d-none" id="downloadCompleted">
                     <div class="d-flex justify-content-center align-items-center flex-column">
-                        <i class="fa-solid fa-check-circle text-success fa-2x mb-2 text-center" id="downloadSuccessIcon" style="font-size: 100px"></i>
+                        <i class="fa-solid fa-check-circle text-success fa-2x mb-2 text-center" id="downloadSuccessIcon"
+                           style="font-size: 100px"></i>
                         <span id="downloadSuccessMessage" class="text-center">Download completed successfully!</span>
                     </div>
                 </div>
@@ -379,6 +382,71 @@ function cleanGamePhase($phaseString) {
             </div>
         </div>
     </div>
+    <!--    modal of shutting down-->
+    <div class="modal fade" id="stopServerModal" tabindex="-1" aria-labelledby="stopServerModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stopServerModalLabel">Stop Dedicated Server</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fa-solid fa-triangle-exclamation text-warning fa-3x mb-3"></i>
+                    <p class="mb-3">Are you sure you want to stop the dedicated server? This will disconnect all
+                        players and may result in loss of unsaved progress.</p>
+                    <div id="stopServerAlert" class="alert d-none" role="alert"></div>
+                    <button id="confirmStopServerBtn" class="btn btn-danger">Yes, Stop Server</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+                <div class="modal-body text-center d-none" id="shutdownConfirmation">
+                    <i class="fa-solid fa-check-circle text-success fa-3x mb-3" style="font-size: 100px"></i>
+                    <p class="mb-0">The server has been successfully stopped.</p>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.getElementById('confirmStopServerBtn').addEventListener('click', function () {
+                const alertDiv = document.getElementById('stopServerAlert');
+                const modalBody = this.parentElement;
+                const shutdownDiv = document.getElementById('shutdownConfirmation');
+                alertDiv.classList.add('d-none');
+                alertDiv.classList.remove('alert-success', 'alert-danger');
+                alertDiv.textContent = '';
+
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Stopping...';
+
+                $.ajax({
+                    url: '/dedicatedServerAPI/shutdown',
+                    type: 'POST',
+                    data: {
+                        gameSaveId: <?= $saveGameId ?>
+                    },
+                    headers: {'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?>'},
+                    success: function (response) {
+                        modalBody.classList.add('d-none');
+                        shutdownDiv.classList.remove('d-none');
+
+                        setTimeout(() => {
+                            $('#stopServerModal').modal('hide');
+                            location.reload(); // Refresh the page to update status
+                        }, 3000); // hide after 3 seconds
+                    },
+                    error: function (xhr, status, error) {
+                        alertDiv.classList.remove('d-none');
+                        alertDiv.classList.add('alert-danger');
+                        alertDiv.textContent = 'Error stopping server: ' + (xhr.responseJSON?.error || error);
+                    },
+                    complete: function () {
+                        const btn = document.getElementById('confirmStopServerBtn');
+                        btn.disabled = false;
+                        btn.innerHTML = 'Yes, Stop Server';
+                    }
+                });
+            });
+        </script>
+    </div>
 </div>
 
 <style>
@@ -443,3 +511,77 @@ function cleanGamePhase($phaseString) {
         }
     }
 </style>
+
+<script>
+    // elke minuut de health status verversen
+    setInterval(() => {
+        $.ajax({
+            url: '/dedicatedServerAPI/healthCheck',
+            type: 'POST',
+            dataType: 'json',               // Verwacht JSON terug
+            data: {
+                saveGameId: <?= $saveGameId ?>
+            },
+            headers: {'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?>'},
+            success: function (response) {
+                if (response.data.health === 'healthy') {
+                    $.ajax({
+                        url: '/dedicatedServerAPI/queryServerState',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            saveGameId: <?= $saveGameId ?>
+                        },
+                        headers: {'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?>'},
+                        success: function (response) {
+                            if (response.status !== 'success') {
+                                console.warn('Failed to fetch server state:', response.message);
+                                return;
+                            }
+
+                            if (!response || !response.data) {
+                                console.warn('No server state data received');
+                                return;
+                            }
+
+                            const data = response.data.serverGameState;
+                            // Update the relevant fields
+                            document.querySelector('.status-indicator').classList.remove('offline');
+                            document.querySelector('.status-indicator').classList.add('online');
+                            document.querySelector('.status-indicator .status-blink').classList.remove('blink-offline');
+                            document.querySelector('.status-indicator .status-blink').classList.add('blink-online');
+                            document.querySelector('h4.fw-bold').textContent = 'Server Online';
+                            $('li strong:contains("Health:")').parent().html('<strong>Health:</strong> Healthy');
+                            $('li strong:contains("Last Checked:")').parent().html('<strong>Last Checked:</strong> ' + new Date().toISOString().slice(0, 19).replace('T', ' '));
+                            $('li strong:contains("Session:")').parent().html('<strong>Session:</strong> ' + data.activeSessionName);
+                            $('li strong:contains("Players:")').parent().html('<strong>Players:</strong> ' + data.numConnectedPlayers + '/' + data.playerLimit);
+                            $('li strong:contains("Tech Tier:")').parent().html('<strong>Tech Tier:</strong> ' + data.techTier);
+                            $('li strong:contains("Phase:")').parent().html('<strong>Phase:</strong> ' + data.gamePhase.replace('GP_', '').replace(/_/g, ' '));
+                            $('li strong:contains("Running:")').parent().html('<strong>Running:</strong> ' + (data.isGameRunning ? 'Yes' : 'No'));
+                            $('li strong:contains("Paused:")').parent().html('<strong>Paused:</strong> ' + (data.isGamePaused ? 'Yes' : 'No'));
+                            $('li strong:contains("Tick Rate:")').parent().html('<strong>Tick Rate:</strong> ' + parseFloat(data.averageTickRate).toFixed(2) + ' TPS');
+
+                            const totalSeconds = data.totalGameDuration;
+                            const totalHours = Math.floor(totalSeconds / 3600);
+                            const minutes = Math.floor((totalSeconds % 3600) / 60);
+                            const seconds = totalSeconds % 60;
+                            const formattedDuration = totalHours + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+                            $('li strong:contains("Total Duration:")').parent().html('<strong>Total Duration:</strong> ' + formattedDuration);
+                            $('li strong:contains("Auto-load Session:")').parent().html('<strong>Auto-load Session:</strong> ' + data.autoLoadSessionName);
+
+
+                        },
+                        error: function (xhr, status, error) {
+                            console.error(xhr.responseJSON?.error || error);
+                        }
+                    });
+                } else {
+                    console.warn('Health check failed:', response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseJSON?.error || error);
+            }
+        });
+    }, 6000); // 60000 ms = 1 minuut
+</script>
