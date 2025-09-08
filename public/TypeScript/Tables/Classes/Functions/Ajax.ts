@@ -17,7 +17,7 @@ export class Ajax {
         return new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'GET',
-                url: 'getRecipe',
+                url: '/getRecipe',
                 data: {
                     id: recipe_id
                 },
@@ -47,7 +47,7 @@ export class Ajax {
         return new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'GET',
-                url: 'getBuilding',
+                url: '/getBuilding',
                 data: {
                     id: building_id
                 },
@@ -78,7 +78,7 @@ export class Ajax {
         return new Promise((resolve, reject) => {
             $.ajax({
                 type: 'POST',
-                url: 'saveProductionLine',
+                url: '/saveProductionLine',
                 data: {
                     gameSaveId: this.gameSaveId,
                     data: JSON.stringify(data),
@@ -107,7 +107,7 @@ export class Ajax {
     public static saveSettings(productionLineId: number, autoImportExport: boolean, autoPowerMachine: boolean, autoSave: boolean): void {
         $.ajax({
             type: 'POST',
-            url: 'updateProductionLineSettings',
+            url: '/updateProductionLineSettings',
             headers: {'X-CSRF-Token': Ajax._getCsrfToken()},
             data: {
                 gameSaveId: this.gameSaveId,

@@ -224,7 +224,7 @@ if (count($gameSaves) <= 2) {
                 <div class="d-flex align-items-stretch <?= $class ?> mt-3">
                     <div class="card h-100 w-100">
                         <div class="position-relative">
-                            <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
+                            <a href="game_save/<?= $gameSave->game_saves_id ?>"
                                class="card-link text-black text-decoration-none">
                                 <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover" style="max-height: 400px" alt="...">
                             </a>
@@ -248,7 +248,7 @@ if (count($gameSaves) <= 2) {
                         </div>
                         <div class="card-footer d-flex justify-content-between align-items-center">
                             <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
-                            <a href="game_save?id=<?= $gameSave->game_saves_id ?>" class="btn btn-outline-primary btn-sm">
+                            <a href="game_save/<?= $gameSave->game_saves_id ?>" class="btn btn-outline-primary btn-sm">
                                 Open
                             </a>
                         </div>

@@ -146,6 +146,7 @@ if ($continue) {
     }
 
     if (Router::dispatch()) {
+        include __DIR__ . '/../private/views/templates/footer.php';
         exit();
     }
 

@@ -1,14 +1,30 @@
 <?php
 require_once '../private/types/role.php';
-ob_start();
+global $productLine;
+global $gameSaveId;
+global $viewOnly;
+global $firstProduction;
+global $imports;
+global $production;
+global $powers;
+global $checklist;
+global $items;
+global $recipes;
+global $buildings;
+
 $error = null;
-$productLineId = $_GET['id'];
-if ($productLineId == null) {
-    header('Location: game_save?id=' . $_SESSION['lastVisitedSaveGame']);
+$productLineId = $_GET['id'] ?? null;
+$gameSaveId = $_GET['game_save_id'] ?? null;
+
+if ($productLineId === null && $gameSaveId !== null) {
+    header('Location: /game_save/'. $gameSaveId);
+    exit();
+} elseif ($gameSaveId == null) {
+    header('Location: /game_save/'. $_SESSION['lastVisitedSaveGame']);
     exit();
 }
 
-$productLine = ProductionLines::getProductionLineById($productLineId);
+$productLine = ProductionLines::getProductionLineById($productLineId, $gameSaveId);
 
 $viewOnly = GameSaves::checkAccess($productLine->game_saves_id, $_SESSION['userId'], Permission::SAVEGAME_EDIT, negate: true);
 
@@ -18,6 +34,7 @@ if ($viewOnly === null) {
 } elseif ($viewOnly) {
     $_SESSION['info'] = 'You can only view this production line.';
 }
+
 $firstProduction = Users::checkIfFirstProduction($_SESSION['userId']);
 
 $imports = ProductionLines::getImportsByProductionLine($productLine->id);
@@ -98,7 +115,8 @@ function trimDecimal(string $value): string {
     }
 </style>
 <input type="hidden" id="dataVersion" value="<?= SiteSettings::getDataVersion() ?>">
-<input type="hidden" id="gameSaveId" value="<?= $productLine->game_saves_id ?>">
+<input type="hidden" id="gameSaveId" value="<?= $gameSaveId ?>">
+<input type="hidden" id="productionLineId" value="<?= $productLine->id ?>">
 <input type="hidden" id="viewOnly" value="<?= $viewOnly ?>"> <!-- i mean you can change it but ye you get errors :) -->
 
 <div class="px-3 px-lg-5">
@@ -135,7 +153,7 @@ function trimDecimal(string $value): string {
                     <button type="button" id="showHelp" class="btn btn-info mb-1" data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-title="Need help? Click here!"><i
                                 class="fa-regular fa-question-circle"></i></button>
-                    <a href="game_save?id=<?= $_SESSION['lastVisitedSaveGame'] ?>" class="btn btn-secondary mb-1"
+                    <a href="/game_save/<?= $gameSaveId ?>/" class="btn btn-secondary mb-1"
                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i
                                 class="fa-solid fa-arrow-left"></i></a>
                 </div>
@@ -345,12 +363,12 @@ function trimDecimal(string $value): string {
 
 <?php
 if (DedicatedServer::getBySaveGameId($productLine->game_saves_id) && GameSaves::checkAccess($productLine->game_saves_id, $_SESSION['userId'], Permission::SERVER_VIEW)) : ?>
-    <script src="js/dedicatedServer.js"></script>
+    <script src="/js/dedicatedServer.js"></script>
     <script>
         new DedicatedServer(<?= $productLine->game_saves_id ?>);
     </script>
 <?php endif; ?>
-<script type="" src="js/tables.js?v=<?= $changelog['version'] ?>"></script>
+<script type="" src="/js/tables.js?v=<?= $changelog['version'] ?>"></script>
 <?php require_once '../private/views/Popups/productionLine/editProductinoLine.php'; ?>
 
 <!-- Help Modal -->

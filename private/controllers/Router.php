@@ -20,7 +20,8 @@ class Router {
 
             if (preg_match($pattern, $uri, $matches)) {
                 array_shift($matches);
-                return call_user_func_array($route['callback'], $matches);
+                call_user_func_array($route['callback'], $matches);
+                return true;
             }
         }
 

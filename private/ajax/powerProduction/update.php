@@ -5,25 +5,25 @@ if (!$_POST) {
     exit;
 }
 
-if (!isset($_POST['powerProductionId'])) {
+if (!isset($_POST['powerProductionId']) || !is_numeric($_POST['powerProductionId'])) {
     http_response_code(400);
     echo json_encode(['error' => 'No power production id provided']);
     exit;
 }
 
-if (!isset($_POST['amount'])) {
+if (!isset($_POST['amount']) || !is_numeric($_POST['amount'])) {
     http_response_code(400);
     echo json_encode(['error' => 'No amount provided']);
     exit;
 }
 
-if (!isset($_POST['clockSpeed'])) {
+if (!isset($_POST['clockSpeed']) || !is_numeric($_POST['clockSpeed'])) {
     http_response_code(400);
     echo json_encode(['error' => 'No clock speed provided']);
     exit;
 }
 
-if (!isset($_POST['gameSaveId'])) {
+if (!isset($_POST['gameSaveId']) || !is_numeric($_POST['gameSaveId'])) {
     http_response_code(400);
     echo json_encode(['error' => 'No game save id provided']);
     exit;
