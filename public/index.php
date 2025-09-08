@@ -6,6 +6,7 @@ $continue = true;
 // Include necessary files
 require_once __DIR__ . '/../private/autoload.php';
 require_once __DIR__ . '/../private/config/settings.php';
+require_once __DIR__ . '/../private/routes.php';
 
 // Start a session
 session_start();
@@ -142,6 +143,10 @@ if ($continue) {
     $requestedPage = $require;
     if ($requestedPage == "/") {
         $requestedPage = 'home';
+    }
+
+    if (Router::dispatch()) {
+        exit();
     }
 
     // check if its an directory

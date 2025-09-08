@@ -1,5 +1,4 @@
 <?php
-
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header('Location: /game_saves');
     exit();
@@ -538,7 +537,7 @@ if (DedicatedServer::getBySaveGameId($gameSave->id) && GameSaves::checkAccess($g
 <?php endif; ?>
 <?php if (!$viewOnly) {
     require_once '../private/views/Popups/productionLine/addProductionLine.php';
-    require_once '../private/views/Popups/saveGame/updatePowerProduction.php';
+    require_once __DIR__ .  '../../../Popups/saveGame/updatePowerProduction.php';
 } ?>
 <?php require_once '../private/views/Popups/saveGame/helpGameSave.php'; ?>
 

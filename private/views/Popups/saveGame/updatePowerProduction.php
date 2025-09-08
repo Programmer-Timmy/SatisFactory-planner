@@ -1,7 +1,6 @@
 <?php
 global $gameSave;
 global $changelog;
-
 $powerProductionBuildings = buildings::getPowerBuildings();
 $powerProduction = PowerProduction::getPowerProduction($gameSave->id);
 ?>
