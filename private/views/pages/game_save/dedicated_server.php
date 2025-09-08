@@ -48,12 +48,12 @@ function cleanGamePhase($phaseString) {
     <div class="row">
         <?php if ($dedicatedServer): ?>
             <!-- Left column: Single big card -->
-            <div class="col-sm-12 col-md-4 col-lg-3">
+            <div class="col-sm-12 col-md-4 col-xl-3">
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
                         <!-- Status -->
-                        <div class="text-center mt-4">
-                            <div class="server-status-item d-flex justify-content-center mb-3">
+                        <div class="text-center mt-4 mb-2">
+                            <div class="server-status-item d-flex justify-content-center mb-4">
                                 <div class="status-indicator <?= $healthy ? 'online' : 'offline' ?>"
                                      style="width: 130px; height: 130px;">
                                     <div class="status-blink <?= $healthy ? 'blink-online' : 'blink-offline' ?>"></div>
@@ -73,66 +73,81 @@ function cleanGamePhase($phaseString) {
                                 <strong>Health:</strong> <?= $healthy ? '<span class="text-success">Healthy <i class="fa-solid fa-check fa-lg"></i></span>' : '<span class="text-danger">Unhealthy <i class="fa-solid fa-xmark fa-lg"></i></span>' ?>
                             </li>
                             <li><strong>Last Checked:</strong>
-                                <?php if ($response && isset($response['data']['timestamp'])): ?>
-                                    <?= date('Y-m-d H:i:s', strtotime($response['data']['timestamp'])) ?>
-                                <?php else: ?>
-                                    <span class="text-muted">N/A</span>
-                                <?php endif; ?>
+                                <?= date('H:i:s') ?>
                             </li>
                         </ul>
 
-                        <?php if ($serverState): ?>
-                            <?php $state = $serverState['serverGameState']; ?>
+                        <?php $state = $serverState['serverGameState'] ?? null; ?>
 
-                            <!-- Game Session Info -->
-                            <h5 class="text-primary mb-3"><i class="fa-solid fa-gamepad me-2"></i>Game Session Info</h5>
-                            <ul class="list-unstyled mb-4">
-                                <li><strong>Session:</strong> <?= htmlspecialchars($state['activeSessionName']) ?></li>
-                                <li><strong>Players:</strong> <?= $state['numConnectedPlayers'] ?>
-                                    /<?= $state['playerLimit'] ?></li>
-                                <li><strong>Tech Tier:</strong> <?= $state['techTier'] ?></li>
-                                <li><strong>Phase:</strong> <?= cleanGamePhase($state['gamePhase']) ?></li>
-                            </ul>
+                        <!-- Game Session Info -->
+                        <h5 class="text-primary mb-3"><i class="fa-solid fa-gamepad me-2"></i>Game Session Info</h5>
+                        <ul class="list-unstyled mb-4">
+                            <li><strong>Session:</strong> <?= htmlspecialchars($state['activeSessionName'] ?? 'N/A') ?>
+                            </li>
+                            <li><strong>Players:</strong>
+                                <?= isset($state['numConnectedPlayers']) ? $state['numConnectedPlayers'] : 'N/A' ?> /
+                                <?= isset($state['playerLimit']) ? $state['playerLimit'] : 'N/A' ?>
+                            </li>
+                            <li><strong>Tech Tier:</strong> <?= $state['techTier'] ?? 'N/A' ?></li>
+                            <li><strong>Phase:</strong> <?= cleanGamePhase($state['gamePhase'] ?? 'N/A') ?></li>
+                        </ul>
 
-                            <!-- Game Status -->
-                            <h5 class="text-primary mb-3"><i class="fa-solid fa-heart-pulse me-2"></i>Game Status</h5>
-                            <ul class="list-unstyled mb-4">
-                                <li>
-                                    <strong>Running:</strong> <?= $state['isGameRunning'] ? '<i class="fa-solid fa-check text-success fa-lg"></i> Yes' : '<i class="fa-solid fa-xmark text-danger fa-lg"></i> No' ?>
-                                </li>
-                                <li>
-                                    <strong>Paused:</strong> <?= $state['isGamePaused'] ? '<i class="fa-solid fa-pause text-danger fa-lg"></i> Yes' : '<i class="fa-solid fa-play text-info fa-lg"></i> No' ?>
-                                </li>
-                                <li><strong>Tick Rate:</strong> <?= number_format($state['averageTickRate'], 2) ?> TPS
-                                </li>
-                            </ul>
+                        <!-- Game Status -->
+                        <h5 class="text-primary mb-3"><i class="fa-solid fa-heart-pulse me-2"></i>Game Status</h5>
+                        <ul class="list-unstyled mb-4">
+                            <li>
+                                <strong>Running:</strong>
+                                <?= isset($state['isGameRunning'])
+                                    ? ($state['isGameRunning']
+                                        ? '<i class="fa-solid fa-check text-success fa-lg"></i> Yes'
+                                        : '<i class="fa-solid fa-xmark text-danger fa-lg"></i> No')
+                                    : 'N/A' ?>
+                            </li>
+                            <li>
+                                <strong>Paused:</strong>
+                                <?= isset($state['isGamePaused'])
+                                    ? ($state['isGamePaused']
+                                        ? '<i class="fa-solid fa-pause text-danger fa-lg"></i> Yes'
+                                        : '<i class="fa-solid fa-play text-info fa-lg"></i> No')
+                                    : 'N/A' ?>
+                            </li>
+                            <li>
+                                <strong>Tick Rate:</strong>
+                                <?= isset($state['averageTickRate'])
+                                    ? number_format($state['averageTickRate'], 2) . ' TPS'
+                                    : 'N/A' ?>
+                            </li>
+                        </ul>
 
-                            <!-- Misc Info -->
-                            <h5 class="text-primary mb-3"><i class="fa-solid fa-info-circle me-2"></i>Misc</h5>
-                            <ul class="list-unstyled mb-0">
-                                <?php
+                        <!-- Misc Info -->
+                        <h5 class="text-primary mb-3"><i class="fa-solid fa-info-circle me-2"></i>Misc</h5>
+                        <ul class="list-unstyled mb-0">
+                            <?php
+                            if (isset($state['totalGameDuration'])) {
                                 $totalSeconds = $state['totalGameDuration'];
-
                                 $totalHours = floor($totalSeconds / 3600);
                                 $minutes = floor(($totalSeconds % 3600) / 60);
                                 $seconds = $totalSeconds % 60;
-
                                 $formattedDuration = sprintf('%d:%02d:%02d', $totalHours, $minutes, $seconds);
-                                ?>
-                                <li><strong>Total Duration:</strong> <?= $formattedDuration ?></li>
-                                <li><strong>Auto-load
-                                        Session:</strong> <?= htmlspecialchars($state['autoLoadSessionName']) ?></li>
-                            </ul>
-                        <?php endif; ?>
+                            } else {
+                                $formattedDuration = 'N/A';
+                            }
+                            ?>
+                            <li><strong>Total Duration:</strong> <?= $formattedDuration ?></li>
+                            <li><strong>Auto-load Session:</strong>
+                                <?= htmlspecialchars($state['autoLoadSessionName'] ?? 'N/A') ?>
+                            </li>
+                        </ul>
+
                     </div>
                 </div>
             </div>
-            <div class="col-sm-12 col-md-8 col-lg-9">
+            <div class="col-sm-12 col-md-8 col-xl-9">
                 <!--                actions -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
                         <h5 class="text-primary mb-3"><i class="fa-solid fa-rocket me-2"></i>Server Actions</h5>
-                        <div class="d-flex flex-column flex-md-row gap-3">
+                        <div class="d-flex flex-column flex-md-row gap-3 flex-wrap">
                             <!--                      actions:       stop server, download save game, upload save game, update server settings, update advanged game settings -->
                             <button id="stopServerBtn"
                                     class="btn btn-danger flex-fill" <?= !$healthy ? 'disabled' : '' ?>
@@ -233,7 +248,7 @@ function cleanGamePhase($phaseString) {
 
                 <script>
                     // Embed PHP data into JS
-                    const sessions = <?= json_encode($sessions) ?>;
+                    const sessions = <?= json_encode($sessions ?? []) ?>
 
                     const sessionSelect = document.getElementById('saveGameDownloadSelect');
                     const saveSelect = document.getElementById('saveFileDownloadSelect');
@@ -513,63 +528,86 @@ function cleanGamePhase($phaseString) {
 </style>
 
 <script>
+    // set last checked to current time
+    document.addEventListener('DOMContentLoaded', function () {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], {hour12: false});
+        $('li strong:contains("Last Checked:")').parent().html('<strong>Last Checked:</strong> ' + timeString);
+    });
+
+    // Helper to mimic PHP cleanGamePhase
+    function cleanGamePhase(phaseString) {
+        const match = phaseString.match(/GP_([^\.]+)/);
+        if (match) {
+            return match[1].replace(/_/g, ' ');
+        }
+        return phaseString;
+    }
+
+    // Helper for health icon + text
+    function formatHealth(healthy) {
+        return healthy
+            ? '<span class="text-success">Healthy <i class="fa-solid fa-check fa-lg"></i></span>'
+            : '<span class="text-danger">Unhealthy <i class="fa-solid fa-xmark fa-lg"></i></span>';
+    }
+
+    // Helper for running/paused
+    function formatRunning(isRunning) {
+        return isRunning
+            ? '<i class="fa-solid fa-check text-success fa-lg"></i> Yes'
+            : '<i class="fa-solid fa-xmark text-danger fa-lg"></i> No';
+    }
+
+    function formatPaused(isPaused) {
+        return isPaused
+            ? '<i class="fa-solid fa-pause text-danger fa-lg"></i> Yes'
+            : '<i class="fa-solid fa-play text-info fa-lg"></i> No';
+    }
+
     // elke minuut de health status verversen
     setInterval(() => {
         $.ajax({
             url: '/dedicatedServerAPI/healthCheck',
             type: 'POST',
-            dataType: 'json',               // Verwacht JSON terug
-            data: {
-                saveGameId: <?= $saveGameId ?>
-            },
+            dataType: 'json',
+            data: {saveGameId: <?= $saveGameId ?>},
             headers: {'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?>'},
             success: function (response) {
-                if (response.data.health === 'healthy') {
+                if (response && response.data && response.data.health === 'healthy') {
                     $.ajax({
                         url: '/dedicatedServerAPI/queryServerState',
                         type: 'POST',
                         dataType: 'json',
-                        data: {
-                            saveGameId: <?= $saveGameId ?>
-                        },
+                        data: {saveGameId: <?= $saveGameId ?>},
                         headers: {'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?>'},
-                        success: function (response) {
-                            if (response.status !== 'success') {
-                                console.warn('Failed to fetch server state:', response.message);
-                                return;
-                            }
+                        success: function (stateResponse) {
+                            if (!stateResponse || !stateResponse.data) return;
+                            const data = stateResponse.data.serverGameState;
 
-                            if (!response || !response.data) {
-                                console.warn('No server state data received');
-                                return;
-                            }
+                            // Update status indicator
+                            $('.status-indicator').removeClass('offline').addClass('online');
+                            $('.status-indicator .status-blink').removeClass('blink-offline').addClass('blink-online');
+                            $('h4.fw-bold').text('Server Online');
 
-                            const data = response.data.serverGameState;
-                            // Update the relevant fields
-                            document.querySelector('.status-indicator').classList.remove('offline');
-                            document.querySelector('.status-indicator').classList.add('online');
-                            document.querySelector('.status-indicator .status-blink').classList.remove('blink-offline');
-                            document.querySelector('.status-indicator .status-blink').classList.add('blink-online');
-                            document.querySelector('h4.fw-bold').textContent = 'Server Online';
-                            $('li strong:contains("Health:")').parent().html('<strong>Health:</strong> Healthy');
-                            $('li strong:contains("Last Checked:")').parent().html('<strong>Last Checked:</strong> ' + new Date().toISOString().slice(0, 19).replace('T', ' '));
+                            // Update health + timestamp
+                            $('li strong:contains("Health:")').parent().html('<strong>Health:</strong> ' + formatHealth(true));
+                            // only time
+                            $('li strong:contains("Last Checked:")').parent().html('<strong>Last Checked:</strong> ' + new Date().toLocaleTimeString([], {hour12: false}));
+
+                            // Update session info
                             $('li strong:contains("Session:")').parent().html('<strong>Session:</strong> ' + data.activeSessionName);
                             $('li strong:contains("Players:")').parent().html('<strong>Players:</strong> ' + data.numConnectedPlayers + '/' + data.playerLimit);
                             $('li strong:contains("Tech Tier:")').parent().html('<strong>Tech Tier:</strong> ' + data.techTier);
-                            $('li strong:contains("Phase:")').parent().html('<strong>Phase:</strong> ' + data.gamePhase.replace('GP_', '').replace(/_/g, ' '));
-                            $('li strong:contains("Running:")').parent().html('<strong>Running:</strong> ' + (data.isGameRunning ? 'Yes' : 'No'));
-                            $('li strong:contains("Paused:")').parent().html('<strong>Paused:</strong> ' + (data.isGamePaused ? 'Yes' : 'No'));
+                            $('li strong:contains("Phase:")').parent().html('<strong>Phase:</strong> ' + cleanGamePhase(data.gamePhase));
+
+                            // Update game status
+                            $('li strong:contains("Running:")').parent().html('<strong>Running:</strong> ' + formatRunning(data.isGameRunning));
+                            $('li strong:contains("Paused:")').parent().html('<strong>Paused:</strong> ' + formatPaused(data.isGamePaused));
                             $('li strong:contains("Tick Rate:")').parent().html('<strong>Tick Rate:</strong> ' + parseFloat(data.averageTickRate).toFixed(2) + ' TPS');
 
-                            const totalSeconds = data.totalGameDuration;
-                            const totalHours = Math.floor(totalSeconds / 3600);
-                            const minutes = Math.floor((totalSeconds % 3600) / 60);
-                            const seconds = totalSeconds % 60;
-                            const formattedDuration = totalHours + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
-                            $('li strong:contains("Total Duration:")').parent().html('<strong>Total Duration:</strong> ' + formattedDuration);
+                            // Update misc info
+                            $('li strong:contains("Total Duration:")').parent().html('<strong>Total Duration:</strong> ' + data.totalGameDuration);
                             $('li strong:contains("Auto-load Session:")').parent().html('<strong>Auto-load Session:</strong> ' + data.autoLoadSessionName);
-
-
                         },
                         error: function (xhr, status, error) {
                             console.error(xhr.responseJSON?.error || error);
@@ -583,5 +621,8 @@ function cleanGamePhase($phaseString) {
                 console.error(xhr.responseJSON?.error || error);
             }
         });
-    }, 6000); // 60000 ms = 1 minuut
+    }, 60000); // every minute
 </script>
+
+<!--todo: move to TS-->
+
