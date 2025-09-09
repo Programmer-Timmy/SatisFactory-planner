@@ -194,6 +194,10 @@ if (isset($_GET['layoutType'])) {
             <div class="col-lg-3"></div>
             <h1 class="text-center pb-3 col-lg-6">Game Save - <?= $gameSave->title ?></h1>
             <div class="col-lg-3 text-end">
+                <a href="/game_save/<?= $gameSave->id ?>/dedicated_server"
+                   class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+                   data-bs-title="Dedicated Server Status"><i class="fa-solid fa-server"></i>
+                </a>
                 <button type="button" id="showSaveGameHelp" class="btn btn-info" data-bs-toggle="tooltip"
                         data-bs-placement="top" data-bs-title="Need help? Click here!"><i
                             class="fa-regular fa-question-circle" aria-hidden="true"></i>
