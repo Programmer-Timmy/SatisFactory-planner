@@ -31,6 +31,7 @@ if ($site['maintenance'] && !in_array($_SERVER['REMOTE_ADDR'], $allowedIPs) && !
 
 // Determine which page to display based on the request
 $requestedPage = $_SERVER['REQUEST_URI'];
+$uri = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 
 if ($requestedPage == "/") {
     $requestedPage = '/home';
@@ -87,7 +88,7 @@ if ($site['admin']['enabled']) {
     $admin = $site['admin'];
     $pageTemplate = __DIR__ . "/../private/Views/pages$require.php";
     $pageDirectory = __DIR__ . "/../private/Views/pages$require";
-    if (file_exists($pageTemplate) || is_dir($pageDirectory)) {
+    if (file_exists($pageTemplate) || is_dir($pageDirectory) || Router::isRoute($uri, true)) {
         if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && !in_array($require, $admin['skipChecks'])) {
             if (!isset($_SESSION[$admin['sessionName']])) {
 //                if already logged in show the 403 page
@@ -112,11 +113,11 @@ if ($site['accounts']['enabled']) {
 
     $pageTemplate = __DIR__ . "/../private/views/pages$require.php";
     $pageDirectory = __DIR__ . "/../private/Views/pages$require";
-
-    if (file_exists($pageTemplate) || is_dir($pageDirectory)) {
+    if (file_exists($pageTemplate) || is_dir($pageDirectory) || Router::isRoute($uri, true)) {
         if (str_contains($require, $accounts['filterInUrl']) && !str_contains($require, $site['redirect']) && !in_array(substr($require, 1), $accounts['skipChecks'])) {
             if (!isset($_SESSION[$accounts['sessionName']])) {
                 if ($site['saveUrl']) {
+
                     $_SESSION['redirect'] = $requestedPage;
                 }
 
@@ -125,59 +126,16 @@ if ($site['accounts']['enabled']) {
                 include __DIR__ . '/../private/views/templates/navbar.php';
                 require_once __DIR__ . '/../private/views/pages/login/index.php';
                 include __DIR__ . '/../private/views/templates/footer.php';
+                exit();
             }
         }
     }
 }
 
 if ($continue) {
-// Include header
     include __DIR__ . '/../private/views/templates/header.php';
-
-// Check if maintenance mode is active and the client's IP is allowed
-
-    // Include the common header
     include __DIR__ . '/../private/views/templates/navbar.php';
-
-    // Determine which page to display based on the request
-    $requestedPage = $require;
-    if ($requestedPage == "/") {
-        $requestedPage = 'home';
-    }
-
-    if (Router::dispatch()) {
-        include __DIR__ . '/../private/views/templates/footer.php';
-        exit();
-    }
-
-    // check if its an directory
-    if (is_dir(__DIR__ . "/../private/views/pages$requestedPage")) {
-        $requestedPage = $requestedPage . '/index';
-    }
-
-    // Include the specific page content
-    $pageTemplate = __DIR__ . "/../private/views/pages/$requestedPage.php";
-
-    if (file_exists($pageTemplate)) {
-        include $pageTemplate;
-    } else {
-        // Handle 404 or display a default page
-        ErrorHandeler::blockIPForRapid404Errors($_SERVER['REMOTE_ADDR']);
-        ErrorHandeler::add404Log($requestedPage, $_SERVER['HTTP_REFERER'] ?? null, $_SESSION['userId'] ?? null);
-        include __DIR__ . '/../private/views/errors/404.php';
-    }
-
-    // Include the common footer
-    include __DIR__ . '/../private/views/templates/footer.php';
-
-
-    if ($site['showPopup'] && !isset($_SESSION['popupShown'])) {
-        // Include your popup HTML or JavaScript code here
-        include __DIR__ . '/../private/views/Popups/popup.php';
-
-        // Set a session variable to remember that the popup has been shown
-        $_SESSION['popupShown'] = true;
-    }
+    Router::dispatch();
 }
 
 

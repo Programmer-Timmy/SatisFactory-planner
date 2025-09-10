@@ -219,6 +219,8 @@ if (count($gameSaves) <= 2) {
         <!--    show cards-->
         <div class="row <?= count($gameSaves) == 1 ? "justify-content-center" : "" ?>">
             <?php foreach ($gameSaves as $gameSave) :
+                global $modalGameSave;
+                $modalGameSave = $gameSave;
                 $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
                 ?>
                 <div class="d-flex align-items-stretch <?= $class ?> mt-3">
@@ -254,7 +256,7 @@ if (count($gameSaves) <= 2) {
                         </div>
                     </div>
                 </div>
-                <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) require '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
+                <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) include '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
