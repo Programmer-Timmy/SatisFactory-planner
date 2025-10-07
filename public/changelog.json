@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.14.0",
+    "date": "September 1 2025",
+    "changes": [
+      "Changed: Url's are now better structured by using /{id} instead of ?id={id}",
+      "Added: /game_save/{id}/dedicated_server endpoint with 2 functions to download save game and shut it down.",
+      "Added: Build in calculator in the quantity fields. You can now use +, -, *, / and () to calculate the quantity you need.",
+      "Fixed: Create account via google not being centered"
+    ]
+  },
+  {
     "version": "1.13.1",
     "date": "September 1 2025",
     "changes": [

@@ -201,21 +201,6 @@ function trimDecimal(string $value): string {
                             </td>
                         </tr>
                     <?php endforeach; ?>
-                    <tr>
-                        <td class="m-0 p-0 w-75">
-                            <select name="imports_item_id[]" step="any"
-                                    class="form-control rounded-0 input-item-id">
-                                <option value="" disabled selected>Select an item</option>
-                                <?php foreach ($items as $item) : ?>
-                                    <option value="<?= $item->id ?>"><?= $item->name ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td class="m-0 p-0 w-25">
-                            <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0">
-                        </td>
-                    </tr>
-
                     </tbody>
 
                 </table>
@@ -246,7 +231,7 @@ function trimDecimal(string $value): string {
                                     <?= GlobalUtility::generateRecipeSelect($recipes, $product->recipe_id) ?>
                                 </td>
                                 <td class="m-0 p-0" <?php if ($product->item_name_2) echo 'rowspan="2"' ?>>
-                                    <input min="0" type="number" name="production_quantity[]"
+                                    <input min="0" type="text" name="production_quantity[]"
                                            step="any" <?php if ($product->item_name_2) echo 'style="height: 78px"' ?>
                                            required class="form-control rounded-0 production-quantity" "
                                     value="<?= trimDecimal($product->product_quantity) ?>">
