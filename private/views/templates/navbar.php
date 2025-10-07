@@ -75,7 +75,7 @@ $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpf
         width: 55px !important;
     }
 </style>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark <?= isset($gameSaveId) ? 'mb-0' : 'mb-5' ?>">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
     <div class="container-fluid">
         <a class="navbar-brand" href="/home">Satisfactory Planner</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
