@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.14.3",
+    "date": "October 8 2025",
+    "changes": [
+      "Added: Hide Option to savegame cards on the Save Games page."
+    ]
+  },
+  {
     "version": "1.14.2",
     "date": "October 8 2025",
     "changes": [
