@@ -317,7 +317,7 @@ endif; ?>
 <?php
 global $changelog;
 ?>
-<script src="/js/DedicatedServerDashboard.js?v=<?= $changelog['version'] ?>"></script>
+<script src="/js/dedicatedServerDashboard.js?v=<?= $changelog['version'] ?>"></script>
 <script>
     const updater = new ServerStatusUpdater('<?= $_SESSION["csrf_token"] ?>', <?= $saveGameId ?>, <?= json_encode($sessions ?? []) ?>);
     updater.init();
