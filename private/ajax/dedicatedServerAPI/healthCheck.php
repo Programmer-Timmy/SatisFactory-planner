@@ -1,5 +1,5 @@
 <?php
-
+header('Content-Type: application/json');
 if (!isset($_POST)) {
     die(json_encode(['status' => 'error', 'message' => 'Invalid request']));
 }
@@ -23,7 +23,7 @@ if (!$dedicatedServer) {
 }
 try {
     $client = new APIClient($dedicatedServer->server_ip, $dedicatedServer->server_port, $dedicatedServer->server_token);
-    $response = $client->post('HealthCheck', ['ClientCustomData' => '']);
+    $response = $client->post('HealthCheck', ['ClientCustomData' => ''], timeout: 3);
 
     if ($response['response_code'] !== 200) {
         die(json_encode(['status' => 'error', 'message' => 'Failed to query server state']));

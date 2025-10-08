@@ -1,13 +1,13 @@
 <?php
 
 
-class APIClient
+#[AllowDynamicProperties] class APIClient
 {
-    private $host;
-    private $port;
-    private $authToken;
-
-    private $apiFunctions = [
+    private string $host;
+    private int $port;
+    private mixed $authToken;
+    private string $certDir;
+    private array $apiFunctions = [
         'HealthCheck' => [
             'requires_auth' => false,
             'parameters' => [
@@ -278,29 +278,91 @@ class APIClient
         $this->host = $host;
         $this->port = $port;
         $this->authToken = $authToken;
+
+        // Where to store certificates
+        $this->certDir = __DIR__ . '../../certs';
+        if (!is_dir($this->certDir)) {
+            mkdir($this->certDir, 0777, true);
+        }
+
+        $this->certPath = $this->certDir . '/' . str_replace('.', '_', $this->host) . "_{$this->port}.crt";
     }
 
-    public function post($function, $data = [], $files = [])
+    /**
+     * Download the SSL certificate from the server and save it locally.
+     */
+    public function initCertificate()
     {
+        // If cert already exists, skip
+        if (file_exists($this->certPath)) {
+            return $this->certPath;
+        }
+
+        $url = "ssl://{$this->host}:{$this->port}";
+
+        $context = stream_context_create([
+                                             'ssl' => [
+                                                 'capture_peer_cert' => true,
+                                                 'verify_peer' => false,
+                                                 'verify_peer_name' => false,
+                                             ]
+                                         ]);
+
+        $client = @stream_socket_client(
+            $url,
+            $errno,
+            $errstr,
+            30,
+            STREAM_CLIENT_CONNECT,
+            $context
+        );
+
+        if (!$client) {
+            throw new Exception("Failed to connect to {$this->host}:{$this->port} - $errstr");
+        }
+
+        $params = stream_context_get_params($client);
+        $certResource = $params['options']['ssl']['peer_certificate'];
+
+        if (!$certResource) {
+            throw new Exception("Could not get certificate from {$this->host}:{$this->port}");
+        }
+
+        $certPem = openssl_x509_export($certResource, $certOut) ? $certOut : null;
+        if (!$certPem) {
+            throw new Exception("Failed to export certificate.");
+        }
+
+        file_put_contents($this->certPath, $certPem);
+
+        return $this->certPath;
+    }
+
+
+    /**
+     * Example of using the downloaded certificate in cURL
+     *
+     * @param string $function API function to call
+     * @param array $data Parameters to send
+     * @param array $files Files to upload (for multipart requests)
+     * @param int $timeout Request timeout in seconds (default 30)
+     */
+    public function post($function, $data = [], $files = [], $timeout = 30)
+    {
+        $this->initCertificate(); // Ensure cert exists
+
         $apiFunctions = $this->apiFunctions;
-        // Define API functions and required parameters
         if (!isset($apiFunctions[$function])) {
             throw new Exception("Unknown API function: $function");
         }
 
         $apiFunction = $apiFunctions[$function];
-
-        // Validate parameters
         $this->validateParameters($apiFunction, $data);
 
         $url = "https://{$this->host}:{$this->port}/api/v1";
-
         $ch = curl_init($url);
 
-        $headers = [
-            'Content-Type: application/json'
-        ];
-
+        $headers = ['Content-Type: application/json'];
         if ($this->authToken && $apiFunction['requires_auth']) {
             $headers[] = 'Authorization: Bearer ' . $this->authToken;
         }
@@ -308,24 +370,27 @@ class APIClient
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-        // Ignore SSL certificate validation
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        // SSL
+        curl_setopt($ch, CURLOPT_CAINFO, $this->certPath);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
 
+        // Set POST fields
         if ($apiFunction['multipart']) {
             $postFields = $this->prepareFiles($data, $files);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
         } else {
-            $payload = json_encode([
-                'function' => $function,
-                'data' => $data
-            ]);
+            $payload = json_encode(['function' => $function, 'data' => $data]);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
         }
 
         curl_setopt($ch, CURLOPT_POST, true);
 
-        $response = curl_exec($ch);
+        // Capture headers as well
+        curl_setopt($ch, CURLOPT_HEADER, true);
 
+        $response = curl_exec($ch);
 
         if (curl_errno($ch)) {
             $error = curl_error($ch);
@@ -333,15 +398,36 @@ class APIClient
             throw new Exception("cURL Error: $error");
         }
 
+        $responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+
+        $rawHeaders = substr($response, 0, $headerSize);
+        $body = substr($response, $headerSize);
+
         curl_close($ch);
 
-        $responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $response = $this->handleResponse($response);
+        // Detect file download based on Content-Type
+        if (stripos($contentType, 'application/octet-stream') !== false ||
+            stripos($contentType, 'application/zip') !== false ||
+            stripos($contentType, 'application/pdf') !== false) {
+
+            return [
+                'response_code' => $responseCode,
+                'headers' => $rawHeaders,
+                'file_content' => $body, // raw binary data
+            ];
+        }
+
+        // Fallback: parse JSON as before
+        $parsed = $this->handleResponse($body);
+
         return [
             'response_code' => $responseCode,
-            'data' => $response['data'] ?? [],
+            'data' => $parsed['data'] ?? [],
         ];
     }
+
 
     private function validateParameters($apiFunction, $data)
     {

@@ -50,7 +50,7 @@ if ($_POST && isset($_POST['saveGameName'])) {
 
         // Redirect if successful
         if ($gameSaveId && !$error) {
-            header('Location: /game_save?id=' . $gameSaveId);
+            header('Location: /game_save/' . $gameSaveId);
             exit();
         }
     }

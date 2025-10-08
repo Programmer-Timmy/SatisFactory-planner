@@ -4,6 +4,8 @@ class AuthControler
 {
     public static function login(string $username, string $password)
     {
+        session_regenerate_id(true); // Prevent session fixation attacks
+
         global $site;
         $user = Database::get($site['user-adminTable'], ['*'], [], ['username' => $username]);
         if (!$user) {

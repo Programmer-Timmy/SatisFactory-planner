@@ -15,6 +15,7 @@ import {Recipe} from "./Types/Recipe";
 import {Checklist, IChecklist} from "./Checklist";
 import {RecipeSetting} from "./RecipeSetting";
 import {ProductionSelect} from "./ProductionSelect";
+import {Calculations} from "./Functions/Calcuations";
 
 
 /**
@@ -357,7 +358,7 @@ export class TableHandler {
         const rowIndex = target.closest('tr').index();
         const amountExtra = target.closest('tr').prevAll('.extra-output').length;
         const columnIndex = target.closest('td').index();
-        const value = target.val();
+        let value = target.val();
 
         // If the last row is selected, add a new row
         if (this.checkIfLastRow(target, tableId) && this.checkIfSelect(target)) {
@@ -366,6 +367,11 @@ export class TableHandler {
 
         const row = this.getRowByTableIdAndIndex(tableId, rowIndex - amountExtra);
 
+        if (target.hasClass('production-quantity')) {
+            const defaultValue = row.quantity;
+            value = Calculations.applyMathCalculation(value, defaultValue);
+            target.val(value);
+        }
 
         if (row && columnIndex >= 0) {
             this.updateRowData(row, columnIndex, value);

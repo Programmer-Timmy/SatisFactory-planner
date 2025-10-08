@@ -38,8 +38,7 @@ export class SaveFunctions {
     }
     public static saveProductionLine(jsonData: Record<string, any>, tableHandler: TableHandler, isQuickSave: boolean = true): Promise<boolean> {
         try {
-            const url = new URL(window.location.href);
-            const id = parseInt(url.searchParams.get('id') as string);
+            const id = parseInt($("#productionLineId").val() as string);
 
             return Ajax.saveData(jsonData, id).then((response) => {
                 if (response['success']) {

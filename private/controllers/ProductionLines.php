@@ -36,7 +36,11 @@ class ProductionLines {
         return false;
     }
 
-    public static function getProductionLineById(int $id) {
+    public static function getProductionLineById(int $id, bool | int $gameSaveId = false) {
+        if ($gameSaveId !== false) {
+            // this makes sure the production line belongs to the game save
+            return Database::get("production_lines", ['*'], [], ['id' => $id, 'game_saves_id' => $gameSaveId]);
+        }
         return Database::get("production_lines", ['*'], [], ['id' => $id]);
     }
 

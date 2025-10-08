@@ -1,6 +1,6 @@
 <?php
 
-if (!isset($_POST['data']) || !isset($_POST['id'])) {
+if (!isset($_POST['data']) || !isset($_POST['id']) || !is_numeric($_POST['id'])) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid request']);
     exit();
@@ -12,7 +12,7 @@ if (!isset($_SESSION['userId'])) {
     exit();
 }
 
-if (!isset($_POST['gameSaveId'])) {
+if (!isset($_POST['gameSaveId']) || !is_numeric($_POST['gameSaveId'])) {
     http_response_code(400);
     echo json_encode(['error' => 'No game save id provided']);
     exit();

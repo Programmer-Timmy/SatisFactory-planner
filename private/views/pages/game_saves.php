@@ -219,12 +219,14 @@ if (count($gameSaves) <= 2) {
         <!--    show cards-->
         <div class="row <?= count($gameSaves) == 1 ? "justify-content-center" : "" ?>">
             <?php foreach ($gameSaves as $gameSave) :
+                global $modalGameSave;
+                $modalGameSave = $gameSave;
                 $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
                 ?>
                 <div class="d-flex align-items-stretch <?= $class ?> mt-3">
                     <div class="card h-100 w-100">
                         <div class="position-relative">
-                            <a href="game_save?id=<?= $gameSave->game_saves_id ?>"
+                            <a href="game_save/<?= $gameSave->game_saves_id ?>"
                                class="card-link text-black text-decoration-none">
                                 <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover" style="max-height: 400px" alt="...">
                             </a>
@@ -248,13 +250,13 @@ if (count($gameSaves) <= 2) {
                         </div>
                         <div class="card-footer d-flex justify-content-between align-items-center">
                             <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
-                            <a href="game_save?id=<?= $gameSave->game_saves_id ?>" class="btn btn-outline-primary btn-sm">
+                            <a href="game_save/<?= $gameSave->game_saves_id ?>" class="btn btn-outline-primary btn-sm">
                                 Open
                             </a>
                         </div>
                     </div>
                 </div>
-                <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) require '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
+                <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) include '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>

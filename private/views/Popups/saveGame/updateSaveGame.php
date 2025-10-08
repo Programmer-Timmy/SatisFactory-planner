@@ -1,11 +1,11 @@
 <?php
-global $gameSave;
+global $modalGameSave;
 global $changelog;
 $users = Users::getAllValidatedUsers();
-$allowedUsers = GameSaves::getAllowedUsers($gameSave->id);
-$requestUsers = GameSaves::getRequestedUsers($gameSave->id);
+$allowedUsers = GameSaves::getAllowedUsers($modalGameSave->id);
+$requestUsers = GameSaves::getRequestedUsers($modalGameSave->id);
 
-$allowedUsers = array_filter($allowedUsers, fn($user) => $user->id !== $gameSave->owner_id);
+$allowedUsers = array_filter($allowedUsers, fn($user) => $user->id !== $modalGameSave->owner_id);
 
 $data = Users::filterUsers($users, $allowedUsers, $requestUsers);
 $roles = Roles::getAllRoles();
@@ -13,7 +13,7 @@ $users = $data['users'];
 $allowedUsers = $data['allowedUsers'];
 $requestUsers = $data['requestUsers'];
 
-$dedicatedServer = DedicatedServer::getBySaveGameId($gameSave->id);
+$dedicatedServer = DedicatedServer::getBySaveGameId($modalGameSave->id);
 
 if (isset($_GET['dedicatedServerId'])) {
     if (!GameSaves::checkAccessOwner($_GET['dedicatedServerId'])) {
@@ -26,7 +26,7 @@ if (isset($_GET['dedicatedServerId'])) {
     exit();
 }
 ?>
-<div class="modal fade" id="UpdatedSaveGame_<?= $gameSave->id ?>" tabindex="-1" aria-labelledby="popupModalLabel"
+<div class="modal fade" id="UpdatedSaveGame_<?= $modalGameSave->id ?>" tabindex="-1" aria-labelledby="popupModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -35,23 +35,23 @@ if (isset($_GET['dedicatedServerId'])) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="post" enctype="multipart/form-data" id="updateSaveGameForm_<?= $gameSave->id ?>"
+                <form method="post" enctype="multipart/form-data" id="updateSaveGameForm_<?= $modalGameSave->id ?>"
                       autocomplete="off">
-                    <input type="hidden" name="id" value="<?= $gameSave->id ?>">
+                    <input type="hidden" name="id" value="<?= $modalGameSave->id ?>">
 
                     <div class="mb-3">
                         <label for="UpdatedSaveGameName" class="form-label fw-semibold">Save Game Name</label>
                         <input type="text" class="form-control" name="UpdatedSaveGameName"
-                               value="<?= $gameSave->title ?>" placeholder="e.g. Big Little Factory"
+                               value="<?= $modalGameSave->title ?>" placeholder="e.g. Big Little Factory"
                                required>
                     </div>
                     <div class="mb-4">
                         <label for="UpdatedSaveGameImage" class="form-label fw-semibold">Save Game Image <small
                                     class="text-muted">(optional)</small></label>
-                        <?php if ($gameSave->image && $gameSave->image !== 'default_img.png'): ?>
+                        <?php if ($modalGameSave->image && $modalGameSave->image !== 'default_img.png'): ?>
                             <div class="mb-3">
                                 <div class="card w-100">
-                                    <img src="/image/<?= htmlspecialchars($gameSave->image) ?>" alt="Save Game Image"
+                                    <img src="/image/<?= htmlspecialchars($modalGameSave->image) ?>" alt="Save Game Image"
                                          class="card-img-top img-fluid" style="max-height: 200px; object-fit: cover;">
                                     <div class="card-body p-2">
                                         <p class="card-text text-center mb-0">Current Save Image</p>
@@ -64,7 +64,7 @@ if (isset($_GET['dedicatedServerId'])) {
                         <div class="form-text">Uploading an image is optional but helps identify your save.</div>
                     </div>
 
-                    <div id="userList_<?= $gameSave->id ?>">
+                    <div id="userList_<?= $modalGameSave->id ?>">
                             <div class="mb-3">
                                 <h6 class="allowed <?= $allowedUsers ? '' : 'hidden' ?>">Allowed users</h6>
                                 <input type="hidden" name="allowed_users">
@@ -82,7 +82,7 @@ if (isset($_GET['dedicatedServerId'])) {
                                 <h6>Add user</h6>
                                 <input type="text" style="display:none">
                                 <input type="search" name="Search345" class="form-control mb-2"
-                                       id="search_<?= $gameSave->id ?>"
+                                       id="search_<?= $modalGameSave->id ?>"
                                        placeholder="Search for user" autocomplete="SearchUser1232">
                                 <div class="users">
                                 </div>
@@ -97,12 +97,12 @@ if (isset($_GET['dedicatedServerId'])) {
                     <div class="mb-3">
                         <button class="btn btn-primary w-100 dedicatedServerButton" type="button"
                                 data-bs-toggle="collapse"
-                                data-bs-target="#dedicatedServerCollapse<?= $gameSave->id ?>" aria-expanded="false"
-                                aria-controls="dedicatedServerCollapse<?= $gameSave->id ?>">
+                                data-bs-target="#dedicatedServerCollapse<?= $modalGameSave->id ?>" aria-expanded="false"
+                                aria-controls="dedicatedServerCollapse<?= $modalGameSave->id ?>">
                             <i class="fas fa-server"></i>
                             Edit dedicated server credentials
                         </button>
-                        <div class="collapse" id="dedicatedServerCollapse<?= $gameSave->id ?>">
+                        <div class="collapse" id="dedicatedServerCollapse<?= $modalGameSave->id ?>">
                             <div class="card card-body rounded-top-0">
                                 <div class="mb-3">
                                     <label for="dedicatedServerIp" class="form-label">Server IP</label>
@@ -137,7 +137,7 @@ if (isset($_GET['dedicatedServerId'])) {
                                     </div>
                                 </div>
                                 <?php if ($dedicatedServer): ?>
-                                    <a href="game_saves?dedicatedServerId=<?= $gameSave->id ?>"
+                                    <a href="game_saves?dedicatedServerId=<?= $modalGameSave->id ?>"
                                        class="btn btn-danger">Remove dedicated server</a>
                                 <?php endif; ?>
                             </div>
@@ -149,7 +149,7 @@ if (isset($_GET['dedicatedServerId'])) {
                     </div>
                 </form>
                 <div class="modal-footer pb-0 px-0">
-                    <button type="submit" class="btn btn-primary me-0" form="updateSaveGameForm_<?= $gameSave->id ?>">
+                    <button type="submit" class="btn btn-primary me-0" form="updateSaveGameForm_<?= $modalGameSave->id ?>">
                         Update
                         Save Game
                     </button>
@@ -161,15 +161,15 @@ if (isset($_GET['dedicatedServerId'])) {
 <script src="/js/userSelect.js?v=<?= $changelog['version'] ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const element = $('#userList_<?= $gameSave->id ?>');
-        const form = $('#updateSaveGameForm_<?= $gameSave->id ?>');
-        const userSelect = new UserSelect(element, <?= json_encode($roles) ?>, form, <?= $gameSave->id ?> , <?= json_encode($allowedUsers) ?>, <?= json_encode($requestUsers) ?>);
+        const element = $('#userList_<?= $modalGameSave->id ?>');
+        const form = $('#updateSaveGameForm_<?= $modalGameSave->id ?>');
+        const userSelect = new UserSelect(element, <?= json_encode($roles) ?>, form, <?= $modalGameSave->id ?> , <?= json_encode($allowedUsers) ?>, <?= json_encode($requestUsers) ?>);
     });
 </script>
 
 <script>
-    document.getElementById('update_save_game_line_<?= $gameSave->id ?>').addEventListener('click', function () {
-        const popupModal = new bootstrap.Modal(document.getElementById('UpdatedSaveGame_<?= $gameSave->id ?>'));
+    document.getElementById('update_save_game_line_<?= $modalGameSave->id ?>').addEventListener('click', function () {
+        const popupModal = new bootstrap.Modal(document.getElementById('UpdatedSaveGame_<?= $modalGameSave->id ?>'));
         popupModal.show();
     });
 </script>

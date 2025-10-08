@@ -90,7 +90,7 @@ export class DedicatedServer {
         const token = this._getCsrfToken();
         return new Promise(function (resolve, reject) {
             $.ajax({
-                url: 'dedicatedServerAPI/healthCheck', // Replace with your actual PHP file path
+                url: '/dedicatedServerAPI/healthCheck', // Replace with your actual PHP file path
                 type: 'POST',
                 data: {
                     saveGameId: gameSaveId
@@ -119,7 +119,7 @@ export class DedicatedServer {
         const token = this._getCsrfToken();
         return new Promise(function (resolve, reject) {
             $.ajax({
-                url: 'dedicatedServerAPI/queryServerState', // Replace with your actual PHP file path
+                url: '/dedicatedServerAPI/queryServerState', // Replace with your actual PHP file path
                 type: 'POST',
                 data: {
                     saveGameId: gameSaveId
