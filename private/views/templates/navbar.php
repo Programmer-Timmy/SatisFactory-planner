@@ -38,9 +38,17 @@ if (isset($_SESSION['userId'])) {
     if (!$saveGames) {
         $navItems[] = new NavItem('/game_saves', 'Save Games', $require === '/game_saves');
     } else {
-        foreach ($saveGames as $saveGame) {
-            $saveGamesDropdownItems[] = new NavItem('/game_save?id=' . $saveGame->id, htmlspecialchars($saveGame->title), $require === '/game_save' && $_GET['id'] == $saveGame->id);
+        $uri = $_SERVER['REQUEST_URI'];
+        $gameSaveId = null;
+        if (preg_match('#^/game_save/(\d+)(/.*)?$#', $uri, $matches)) {
+            $gameSaveId = (int)$matches[1];
         }
+
+        foreach ($saveGames as $saveGame) {
+            $saveGamesDropdownItems[] = new NavItem('/game_save/' . $saveGame->id, htmlspecialchars($saveGame->title), $gameSaveId === $saveGame->id);
+        }
+        //http://sataisfactoryplanner.nl/game_save/9 or http://sataisfactoryplanner.nl/game_save/9/production_line/60
+
         $navItems[] = new DropdownNavItem('/game_saves', 'Save Games', $saveGamesDropdownItems, $require === '/game_saves');
     }
 } else {
@@ -69,7 +77,7 @@ $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpf
 </style>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/home">Satisfactroy Planner</a>
+        <a class="navbar-brand" href="/home">Satisfactory Planner</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -171,7 +179,6 @@ $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpf
         </div>
     </div>
 </nav>
-
 
 <script>
     $('#themeToggle').change(function () {

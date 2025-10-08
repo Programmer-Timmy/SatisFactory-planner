@@ -19,7 +19,7 @@ if ($_POST && isset($_POST['productionLineName'])) {
 
         ProductionLines::updateProductionLine($productLineId, $productionLineName, $active);
 
-        header('Location: /production_line?id=' . $productLineId);
+        header("Location: /game_save/$productLine->game_saves_id/production_line/$productLineId");
         exit();
     }
 }

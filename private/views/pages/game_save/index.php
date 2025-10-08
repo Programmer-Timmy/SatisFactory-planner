@@ -1,10 +1,10 @@
 <?php
-
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header('Location: /game_saves');
     exit();
 }
 
+$gameSaveId = $_GET['id'];
 $gameSave = GameSaves::getSaveGameById($_GET['id']);
 $outputs = Outputs::getAllOutputs($_GET['id']);
 
@@ -29,7 +29,7 @@ foreach ($productionLines as $productionLine) {
 
 if (isset($_GET['productDelete']) && is_numeric($_GET['productDelete']) && !$viewOnly) {
     ProductionLines::deleteProductionLine($_GET['productDelete']);
-    header('Location: game_save?id=' . $_GET['id']);
+    header('Location: /game_save/' . $_GET['id']);
     exit();
 }
 
@@ -37,7 +37,7 @@ GameSaves::setLastVisitedSaveGame($gameSave->id);
 
 if (isset($_GET['layoutType'])) {
     GameSaves::changeCardView($_GET['id'], $_GET['layoutType']);
-    header('Location: game_save?id=' . $_GET['id']);
+    header('Location:/game_save/' . $_GET['id']);
     exit();
 }
 ?>
@@ -79,7 +79,7 @@ if (isset($_GET['layoutType'])) {
             return new Promise(function (resolve, reject) {
                 $.ajax({
                     type: 'POST',
-                    url: 'powerProduction/get',
+                    url: '/powerProduction/get',
                     dataType: 'json',
                     headers: {'X-CSRF-Token': getCsrfToken()},
                     data: {
@@ -194,6 +194,10 @@ if (isset($_GET['layoutType'])) {
             <div class="col-lg-3"></div>
             <h1 class="text-center pb-3 col-lg-6">Game Save - <?= $gameSave->title ?></h1>
             <div class="col-lg-3 text-end">
+                <a href="/game_save/<?= $gameSave->id ?>/dedicated_server"
+                   class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+                   data-bs-title="Dedicated Server Status"><i class="fa-solid fa-server"></i>
+                </a>
                 <button type="button" id="showSaveGameHelp" class="btn btn-info" data-bs-toggle="tooltip"
                         data-bs-placement="top" data-bs-title="Need help? Click here!"><i
                             class="fa-regular fa-question-circle" aria-hidden="true"></i>
@@ -297,13 +301,13 @@ if (isset($_GET['layoutType'])) {
 
                                     </div>
                                     <div class="card-footer d-flex justify-content-between">
-                                        <a href="production_line?id=<?= $productionLine->id ?>" class="btn btn-primary"
+                                        <a href="/game_save/<?= $gameSaveId ?>/production_line/<?= $productionLine->id ?>" class="btn btn-primary"
                                            data-bs-toggle="tooltip" data-bs-placement="top"
                                            data-bs-title="Open Production Line">
                                             <i class="fa-solid fa-gears"></i> Open
                                         </a>
                                         <?php if (!$viewOnly): ?>
-                                            <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"
+                                            <a href="/game_save/<?= $gameSaveId ?>/?productDelete=<?= $productionLine->id ?>"
                                                data-bs-toggle="tooltip" data-bs-placement="top"
                                                data-bs-title="Delete Production Line"
                                                onclick="return confirm('Are you sure you want to delete this production line?')"
@@ -386,7 +390,7 @@ if (isset($_GET['layoutType'])) {
                                     </td>
                                     <td>
                                         <div>
-                                            <a href="production_line?id=<?= $productionLine->id ?>"
+                                            <a href="/game_save/<?= $gameSaveId ?>/production_line/<?= $productionLine->id ?>"
                                                class="btn btn-primary"
                                                data-bs-toggle="tooltip" data-bs-placement="top"
                                                data-bs-title="Open Production Line"><i
@@ -530,15 +534,15 @@ if (empty($productionLines)) {
 <?php
 global $changelog;
 if (DedicatedServer::getBySaveGameId($gameSave->id) && GameSaves::checkAccess($gameSave->id, $_SESSION['userId'], Permission::SERVER_VIEW)): ?>
-    <script src="js/dedicatedServer.js?v=<?= $changelog['version'] ?>"></script>
+    <script src="/js/dedicatedServer.js?v=<?= $changelog['version'] ?>"></script>
     <script>
         new DedicatedServer(<?= $gameSave->id ?>);
     </script>
 
 <?php endif; ?>
 <?php if (!$viewOnly) {
-    require_once '../private/views/Popups/productionLine/addProductionLine.php';
-    require_once '../private/views/Popups/saveGame/updatePowerProduction.php';
+    require '../private/views/Popups/productionLine/addProductionLine.php';
+    require __DIR__ .  '../../../Popups/saveGame/updatePowerProduction.php';
 } ?>
 <?php require_once '../private/views/Popups/saveGame/helpGameSave.php'; ?>
 

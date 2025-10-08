@@ -15,7 +15,7 @@ $google_oauth_version = 'v3';
 
 if (isset($_POST['type'])) {
     if ($_POST['type'] === 'linkGoogle') {
-        $redirect = Users::linkGoogleAccount($_POST['googleId'], $_POST['email'] , $_POST['password']);
+        $redirect = Users::linkGoogleAccount($_POST['googleId'], $_POST['email'], $_POST['password']);
         if ($redirect) {
             header('Location: https://satisfactoryplanner.timmygamer.nl/' . $redirect);
             exit;
@@ -133,75 +133,81 @@ if (isset($_GET['code']) && !empty($_GET['code']) && !isset($_POST['type'])) {
 <div class="container mt-5 ">
 
     <?php if ($existingUser && !$error) : ?>
-    <div class="d-flex justify-content-center">
+        <div class="d-flex justify-content-center">
 
-        <div class="col-md-6">
-            <div class="card shadow-sm p-4">
-                <h1 class="mb-3">Welcome back, <?= htmlspecialchars($existingUser->username) ?>!</h1>
-                <p>Do you want to link your Google account to your existing account?</p>
+            <div class="col-md-6">
+                <div class="card shadow-sm p-4">
+                    <h1 class="mb-3">Welcome back, <?= htmlspecialchars($existingUser->username) ?>!</h1>
+                    <p>Do you want to link your Google account to your existing account?</p>
 
-                <form method="post" class="mb-3">
-                    <input type="hidden" name="type" value="linkGoogle">
-                    <input type="hidden" name="googleId" value="<?= htmlspecialchars($userinfo['id']) ?>">
-                    <input type="hidden" name="email" value="<?= htmlspecialchars($userinfo['email']) ?>">
+                    <form method="post" class="mb-3">
+                        <input type="hidden" name="type" value="linkGoogle">
+                        <input type="hidden" name="googleId" value="<?= htmlspecialchars($userinfo['id']) ?>">
+                        <input type="hidden" name="email" value="<?= htmlspecialchars($userinfo['email']) ?>">
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Enter your password (Only when linking
-                            accounts):</label>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Password"
-                               required>
-                    </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Enter your password (Only when linking
+                                accounts):</label>
+                            <input type="password" id="password" name="password" class="form-control"
+                                   placeholder="Password"
+                                   required>
+                        </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Yes, link account</button>
-                        <a href="/login" class="btn btn-secondary">No, return to login</a>
-                    </div>
-                </form>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Yes, link account</button>
+                            <a href="/login" class="btn btn-secondary">No, return to login</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
     <?php elseif (isset($userinfo) && !$showFullScreenError) : ?>
-        <div class="col-md-6">
-            <div class="card shadow-sm p-4">
-                <h1 class="mb-3">Welcome, <?= htmlspecialchars($userinfo['name']) ?>!</h1>
-                <p>Do you want to create an account with the following details?</p>
-                <p><strong>Email:</strong> <?= htmlspecialchars($userinfo['email']) ?></p>
+        <div class="d-flex justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm p-4">
+                    <h1 class="mb-3">Welcome, <?= htmlspecialchars($userinfo['name']) ?>!</h1>
+                    <p>Do you want to create an account with the following details?</p>
+                    <p><strong>Email:</strong> <?= htmlspecialchars($userinfo['email']) ?></p>
 
-                <form method="post" class="mb-3">
-                    <?php if ($error) : ?>
-                        <div class="alert alert-danger" role="alert">
-                            <?= $error ?>
+                    <form method="post" class="mb-3">
+                        <?php if ($error) : ?>
+                            <div class="alert alert-danger" role="alert">
+                                <?= $error ?>
+                            </div>
+                        <?php endif; ?>
+                        <input type="hidden" name="type" value="createUser">
+                        <input type="hidden" name="googleId" value="<?= htmlspecialchars($userinfo['id']) ?>">
+                        <input type="hidden" name="email" value="<?= htmlspecialchars($userinfo['email']) ?>">
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Choose a username:</label>
+                            <input type="text" id="username" name="username" class="form-control" placeholder="Username"
+                                   required>
                         </div>
-                    <?php endif; ?>
-                    <input type="hidden" name="type" value="createUser">
-                    <input type="hidden" name="googleId" value="<?= htmlspecialchars($userinfo['id']) ?>">
-                    <input type="hidden" name="email" value="<?= htmlspecialchars($userinfo['email']) ?>">
 
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Choose a username:</label>
-                        <input type="text" id="username" name="username" class="form-control" placeholder="Username"
-                               required>
-                    </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Choose a password:</label>
+                            <input type="password" id="password" name="password" class="form-control"
+                                   placeholder="Password"
+                                   required>
+                        </div>
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Choose a password:</label>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Password"
-                               required>
-                    </div>
-
-                    <div class="mb-3 pb-2">
-                        <label for="password" class="form-label">Confirm your password:</label>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Password"
-                               required>
-                    </div>
-                    <p class="small text-muted">By clicking create account, you agree to our <a href="/privacy">Privacy Policy</a>.</p>
+                        <div class="mb-3 pb-2">
+                            <label for="password" class="form-label">Confirm your password:</label>
+                            <input type="password" id="password" name="password" class="form-control"
+                                   placeholder="Password"
+                                   required>
+                        </div>
+                        <p class="small text-muted">By clicking create account, you agree to our <a href="/privacy">Privacy
+                                Policy</a>.</p>
 
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Yes, create account</button>
-                        <a href="/login" class="btn btn-secondary">No, return to login</a>
-                    </div>
-                </form>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Yes, create account</button>
+                            <a href="/login" class="btn btn-secondary">No, return to login</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     <?php elseif ($error) : ?>

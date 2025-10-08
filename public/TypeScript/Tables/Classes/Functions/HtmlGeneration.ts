@@ -104,19 +104,7 @@ export class HtmlGeneration {
         `;
         }).join('');
 
-        const emptyRowHTML = `
-        <tr>
-            <td class="m-0 p-0 w-75">
-                <select name="imports_item_id[]" class="form-control rounded-0">
-                    ${ItemOptions.replace(/<option /, '<option selected ')} <!-- Selects the first option -->
-                </select>
-            </td>
-            <td class="m-0 p-0 w-25">
-                <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0">
-            </td>
-        </tr>`;
-
-        return rowsHTML + emptyRowHTML; // Combine the existing rows with the empty row
+        return rowsHTML; // Combine the existing rows with the empty row
     }
 
     /**

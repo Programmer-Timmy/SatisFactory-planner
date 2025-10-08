@@ -1,9 +1,12 @@
 <?php
-global $gameSave;
-global $changelog;
+//global $gameSave;
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    die('Invalid ID');
+}
 
+global $changelog;
 $powerProductionBuildings = buildings::getPowerBuildings();
-$powerProduction = PowerProduction::getPowerProduction($gameSave->id);
+$powerProduction = PowerProduction::getPowerProduction($_GET['id']);
 ?>
 
 <div class="modal fade modal-lg" id="updatePowerProduction" tabindex="-1" aria-labelledby="popupModalLabel"
@@ -118,4 +121,4 @@ $powerProduction = PowerProduction::getPowerProduction($gameSave->id);
     });
 </script>
 
-<script src="js/powerProduction.js?v=<?=$changelog['version']?>"></script>
+<script src="/js/powerProduction.js?v=<?=$changelog['version']?>"></script>
