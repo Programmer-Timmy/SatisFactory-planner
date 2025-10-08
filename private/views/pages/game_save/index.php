@@ -40,6 +40,9 @@ if (isset($_GET['layoutType'])) {
     header('Location:/game_save/' . $_GET['id']);
     exit();
 }
+
+$accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId'], Permission::SERVER_MANAGE);
+
 ?>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
@@ -194,10 +197,12 @@ if (isset($_GET['layoutType'])) {
             <div class="col-lg-3"></div>
             <h1 class="text-center pb-3 col-lg-6">Game Save - <?= $gameSave->title ?></h1>
             <div class="col-lg-3 text-end">
-                <a href="/game_save/<?= $gameSave->id ?>/dedicated_server"
-                   class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
-                   data-bs-title="Dedicated Server Status"><i class="fa-solid fa-server"></i>
-                </a>
+                <?php if ($accessDedicatedServer): ?>
+                    <a href="/game_save/<?= $gameSave->id ?>/dedicated_server"
+                       class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+                       data-bs-title="Dedicated Server Status"><i class="fa-solid fa-server"></i>
+                    </a>
+                <?php endif; ?>
                 <button type="button" id="showSaveGameHelp" class="btn btn-info" data-bs-toggle="tooltip"
                         data-bs-placement="top" data-bs-title="Need help? Click here!"><i
                             class="fa-regular fa-question-circle" aria-hidden="true"></i>
