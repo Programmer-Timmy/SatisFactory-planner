@@ -6,22 +6,35 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $saveGameId = (int)htmlspecialchars($_GET['id']);
 
+$access = GameSaves::checkAccess($saveGameId, $_SESSION['userId'], Permission::SERVER_MANAGE);
+
+if (!$access) {
+    header('Location: /game_save/' . $saveGameId);
+    exit();
+}
+
 $dedicatedServer = DedicatedServer::getBySaveGameId($saveGameId);
 
-try {
-    $client = new APIClient($dedicatedServer->server_ip, $dedicatedServer->server_port, $dedicatedServer->server_token);
-    $response = $client->post('HealthCheck', ['ClientCustomData' => ''], timeout: 3);
+if ($dedicatedServer) {
+    try {
+        $client = new APIClient($dedicatedServer->server_ip, $dedicatedServer->server_port, $dedicatedServer->server_token);
+        $response = $client->post('HealthCheck', ['ClientCustomData' => ''], timeout: 3);
 
-    $healthy = $response['response_code'] === 200 && $response['data']['health'] === 'healthy';
+        $healthy = $response['response_code'] === 200 && $response['data']['health'] === 'healthy';
 
-    $queryState = $client->post('QueryServerState');
+        $queryState = $client->post('QueryServerState');
 
-    $sessions = $client->post('EnumerateSessions')['data']['sessions'] ?? [];
+        $sessions = $client->post('EnumerateSessions')['data']['sessions'] ?? [];
 
-    $serverState = $queryState['data'] ?? null;
-} catch (Exception $e) {
+        $serverState = $queryState['data'] ?? null;
+    } catch (Exception $e) {
+        $healthy = false;
+        $serverState = null;
+    }
+} else {
     $healthy = false;
     $serverState = null;
+    $sessions = [];
 }
 
 function cleanGamePhase($phaseString) {
@@ -35,7 +48,19 @@ function cleanGamePhase($phaseString) {
 }
 
 ?>
+
 <div class="container mt-4">
+    <?php if (!$dedicatedServer): ?>
+        <div class="alert alert-warning d-flex justify-content-between align-items-center"><i class="fa-solid fa-triangle-exclamation me-2"></i>No dedicated server found for this save. Please set up and link a dedicated server first.
+            <a href="/game_save/<?= $saveGameId ?>" class="btn btn-primary btn-sm ms-3">
+                <i class="fa-solid fa-arrow-left"></i> Back to Game Save
+            </a>
+        </div>
+    </div>
+    <?php
+    exit();
+    endif; ?>
+
     <div class="row">
         <div class="col-md-12 d-flex justify-content-between align-items-center">
             <h1 class="mb-4">Dedicated Server Status</h1>
@@ -173,6 +198,20 @@ function cleanGamePhase($phaseString) {
                     Use the actions above to control the server as needed. This is still a work in progress, so
                     expect more features in the future!
             </div>
+            <?php if (!$healthy): ?>
+                <div class="alert alert-warning d-flex align-items-center" role="alert"><i
+                            class="fa-solid fa-triangle-exclamation me-2"></i>
+                    <p class="mb-0">
+                        Is your dedicated server running? Then you dont have a correct SSL
+                        certificate setup. Please check "✅ Creating a Proper Self-Signed Certificate" in the
+                        <a href="https://programmer-timmy.github.io/satisfactory-dedicated-server-sdk/docs/guides/getting-started/#ssl-certificates-and-hostname-considerations"
+                           target="_blank" rel="noopener">documentation</a> for more
+                        information on how to set it up.
+
+                        This is now enforced for security reasons (man in the middle attacks etc).
+                    </p>
+                </div>
+            <?php endif; ?>
             <?php else: ?>
                 <div class="alert alert-warning">No dedicated server found for this save.</div>
             <?php endif; ?>

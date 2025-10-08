@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.14.1",
+    "date": "September 1 2025",
+    "changes": [
+      "Fixed: Blank page when no access to dedicated server"
+    ]
+  },
+  {
     "version": "1.14.0",
     "date": "September 1 2025",
     "changes": [
