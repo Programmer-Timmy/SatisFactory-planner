@@ -95,6 +95,20 @@ if ($_GET && isset($_GET['request'])) {
     exit();
 }
 
+if ($_GET && isset($_GET['hide'])) {
+    $requestId = $_GET['hide'];
+    GameSaves::HideGameSave($requestId, $_SESSION['userId']);
+    header('Location:/game_saves');
+    exit();
+}
+
+if ($_GET && isset($_GET['unhide'])) {
+    $requestId = $_GET['unhide'];
+    GameSaves::UnHideGameSave($requestId, $_SESSION['userId']);
+    header('Location:/game_saves');
+    exit();
+}
+
 $Invites = GameSaves::getRequests($_SESSION['userId']);
 
 $class = 'col-md-6 col-lg-4';
@@ -102,10 +116,22 @@ if (count($gameSaves) <= 2) {
     $class = 'col-md-6';
 }
 
+$hiddenGameSaves = [];
+$visibleGameSaves = [];
+
+foreach ($gameSaves as $save) {
+    if ($save->hidden) {
+        $hiddenGameSaves[] = $save;
+    } else {
+        $visibleGameSaves[] = $save;
+    }
+}
+
+
 
 ?>
 <div class="container">
-        <?php GlobalUtility::displayFlashMessages() ?>
+    <?php GlobalUtility::displayFlashMessages() ?>
     <div class="row align-items-center">
         <div class="d-none d-md-block col-3 "></div>
         <div class="col-9 col-md-6 text-md-center text-start">
@@ -218,7 +244,7 @@ if (count($gameSaves) <= 2) {
     <?php else : ?>
         <!--    show cards-->
         <div class="row <?= count($gameSaves) == 1 ? "justify-content-center" : "" ?>">
-            <?php foreach ($gameSaves as $gameSave) :
+            <?php foreach ($visibleGameSaves as $gameSave) :
                 global $modalGameSave;
                 $modalGameSave = $gameSave;
                 $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
@@ -228,7 +254,8 @@ if (count($gameSaves) <= 2) {
                         <div class="position-relative">
                             <a href="game_save/<?= $gameSave->game_saves_id ?>"
                                class="card-link text-black text-decoration-none">
-                                <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover" style="max-height: 400px" alt="...">
+                                <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover"
+                                     style="max-height: 400px" alt="...">
                             </a>
                             <?php if (in_array(Permission::SAVEGAME_DELETE->value, $gameSave->permissions)) : ?>
                                 <a class="btn btn-danger position-absolute top-0 end-0"
@@ -250,15 +277,90 @@ if (count($gameSaves) <= 2) {
                         </div>
                         <div class="card-footer d-flex justify-content-between align-items-center">
                             <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
-                            <a href="game_save/<?= $gameSave->game_saves_id ?>" class="btn btn-outline-primary btn-sm">
-                                Open
-                            </a>
+                            <div>
+                                <a href="game_saves?hide=<?= $gameSave->game_saves_id ?>"
+                                   class="btn btn-outline-secondary btn-sm"
+                                   data-bs-toggle="tooltip" data-bs-placement="top" title="Hide"><i
+                                            class="fa-solid fa-eye-slash"></i></a>
+                                <a href="game_save/<?= $gameSave->game_saves_id ?>"
+                                   class="btn btn-outline-primary btn-sm">
+                                    Open
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) include '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
             <?php endforeach; ?>
         </div>
+
+        <!-- Toggle button -->
+        <div class="d-flex justify-content-center mt-4">
+            <button class="btn btn-outline-primary mb-3 " type="button" data-bs-toggle="collapse" data-bs-target="#hiddenGameSavesCollapse" aria-expanded="false" aria-controls="hiddenGameSavesCollapse">
+                Hidden Game Saves (<?= count($hiddenGameSaves) ?>)
+            </button>
+        </div>
+
+        <!-- Collapsible content -->
+        <div class="collapse" id="hiddenGameSavesCollapse">
+            <div class="row mt-3 <?= count($hiddenGameSaves) == 1 ? "justify-content-center" : "" ?>">
+                <?php foreach ($hiddenGameSaves as $gameSave) :
+                    global $modalGameSave;
+                    $modalGameSave = $gameSave;
+                    $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
+                    ?>
+                    <div class="d-flex align-items-stretch <?= $class ?> mt-3">
+                        <div class="card h-100 w-100">
+                            <div class="position-relative">
+                                <a href="game_save/<?= $gameSave->game_saves_id ?>" class="card-link text-black text-decoration-none">
+                                    <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover" style="max-height: 400px" alt="...">
+                                </a>
+
+                                <?php if (in_array(Permission::SAVEGAME_DELETE->value, $gameSave->permissions)) : ?>
+                                    <a class="btn btn-danger position-absolute top-0 end-0"
+                                       href="game_saves?delete=<?= $gameSave->game_saves_id ?>"
+                                       onclick="return confirm('Delete this game save?')"
+                                       data-bs-toggle="tooltip" data-bs-placement="top" title="Delete">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                <?php endif; ?>
+
+                                <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) : ?>
+                                    <button class="btn btn-primary position-absolute top-0 start-0"
+                                            id="update_save_game_line_<?= $gameSave->id ?>"
+                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
+                                        <i class="fa-solid fa-pencil"></i>
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="card-body">
+                                <h5 class="card-title"><?= $gameSave->title ?></h5>
+                                <p class="card-text">Owner: <?= $gameSave->Owner ?></p>
+                            </div>
+
+                            <div class="card-footer d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
+                                <div>
+                                    <a href="game_saves?unhide=<?= $gameSave->game_saves_id ?>"
+                                       class="btn btn-outline-secondary btn-sm"
+                                       data-bs-toggle="tooltip" data-bs-placement="top" title="Unhide">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <a href="game_save/<?= $gameSave->game_saves_id ?>"
+                                       class="btn btn-outline-primary btn-sm">
+                                        Open
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) include '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
     <?php endif; ?>
 </div>
 
