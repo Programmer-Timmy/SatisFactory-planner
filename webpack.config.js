@@ -5,6 +5,7 @@ module.exports = {
         tables: './public/TypeScript/Tables/index.ts',          // Entry point for Tables
         powerProduction: './public/TypeScript/PowerProduction/index.ts',  // Entry point for Power Production
         dedicatedServer: './public/TypeScript/DedicatedServer/index.ts',  // Entry point for Dedicated Server
+        dedicatedServerDashboard: './public/TypeScript/DedicatedServerDashboard/index.ts', // Entry point for Dedicated Server Dashboard
         userSelect: './public/TypeScript/UserSelect/index.ts', // Entry point for User Select
     },
     output: {
@@ -35,13 +36,16 @@ module.exports = {
         splitChunks: {
             cacheGroups: {
                 dedicatedServer: {
-                    name: 'dedicatedServer',
                     test: /DedicatedServer/,  // Matches only the dedicatedServer files
                     chunks: 'all',
                     enforce: true,
                 },
+                dedicatedServerDashboard: {
+                    test: /DedicatedServerDashboard/,  // Matches only the dedicatedServerDashboard files
+                    chunks: 'all',
+                    enforce: true,
+                },
                 userSelect: {
-                    name: 'userSelect',
                     test: /UserSelect/,  // Matches only the userSelect files
                     chunks: 'all',
                     enforce: true,

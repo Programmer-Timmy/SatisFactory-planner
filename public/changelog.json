@@ -1,14 +1,21 @@
 [
   {
+    "version": "1.14.2",
+    "date": "October 8 2025",
+    "changes": [
+      "Cleaned up: Stupid code from me :)"
+    ]
+  },
+  {
     "version": "1.14.1",
-    "date": "September 1 2025",
+    "date": "October 8 2025",
     "changes": [
       "Fixed: Blank page when no access to dedicated server"
     ]
   },
   {
     "version": "1.14.0",
-    "date": "September 1 2025",
+    "date": "October 8 2025",
     "changes": [
       "Changed: Url's are now better structured by using /{id} instead of ?id={id}",
       "Added: /game_save/{id}/dedicated_server endpoint with 2 functions to download save game and shut it down.",

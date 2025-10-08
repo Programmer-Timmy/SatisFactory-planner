@@ -280,7 +280,7 @@
         $this->authToken = $authToken;
 
         // Where to store certificates
-        $this->certDir = __DIR__ . '../certs';
+        $this->certDir = __DIR__ . '/../certs';
         if (!is_dir($this->certDir)) {
             mkdir($this->certDir, 0777, true);
         }
