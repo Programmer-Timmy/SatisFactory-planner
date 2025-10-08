@@ -263,7 +263,7 @@ class GlobalUtility {
                                              data-ingredient-name="<?= htmlspecialchars($ingredient->name) ?>">
                                             <img src="/image/items/<?= strtolower(str_replace('_', '-', $ingredient->class_name)) ?>_256.png"
                                                  title="<?= $ingredient->name ?>"
-                                                 class="img-fluid" style="width: 26px; height: 26px;">
+                                                 class="img-fluid" style="width: 26px; height: 26px;" loading="lazy">
                                             <small class="text-muted"><?= round($ingredient->quantity, 5) ?></small>
                                         </div>
                                     <?php endforeach; ?>
@@ -275,7 +275,7 @@ class GlobalUtility {
                                 <?php if ($recipe->building): ?>
                                     <img src="/image/items/<?= strtolower(str_ireplace('build', 'desc', str_replace('_', '-', $recipe->building[0]->class_name))) ?>_256.png"
                                          title="<?= $recipe->building[0]->name ?>"
-                                         class="img-fluid" style="width: 26px; height: 26px;">
+                                         class="img-fluid" style="width: 26px; height: 26px;" loading="lazy">
                                 <?php endif; ?>
 
                                 <?php if ($recipe->products): ?>
@@ -286,7 +286,7 @@ class GlobalUtility {
                                              data-product-name="<?= htmlspecialchars($product->name) ?>">
                                             <img src="/image/items/<?= strtolower(str_replace('_', '-', $product->class_name)) ?>_256.png"
                                                  title="<?= $product->name ?>"
-                                                 class="img-fluid" style="width: 26px; height: 26px;">
+                                                 class="img-fluid" style="width: 26px; height: 26px;" loading="lazy">
                                             <small class="text-muted"><?= round($product->quantity, 5) ?></small>
                                         </div>
                                     <?php endforeach; ?>
