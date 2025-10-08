@@ -5,8 +5,8 @@ module.exports = {
         tables: './public/TypeScript/Tables/index.ts',          // Entry point for Tables
         powerProduction: './public/TypeScript/PowerProduction/index.ts',  // Entry point for Power Production
         dedicatedServer: './public/TypeScript/DedicatedServer/index.ts',  // Entry point for Dedicated Server
-        dedicatedServerDashboard: './public/TypeScript/DedicatedServerDashboard/index.ts', // Entry point for Dedicated Server Dashboard
         userSelect: './public/TypeScript/UserSelect/index.ts', // Entry point for User Select
+        dedicatedServerDashboard: './public/TypeScript/DedicatedServerDashboard/index.ts', // Entry point for Dedicated Server Dashboard
     },
     output: {
         filename: '[name].js',  // Output filenames will match the entry keys (e.g., tables.js, dedicatedServer.js, powerProduction.js)
@@ -31,21 +31,19 @@ module.exports = {
             },
         ],
     },
+    cache: false,
     // Only expose DedicatedServer and webpackChunk globally
     optimization: {
         splitChunks: {
             cacheGroups: {
-                dedicatedServer: {
-                    test: /DedicatedServer/,  // Matches only the dedicatedServer files
-                    chunks: 'all',
-                    enforce: true,
-                },
-                dedicatedServerDashboard: {
+                dedicatedServerDashboardGroup: {
+                    name: 'dedicatedServerDashboard',
                     test: /DedicatedServerDashboard/,  // Matches only the dedicatedServerDashboard files
                     chunks: 'all',
                     enforce: true,
                 },
-                userSelect: {
+                userSelectGroup: {
+                    name: 'userSelect',
                     test: /UserSelect/,  // Matches only the userSelect files
                     chunks: 'all',
                     enforce: true,

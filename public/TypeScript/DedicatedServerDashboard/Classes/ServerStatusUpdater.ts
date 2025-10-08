@@ -10,7 +10,7 @@ export class ServerStatusUpdater {
     private saveDownloadHandler?: SaveDownloadHandler;
     private sessions: Session[];
 
-    constructor(csrfToken: string, saveGameId: number, refreshIntervalMs: number = 60_000, sessions: Session[] = []) {
+    constructor(csrfToken: string, saveGameId: number, sessions: Session[] = [], refreshIntervalMs: number = 60_000) {
         this.csrfToken = csrfToken;
         this.saveGameId = saveGameId;
         this.refreshInterval = refreshIntervalMs;

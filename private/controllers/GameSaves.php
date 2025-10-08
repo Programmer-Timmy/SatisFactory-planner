@@ -78,6 +78,7 @@ class GameSaves {
                 'image',
                 'game_saves.id',
                 'game_saves.owner_id',
+                'hidden',
                 // JSON array of permission names
                 '(SELECT JSON_ARRAYAGG(p.name)
           FROM role_permission rp
@@ -456,5 +457,13 @@ class GameSaves {
      */
     public static function getSaveGameShares(int $id): mixed {
         return Database::getAll("users_has_game_saves", ['users_id', 'username'], ['users' => 'users.id = users_has_game_saves.users_id'], ['game_saves_id' => $id, 'accepted' => 1]);
+    }
+
+    public static function HideGameSave(mixed $requestId, mixed $userId) {
+        Database::update("users_has_game_saves", ['hidden'], [1], ['game_saves_id' => $requestId, 'users_id' => $userId]);
+    }
+
+    public static function UnhideGameSave(mixed $requestId, mixed $userId) {
+        Database::update("users_has_game_saves", ['hidden'], [0], ['game_saves_id' => $requestId, 'users_id' => $userId]);
     }
 }
