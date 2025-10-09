@@ -69,7 +69,7 @@ global $allowedIPs;
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="<?= $theme === 'styles-dark' ? 'dark' : 'light' ?>">
 <head>
     <!-- meta tags -->
     <meta charset="UTF-8">

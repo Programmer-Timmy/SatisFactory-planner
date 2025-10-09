@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.14.4",
+    "date": "October 9 2025",
+    "changes": [
+      "Fixed: view only input fields not visible in dark mode."
+    ]
+  },
+  {
     "version": "1.14.3",
     "date": "October 8 2025",
     "changes": [
