@@ -254,7 +254,8 @@ foreach ($gameSaves as $save) {
                         <div class="position-relative">
                             <a href="game_save/<?= $gameSave->game_saves_id ?>"
                                class="card-link text-black text-decoration-none">
-                                <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover"
+                                <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover savegame-image"
+
                                      style="max-height: 400px" alt="...">
                             </a>
                             <?php if (in_array(Permission::SAVEGAME_DELETE->value, $gameSave->permissions)) : ?>
@@ -294,6 +295,7 @@ foreach ($gameSaves as $save) {
             <?php endforeach; ?>
         </div>
 
+        <?php if (count($hiddenGameSaves) > 0) : ?>
         <!-- Toggle button -->
         <div class="d-flex justify-content-center mt-4">
             <button class="btn btn-outline-primary mb-3 " type="button" data-bs-toggle="collapse" data-bs-target="#hiddenGameSavesCollapse" aria-expanded="false" aria-controls="hiddenGameSavesCollapse">
@@ -360,6 +362,7 @@ foreach ($gameSaves as $save) {
                 <?php endforeach; ?>
             </div>
         </div>
+        <?php endif;?>
 
     <?php endif; ?>
 </div>

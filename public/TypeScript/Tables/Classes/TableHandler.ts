@@ -105,7 +105,9 @@ export class TableHandler {
         this.readTable<PowerTableRow>('power', PowerTableRow).then(result => {
             this.powerTableRows = result;
             this.saveToLocal();
-            this.showCacheAmount();
+            $(document).ready(() => {
+                this.showCacheAmount();
+            });
         }).catch(error => {
             console.error('Failed to load power table rows:', error);
         });
@@ -219,6 +221,8 @@ export class TableHandler {
      * @returns {void}
      */
     private showCacheAmount() {
+        // waint until document is loaded
+
         $('#cachedRecipes').html(this.recipeCache.length.toString());
         $('#cachedBuildings').html(this.buildingCache.length.toString());
     }

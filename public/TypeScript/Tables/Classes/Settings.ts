@@ -12,8 +12,7 @@ export class Settings {
     }
 
     public applyChanges() {
-        const url = new URL(window.location.href);
-        const productionLineId = parseInt(url.searchParams.get('id') as string);
+        const productionLineId = parseInt(<string>$('#productionLineId').val());
 
         const autoImportExportCheckbox: HTMLInputElement = document.getElementById('auto_import_export') as HTMLInputElement;
         const autoPowerMachineCheckbox: HTMLInputElement = document.getElementById('auto_power_machine') as HTMLInputElement;
