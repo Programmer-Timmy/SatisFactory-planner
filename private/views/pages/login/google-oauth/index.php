@@ -122,8 +122,7 @@ if (isset($_GET['code']) && !empty($_GET['code']) && !isset($_POST['type'])) {
         'client_id' => $google_oauth_client_id,
         'redirect_uri' => $google_oauth_redirect_uri,
         'scope' => 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
-        'access_type' => 'offline',
-        'prompt' => 'consent'
+        'access_type' => 'offline'
     ];
     header('Location: https://accounts.google.com/o/oauth2/auth?' . http_build_query($params));
     exit;
