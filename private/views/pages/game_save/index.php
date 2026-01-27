@@ -215,7 +215,7 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
                     <h2>Production Lines</h2>
                     <div class="d-flex flex-nowrap">
                         <button class="btn btn-secondary me-2"
-                                onclick="location.href = 'game_save?id=<?= $gameSave->id ?>&layoutType=<?= $gameSave->card_view ? 0 : 1 ?>'"
+                                onclick="location.href = '?id=<?= $gameSave->id ?>&layoutType=<?= $gameSave->card_view ? 0 : 1 ?>'"
                                 data-bs-toggle="tooltip" data-bs-placement="top"
                                 data-bs-title="<?= $gameSave->card_view ? 'Table View' : 'Card View' ?>">
                             <i class=" <?= $gameSave->card_view ? 'fa-solid fa-table' : 'fa-regular fa-square' ?>"></i>
