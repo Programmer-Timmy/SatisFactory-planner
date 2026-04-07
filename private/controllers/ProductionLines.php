@@ -45,7 +45,12 @@ class ProductionLines {
     }
 
     public static function getImportsByProductionLine(int $productionLineId) {
-        return Database::getAll("input", ['ammount', 'name', 'items_id'], ["items" => "items.id = input.items_id"], ["production_lines_id" => $productionLineId]);
+        return Database::getAll(
+            "input",
+            ['ammount', 'items.name as name', 'items_id', 'items.class_name as item_class_name'],
+            ["items" => "items.id = input.items_id"],
+            ["production_lines_id" => $productionLineId]
+        );
     }
 
     public static function getProductionByProductionLine(int $productionLineId) {
@@ -54,14 +59,18 @@ class ProductionLines {
             [
                 'production.id',
                 'items.name AS item_name_1',
+                'items.class_name AS item_class_name_1',
                 'items2.name AS item_name_2',
+                'items2.class_name AS item_class_name_2',
                 'local_usage2',
                 'export_ammount_per_min2',
                 'recipes.id as recipe_id',
                 'production.local_usage',
                 'recipes.name as recipe_name',
                 'production.export_ammount_per_min as export_amount_per_min',
-                'buildings.name as building_name', 'buildings.power_used',
+                'buildings.name as building_name',
+                'buildings.class_name as building_class_name',
+                'buildings.power_used',
                 'production.quantity as product_quantity',
                 'ps.clock_speed as clock_speed',
                 'ps.use_somersloop as use_somersloop',

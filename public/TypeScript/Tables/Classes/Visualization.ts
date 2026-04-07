@@ -3,7 +3,7 @@ import {ImportNodes} from "./Data/Visualization/ImportNodes";
 import {ProductionNodes} from "./Data/Visualization/ProductionNodes";
 import {ExportNodes} from "./Data/Visualization/ExportNodes";
 import {Connection} from "./Data/Visualization/Connection";
-import {Ext, LayoutOptions} from "cytoscape";
+import type {Core, EdgeSingular, Ext, LayoutOptions, NodeSingular} from "cytoscape";
 import {IChecklist} from "./Checklist";
 import {PowerTableFunctions} from "./Functions/PowerTableFunctions";
 
@@ -45,7 +45,7 @@ export class Visualization {
     private showChecklist: boolean = true;
     private useRoots: boolean = true;
 
-    private cy: cytoscape.Core | null = null;
+    private cy: Core | null = null;
 
     /**
      * Constructor for the Visualization class
@@ -166,13 +166,14 @@ export class Visualization {
                 this.applyQTip(node, node.data('title'));
 
                 node.on('drag', () => {
-                    if (node.qtip('api').visible) {
-                        node.qtip('api').hide();
+                    const api = (node as any).qtip('api');
+                    if (api?.visible) {
+                        api.hide();
                     }
                 });
 
                 node.on('mouseout', () => {
-                    node.qtip('api').hide();
+                    (node as any).qtip('api')?.hide();
                 });
             });
 
@@ -188,8 +189,8 @@ export class Visualization {
         this.cy = cy;
     }
 
-    private applyQTip(element: cytoscape.NodeSingular | cytoscape.EdgeSingular, content: string): void {
-        element.qtip({
+    private applyQTip(element: NodeSingular | EdgeSingular, content: string): void {
+        (element as any).qtip({
             content: content,
             position: {
                 my: 'top center',

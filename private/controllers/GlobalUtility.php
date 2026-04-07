@@ -219,7 +219,7 @@ class GlobalUtility {
                    name="recipeSearch" <?= $selectedRecipe ? (count($selectedRecipe->products) > 1 ? 'style="height: 78px"' : '') : '' ?>
                    placeholder="Search by product or recipe" value="<?= htmlspecialchars($recipeName) ?>"
                    autocomplete="off">
-            <input type="hidden" name="recipeId" class="recipe-id" value="<?= $selectedRecipeId ?>" autocomplete="off">
+            <input type="hidden" name="recipeId" class="recipe-id" data-field="recipeId" value="<?= $selectedRecipeId ?>" autocomplete="off">
             <div class="select-items-menu collapse position-absolute child bg-white z-2 rounded"
                  style="min-width: 300px; max-height: 300px;">
                 <div class="d-flex justify-content-between align-items-center position-absolute end-0 icon-group">

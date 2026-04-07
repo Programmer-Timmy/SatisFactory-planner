@@ -6,6 +6,38 @@ import {ProductionTableRow} from "../Data/ProductionTableRow";
 
 export class HtmlGeneration {
 
+    private static itemClassMap: Record<string, string> | null = null;
+
+    private static getItemClassMap(): Record<string, string> {
+        if (this.itemClassMap !== null) return this.itemClassMap;
+
+        try {
+            const el = document.getElementById('items-class-map');
+            const json = el?.textContent?.trim() || '{}';
+            this.itemClassMap = JSON.parse(json);
+        } catch {
+            this.itemClassMap = {};
+        }
+
+        return this.itemClassMap as Record<string, string>;
+    }
+
+    private static normalizeItemClassName(className: string): string {
+        return className.toLowerCase().replaceAll('_', '-');
+    }
+
+    private static getItemIconSrc(itemId: number | null | undefined): string | null {
+        if (!itemId) return null;
+        const map = this.getItemClassMap();
+        const className = map[itemId.toString()];
+        if (!className) return null;
+        return `/image/items/${this.normalizeItemClassName(className)}_256.png`;
+    }
+
+    public static getItemIconSrcForId(itemId: number | null | undefined): string | null {
+        return this.getItemIconSrc(itemId);
+    }
+
     /**
      * Generates the HTML for the power table.
      * @param powerRows - The array of power table rows to generate HTML for.
@@ -90,21 +122,217 @@ export class HtmlGeneration {
                 row.quantity.toFixed(0) :
                 row.quantity.toFixed(5);
 
+            const iconSrc = this.getItemIconSrc(row.itemId);
+            const iconHtml = iconSrc
+                ? `<img class="pl-item-icon" data-role="import-icon" loading="lazy" src="${iconSrc}" alt="">`
+                : `<img class="pl-item-icon" data-role="import-icon" loading="lazy" style="display:none" alt="">`;
+
             return `
             <tr>
-                <td class="m-0 p-0 w-75">
-                    <select name="imports_item_id[]" class="form-control rounded-0">
-                        ${ItemOptions.replace(`value="${row.itemId}"`, `value="${row.itemId}" selected`)}
-                    </select>
+                <td class="m-0 p-0 w-75" data-label="Item">
+                    <div class="pl-field-with-icon">
+                        ${iconHtml}
+                        <select name="imports_item_id[]" class="form-control rounded-0">
+                            ${ItemOptions.replace(`value="${row.itemId}"`, `value="${row.itemId}" selected`)}
+                        </select>
+                    </div>
                 </td>
-                <td class="m-0 p-0 w-25">
+                <td class="m-0 p-0 w-25" data-label="Qty / min">
                     <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0" value="${formattedQuantity}" readonly>
                 </td>
             </tr>
         `;
         }).join('');
 
-        return rowsHTML; // Combine the existing rows with the empty row
+        return rowsHTML;
+    }
+
+    public static generateImportsCards(importsTableRows: ImportsTableRow[], readOnly: boolean = false): string {
+        const rows = readOnly
+            ? importsTableRows.filter(r => Number(r.itemId) > 0 && Number(r.quantity) > 0)
+            : importsTableRows;
+
+        return rows.map((row, index) => {
+            const formattedQuantity = Number(row.quantity) % 1 === 0 ?
+                row.quantity.toFixed(0) :
+                row.quantity.toFixed(5);
+
+            const iconSrc = this.getItemIconSrc(row.itemId);
+            const iconHtml = iconSrc
+                ? `<img class="pl-item-icon" data-role="import-icon" loading="lazy" src="${iconSrc}" alt="">`
+                : `<img class="pl-item-icon" data-role="import-icon" loading="lazy" style="display:none" alt="">`;
+
+            const iconCollapsedHtml = iconSrc
+                ? `<img class="pl-item-icon" data-role="import-icon-collapsed" loading="lazy" src="${iconSrc}" alt="">`
+                : `<img class="pl-item-icon" data-role="import-icon-collapsed" loading="lazy" style="display:none" alt="">`;
+
+            const itemField = readOnly
+                ? `
+                    <input type="number" hidden name="imports_item_id[]" data-field="itemId" value="${row.itemId}">
+                    <select class="form-control rounded-0 pl-readonly-select" disabled aria-disabled="true" tabindex="-1" data-sp-skip="true" data-field="itemId">
+                        ${ItemOptions.replace(`value="${row.itemId}"`, `value="${row.itemId}" selected`)}
+                    </select>
+                  `
+                : `
+                    <select name="imports_item_id[]" class="form-control rounded-0" data-field="itemId">
+                        ${ItemOptions.replace(`value="${row.itemId}"`, `value="${row.itemId}" selected`)}
+                    </select>
+                  `;
+
+            const qtyField = readOnly
+                ? `
+                    <input type="number" hidden step="any" name="imports_ammount[]" data-field="quantity" value="${formattedQuantity}">
+                    <div class="pl-value pl-number" data-role="import-qty-display">${formattedQuantity}</div>
+                  `
+                : `
+                    <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0" data-field="quantity" value="${formattedQuantity}">
+                  `;
+
+            const collapsedClass = readOnly ? ' is-collapsed' : '';
+            const nameCollapsed = (row.product || '').toString();
+
+            return `
+                <div class="pl-row pl-import-row${collapsedClass}" data-row-index="${index}">
+                    ${readOnly ? '' : `
+                    <button type="button" class="btn btn-sm pl-import-collapse-toggle" aria-label="Collapse/expand import" aria-expanded="true">
+                        <i class="fa-solid fa-chevron-up"></i>
+                    </button>
+                    `}
+
+                    <div class="pl-import-collapsed" aria-hidden="true">
+                        ${iconCollapsedHtml}
+                        <div class="pl-import-collapsed-main">
+                            <div class="pl-import-collapsed-name" data-role="import-name-collapsed">${nameCollapsed}</div>
+                            <div class="pl-import-collapsed-qty">
+                                <span class="pl-number" data-role="import-qty-collapsed">${formattedQuantity}</span>
+                                <span class="text-muted">/min</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pl-import-details">
+                        <div class="pl-row-header">
+                            <div class="pl-field">
+                                <div class="pl-label">Item</div>
+                                <div class="pl-field-with-icon">
+                                    ${iconHtml}
+                                    ${itemField}
+                                </div>
+                            </div>
+                            <div class="pl-field">
+                                <div class="pl-label">Qty / min</div>
+                                ${qtyField}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    public static generateProductionCards(productionTableRows: ProductionTableRow[]): string {
+        return productionTableRows.map((row, index) => {
+            const recipe = row.recipe;
+
+            const output1Src = recipe ? this.getItemIconSrc(recipe.item_id) : null;
+            const out1IconHtml = output1Src
+                ? `<img class="pl-item-icon" data-role="output1" loading="lazy" src="${output1Src}" alt="">`
+                : `<img class="pl-item-icon" data-role="output1" loading="lazy" style="display:none" alt="">`;
+
+            const buildingClass = recipe?.building?.class_name;
+            const buildingSrc = buildingClass
+                ? `/image/items/${buildingClass.replaceAll('_', '-').replace(/build/gi, 'desc').toLowerCase()}_256.png`
+                : null;
+
+            const output2Src = recipe && recipe.item_id2 ? this.getItemIconSrc(recipe.item_id2) : null;
+            const out2IconHtml = output2Src
+                ? `<img class="pl-item-icon" data-role="output2" loading="lazy" src="${output2Src}" alt="">`
+                : `<img class="pl-item-icon" data-role="output2" loading="lazy" style="display:none" alt="">`;
+
+            const isVisible = row.doubleExport && row.extraCells !== null;
+
+            const usage1 = Number(row.Usage ?? 0);
+            const exp1 = Number(row.exportPerMin ?? 0);
+
+            const usage2 = Number(row.extraCells?.Usage ?? 0);
+            const exp2 = Number(row.extraCells?.ExportPerMin ?? 0);
+
+            return `
+                <div class="pl-row pl-production-row" data-row-index="${index}">
+                    <input type="hidden" name="production_id[]" value="${row.row_id}">
+
+                    <i class="fa-solid fa-gear open-p-settings link-primary text-muted z-1"></i>
+                    <img class="pl-building-icon" data-role="building" loading="lazy" ${buildingSrc ? `src=\"${buildingSrc}\"` : 'style=\"display:none\"'} alt="">
+
+                    <div class="pl-row-header">
+                        <div class="pl-field">
+                            <div class="pl-label">Recipe</div>
+                            <select name="production_recipe_id[]" class="form-control rounded-0" data-field="recipeId">
+                                ${RecipeOptions.replace(`value=\"${row.recipeId}\"`, `value=\"${row.recipeId}\" selected`)}
+                            </select>
+                        </div>
+                        <div class="pl-field">
+                            <div class="pl-label">Qty / min</div>
+                            <input min="0" type="text" name="production_quantity[]" step="any" required class="form-control rounded-0 production-quantity" data-field="quantity" value="${row.quantity}">
+                        </div>
+                    </div>
+
+                    <div class="pl-row-flow">
+                        <div class="pl-field">
+                            <div class="pl-label"><i class="fa-solid fa-arrow-right text-muted me-1 pl-flow-arrow"></i>Output</div>
+                            <div class="pl-field-with-icon">
+                                ${out1IconHtml}
+                                <input type="hidden" class="product-name" value="${row.product || ''}">
+                                <div class="pl-value" data-role="product1-text">${row.product || ''}</div>
+                            </div>
+                        </div>
+
+                        <div class="pl-field">
+                            <div class="pl-label">Local usage / min</div>
+                            <input type="hidden" class="usage-amount" value="${usage1}">
+                            <div class="pl-value pl-number" data-role="usage1-text">${usage1}</div>
+                        </div>
+
+                        <div class="pl-field">
+                            <div class="pl-label">Export / min</div>
+                            <input type="hidden" class="export-amount" value="${exp1}">
+                            <div class="pl-value pl-number" data-role="export1-text">${exp1}</div>
+                        </div>
+
+                        <div class="pl-actions">
+                            <button type="button" class="btn btn-outline-danger btn-outline-soft-red btn-sm delete-production-row" data-id="${row.row_id}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pl-extra-output extra-output ${isVisible ? 'is-visible' : ''}">
+                        <div class="pl-row-flow" style="grid-template-columns: 1.2fr 1fr 1fr;">
+                            <div class="pl-field">
+                                <div class="pl-label"><i class="fa-solid fa-arrow-right text-muted me-1 pl-flow-arrow"></i>By-product</div>
+                                <div class="pl-field-with-icon">
+                                    ${out2IconHtml}
+                                    <input type="hidden" data-sp-skip="true" class="product-name" value="${row.extraCells?.Product || ''}">
+                                    <div class="pl-value" data-role="product2-text">${row.extraCells?.Product || ''}</div>
+                                </div>
+                            </div>
+
+                            <div class="pl-field">
+                                <div class="pl-label">Local usage / min</div>
+                                <input type="hidden" data-sp-skip="true" class="usage-amount" value="${usage2}">
+                                <div class="pl-value pl-number" data-role="usage2-text">${usage2}</div>
+                            </div>
+
+                            <div class="pl-field">
+                                <div class="pl-label">Export / min</div>
+                                <input type="hidden" data-sp-skip="true" class="export-amount" value="${exp2}">
+                                <div class="pl-value pl-number" data-role="export2-text">${exp2}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     /**

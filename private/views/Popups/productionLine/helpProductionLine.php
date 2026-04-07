@@ -63,13 +63,10 @@
                         <h4 class="card-title text-primary" id="importSection"><i
                                     class="fa-solid fa-arrow-up-right-dots"></i> Import Section</h4>
                         <p>
-                            The <strong>Import Section</strong> is located on the left side of the screen. This section
-                            will
-                            <strong>automatically calculate</strong> when you add recipes to the Production Section. If
-                            you
-                            prefer to manually set the import values, you can disable this feature in the settings
-                            accessible
-                            from the <strong>Edit Screen</strong>.
+                            The <strong>Import Section</strong> is located on the left side of the screen and is shown as
+                            cards with item icons. This section will <strong>automatically calculate</strong> when you add
+                            recipes to the Production Section. If you prefer to manually set the import values, you can
+                            disable this feature in the settings accessible from the <strong>Edit Screen</strong>.
                         </p>
                     </div>
                 </div>
@@ -79,11 +76,10 @@
                         <h4 class="card-title text-primary" id="productionSection"><i class="fa-solid fa-cogs"></i>
                             Production Section</h4>
                         <p>
-                            The <strong>Production Section</strong> is in the center of the screen. Here, you can add
-                            recipes to
-                            your production line and specify the <strong>amount per minute</strong> for each recipe. If
-                            all the
-                            automated functions are enabled, the production line will:
+                            The <strong>Production Section</strong> is in the center of the screen. Recipes are shown as
+                            <strong>cards</strong> with output/building icons, so it’s easier to see what each line does.
+                            Pick a recipe using the visual search field and set the <strong>amount per minute</strong>.
+                            If all automated functions are enabled, the production line will:
                         </p>
                         <ul>
                             <li>Calculate the required imports (taking already produced items into account).</li>

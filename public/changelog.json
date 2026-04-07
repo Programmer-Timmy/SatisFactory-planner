@@ -1,11 +1,28 @@
 [
   {
+    "version": "1.15.0",
+    "date": "April 7 2026",
+    "changes": [
+      "Changed: Production line editor redesigned from tables to card-based UI for a clearer flow.",
+      "Improved: Inline recipe controls (Clock % and Somersloop) and building icon/amount are now shown on each production card.",
+      "Added: Building amount indicator under the building icon (machines needed for the recipe rate).",
+      "Added: Info tooltips for Local usage and Export fields.",
+      "Fixed: Bootstrap tooltips now also work for already existing rows (not only newly added ones).",
+      "Improved: Imports panel is read-only when Auto Import-Export is enabled and is more responsive (no icons overlapping inputs, item names stay readable).",
+      "Added: Collapse/expand controls for recipe cards to make large production lines easier to manage.",
+      "Improved: Collapsed recipe cards are now an ultra-compact single-line header (smaller text) showing recipe name, output icons and qty/min.",
+      "Fixed: Collapsed qty/min text no longer gets overlapped by the absolute collapse/delete buttons.",
+      "Added: A dedicated \"Add recipe\" (+) card at the bottom instead of showing an empty recipe card."
+    ]
+  },
+  {
     "version": "1.14.4",
     "date": "October 9 2025",
     "changes": [
       "Fixed: view only input fields not visible in dark mode."
     ]
   },
+
   {
     "version": "1.14.3",
     "date": "October 8 2025",

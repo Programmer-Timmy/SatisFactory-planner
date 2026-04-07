@@ -1,8 +1,165 @@
 import {Ajax} from "./Ajax";
 import {ProductionTableRow} from "../Data/ProductionTableRow";
 import {ExtraProductionRow} from "../Data/ExtraProductionRow";
+import {PowerTableFunctions} from "./PowerTableFunctions";
 
 export class ProductionLineFunctions {
+
+    private static formatNumber(value: any): string {
+        const n = Number(value ?? 0);
+        if (Number.isNaN(n)) return String(value ?? '');
+        if (n % 1 === 0) return n.toFixed(0);
+        return n.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
+    }
+
+    public static updateRowDisplay(row: ProductionTableRow, rowToUpdate: JQuery<HTMLElement>): void {
+        // Component-mode display fields (no readonly inputs)
+        if (rowToUpdate.find('.pl-value').length) {
+            rowToUpdate.find('[data-role="product1-text"]').text(row.product || '');
+            rowToUpdate.find('[data-role="usage1-text"]').text(this.formatNumber(row.Usage));
+            rowToUpdate.find('[data-role="export1-text"]').text(this.formatNumber(row.exportPerMin));
+
+            const extra = rowToUpdate.find('.extra-output');
+            if (extra.length && row.doubleExport && row.extraCells !== null) {
+                extra.find('[data-role="product2-text"]').text(row.extraCells.Product || '');
+                extra.find('[data-role="usage2-text"]').text(this.formatNumber(row.extraCells.Usage));
+                extra.find('[data-role="export2-text"]').text(this.formatNumber(row.extraCells.ExportPerMin));
+            }
+
+            const collapsedRecipeEl = rowToUpdate.find('[data-role="collapsed-recipe-name"]');
+            if (collapsedRecipeEl.length) {
+                const nameFromRecipe = row.recipe?.name || '';
+                const nameFromInput = String((rowToUpdate.find('.search-input').first().val() as any) ?? '').trim();
+                const name = (nameFromRecipe || nameFromInput || 'Select recipe').trim();
+                collapsedRecipeEl.text(name);
+                collapsedRecipeEl.attr('title', name);
+            }
+
+            const output1Wrap = rowToUpdate.find('[data-role="collapsed-output1-wrap"]');
+            const output1Rate = rowToUpdate.find('[data-role="collapsed-output1-rate"]');
+            if (output1Wrap.length) {
+                // show/hide is controlled by icons; just keep the number in sync
+                if (output1Rate.length) {
+                    output1Rate.text(`${this.formatNumber(row.quantity)}/min`);
+                }
+            }
+
+            // Byproduct amount in collapsed header (only when double export exists)
+            const byproductWrap = rowToUpdate.find('[data-role="collapsed-byproduct"]');
+            const byproductRate = rowToUpdate.find('[data-role="collapsed-output2-rate"]');
+            if (byproductWrap.length) {
+                if (row.doubleExport && row.extraCells !== null) {
+                    byproductWrap.css('display', '');
+                    if (byproductRate.length) {
+                        byproductRate.text(`${this.formatNumber(row.extraCells.ExportPerMin)}/min`);
+                    }
+                } else {
+                    byproductWrap.css('display', 'none');
+                    if (byproductRate.length) {
+                        byproductRate.text('');
+                    }
+                }
+            }
+
+            const buildingAmountEl = rowToUpdate.find('[data-role="building-amount"]');
+            if (buildingAmountEl.length) {
+                if (row.recipe !== null) {
+                    const amount = PowerTableFunctions.calculateBuildingAmount(row.recipe, row);
+                    buildingAmountEl.text(this.formatNumber(amount));
+                } else {
+                    buildingAmountEl.text('');
+                }
+            }
+        }
+    }
+
+    private static itemClassMap: Record<string, string> | null = null;
+
+    private static getItemClassMap(): Record<string, string> {
+        if (this.itemClassMap !== null) return this.itemClassMap;
+
+        try {
+            const el = document.getElementById('items-class-map');
+            const json = el?.textContent?.trim() || '{}';
+            this.itemClassMap = JSON.parse(json);
+        } catch {
+            this.itemClassMap = {};
+        }
+
+        return this.itemClassMap as Record<string, string>;
+    }
+
+    private static normalizeItemClassName(className: string): string {
+        return className.toLowerCase().replaceAll('_', '-');
+    }
+
+    private static normalizeBuildingClassName(className: string): string {
+        // Mirrors PHP: str_ireplace('build','desc', str_replace('_','-', $className)) then strtolower
+        return className
+            .replaceAll('_', '-')
+            .replace(/build/gi, 'desc')
+            .toLowerCase();
+    }
+
+    private static getItemIconSrc(itemId: number | null | undefined): string | null {
+        if (!itemId) return null;
+        const map = this.getItemClassMap();
+        const className = map[itemId.toString()];
+        if (!className) return null;
+        return `/image/items/${this.normalizeItemClassName(className)}_256.png`;
+    }
+
+    private static setImg($img: JQuery<HTMLElement>, src: string | null) {
+        if (!$img.length) return;
+        if (!src) {
+            $img.attr('src', '');
+            // keep layout tight
+            $img.css('display', 'none');
+            return;
+        }
+        $img.attr('src', src);
+        $img.css('display', '');
+    }
+
+    public static updateRowIcons(row: ProductionTableRow, rowToUpdate: JQuery<HTMLElement>): void {
+        const recipe = row.recipe;
+
+        // Output 1 icon
+        const output1Src = recipe ? this.getItemIconSrc(recipe.item_id) : null;
+        this.setImg(rowToUpdate.find('img[data-role="output1"]'), output1Src);
+        this.setImg(rowToUpdate.find('img[data-role="collapsed-output1"]'), output1Src);
+
+        // Building icon
+        const buildingClass = recipe?.building?.class_name;
+        const buildingSrc = buildingClass
+            ? `/image/items/${this.normalizeBuildingClassName(buildingClass)}_256.png`
+            : null;
+        this.setImg(rowToUpdate.find('img[data-role="building"]'), buildingSrc);
+
+        // Output 2 icon (component-mode: inside .extra-output, table-mode: next <tr.extra-output>)
+        const output2Src = recipe && recipe.item_id2 ? this.getItemIconSrc(recipe.item_id2) : null;
+        const extraBlock = rowToUpdate.find('.extra-output');
+        if (extraBlock.length) {
+            this.setImg(extraBlock.find('img[data-role="output2"]'), output2Src);
+        } else {
+            const extraRow = rowToUpdate.next('.extra-output');
+            this.setImg(extraRow.find('img[data-role="output2"]'), output2Src);
+        }
+
+        // Collapsed summary output 2 icon
+        this.setImg(rowToUpdate.find('img[data-role="collapsed-output2"]'), output2Src);
+
+        // Ensure collapsed wrappers only show when icons exist
+        const out1Wrap = rowToUpdate.find('[data-role="collapsed-output1-wrap"]');
+        if (out1Wrap.length) {
+            out1Wrap.css('display', output1Src ? '' : 'none');
+        }
+
+        const byproductWrap = rowToUpdate.find('[data-role="collapsed-byproduct"]');
+        if (byproductWrap.length) {
+            byproductWrap.css('display', output2Src ? '' : 'none');
+        }
+    }
 
     /**
      * Calculate the export production based on the quantity and usage of the row.
@@ -77,9 +234,34 @@ export class ProductionLineFunctions {
      * @param {JQuery<HTMLElement>} rowToUpdate - The corresponding table row element.
      */
     public static handleDoubleExport(row: ProductionTableRow, rowToUpdate: JQuery<HTMLElement>): void {
+        // Component-mode: extra block lives inside the row
+        const extraBlock = rowToUpdate.find('.extra-output');
+        if (extraBlock.length) {
+            if (row.doubleExport && row.extraCells !== null) {
+                extraBlock.addClass('is-visible');
+                extraBlock.find('input.product-name[data-sp-skip="true"]').val(row.extraCells.Product);
+                extraBlock.find('input.usage-amount[data-sp-skip="true"]').val(row.extraCells.Usage);
+                extraBlock.find('input.export-amount[data-sp-skip="true"]').val(row.extraCells.ExportPerMin);
+
+                extraBlock.find('[data-role="product2-text"]').text(row.extraCells.Product);
+                extraBlock.find('[data-role="usage2-text"]').text(this.formatNumber(row.extraCells.Usage));
+                extraBlock.find('[data-role="export2-text"]').text(this.formatNumber(row.extraCells.ExportPerMin));
+            } else {
+                extraBlock.removeClass('is-visible');
+                extraBlock.find('input.product-name[data-sp-skip="true"]').val('');
+                extraBlock.find('input.usage-amount[data-sp-skip="true"]').val(0);
+                extraBlock.find('input.export-amount[data-sp-skip="true"]').val(0);
+
+                extraBlock.find('[data-role="product2-text"]').text('');
+                extraBlock.find('[data-role="usage2-text"]').text('0');
+                extraBlock.find('[data-role="export2-text"]').text('0');
+            }
+            return;
+        }
+
+        // Table-mode: extra export is a separate <tr>
         if (row.doubleExport && row.extraCells !== null) {
             if (!rowToUpdate.next('.extra-output').length) {
-                // Modify first two columns to span 2 rows, adjust select/input height
                 rowToUpdate.find('td:nth-child(2)').attr('rowspan', 2);
                 rowToUpdate.find('td:nth-child(3)').attr('rowspan', 2);
                 rowToUpdate.find('td:nth-child(2) .search-input').css('height', '78px');
@@ -88,39 +270,32 @@ export class ProductionLineFunctions {
                 deleteBtn.parent().attr('rowspan', 2);
                 deleteBtn.css('height', '78px');
 
-                // Add extra row for double export values
                 const extraRow = $(`
                     <tr class="extra-output">
-                        <td class="m-0 p-0">
-                            <input type="text" name="product" value="${row.extraCells.Product}" class="form-control rounded-0" readonly>
+                        <td class="m-0 p-0" data-label="By-product">
+                            <div class="pl-field-with-icon">
+                                <img class="pl-item-icon" data-role="output2" loading="lazy" style="display:none" alt="">
+                                <input type="text" name="product" value="${row.extraCells.Product}" class="form-control rounded-0" readonly>
+                            </div>
                         </td>
-                        <td class="m-0 p-0">
+                        <td class="m-0 p-0" data-label="Local usage / min">
                             <input type="number" name="production_usage2[]" value="${row.extraCells.Usage}" class="form-control rounded-0" readonly step="any">
                         </td>
-                        <td class="m-0 p-0">
+                        <td class="m-0 p-0" data-label="Export / min">
                             <input type="number" name="production_export2[]" value="${row.extraCells.ExportPerMin}" class="form-control rounded-0" readonly step="any">
                         </td>
                     </tr>
                 `);
                 extraRow.insertAfter(rowToUpdate);
             } else {
-                // Update values of the existing extra row
                 const extraRow = rowToUpdate.next('.extra-output');
-                const usage = extraRow.find('input[name="production_usage2[]"]');
-                const exportPerMin = extraRow.find('input[name="production_export2[]"]');
-                usage.val(row.extraCells.Usage);
-                exportPerMin.val(row.extraCells.ExportPerMin);
-
+                extraRow.find('input[name="production_usage2[]"]').val(row.extraCells.Usage);
+                extraRow.find('input[name="production_export2[]"]').val(row.extraCells.ExportPerMin);
             }
         } else if (rowToUpdate.next('.extra-output').length) {
-            // Remove the extra row if double export is no longer active
             rowToUpdate.next('.extra-output').remove();
-
-            // Reset the rowspan for the first two columns
             rowToUpdate.find('td:nth-child(2)').removeAttr('rowspan');
             rowToUpdate.find('td:nth-child(3)').removeAttr('rowspan');
-
-            // Reset the input/select height
             rowToUpdate.find('td:nth-child(2) .search-input').css('height', '');
             rowToUpdate.find('td:nth-child(3) input').css('height', '');
 

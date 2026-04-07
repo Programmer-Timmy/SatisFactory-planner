@@ -34,8 +34,13 @@ export class ImportsTableFunctions {
             }
         }
 
-        const html = HtmlGeneration.generateImportsTableRows(importsTableRows);
-        $('#imports tbody').html(html);
+        if ($('#imports').is('table')) {
+            const html = HtmlGeneration.generateImportsTableRows(importsTableRows);
+            $('#imports tbody').html(html);
+        } else {
+            // Auto import/export: show imports as read-only display cards
+            $('#imports').html(HtmlGeneration.generateImportsCards(importsTableRows, true));
+        }
 
         importsTableRows.push(new ImportsTableRow());
 
