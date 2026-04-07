@@ -3,15 +3,17 @@ import {ImportNodes} from "./Data/Visualization/ImportNodes";
 import {ProductionNodes} from "./Data/Visualization/ProductionNodes";
 import {ExportNodes} from "./Data/Visualization/ExportNodes";
 import {Connection} from "./Data/Visualization/Connection";
-import type {Core, EdgeSingular, Ext, LayoutOptions, NodeSingular} from "cytoscape";
+import type {Core, EdgeSingular, LayoutOptions, NodeSingular} from "cytoscape";
 import {IChecklist} from "./Checklist";
 import {PowerTableFunctions} from "./Functions/PowerTableFunctions";
+import {HtmlGeneration} from "./Functions/HtmlGeneration";
 
 let cytoscape: typeof import("cytoscape")
 
 
 // global variables
-const TEXT_SIZE = 25;
+const TEXT_SIZE = 16;
+const EDGE_TEXT_SIZE = 14;
 
 /**
  * Visualization class
@@ -118,43 +120,65 @@ export class Visualization {
             style: [
                 {
                     selector: "node",
-                    style: {
+                    // Cytoscape style values accept numbers/strings; cast to satisfy TS typing
+                    style: ({
                         "label": "data(label)",
-                        'background-color': 'data(color)', // Middle label
                         "text-halign": "center",
-                        "text-valign": "center",
-                        'width': 200,
-                        'height': 200,// Align middle
-                        "color": "black",
+                        "text-valign": "bottom",
+                        "text-margin-y": -12,
+                        "color": "#111",
                         "font-size": TEXT_SIZE,
                         "text-wrap": "wrap",
+                        "text-max-width": 170,
+                        "text-outline-color": "#fff",
+                        "text-outline-width": 2,
+
+                        "width": 190,
+                        "height": 170,
+                        "shape": "roundrectangle",
+                        "background-color": "#ffffff",
+                        "border-width": 6,
+                        "border-color": "data(color)",
+
+                        "background-image": "data(icon)",
+                        "background-fit": "contain",
+                        "background-repeat": "no-repeat",
+                        "background-position-x": "50%",
+                        "background-position-y": "28%",
+                        "background-width": "70%",
+                        "background-height": "70%",
+                    } as any)
+                },
+                {
+                    selector: "node.import-node",
+                    style: {
+                        "border-color": "#0d6efd"
                     }
                 },
                 {
-                    selector: "node.top-text",
+                    selector: "node.export-node",
                     style: {
-                        'text-margin-y': -60,           // Adjusts position to appear above center
+                        "border-color": "#dc3545"
                     }
                 },
                 {
                     selector: "edge",
-                    style: {
-                        "label": "data(label)",         // Display label from data
-                        "font-size": TEXT_SIZE,            // Customize font size if needed
+                    style: ({
+                        "label": "data(label)",
+                        "font-size": EDGE_TEXT_SIZE,
                         "text-background-color": "white",
-                        "text-background-opacity": 0.5,
-                        "text-background-padding": '3px',
+                        "text-background-opacity": 0.7,
+                        "text-background-padding": "4px",
                         "text-background-shape": "roundrectangle",
-                        "color": "black",               // Text color
-                        "width": 5,                     // Line width
-                        "line-color": "data(color)",    // Line color
-                        "target-arrow-color": "#333",
+                        "color": "#111",
+                        "width": 4,
+                        "line-color": "data(color)",
+                        "target-arrow-color": "data(color)",
                         "target-arrow-shape": "triangle",
                         "target-arrow-fill": "filled",
                         "curve-style": "bezier",
-                        "control-point-step-size": 40,
-
-                    }
+                        "control-point-step-size": 40
+                    } as any)
                 }
             ],
             layout: layout
@@ -213,7 +237,7 @@ export class Visualization {
         });
     }
 
-    // updates the node production colors based on the checklist
+    // updates the production node border colors based on the checklist
     public updateNodeColors(): void {
 
         if (!this.cy) { // Ensure `this.cy` exists
@@ -229,10 +253,8 @@ export class Visualization {
                     return;
                 }
 
-                node.style('background-color', this.showChecklist ? this.getColor(productionNode.checklist) : 'green');
-
+                node.style('border-color', this.showChecklist ? this.getColor(productionNode.checklist) : '#28A745');
             }
-
         });
     }
 
@@ -261,30 +283,42 @@ export class Visualization {
      * @returns {object} - The node object
      */
     private addNode(type: 'import' | 'export' | 'production', node: any): {
-        data: { id: string, label: string, color: string, title: string },
+        data: { id: string, label: string, color: string, title: string, icon?: string | null },
         classes: string
     } {
+        const qty = this.formatNumber(node.quantity);
+        const unit = type === 'production' || type === 'import' || type === 'export' ? '/min' : '';
+
+        const label = `${node.product}\n${qty}${unit}`;
+        const color = type === 'import' ? '#0d6efd' :
+            type === 'export' ? '#dc3545' : this.showChecklist ? this.getColor(node.checklist) : '#28A745';
+
+        const title = node.titleHtml
+            ? node.titleHtml
+            : `${type.charAt(0).toUpperCase() + type.slice(1)}: <b>${node.product}</b><br>Amount: ${qty}${unit}`;
+
         return {
             data: {
                 id: `${type}_${node.id}`,
-                label: `${node.product}\n${node.quantity}${node.building ? `\n\n\n\n${node.building}\n${node.buildingAmount}` : ''}`,
-                color: type === 'import' ? 'blue' :
-                    type === 'export' ? 'red' : this.showChecklist ? this.getColor(node.checklist) : 'green',
-
-                title: `${type.charAt(0).toUpperCase() + type.slice(1)}: ${node.product}<br>Amount: ${node.quantity}${node.building ? `<br><hr>Building: ${node.building}<br>Amount of building: ${node.buildingAmount}` : ''}`
+                label,
+                color,
+                title,
+                icon: node.icon || null
             },
-            classes: type === 'production' ? 'top-text' : ''
+            classes: `${type}-node`
         }
     }
 
     private addConnection(type: 'import' | 'export' | 'production', connection: any, sourcePrefix: string, targetPrefix: string) {
+        const qty = this.formatNumber(connection.quantity);
+        const label = `${connection.product}\n${qty}/min`;
         return {
             data: {
                 id: `${type}Connection_${connection.id}`,
                 source: `${sourcePrefix}_${connection.sourceId}`,
                 target: `${targetPrefix}_${connection.targetId}`,
-                label: `${connection.product} ${connection.quantity}`,
-                color: type === 'import' ? 'blue' : type === 'export' ? 'red' : 'green'
+                label,
+                color: type === 'import' ? '#0d6efd' : type === 'export' ? '#dc3545' : '#28A745'
             }
         };
     }
@@ -373,22 +407,34 @@ export class Visualization {
         for (let i = 0; i < this.TableHandler.productionTableRows.length; i++) {
             const row = this.TableHandler.productionTableRows[i];
 
-            const building = row.recipe?.building;
-            const amount = row.quantity;
             const recipe = row.recipe;
+            const building = recipe?.building;
             const checklist = this.TableHandler.checklist?.getChecklist().find(check => check.productionRow.row_id == row.row_id);
-
 
             if (!recipe) {
                 continue;
             }
 
-            let amountOfBuilding = PowerTableFunctions.calculateBuildingAmount(recipe, row).toFixed(5);
+            const buildingAmount = PowerTableFunctions.calculateBuildingAmount(recipe, row);
+            const outputIcon = HtmlGeneration.getItemIconSrcForId(recipe.item_id);
+            const byproductIcon = recipe.item_id2 ? HtmlGeneration.getItemIconSrcForId(recipe.item_id2) : null;
+            const buildingIcon = recipe?.building?.class_name ? this.getBuildingIconSrc(recipe.building.class_name) : null;
 
-            if (building && recipe) {
-                this.productionNodes.push(new ProductionNodes(i, recipe.name, row.quantity, building.name, building.id, +amountOfBuilding, checklist));
+            const node = new ProductionNodes(
+                i,
+                // Prefer output name; recipe name goes in tooltip
+                (recipe.itemName || row.product || recipe.name),
+                row.quantity,
+                building?.name || '',
+                building?.id || 0,
+                buildingAmount,
+                checklist
+            );
 
-            }
+            (node as any).icon = outputIcon;
+            (node as any).titleHtml = this.buildProductionTitleHtml(i, row, recipe, buildingAmount, outputIcon, byproductIcon, buildingIcon);
+
+            this.productionNodes.push(node);
 
             for (let j = 0; j < row.productionImports.length; j++) {
                 const importRow = row.productionImports[j];
@@ -407,7 +453,11 @@ export class Visualization {
         for (let i = 0; i < this.TableHandler.importsTableRows.length; i++) {
             const row = this.TableHandler.importsTableRows[i];
             if (row.product !== '' && row.quantity > 0) {
-            this.importNodes.push(new ImportNodes(i, row.product, row.quantity));
+                const node = new ImportNodes(i, row.product, row.quantity);
+                const icon = HtmlGeneration.getItemIconSrcForId(row.itemId);
+                (node as any).icon = icon;
+                (node as any).titleHtml = this.buildSimpleTitleHtml('Import', icon, row.product, row.quantity);
+                this.importNodes.push(node);
             }
         }
     }
@@ -420,22 +470,33 @@ export class Visualization {
         let index = 0;
         for (let i = 0; i < this.TableHandler.productionTableRows.length; i++) {
             const row = this.TableHandler.productionTableRows[i];
+            const recipe = row.recipe;
 
             if (row.exportPerMin > 0) {
-                this.exportNodes.push(new ExportNodes(index, row.product, row.exportPerMin));
-                this.exportConnections.push(new Connection(index, i, this.exportNodes.length - 1, row.exportPerMin, row.product));
+                const productName = recipe?.itemName || row.product;
+                const icon = recipe ? HtmlGeneration.getItemIconSrcForId(recipe.item_id) : null;
+                const node = new ExportNodes(index, productName, row.exportPerMin);
+                (node as any).icon = icon;
+                (node as any).titleHtml = this.buildSimpleTitleHtml('Export', icon, productName, row.exportPerMin);
+                this.exportNodes.push(node);
+                this.exportConnections.push(new Connection(index, i, this.exportNodes.length - 1, row.exportPerMin, productName));
                 index++;
             }
 
+            // By-product export node (fix: use by-product name + icon)
             // @ts-ignore
             if (row.extraCells?.ExportPerMin > 0) {
                 // @ts-ignore
-                this.exportNodes.push(new ExportNodes(index, row.product, row.extraCells?.ExportPerMin));
-                // @ts-ignore
-                this.exportConnections.push(new Connection(index, i, this.exportNodes.length - 1, row.extraCells?.ExportPerMin, row.product));
+                const byName = row.extraCells?.Product || recipe?.secondItemName || row.product;
+                const byIcon = recipe?.item_id2 ? HtmlGeneration.getItemIconSrcForId(recipe.item_id2) : null;
+                const qty = Number(row.extraCells?.ExportPerMin || 0);
+                const node = new ExportNodes(index, byName, qty);
+                (node as any).icon = byIcon;
+                (node as any).titleHtml = this.buildSimpleTitleHtml('Export (by-product)', byIcon, byName, qty);
+                this.exportNodes.push(node);
+                this.exportConnections.push(new Connection(index, i, this.exportNodes.length - 1, qty, byName));
                 index++;
             }
-
         }
     }
 
@@ -501,6 +562,157 @@ export class Visualization {
         });
     }
 
+    private formatNumber(value: any): string {
+        const n = Number(value ?? 0);
+        if (Number.isNaN(n)) return String(value ?? '');
+        if (n % 1 === 0) return n.toFixed(0);
+        return n.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
+    }
 
+    private escapeHtml(s: string): string {
+        return String(s ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    private iconImg(src: string | null, title: string, size = 22): string {
+        if (!src) return '';
+        const t = this.escapeHtml(title);
+        return `<img src="${src}" title="${t}" alt="${t}" style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;" loading="lazy">`;
+    }
+
+    private getBuildingIconSrc(className: string): string {
+        return `/image/items/${className
+            .replaceAll('_', '-')
+            .replace(/build/gi, 'desc')
+            .toLowerCase()}_256.png`;
+    }
+
+    private buildSimpleTitleHtml(kind: string, icon: string | null, name: string, quantity: number): string {
+        return `
+            <div style="min-width:260px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    ${this.iconImg(icon, name, 26)}
+                    <div>
+                        <div style="font-weight:600">${this.escapeHtml(kind)}: ${this.escapeHtml(name)}</div>
+                        <div style="color:#555">${this.formatNumber(quantity)}/min</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    private buildProductionTitleHtml(
+        index: number,
+        row: any,
+        recipe: any,
+        buildingAmount: number,
+        outputIcon: string | null,
+        byproductIcon: string | null,
+        buildingIcon: string | null
+    ): string {
+        const recipeName = recipe?.name || '';
+        const outputName = recipe?.itemName || row.product || '';
+        const byName = recipe?.secondItemName || '';
+
+        const clockSpeed = row?.recipeSetting?.clockSpeed;
+        const somersloop = row?.recipeSetting?.useSomersloop;
+
+        const resources = Array.isArray(recipe?.resources) ? recipe.resources : [];
+        const resourcesHtml = resources.length
+            ? resources.map((r: any) => {
+                const icon = HtmlGeneration.getItemIconSrcForId(r.itemId);
+                return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">
+                    ${this.iconImg(icon, r.name)}
+                    <span>${this.escapeHtml(r.name)}</span>
+                    <span style="margin-left:auto;color:#555">${this.formatNumber(r.importAmount)}/min</span>
+                </div>`;
+            }).join('')
+            : `<div style="color:#777">(no inputs)</div>`;
+
+        const externalImports = Array.isArray(row?.imports) ? row.imports : [];
+        const externalHtml = externalImports.length
+            ? externalImports.map((imp: any) => {
+                const importRow = this.TableHandler.importsTableRows?.[imp.index];
+                const icon = HtmlGeneration.getItemIconSrcForId(importRow?.itemId);
+                const name = importRow?.product || imp.product;
+                return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">
+                    ${this.iconImg(icon, name)}
+                    <span>${this.escapeHtml(name)}</span>
+                    <span style="margin-left:auto;color:#555">${this.formatNumber(imp.amount)}/min</span>
+                </div>`;
+            }).join('')
+            : `<div style="color:#777">(none)</div>`;
+
+        const prodImports = Array.isArray(row?.productionImports) ? row.productionImports : [];
+        const prodHtml = prodImports.length
+            ? prodImports.map((imp: any) => {
+                const sourceRow = this.TableHandler.productionTableRows?.[imp.index];
+                const icon = imp.doubleExport
+                    ? (sourceRow?.recipe?.item_id2 ? HtmlGeneration.getItemIconSrcForId(sourceRow.recipe.item_id2) : null)
+                    : (sourceRow?.recipe?.item_id ? HtmlGeneration.getItemIconSrcForId(sourceRow.recipe.item_id) : null);
+                const name = imp.product;
+                const from = sourceRow?.recipe?.itemName || sourceRow?.product || sourceRow?.recipe?.name;
+                return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">
+                    ${this.iconImg(icon, name)}
+                    <span>${this.escapeHtml(name)}</span>
+                    <span style="margin-left:auto;color:#555">${this.formatNumber(imp.amount)}/min</span>
+                    <span style="color:#999;margin-left:6px">from ${this.escapeHtml(from || '')}</span>
+                </div>`;
+            }).join('')
+            : `<div style="color:#777">(none)</div>`;
+
+        const byProductExport = row?.extraCells?.ExportPerMin;
+
+        return `
+            <div style="min-width:340px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    ${this.iconImg(outputIcon, outputName, 28)}
+                    <div>
+                        <div style="font-weight:700">${this.escapeHtml(outputName)}</div>
+                        <div style="color:#555">Recipe: ${this.escapeHtml(recipeName)}</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0">
+                    <div><b>Qty</b>: ${this.formatNumber(row.quantity)}/min</div>
+                    <div><b>Export</b>: ${this.formatNumber(row.exportPerMin)}/min</div>
+                    <div><b>Usage</b>: ${this.formatNumber(row.Usage)}/min</div>
+                    <div><b>Clock</b>: ${this.formatNumber(clockSpeed ?? 100)}%</div>
+                </div>
+
+                ${typeof somersloop === 'boolean' ? `<div style="margin-bottom:6px"><b>Somersloop</b>: ${somersloop ? 'On' : 'Off'}</div>` : ''}
+
+                ${buildingIcon ? `
+                    <div style="display:flex;align-items:center;gap:8px;margin:8px 0">
+                        ${this.iconImg(buildingIcon, recipe?.building?.name || 'Building', 26)}
+                        <div><b>${this.escapeHtml(recipe?.building?.name || '')}</b> × ${this.formatNumber(buildingAmount)}</div>
+                    </div>
+                ` : ''}
+
+                <hr style="margin:8px 0">
+                <div style="font-weight:600;margin-bottom:4px">Inputs (recipe resources)</div>
+                ${resourcesHtml}
+
+                <hr style="margin:8px 0">
+                <div style="font-weight:600;margin-bottom:4px">Pulled from other recipes</div>
+                ${prodHtml}
+
+                <div style="font-weight:600;margin:8px 0 4px">Pulled from Imports table</div>
+                ${externalHtml}
+
+                ${byName && byProductExport ? `
+                    <hr style="margin:8px 0">
+                    <div style="display:flex;align-items:center;gap:8px">
+                        ${this.iconImg(byproductIcon, byName, 24)}
+                        <div><b>By-product export</b>: ${this.escapeHtml(byName)} — ${this.formatNumber(byProductExport)}/min</div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
 
 }
