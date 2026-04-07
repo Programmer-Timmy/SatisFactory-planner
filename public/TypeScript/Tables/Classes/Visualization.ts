@@ -206,6 +206,7 @@ export class Visualization {
             (cy as any).nodeHtmlLabel([
                 {
                     query: 'node.production-node',
+                    cssClass: 'cy-production-card',
                     halign: 'center',
                     valign: 'center',
                     halignBox: 'center',
