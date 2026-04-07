@@ -12,8 +12,9 @@ let cytoscape: typeof import("cytoscape")
 
 
 // global variables
-const TEXT_SIZE = 16;
-const EDGE_TEXT_SIZE = 14;
+// Keep labels compact so we can show machine + product + /min at once
+const TEXT_SIZE = 14;
+const EDGE_TEXT_SIZE = 13;
 
 /**
  * Visualization class
@@ -133,8 +134,8 @@ export class Visualization {
                         "text-outline-color": "#fff",
                         "text-outline-width": 2,
 
-                        "width": 190,
-                        "height": 170,
+                        "width": 200,
+                        "height": 185,
                         "shape": "roundrectangle",
                         "background-color": "#ffffff",
                         "border-width": 6,
@@ -144,9 +145,9 @@ export class Visualization {
                         "background-fit": "contain",
                         "background-repeat": "no-repeat",
                         "background-position-x": "50%",
-                        "background-position-y": "28%",
-                        "background-width": "70%",
-                        "background-height": "70%",
+                        "background-position-y": "26%",
+                        "background-width": "66%",
+                        "background-height": "66%",
                     } as any)
                 },
                 {
@@ -159,6 +160,21 @@ export class Visualization {
                     selector: "node.export-node",
                     style: {
                         "border-color": "#dc3545"
+                    }
+                },
+                {
+                    // Production nodes render their content via cytoscape-node-html-label
+                    selector: "node.production-node",
+                    style: {
+                        "label": "",
+                        "background-image": "none",
+                        "text-outline-width": 0,
+                        // Hide the underlying Cytoscape node shape; the HTML label is the visual card.
+                        "background-opacity": 0,
+                        "border-width": 0,
+                        "width": "data(cardWidth)",
+                        "height": "data(cardHeight)",
+                        "padding": 0
                     }
                 },
                 {
@@ -183,6 +199,24 @@ export class Visualization {
             ],
             layout: layout
         });
+
+        // Render rich HTML inside production nodes (multiple icons + details)
+        try {
+            // @ts-ignore
+            (cy as any).nodeHtmlLabel([
+                {
+                    query: 'node.production-node',
+                    halign: 'center',
+                    valign: 'center',
+                    halignBox: 'center',
+                    valignBox: 'center',
+                    tpl: (data: any) => this.buildProductionNodeHtml(data)
+                }
+            ]);
+        } catch (e) {
+            // If the plugin is missing for some reason, we still keep the graph usable
+            console.warn('nodeHtmlLabel plugin not available', e);
+        }
 
         cy.ready(() => {
             // @ts-ignore
@@ -214,11 +248,23 @@ export class Visualization {
     }
 
     private applyQTip(element: NodeSingular | EdgeSingular, content: string): void {
+        // User preference: no scrollbar; tooltip should become wider instead.
+        const wrapped = `
+            <div style="width:920px;max-width:95vw;padding-right:6px">
+                ${content}
+            </div>
+        `;
+
         (element as any).qtip({
-            content: content,
+            content: wrapped,
             position: {
                 my: 'top center',
-                at: 'bottom center'
+                at: 'bottom center',
+                // Keep tooltip inside viewport
+                // @ts-ignore
+                viewport: $(window),
+                // @ts-ignore
+                adjust: { method: 'shift flip' }
             },
             style: {
                 classes: 'qtip-bootstrap',
@@ -289,7 +335,13 @@ export class Visualization {
         const qty = this.formatNumber(node.quantity);
         const unit = type === 'production' || type === 'import' || type === 'export' ? '/min' : '';
 
-        const label = `${node.product}\n${qty}${unit}`;
+        // Keep a normal label for import/export. Production content is rendered via HTML labels.
+        let label = `${node.product}\n${qty}${unit}`;
+        if (type === 'production' && node?.building) {
+            const machineAmount = this.formatNumber(node?.buildingAmount ?? 0);
+            label = `${node.building} x ${machineAmount}\n${node.product}\n${qty}${unit}`;
+        }
+
         const color = type === 'import' ? '#0d6efd' :
             type === 'export' ? '#dc3545' : this.showChecklist ? this.getColor(node.checklist) : '#28A745';
 
@@ -297,14 +349,44 @@ export class Visualization {
             ? node.titleHtml
             : `${type.charAt(0).toUpperCase() + type.slice(1)}: <b>${node.product}</b><br>Amount: ${qty}${unit}`;
 
+        // Attach extra fields for HTML labels (Cytoscape data can include arbitrary properties)
+        const isProduction = type === 'production';
+        const hasRecipeName = Boolean(node?.recipeName);
+        const hasSomersloop = typeof node?.somersloop === 'boolean';
+
+        const baseWidth = isProduction ? 290 : 200;
+        const baseHeight = isProduction ? 185 : 170;
+        const cardWidth = baseWidth;
+        const cardHeight = baseHeight + (hasRecipeName ? 12 : 0) + (hasSomersloop ? 12 : 0);
+
+        const data: any = {
+            id: `${type}_${node.id}`,
+            label,
+            color,
+            title,
+            icon: node.icon || null,
+            product: node.product,
+            quantity: node.quantity,
+            unit,
+            buildingName: node?.building || null,
+            buildingAmount: node?.buildingAmount ?? null,
+            buildingIcon: node?.buildingIcon || null,
+            byproductIcon: node?.byproductIcon || null,
+
+            recipeName: node?.recipeName || null,
+            exportPerMin: node?.exportPerMin ?? null,
+            usagePerMin: node?.usagePerMin ?? null,
+            clockSpeed: node?.clockSpeed ?? null,
+            somersloop: typeof node?.somersloop === 'boolean' ? node.somersloop : null,
+            byproductName: node?.byproductName || null,
+            byproductExportPerMin: node?.byproductExportPerMin ?? null,
+
+            cardWidth: isProduction ? cardWidth : undefined,
+            cardHeight: isProduction ? cardHeight : undefined
+        };
+
         return {
-            data: {
-                id: `${type}_${node.id}`,
-                label,
-                color,
-                title,
-                icon: node.icon || null
-            },
+            data,
             classes: `${type}-node`
         }
     }
@@ -432,6 +514,17 @@ export class Visualization {
             );
 
             (node as any).icon = outputIcon;
+            (node as any).buildingIcon = buildingIcon;
+            (node as any).byproductIcon = byproductIcon;
+
+            (node as any).recipeName = recipe?.name || '';
+            (node as any).exportPerMin = row?.exportPerMin ?? 0;
+            (node as any).usagePerMin = row?.Usage ?? 0;
+            (node as any).clockSpeed = row?.recipeSetting?.clockSpeed ?? 100;
+            (node as any).somersloop = row?.recipeSetting?.useSomersloop;
+            (node as any).byproductName = recipe?.secondItemName || '';
+            (node as any).byproductExportPerMin = row?.extraCells?.ExportPerMin ?? 0;
+
             (node as any).titleHtml = this.buildProductionTitleHtml(i, row, recipe, buildingAmount, outputIcon, byproductIcon, buildingIcon);
 
             this.productionNodes.push(node);
@@ -511,12 +604,18 @@ export class Visualization {
 
         //@ts-ignore
         const { default: qtip } = await import("cytoscape-qtip");
-        progress(70);
+        progress(65);
+
+        // Advanced HTML node labels (multiple icons + rich layout inside node)
+        // @ts-ignore
+        const { default: nodeHtmlLabel } = await import('cytoscape-node-html-label');
+        progress(80);
 
         const { default: klay } = await import("cytoscape-klay");
-        progress(90);
+        progress(95);
 
         cytoscape.use(qtip);
+        cytoscape.use(nodeHtmlLabel);
         cytoscape.use(klay);
         progress(100);
 
@@ -593,13 +692,122 @@ export class Visualization {
 
     private buildSimpleTitleHtml(kind: string, icon: string | null, name: string, quantity: number): string {
         return `
-            <div style="min-width:260px">
+            <div style="max-width:100%;font-size:13px;line-height:1.25">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                     ${this.iconImg(icon, name, 26)}
                     <div>
                         <div style="font-weight:600">${this.escapeHtml(kind)}: ${this.escapeHtml(name)}</div>
                         <div style="color:#555">${this.formatNumber(quantity)}/min</div>
                     </div>
+                </div>
+            </div>
+        `;
+    }
+
+    private buildProductionNodeHtml(data: any): string {
+        const buildingIcon = data?.buildingIcon || null;
+        const outputIcon = data?.icon || null;
+        const byproductIcon = data?.byproductIcon || null;
+
+        const buildingName = String(data?.buildingName || '');
+        const buildingAmountNum = Number(data?.buildingAmount ?? 0);
+        const buildingAmount = this.formatNumber(buildingAmountNum);
+
+        const product = String(data?.product || '');
+        const recipeName = String(data?.recipeName || '');
+
+        const quantityNum = Number(data?.quantity ?? 0);
+        const quantity = this.formatNumber(quantityNum);
+        const unit = String(data?.unit || '');
+
+        const exportNum = Number(data?.exportPerMin ?? 0);
+        const exportPerMin = this.formatNumber(exportNum);
+
+        const localNum = Number(data?.usagePerMin ?? 0);
+        const localUsagePerMin = this.formatNumber(localNum);
+
+        const clockSpeed = this.formatNumber(data?.clockSpeed ?? 100);
+        const somersloop = data?.somersloop === true;
+
+        // cytoscape-node-html-label does NOT size the label element to the node size.
+        // So we must set explicit px dimensions to match Cytoscape's width/height.
+        const cardW = Number(data?.cardWidth ?? 290);
+        const cardH = Number(data?.cardHeight ?? 185);
+
+        // Fill unused space with something meaningful: a split bar (Local vs Export vs Free).
+        const safeQty = quantityNum > 0 ? quantityNum : 1;
+        const localPct = Math.max(0, Math.min(localNum / safeQty, 1));
+        const exportPct = Math.max(0, Math.min(exportNum / safeQty, 1 - localPct));
+        const freeNum = Math.max(0, quantityNum - localNum - exportNum);
+        const freePct = Math.max(0, 1 - localPct - exportPct);
+
+        const perMachineQty = buildingAmountNum > 0 ? (quantityNum / buildingAmountNum) : null;
+
+        const splitHtml = quantityNum > 0
+            ? `
+                <div style="margin-top:6px">
+                    <div style="height:8px;border-radius:999px;overflow:hidden;background:rgba(0,0,0,0.06);display:flex">
+                        <div style="width:${(localPct * 100).toFixed(1)}%;background:#198754"></div>
+                        <div style="width:${(exportPct * 100).toFixed(1)}%;background:#dc3545"></div>
+                        <div style="width:${(freePct * 100).toFixed(1)}%;background:#adb5bd"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:8px;font-size:10px;color:#666;margin-top:3px;line-height:1">
+                        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Local ${this.formatNumber(localNum)}/min</span>
+                        <span style="white-space:nowrap">Export ${this.formatNumber(exportNum)}/min</span>
+                        <span style="white-space:nowrap">Free ${this.formatNumber(freeNum)}${this.escapeHtml(unit)}</span>
+                    </div>
+                </div>
+            `
+            : '';
+
+        // pointer-events:none so dragging/selecting the node still works
+        return `
+            <div style="width:${cardW}px;height:${cardH}px;pointer-events:none;box-sizing:border-box;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch">
+                <div style="width:${cardW}px;height:${cardH}px;box-sizing:border-box;overflow:hidden;background:#fff;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column">
+
+                    <!-- Outputs section -->
+                    <div style="display:flex;gap:10px;align-items:flex-start;min-width:0">
+                        <div style="display:flex;align-items:center;gap:4px;flex:0 0 auto;padding-top:2px">
+                            ${outputIcon ? `<img src="${outputIcon}" alt="${this.escapeHtml(product)}" style="width:34px;height:34px;object-fit:contain" loading="lazy">` : ''}
+                            ${byproductIcon ? `<img src="${byproductIcon}" alt="by-product" style="width:22px;height:22px;object-fit:contain;opacity:0.95" loading="lazy">` : ''}
+                        </div>
+
+                        <div style="flex:1;min-width:0">
+                            <div style="font-size:12px;font-weight:750;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${this.escapeHtml(product)}</div>
+
+                            <div style="display:grid;grid-template-columns:max-content 1fr;column-gap:8px;row-gap:2px;font-size:11px;color:#555;line-height:1.15;margin-top:3px;align-items:baseline">
+                                <div>Qty</div><div style="text-align:right"><b>${this.escapeHtml(quantity)}</b>${this.escapeHtml(unit)}</div>
+                                <div>Local usage</div><div style="text-align:right"><b>${this.escapeHtml(localUsagePerMin)}</b>/min</div>
+                                <div>Export</div><div style="text-align:right"><b>${this.escapeHtml(exportPerMin)}</b>/min</div>
+                            </div>
+
+                            ${recipeName ? `<div style="font-size:10.5px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px">Recipe: ${this.escapeHtml(recipeName)}</div>` : ''}
+                            ${splitHtml}
+                        </div>
+                    </div>
+
+                    <!-- Machine section (pinned to bottom so the spacing feels intentional) -->
+                    <div style="margin-top:auto;padding:8px;border-radius:10px;background:rgba(0,0,0,0.035)">
+                        <div style="display:flex;gap:10px;align-items:flex-start;min-width:0">
+                            <div style="flex:0 0 auto;padding-top:2px">
+                                ${buildingIcon ? `<img src="${buildingIcon}" alt="${this.escapeHtml(buildingName)}" style="width:30px;height:30px;object-fit:contain" loading="lazy">` : ''}
+                            </div>
+
+                            <div style="flex:1;min-width:0">
+                                <div style="display:flex;gap:8px;align-items:baseline;min-width:0">
+                                    <div style="font-size:12px;font-weight:750;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${this.escapeHtml(buildingName)}</div>
+                                    <div style="margin-left:auto;font-size:12px;font-weight:750;color:#111;white-space:nowrap">x ${this.escapeHtml(buildingAmount)}</div>
+                                </div>
+
+                                <div style="display:grid;grid-template-columns:max-content 1fr;column-gap:8px;row-gap:2px;font-size:11px;color:#555;line-height:1.15;margin-top:3px;align-items:baseline">
+                                    <div>Clock speed</div><div style="text-align:right"><b>${this.escapeHtml(clockSpeed)}</b>%</div>
+                                    ${data?.somersloop === null ? '' : `<div>Somersloop</div><div style="text-align:right"><b>${somersloop ? 'On' : 'Off'}</b></div>`}
+                                    ${perMachineQty === null ? '' : `<div>Per machine</div><div style="text-align:right"><b>${this.escapeHtml(this.formatNumber(perMachineQty))}</b>${this.escapeHtml(unit)}</div>`}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         `;
@@ -617,6 +825,16 @@ export class Visualization {
         const recipeName = recipe?.name || '';
         const outputName = recipe?.itemName || row.product || '';
         const byName = recipe?.secondItemName || '';
+
+        const buildingName = recipe?.building?.name || '';
+        const buildingBlock = buildingName
+            ? `
+                <div style="display:flex;align-items:center;gap:8px;margin:6px 0">
+                    ${buildingIcon ? this.iconImg(buildingIcon, buildingName, 24) : ''}
+                    <div><b>${this.escapeHtml(buildingName)}</b> x ${this.formatNumber(buildingAmount)}</div>
+                </div>
+            `
+            : '';
 
         const clockSpeed = row?.recipeSetting?.clockSpeed;
         const somersloop = row?.recipeSetting?.useSomersloop;
@@ -668,7 +886,7 @@ export class Visualization {
         const byProductExport = row?.extraCells?.ExportPerMin;
 
         return `
-            <div style="min-width:340px">
+            <div style="min-width:300px;max-width:460px;font-size:13px;line-height:1.25">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                     ${this.iconImg(outputIcon, outputName, 28)}
                     <div>
@@ -677,21 +895,15 @@ export class Visualization {
                     </div>
                 </div>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0">
-                    <div><b>Qty</b>: ${this.formatNumber(row.quantity)}/min</div>
-                    <div><b>Export</b>: ${this.formatNumber(row.exportPerMin)}/min</div>
-                    <div><b>Usage</b>: ${this.formatNumber(row.Usage)}/min</div>
-                    <div><b>Clock</b>: ${this.formatNumber(clockSpeed ?? 100)}%</div>
+                ${buildingBlock}
+
+                <div style="display:grid;grid-template-columns:max-content 1fr;column-gap:10px;row-gap:4px;margin:8px 0;align-items:baseline">
+                    <div><b>Qty</b></div><div>${this.formatNumber(row.quantity)}/min</div>
+                    <div><b>Export</b></div><div>${this.formatNumber(row.exportPerMin)}/min</div>
+                    <div><b>Local usage</b></div><div>${this.formatNumber(row.Usage)}/min</div>
+                    <div><b>Clock</b></div><div>${this.formatNumber(clockSpeed ?? 100)}%</div>
+                    ${typeof somersloop === 'boolean' ? `<div><b>Somersloop</b></div><div>${somersloop ? 'On' : 'Off'}</div>` : ''}
                 </div>
-
-                ${typeof somersloop === 'boolean' ? `<div style="margin-bottom:6px"><b>Somersloop</b>: ${somersloop ? 'On' : 'Off'}</div>` : ''}
-
-                ${buildingIcon ? `
-                    <div style="display:flex;align-items:center;gap:8px;margin:8px 0">
-                        ${this.iconImg(buildingIcon, recipe?.building?.name || 'Building', 26)}
-                        <div><b>${this.escapeHtml(recipe?.building?.name || '')}</b> × ${this.formatNumber(buildingAmount)}</div>
-                    </div>
-                ` : ''}
 
                 <hr style="margin:8px 0">
                 <div style="font-weight:600;margin-bottom:4px">Inputs (recipe resources)</div>
