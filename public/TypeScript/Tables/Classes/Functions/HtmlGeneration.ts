@@ -6,6 +6,22 @@ import {ProductionTableRow} from "../Data/ProductionTableRow";
 
 export class HtmlGeneration {
 
+    /**
+     * Formats a number for display purposes only.
+     * - Integers are displayed without decimals
+     * - Floats are rounded to 5 decimals, with trailing zeros removed
+     * @param value - The value to format
+     * @returns Formatted string
+     */
+    private static formatNumber(value: number | string): string {
+        const n = Number(value ?? 0);
+        if (Number.isNaN(n)) return String(value ?? '');
+        if (n % 1 === 0) return n.toFixed(0);
+        // Round to 5 decimals, then remove trailing zeros
+        const rounded = Math.round(n * 100000) / 100000;
+        return rounded.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
+    }
+
     private static itemClassMap: Record<string, string> | null = null;
 
     private static getItemClassMap(): Record<string, string> {
@@ -118,9 +134,7 @@ export class HtmlGeneration {
      */
     public static generateImportsTableRows(importsTableRows: ImportsTableRow[]): string {
         const rowsHTML = importsTableRows.map(row => {
-            const formattedQuantity = Number(row.quantity) % 1 === 0 ?
-                row.quantity.toFixed(0) :
-                row.quantity.toFixed(5);
+            const formattedQuantity = this.formatNumber(row.quantity);
 
             const iconSrc = this.getItemIconSrc(row.itemId);
             const iconHtml = iconSrc
@@ -153,9 +167,7 @@ export class HtmlGeneration {
             : importsTableRows;
 
         return rows.map((row, index) => {
-            const formattedQuantity = Number(row.quantity) % 1 === 0 ?
-                row.quantity.toFixed(0) :
-                row.quantity.toFixed(5);
+            const formattedQuantity = this.formatNumber(row.quantity);
 
             const iconSrc = this.getItemIconSrc(row.itemId);
             const iconHtml = iconSrc
@@ -347,7 +359,6 @@ export class HtmlGeneration {
             let doubleExport = '';
             let rowSpan = '';
             if (row.doubleExport) {
-                style = 'style="height: 78px"';
                 rowSpan = 'rowspan="2"';
                 doubleExport = `
             <tr class="extra-output">
@@ -419,7 +430,7 @@ export class HtmlGeneration {
         <div class="card mb-2" id="check-${index}">
             <div class="card-body p-3">
                 <h5 class="card-title recipeName">${recipeName}</h5>
-                <p class="card-text"><span class="productionAmount">${productionAmount}</span> per min - <span class="buildingAmount">${+buildingAmount.toFixed(5)}</span> <span class="buildingName">${building}</span></p>
+                <p class="card-text"><span class="productionAmount">${productionAmount}</span> per min - <span class="buildingAmount">${this.formatNumber(buildingAmount)}</span> <span class="buildingName">${building}</span></p>
                 <div style="display: flex; justify-content: space-between;">
                     <div>
                         <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="dark" for="build" class="beenBuild"

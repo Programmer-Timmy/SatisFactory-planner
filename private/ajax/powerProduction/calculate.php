@@ -29,7 +29,7 @@ foreach ($powerProduction as $production) {
 
 $totalPowerProduction *= $bonus_percentage;
 
-GameSaves::updatePowerProduction($gameSaveId, round($totalPowerProduction));
+GameSaves::updatePowerProduction($gameSaveId, $totalPowerProduction);
 
-echo json_encode(['success' => true, 'totalPowerProduction' => round($totalPowerProduction)]);
+echo json_encode(['success' => true, 'totalPowerProduction' => $totalPowerProduction]);
 

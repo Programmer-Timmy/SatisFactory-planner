@@ -509,7 +509,7 @@ export class Visualization {
             for (let j = 0; j < row.imports.length; j++) {
                 const importRow = row.imports[j];
                 const itemId = row.recipe?.resources?.[j]?.itemId || 0;
-                this.importConnections.push(new Connection(index, importRow.index, i, +importRow.amount.toFixed(3), importRow.product, itemId));
+                this.importConnections.push(new Connection(index, importRow.index, i, importRow.amount, importRow.product, itemId));
                 index++;
             }
         }
@@ -566,7 +566,7 @@ export class Visualization {
             for (let j = 0; j < row.productionImports.length; j++) {
                 const importRow = row.productionImports[j];
                 const itemId = row.recipe?.resources?.[j]?.itemId || 0;
-                this.productionConnections.push(new Connection(i, importRow.index, i, +importRow.amount.toFixed(3), importRow.product, itemId));
+                this.productionConnections.push(new Connection(i, importRow.index, i, importRow.amount, importRow.product, itemId));
             }
         }
     }
@@ -700,7 +700,9 @@ export class Visualization {
         const n = Number(value ?? 0);
         if (Number.isNaN(n)) return String(value ?? '');
         if (n % 1 === 0) return n.toFixed(0);
-        return n.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
+        // Round to 5 decimals, then remove trailing zeros
+        const rounded = Math.round(n * 100000) / 100000;
+        return rounded.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
     }
 
     private escapeHtml(s: string): string {

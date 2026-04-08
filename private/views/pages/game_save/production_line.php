@@ -88,6 +88,7 @@ foreach ($production as $product) {
 }
 
 function trimDecimal(string $value): string {
+    $value = number_format($value, 5, '.', '');
     // Convert to float to remove unnecessary decimal zeros
     if (strpos($value, '.') !== false) {
         // Remove trailing zeros after decimal

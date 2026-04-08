@@ -9,7 +9,9 @@ export class ProductionLineFunctions {
         const n = Number(value ?? 0);
         if (Number.isNaN(n)) return String(value ?? '');
         if (n % 1 === 0) return n.toFixed(0);
-        return n.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
+        // Round to 5 decimals, then remove trailing zeros
+        const rounded = Math.round(n * 100000) / 100000;
+        return rounded.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
     }
 
     public static updateRowDisplay(row: ProductionTableRow, rowToUpdate: JQuery<HTMLElement>): void {
@@ -240,8 +242,8 @@ export class ProductionLineFunctions {
             if (row.doubleExport && row.extraCells !== null) {
                 extraBlock.addClass('is-visible');
                 extraBlock.find('input.product-name[data-sp-skip="true"]').val(row.extraCells.Product);
-                extraBlock.find('input.usage-amount[data-sp-skip="true"]').val(row.extraCells.Usage);
-                extraBlock.find('input.export-amount[data-sp-skip="true"]').val(row.extraCells.ExportPerMin);
+                extraBlock.find('input.usage-amount[data-sp-skip="true"]').val(this.formatNumber(row.extraCells.Usage));
+                extraBlock.find('input.export-amount[data-sp-skip="true"]').val(this.formatNumber(row.extraCells.ExportPerMin));
 
                 extraBlock.find('[data-role="product2-text"]').text(row.extraCells.Product);
                 extraBlock.find('[data-role="usage2-text"]').text(this.formatNumber(row.extraCells.Usage));
@@ -279,18 +281,18 @@ export class ProductionLineFunctions {
                             </div>
                         </td>
                         <td class="m-0 p-0" data-label="Local usage / min">
-                            <input type="number" name="production_usage2[]" value="${row.extraCells.Usage}" class="form-control rounded-0" readonly step="any">
+                            <input type="number" name="production_usage2[]" value="${this.formatNumber(row.extraCells.Usage)}" class="form-control rounded-0" readonly step="any">
                         </td>
                         <td class="m-0 p-0" data-label="Export / min">
-                            <input type="number" name="production_export2[]" value="${row.extraCells.ExportPerMin}" class="form-control rounded-0" readonly step="any">
+                            <input type="number" name="production_export2[]" value="${this.formatNumber(row.extraCells.ExportPerMin)}" class="form-control rounded-0" readonly step="any">
                         </td>
                     </tr>
                 `);
                 extraRow.insertAfter(rowToUpdate);
             } else {
                 const extraRow = rowToUpdate.next('.extra-output');
-                extraRow.find('input[name="production_usage2[]"]').val(row.extraCells.Usage);
-                extraRow.find('input[name="production_export2[]"]').val(row.extraCells.ExportPerMin);
+                extraRow.find('input[name="production_usage2[]"]').val(this.formatNumber(row.extraCells.Usage));
+                extraRow.find('input[name="production_export2[]"]').val(this.formatNumber(row.extraCells.ExportPerMin));
             }
         } else if (rowToUpdate.next('.extra-output').length) {
             rowToUpdate.next('.extra-output').remove();

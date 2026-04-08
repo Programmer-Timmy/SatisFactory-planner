@@ -1,6 +1,24 @@
 <?php
 
 class GlobalUtility {
+
+    /**
+     * Formats a number for display purposes only.
+     * - Integers are displayed without decimals
+     * - Floats are rounded to 5 decimals, with trailing zeros removed
+     * @param float|int|string $value - The value to format
+     * @return string Formatted string
+     */
+    public static function formatNumber($value): string {
+        $n = floatval($value ?? 0);
+        if ($n == intval($n)) {
+            return number_format($n, 0, '.', '');
+        }
+        // Round to 5 decimals, then remove trailing zeros
+        $rounded = round($n, 5);
+        return rtrim(rtrim(number_format($rounded, 5, '.', ''), '0'), '.');
+    }
+
     /**
      * @param array $data
      * @param array $shownTables ['*'] for all columns or ['name', 'date', 'removed'] for specific columns
@@ -216,7 +234,7 @@ class GlobalUtility {
         ?>
         <div class="bg-white recipe-select position-relative">
             <input type="text" data-sp-skip="true" class="form-control rounded-0 search-input"
-                   name="recipeSearch" <?= $selectedRecipe ? (count($selectedRecipe->products) > 1 ? 'style="height: 78px"' : '') : '' ?>
+                   name="recipeSearch"
                    placeholder="Search by product or recipe" value="<?= htmlspecialchars($recipeName) ?>"
                    autocomplete="off">
             <input type="hidden" name="recipeId" class="recipe-id" data-field="recipeId" value="<?= $selectedRecipeId ?>" autocomplete="off">
@@ -264,7 +282,7 @@ class GlobalUtility {
                                             <img src="/image/items/<?= strtolower(str_replace('_', '-', $ingredient->class_name)) ?>_256.png"
                                                  title="<?= $ingredient->name ?>"
                                                  class="img-fluid" style="width: 26px; height: 26px;" loading="lazy">
-                                            <small class="text-muted"><?= round($ingredient->quantity, 5) ?></small>
+                                            <small class="text-muted"><?= GlobalUtility::formatNumber($ingredient->quantity) ?></small>
                                         </div>
                                     <?php endforeach; ?>
 
@@ -287,7 +305,7 @@ class GlobalUtility {
                                             <img src="/image/items/<?= strtolower(str_replace('_', '-', $product->class_name)) ?>_256.png"
                                                  title="<?= $product->name ?>"
                                                  class="img-fluid" style="width: 26px; height: 26px;" loading="lazy">
-                                            <small class="text-muted"><?= round($product->quantity, 5) ?></small>
+                                            <small class="text-muted"><?= GlobalUtility::formatNumber($product->quantity) ?></small>
                                         </div>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
