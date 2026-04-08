@@ -163,8 +163,8 @@ export class Visualization {
                     }
                 },
                 {
-                    // Production nodes render their content via cytoscape-node-html-label
-                    selector: "node.production-node",
+                    // Production, import, and export nodes render their content via cytoscape-node-html-label
+                    selector: "node.production-node, node.import-node, node.export-node",
                     style: {
                         "label": "",
                         "background-image": "none",
@@ -180,13 +180,7 @@ export class Visualization {
                 {
                     selector: "edge",
                     style: ({
-                        "label": "data(label)",
-                        "font-size": EDGE_TEXT_SIZE,
-                        "text-background-color": "white",
-                        "text-background-opacity": 0.7,
-                        "text-background-padding": "4px",
-                        "text-background-shape": "roundrectangle",
-                        "color": "#111",
+                        "label": "",
                         "width": 4,
                         "line-color": "data(color)",
                         "target-arrow-color": "data(color)",
@@ -212,6 +206,24 @@ export class Visualization {
                     halignBox: 'center',
                     valignBox: 'center',
                     tpl: (data: any) => this.buildProductionNodeHtml(data)
+                },
+                {
+                    query: 'node.import-node',
+                    cssClass: 'cy-import-card',
+                    halign: 'center',
+                    valign: 'center',
+                    halignBox: 'center',
+                    valignBox: 'center',
+                    tpl: (data: any) => this.buildImportNodeHtml(data)
+                },
+                {
+                    query: 'node.export-node',
+                    cssClass: 'cy-export-card',
+                    halign: 'center',
+                    valign: 'center',
+                    halignBox: 'center',
+                    valignBox: 'center',
+                    tpl: (data: any) => this.buildExportNodeHtml(data)
                 }
             ]);
         } catch (e) {
@@ -220,6 +232,11 @@ export class Visualization {
         }
 
         cy.ready(() => {
+            this.renderEdgeLabels(cy);
+
+            cy.on('pan zoom', () => this.renderEdgeLabels(cy));
+            cy.on('position', 'node', () => this.renderEdgeLabels(cy));
+
             // @ts-ignore
             cy.nodes().forEach(node => {
                 this.applyQTip(node, node.data('title'));
@@ -356,9 +373,9 @@ export class Visualization {
         const hasSomersloop = typeof node?.somersloop === 'boolean';
 
         const baseWidth = isProduction ? 290 : 200;
-        const baseHeight = isProduction ? 185 : 170;
+        const baseHeight = isProduction ? 185 : 110;
         const cardWidth = baseWidth;
-        const cardHeight = baseHeight + (hasRecipeName ? 12 : 0) + (hasSomersloop ? 12 : 0);
+        const cardHeight = isProduction ? (baseHeight + (hasRecipeName ? 12 : 0) + (hasSomersloop ? 12 : 0)) : baseHeight;
 
         const data: any = {
             id: `${type}_${node.id}`,
@@ -382,8 +399,8 @@ export class Visualization {
             byproductName: node?.byproductName || null,
             byproductExportPerMin: node?.byproductExportPerMin ?? null,
 
-            cardWidth: isProduction ? cardWidth : undefined,
-            cardHeight: isProduction ? cardHeight : undefined
+            cardWidth,
+            cardHeight
         };
 
         return {
@@ -392,19 +409,28 @@ export class Visualization {
         }
     }
 
-    private addConnection(type: 'import' | 'export' | 'production', connection: any, sourcePrefix: string, targetPrefix: string) {
+    private addConnection(type: 'import' | 'export' | 'production', connection: Connection, sourcePrefix: string, targetPrefix: string) {
         const qty = this.formatNumber(connection.quantity);
-        const label = `${connection.product}\n${qty}/min`;
+
+        // Resolve icon from the product name or id stored on the connection
+        const icon = connection.itemId
+            ? HtmlGeneration.getItemIconSrcForId(connection.itemId)
+            : null;
+
         return {
             data: {
                 id: `${type}Connection_${connection.id}`,
                 source: `${sourcePrefix}_${connection.sourceId}`,
                 target: `${targetPrefix}_${connection.targetId}`,
-                label,
+                label: `${connection.product}\n${qty}/min`,  // keep as fallback
+                product: connection.product,
+                qty,
+                icon,
                 color: type === 'import' ? '#0d6efd' : type === 'export' ? '#dc3545' : '#28A745'
             }
         };
     }
+
     /**
      * Get the data from the tables
      * @private
@@ -473,10 +499,12 @@ export class Visualization {
         let index = 0;
         for (let i = 0; i < this.TableHandler.productionTableRows.length; i++) {
             const row = this.TableHandler.productionTableRows[i];
+            console.log(row);
 
             for (let j = 0; j < row.imports.length; j++) {
                 const importRow = row.imports[j];
-                this.importConnections.push(new Connection(index, importRow.index, i, +importRow.amount.toFixed(3), importRow.product));
+                const itemId = row.recipe?.resources?.[j]?.itemId || 0;
+                this.importConnections.push(new Connection(index, importRow.index, i, +importRow.amount.toFixed(3), importRow.product, itemId));
                 index++;
             }
         }
@@ -532,7 +560,8 @@ export class Visualization {
 
             for (let j = 0; j < row.productionImports.length; j++) {
                 const importRow = row.productionImports[j];
-                this.productionConnections.push(new Connection(i, importRow.index, i, +importRow.amount.toFixed(3), importRow.product));
+                const itemId = row.recipe?.resources?.[j]?.itemId || 0;
+                this.productionConnections.push(new Connection(i, importRow.index, i, +importRow.amount.toFixed(3), importRow.product, itemId));
             }
         }
     }
@@ -573,7 +602,7 @@ export class Visualization {
                 (node as any).icon = icon;
                 (node as any).titleHtml = this.buildSimpleTitleHtml('Export', icon, productName, row.exportPerMin);
                 this.exportNodes.push(node);
-                this.exportConnections.push(new Connection(index, i, this.exportNodes.length - 1, row.exportPerMin, productName));
+                this.exportConnections.push(new Connection(index, i, this.exportNodes.length - 1, row.exportPerMin, productName, recipe?.item_id));
                 index++;
             }
 
@@ -588,7 +617,7 @@ export class Visualization {
                 (node as any).icon = byIcon;
                 (node as any).titleHtml = this.buildSimpleTitleHtml('Export (by-product)', byIcon, byName, qty);
                 this.exportNodes.push(node);
-                this.exportConnections.push(new Connection(index, i, this.exportNodes.length - 1, qty, byName));
+                this.exportConnections.push(new Connection(index, i, this.exportNodes.length - 1, qty, byName, recipe?.item_id2 || 0));
                 index++;
             }
         }
@@ -703,6 +732,75 @@ export class Visualization {
                 </div>
             </div>
         `;
+    }
+    private buildImportNodeHtml(data: any): string {
+        const icon = data?.icon || null;
+        const product = String(data?.product || '');
+        const quantity = this.formatNumber(data?.quantity ?? 0);
+        const unit = String(data?.unit || '/min');
+        const cardW = 200;
+        const cardH = 110;
+
+        return `
+        <div style="width:${cardW}px;height:${cardH}px;pointer-events:none;box-sizing:border-box;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch">
+            <div style="width:${cardW}px;height:${cardH}px;box-sizing:border-box;overflow:hidden;background:#fff;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column">
+
+                <!-- Product section -->
+                <div style="display:flex;gap:8px;align-items:flex-start;min-width:0">
+                    <div style="flex:0 0 auto;padding-top:2px">
+                        ${icon ? `<img src="${icon}" alt="${this.escapeHtml(product)}" style="width:30px;height:30px;object-fit:contain" loading="lazy">` : ''}
+                    </div>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:12px;font-weight:750;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${this.escapeHtml(product)}</div>
+                        <div style="display:grid;grid-template-columns:max-content 1fr;column-gap:8px;row-gap:2px;font-size:11px;color:#555;line-height:1.15;margin-top:3px;align-items:baseline">
+                            <div>Qty</div><div style="text-align:right"><b>${this.escapeHtml(quantity)}</b>${this.escapeHtml(unit)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Label pinned to bottom -->
+                <div style="margin-top:auto;padding:5px 8px;border-radius:10px;background:rgba(0,0,0,0.035)">
+                    <div style="font-size:10.5px;font-weight:700;color:#0d6efd;text-transform:uppercase;letter-spacing:0.04em">Import</div>
+                </div>
+
+            </div>
+        </div>
+    `;
+    }
+
+    private buildExportNodeHtml(data: any): string {
+        const icon = data?.icon || null;
+        const product = String(data?.product || '');
+        const quantity = this.formatNumber(data?.quantity ?? 0);
+        const unit = String(data?.unit || '/min');
+        const cardW = 200;
+        const cardH = 110;
+
+        return `
+        <div style="width:${cardW}px;height:${cardH}px;pointer-events:none;box-sizing:border-box;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch">
+            <div style="width:${cardW}px;height:${cardH}px;box-sizing:border-box;overflow:hidden;background:#fff;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column">
+
+                <!-- Product section -->
+                <div style="display:flex;gap:8px;align-items:flex-start;min-width:0">
+                    <div style="flex:0 0 auto;padding-top:2px">
+                        ${icon ? `<img src="${icon}" alt="${this.escapeHtml(product)}" style="width:30px;height:30px;object-fit:contain" loading="lazy">` : ''}
+                    </div>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:12px;font-weight:750;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${this.escapeHtml(product)}</div>
+                        <div style="display:grid;grid-template-columns:max-content 1fr;column-gap:8px;row-gap:2px;font-size:11px;color:#555;line-height:1.15;margin-top:3px;align-items:baseline">
+                            <div>Qty</div><div style="text-align:right"><b>${this.escapeHtml(quantity)}</b>${this.escapeHtml(unit)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Label pinned to bottom -->
+                <div style="margin-top:auto;padding:5px 8px;border-radius:10px;background:rgba(0,0,0,0.035)">
+                    <div style="font-size:10.5px;font-weight:700;color:#dc3545;text-transform:uppercase;letter-spacing:0.04em">Export</div>
+                </div>
+
+            </div>
+        </div>
+    `;
     }
 
     private buildProductionNodeHtml(data: any): string {
@@ -919,13 +1017,82 @@ export class Visualization {
 
                 ${byName && byProductExport ? `
                     <hr style="margin:8px 0">
+                    <div style="font-weight:600;margin-bottom:4px">By-product export</div>
                     <div style="display:flex;align-items:center;gap:8px">
                         ${this.iconImg(byproductIcon, byName, 24)}
-                        <div><b>By-product export</b>: ${this.escapeHtml(byName)} — ${this.formatNumber(byProductExport)}/min</div>
+                        <div>${this.escapeHtml(byName)} — ${this.formatNumber(byProductExport)}/min</div>
                     </div>
                 ` : ''}
             </div>
         `;
+    }
+
+    private buildEdgeLabelHtml(color: string, icon: string | null, product: string, qty: string): string {
+        const dot = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0"></span>`;
+        const img = icon
+            ? `<img src="${icon}" alt="${this.escapeHtml(product)}" style="width:18px;height:18px;object-fit:contain;flex-shrink:0" loading="lazy">`
+            : dot;
+
+        return `
+        <div style="
+            display:inline-flex;
+            align-items:center;
+            gap:5px;
+            background:#fff;
+            border:1.5px solid ${color}22;
+            border-radius:999px;
+            padding:3px 8px 3px 5px;
+            box-shadow:0 1px 4px rgba(0,0,0,0.10);
+            font-size:11px;
+            font-family:sans-serif;
+            color:#222;
+            white-space:nowrap;
+            pointer-events:none;
+            user-select:none;
+        ">
+            ${img}
+            <span style="font-weight:600;color:#111;max-width:90px;overflow:hidden;text-overflow:ellipsis">${this.escapeHtml(product)}</span>
+            <span style="color:${color};font-weight:700">${this.escapeHtml(qty)}</span>
+            <span style="color:#888;font-size:10px">/min</span>
+        </div>
+    `;
+    }
+
+    private renderEdgeLabels(cy: Core): void {
+        const container = document.getElementById('graph');
+        if (!container) return;
+
+        // Remove any previous overlays
+        container.querySelectorAll('.cy-edge-label-overlay').forEach(el => el.remove());
+
+        const pan = cy.pan();
+        const zoom = cy.zoom();
+
+        cy.edges().forEach(edge => {
+            const data = edge.data();
+            const icon = data.icon || null;
+            const product = data.product || '';
+            const qty = data.qty || '';
+            const color = data.color || '#888';
+
+            // Midpoint in rendered coordinates
+            const midpoint = edge.midpoint();
+            const x = midpoint.x * zoom + pan.x;
+            const y = midpoint.y * zoom + pan.y;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'cy-edge-label-overlay';
+            wrapper.style.cssText = `
+            position:absolute;
+            left:${x}px;
+            top:${y}px;
+            transform:translate(-50%,-50%);
+            pointer-events:none;
+            z-index:10;
+        `;
+            wrapper.innerHTML = this.buildEdgeLabelHtml(color, icon, product, qty);
+            container.appendChild(wrapper);
+        });
     }
 
 }
