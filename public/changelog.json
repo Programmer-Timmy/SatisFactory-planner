@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.15.2",
+    "date": "April 8 2026",
+    "changes": [
+      "Changed: Edge labels now scale with Cytoscape zoom so labels shrink/grow when zooming.",
+      "Removed: Edge tooltips (no titles shown on connections).",
+      "Changed: Fixed edge label height (24px) and explicit font sizes for consistent appearance."
+    ]
+  },
+  {
     "version": "1.15.1",
     "date": "April 8 2026",
     "changes": [

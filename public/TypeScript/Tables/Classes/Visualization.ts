@@ -258,10 +258,8 @@ export class Visualization {
                 });
             });
 
-            // @ts-ignore
-            cy.edges().forEach(edge => {
-                this.applyQTip(edge, edge.data('label'));
-            });
+            // Edge tooltips removed: edges should not show a title/tooltip anymore.
+            // (Previously: applyQTip on each edge)
 
             cy.center();
             cy.fit();
@@ -1049,17 +1047,20 @@ export class Visualization {
             border-radius:999px;
             padding:3px 8px 3px 5px;
             box-shadow:0 1px 4px rgba(0,0,0,0.10);
-            font-size:11px;
+            font-size:11px !important;
             font-family:sans-serif;
             color:#222;
             white-space:nowrap;
             pointer-events:none;
             user-select:none;
+            min-height:24px;
+            height:24px;
+            box-sizing:border-box;
         ">
             ${img}
-            <span style="font-weight:600;color:#111;max-width:90px;overflow:hidden;text-overflow:ellipsis">${this.escapeHtml(product)}</span>
-            <span style="color:${color};font-weight:700">${this.escapeHtml(qty)}</span>
-            <span style="color:#888;font-size:10px">/min</span>
+            <span style="font-weight:600;color:#111;max-width:90px;overflow:hidden;text-overflow:ellipsis;font-size:11px !important">${this.escapeHtml(product)}</span>
+            <span style="color:${color};font-weight:700;font-size:11px !important">${this.escapeHtml(qty)}</span>
+            <span style="color:#888;font-size:10px !important">/min</span>
         </div>
     `;
     }
@@ -1088,11 +1089,14 @@ export class Visualization {
 
             const wrapper = document.createElement('div');
             wrapper.className = 'cy-edge-label-overlay';
+            // Position the overlay and scale it according to Cytoscape zoom so the label visually zooms with the graph
             wrapper.style.cssText = `
             position:absolute;
             left:${x}px;
             top:${y}px;
-            transform:translate(-50%,-50%);
+            /* Translate to center the element then scale by zoom to match Cytoscape's zoom level */
+            transform:translate(-50%,-50%) scale(${zoom});
+            transform-origin:center center;
             pointer-events:none;
             z-index:10;
         `;
