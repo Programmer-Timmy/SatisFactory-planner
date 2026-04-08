@@ -191,7 +191,12 @@ export class Visualization {
                     } as any)
                 }
             ],
-            layout: layout
+            layout: layout,
+            minZoom: 0.1,
+            maxZoom: 2,
+            zoom: 1,
+
+            wheelSensitivity: 0.2,
         });
 
         // Render rich HTML inside production nodes (multiple icons + details)
@@ -602,7 +607,7 @@ export class Visualization {
                 (node as any).icon = icon;
                 (node as any).titleHtml = this.buildSimpleTitleHtml('Export', icon, productName, row.exportPerMin);
                 this.exportNodes.push(node);
-                this.exportConnections.push(new Connection(index, i, this.exportNodes.length - 1, row.exportPerMin, productName, recipe?.item_id));
+                this.exportConnections.push(new Connection(index, i, this.exportNodes.length - 1, row.exportPerMin, productName, recipe?.item_id || 0));
                 index++;
             }
 
