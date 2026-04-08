@@ -46,7 +46,172 @@ export class TableHandler {
 
 
     constructor() {
+        document.addEventListener('pl-settings-changed', () => this.onSettingsChanged());
         this.initialize();
+    }
+
+    private isTableElement(tableId: string): boolean {
+        const el = $(`#${tableId}`);
+        return el.length > 0 && el.is('table');
+    }
+
+    private getTableBody(tableId: string): JQuery<HTMLElement> {
+        const el = $(`#${tableId}`);
+        if (this.isTableElement(tableId)) {
+            return el.find('tbody');
+        }
+        return el;
+    }
+
+    private getRows(tableId: string): JQuery<HTMLElement> {
+        const el = $(`#${tableId}`);
+        if (this.isTableElement(tableId)) {
+            return el.find('tbody tr');
+        }
+
+        const rows = el.find('[data-row-index]');
+        if (tableId === 'recipes') {
+            return rows.not('[data-role="recipe-template"]');
+        }
+        return rows;
+    }
+
+    private renderProductionCardsFromTemplate() {
+        const container = $('#recipes');
+        const template = container.find('[data-role="recipe-template"]').first();
+        if (!template.length) {
+            // Fallback for non-production-line pages
+            container.html(HtmlGeneration.generateProductionCards(this.productionTableRows));
+            return;
+        }
+
+        const addCard = container.find('[data-role="add-recipe-card"]').first();
+        const insertBefore = addCard.length ? addCard : template;
+
+        // Remove existing rendered recipe cards, keep template + add card
+        container.find('.pl-production-row').not(template).remove();
+
+        // Render current rows
+        const rowsToRender = this.productionTableRows.filter(r => Number(((r as any).recipeId ?? (r as any).recipe_id) || 0) > 0 || Number((r as any).quantity) > 0);
+        rowsToRender.forEach((row, index) => {
+            // Normalize import field names (some exports may use recipe_id)
+            const normalizedRecipeId = Number(((row as any).recipeId ?? (row as any).recipe_id) || 0);
+            (row as any).recipeId = normalizedRecipeId;
+
+            const newRow = template.clone();
+            newRow.removeClass('d-none pl-recipe-template');
+            newRow.removeAttr('data-role');
+            newRow.attr('data-row-index', index);
+            newRow.removeClass('is-collapsed');
+
+            // Persist row id for saving
+            newRow.find('input[name="production_id[]"]').first().val((row as any).row_id ?? '');
+
+            // Pre-fill recipe select (hidden id + visible text) before initializing ProductionSelect
+            newRow.find('.recipe-select').each((_, el) => {
+                const select = $(el);
+                const recipeId = Number((row as any)?.recipeId || 0);
+
+                const recipeIdInput = select.find('input.recipe-id[data-field="recipeId"]').first();
+                if (recipeIdInput.length) {
+                    recipeIdInput.val(recipeId ? String(recipeId) : '');
+                }
+
+                if (recipeId) {
+                    const selected = select.find(`.select-item[data-recipe-id="${recipeId}"]`).first();
+                    const recipeName = (selected.data('recipe-name') as string) || selected.find('.recipe-name').text();
+
+                    const searchInput = select.find('input.search-input').first();
+                    if (searchInput.length) {
+                        searchInput.val(recipeName || '');
+                        const productCount = selected.find('.recipe-product').length;
+                        searchInput.css('height', productCount > 1 ? '78px' : '');
+                    }
+
+                    if (selected.length) {
+                        selected.addClass('active').siblings().removeClass('active');
+                    }
+                }
+
+                try {
+                    new ProductionSelect(select);
+                } catch {
+                    // ignore
+                }
+            });
+
+            // Insert and then populate computed display fields
+            newRow.insertBefore(insertBefore);
+
+            // Re-create RecipeSetting so clock speed + somersloop work after import
+            const importedClock = (row as any)?.recipeSetting?.clockSpeed;
+            const importedSomersloop = (row as any)?.recipeSetting?.useSomersloop;
+            const persisted = this.recipeSettings.find((s) => s.id === Number((row as any).recipeId));
+            const clockSpeed = Number.isFinite(importedClock) ? Number(importedClock) : (persisted?.clockSpeed || 100);
+            const useSomersloop = typeof importedSomersloop === 'boolean' ? importedSomersloop : (persisted?.useSomersloop || false);
+            (row as any).recipeSetting = new RecipeSetting(this, row as any, newRow, clockSpeed, useSomersloop);
+
+            this.updateRowInTable('recipes', index, row);
+        });
+
+        this.reindexComponentRows('recipes');
+        this.initTooltips(container);
+    }
+
+    private getRowIndexFromTarget(target: JQuery<HTMLElement>, tableId: string): number {
+        const componentRow = target.closest('[data-row-index]');
+        if (componentRow.length) {
+            return Number(componentRow.data('row-index'));
+        }
+
+        const tr = target.closest('tr');
+        const amountExtra = tr.prevAll('.extra-output').length;
+        return tr.index() - amountExtra;
+    }
+
+    private reindexComponentRows(tableId: string) {
+        if (this.isTableElement(tableId)) return;
+
+        this.getRows(tableId).each((index, el) => {
+            $(el).attr('data-row-index', index);
+        });
+    }
+
+    private initTooltips(scope: JQuery<HTMLElement>) {
+        const bootstrapAny = (window as any).bootstrap;
+        if (!bootstrapAny?.Tooltip) return;
+
+        scope.find('[data-bs-toggle="tooltip"]').each((_, el) => {
+            try {
+                if (bootstrapAny.Tooltip.getInstance && bootstrapAny.Tooltip.getInstance(el)) return;
+                new bootstrapAny.Tooltip(el, {trigger: 'hover'});
+            } catch {
+                // ignore tooltip init errors
+            }
+        });
+    }
+
+    private onSettingsChanged() {
+        if (this.viewOnly) return;
+
+        if (this.settings.autoImportExport) {
+            const data: { importsTableRows: ImportsTableRow[], indexes: number[] } = ImportsTableFunctions.calculateImports(this.productionTableRows);
+            this.importsTableRows = data.importsTableRows;
+            this.UpdateOnIndex(data.indexes);
+            return;
+        }
+
+        // Manual mode: show editable imports again
+        if (this.isTableElement('imports')) {
+            const importsHtml = HtmlGeneration.generateImportsTableRows(this.importsTableRows);
+            const $tbody = $('#imports tbody');
+            $tbody.empty();
+            const parsedRows = $.parseHTML(importsHtml, document, false) || [];
+            $tbody.append(parsedRows);
+        } else {
+            $('#imports').html(HtmlGeneration.generateImportsCards(this.importsTableRows));
+        }
+        this.addSpecificEventListener('imports');
     }
 
     private async initialize(): Promise<void> {
@@ -69,6 +234,17 @@ export class TableHandler {
 
         this.loadFromLocal();
         await this.getTableData();
+
+        // Ensure component-mode rows show computed display values on initial render
+        if (!this.isTableElement('recipes')) {
+            this.productionTableRows.forEach((row, index) => {
+                this.updateRowInTable('recipes', index, row);
+            });
+        }
+
+        // Force-initialize Bootstrap tooltips after DOM has been rendered
+        this.initTooltips($(document.body));
+
         this.addEventListeners();
         this.addButtonEventListeners();
         this.addShortcuts();
@@ -90,8 +266,8 @@ export class TableHandler {
     }
 
     private async getTableData() {
-        this.totalRows = $('#recipes tbody tr').length;
-        this.progressInterval = 100 / this.totalRows;0
+        this.totalRows = this.getRows('recipes').length;
+        this.progressInterval = 100 / this.totalRows;
         this.recipeSettings = JSON.parse($("#settings-data").text() ?? {})
 
         this.productionTableRows = await this.readTable<ProductionTableRow>('recipes', ProductionTableRow, true);
@@ -123,7 +299,7 @@ export class TableHandler {
     private async readTable<T>(id: string, rowClass: {
         new(...args: any[]): T
     }, useProgress: boolean = false): Promise<T[]> {
-        const table = $(`#${id} tbody tr`);
+        const table = this.getRows(id);
         let lengthReduction = 0;
         if (id === 'power') {
             lengthReduction = 1;
@@ -146,33 +322,45 @@ export class TableHandler {
                     return;
                 }
                 const type = $value.attr('type');
-                if (type === 'number') {
+                const isNumeric = type === 'number' || $value.hasClass('production-quantity') || $value.hasClass('usage-amount') || $value.hasClass('export-amount');
+                if (isNumeric) {
                     rowValues.push(Number($value.val()));
                 } else {
                     rowValues.push($value.val());
                 }
             });
 
-            // Handle double export in recipes table
-            if (id === 'recipes' && table[i + 1]?.classList.contains('extra-output')) {
+            // Handle double export in recipes table (table-mode: extra <tr>, component-mode: extra block inside row)
+            if (id === 'recipes' && (table[i + 1] as any)?.classList?.contains?.('extra-output')) {
                 const extraRow = table[i + 1];
                 const extraRowValues = $(extraRow).find('input, select').map((_, el) => $(el).val()).get();
 
-                // Create instance of ExtraProductionRow
                 const extraRowInstance = new ExtraProductionRow(
-                    extraRowValues[0] as string,          // Product
-                    Number(extraRowValues[1]),            // Usage
-                    Number(extraRowValues[2])             // ExportPerMin
+                    extraRowValues[0] as string,
+                    Number(extraRowValues[1]),
+                    Number(extraRowValues[2])
                 );
 
-                // Append extraRowInstance to rowValues
                 rowValues.push(true, extraRowInstance);
 
-                // Skip the extra row in the next iteration
                 i++;
                 this.finishedRows++;
             } else if (id === 'recipes') {
-                rowValues.push(false, null);
+                const extraBlock = $(row).find('.extra-output');
+                if (extraBlock.length && extraBlock.hasClass('is-visible')) {
+                    const product = extraBlock.find('input.product-name[data-sp-skip="true"]').val() as string;
+                    const usage = extraBlock.find('input.usage-amount[data-sp-skip="true"]').val() as string;
+                    const exp = extraBlock.find('input.export-amount[data-sp-skip="true"]').val() as string;
+
+                    const extraRowInstance = new ExtraProductionRow(
+                        product || '',
+                        Number(usage || 0),
+                        Number(exp || 0)
+                    );
+                    rowValues.push(true, extraRowInstance);
+                } else {
+                    rowValues.push(false, null);
+                }
             }
 
             if (id === 'recipes') {
@@ -185,19 +373,25 @@ export class TableHandler {
             }
 
             // @ts-ignore
-            const rowPromise = rowClass.create(...rowValues).then((row) => {
+            const rowPromise = rowClass.create(...rowValues).then((createdRow: any) => {
                 if (useProgress) {
                     this.updateProgress();
                 }
-                return row;
+
+                if (id === 'recipes') {
+                    const settings = this.recipeSettings.find((setting) => setting.id === +rowValues[0]);
+                    (createdRow as ProductionTableRow).recipeSetting = new RecipeSetting(
+                        this,
+                        createdRow as ProductionTableRow,
+                        $(row),
+                        settings?.clockSpeed || 100,
+                        settings?.useSomersloop || false
+                    );
+                }
+
+                return createdRow;
             });
             rowPromises.push(rowPromise);
-            if (id === 'recipes') {
-                const settings = this.recipeSettings.find((setting) => setting.id === +rowValues[0]);
-                rowPromise.then((productionTableRow: ProductionTableRow) => {
-                   productionTableRow.recipeSetting = new RecipeSetting(this, productionTableRow, $(row), settings?.clockSpeed || 100, settings?.useSomersloop || false);
-                });
-            }
 
         }
         return await Promise.all(rowPromises);
@@ -296,23 +490,25 @@ export class TableHandler {
      * Adds event listeners for change events on all inputs and selects within tables.
      */
     private async addEventListeners() {
+        this.bindRecipeCollapseControls($(document.body));
+        this.bindImportCollapseControls();
+
         if (this.viewOnly) {
             return;
         }
         const tables = ['imports', 'recipes', 'power'];
 
         tables.forEach((tableId) => {
-            const tableBody = $(`#${tableId} tbody`);
+            const tableBody = this.getTableBody(tableId);
             const inputsAndSelects = tableBody.find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])');
             const deleteButton = tableBody.find('.delete-production-row');
 
             deleteButton.each((_, element) => {
                 $(element).on('click', (event) => {
                     event.preventDefault();
-                    const target = $(event.target);
-                    const rowIndex = target.closest('tr').index();
-                    const amountExtra = target.closest('tr').prevAll('.extra-output').length;
-                    this.deleteRow(tableId, rowIndex - amountExtra, target);
+                    const target = $(event.target as any);
+                    const rowIndex = this.getRowIndexFromTarget(target, tableId);
+                    this.deleteRow(tableId, rowIndex, target);
                 });
 
 
@@ -327,6 +523,8 @@ export class TableHandler {
     }
 
     private async addEventListenersRow(row: JQuery<HTMLElement>, tableId: string) {
+        this.bindRecipeCollapseControls(row);
+
         row.find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])').each((_, element) => {
             $(element).on('change', (event) => {
                 this.handleInputChange(event, tableId);
@@ -335,15 +533,15 @@ export class TableHandler {
 
         row.find('.delete-production-row').on('click', (event) => {
             event.preventDefault();
-            const target = $(event.target);
-            const rowIndex = target.closest('tr').index();
-            const amountExtra = target.closest('tr').prevAll('.extra-output').length;
-            this.deleteRow(tableId, rowIndex - amountExtra, target);
+            const target = $(event.target as any);
+            const rowIndex = this.getRowIndexFromTarget(target, tableId);
+            this.deleteRow(tableId, rowIndex, target);
         });
     }
 
     private addSpecificEventListener(tableId: string) {
-        const inputsAndSelects = $(`#${tableId} tbody`).find( 'input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])');
+        this.bindRecipeCollapseControls(this.getTableBody(tableId));
+        const inputsAndSelects = this.getTableBody(tableId).find( 'input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])');
 
         inputsAndSelects.each((_, element) => {
             $(element).on('change', (event) => {
@@ -359,17 +557,19 @@ export class TableHandler {
      */
     private async handleInputChange(event: JQuery.ChangeEvent, tableId: string) {
         const target = $(event.target);
-        const rowIndex = target.closest('tr').index();
-        const amountExtra = target.closest('tr').prevAll('.extra-output').length;
+        const rowIndex = this.getRowIndexFromTarget(target, tableId);
+        const domRowIndex = this.isTableElement(tableId) ? target.closest('tr').index() : rowIndex;
         const columnIndex = target.closest('td').index();
         let value = target.val();
 
-        // If the last row is selected, add a new row
-        if (this.checkIfLastRow(target, tableId) && this.checkIfSelect(target)) {
+        const isComponentRecipes = tableId === 'recipes' && !this.isTableElement(tableId);
+
+        // If the last row is selected, add a new row (table mode). In component-mode recipes we use the "+" card.
+        if (!isComponentRecipes && this.checkIfLastRow(target, tableId) && this.checkIfSelect(target)) {
             this.addNewRow(tableId);
         }
 
-        const row = this.getRowByTableIdAndIndex(tableId, rowIndex - amountExtra);
+        const row = this.getRowByTableIdAndIndex(tableId, rowIndex);
 
         if (target.hasClass('production-quantity')) {
             const defaultValue = row.quantity;
@@ -377,19 +577,27 @@ export class TableHandler {
             target.val(value);
         }
 
-        if (row && columnIndex >= 0) {
-            this.updateRowData(row, columnIndex, value);
+        if (row) {
+            const field = (target.data('field') as string | undefined) || undefined;
+            if (field) {
+                const isNumeric = target.attr('type') === 'number' || target.hasClass('production-quantity');
+                // @ts-ignore - field names map to row keys (e.g. quantity, recipeId)
+                row[field] = isNumeric ? Number(value) : value;
+            } else if (columnIndex >= 0) {
+                this.updateRowData(row, columnIndex, value);
+            }
 
             switch (tableId) {
                 case 'imports':
-                    // Custom logic for imports table
+                    // Keep import UI (icons + collapsed summary) in sync
+                    this.updateRowInTable(tableId, domRowIndex, row);
                     break;
                 case 'recipes':
-                    await this.HandleProductionTable(row, rowIndex, value, tableId, target);
+                    await this.HandleProductionTable(row, domRowIndex, value, tableId, target);
                     this.checklist?.updateCheckList(row);
                     break;
                 case 'power':
-                    await this.HandlePowerTable(row, rowIndex, value, tableId, target);
+                    await this.HandlePowerTable(row, domRowIndex, value, tableId, target);
                     break;
                 default:
                     break;
@@ -428,6 +636,111 @@ export class TableHandler {
         row[key] = value;
     }
 
+    private setRecipeRowCollapsed(rowEl: JQuery<HTMLElement>, collapsed: boolean) {
+        const row = rowEl.closest('.pl-production-row');
+        row.toggleClass('is-collapsed', collapsed);
+
+        const btn = row.find('.pl-collapse-toggle').first();
+        btn.attr('aria-expanded', (!collapsed).toString());
+
+        const icon = btn.find('i');
+        icon.removeClass('fa-chevron-up fa-chevron-down');
+        icon.addClass(collapsed ? 'fa-chevron-down' : 'fa-chevron-up');
+    }
+
+    private setImportRowCollapsed(rowEl: JQuery<HTMLElement>, collapsed: boolean) {
+        const row = rowEl.closest('.pl-import-row');
+        row.toggleClass('is-collapsed', collapsed);
+
+        const btn = row.find('.pl-import-collapse-toggle').first();
+        btn.attr('aria-expanded', (!collapsed).toString());
+
+        const icon = btn.find('i');
+        icon.removeClass('fa-chevron-up fa-chevron-down');
+        icon.addClass(collapsed ? 'fa-chevron-down' : 'fa-chevron-up');
+
+        if (collapsed) {
+            this.updateImportCollapsedSummary(row);
+        }
+    }
+
+    private updateImportCollapsedSummary(row: JQuery<HTMLElement>) {
+        const select = row.find('select[data-field="itemId"]').first();
+        const hiddenItemId: any = row.find('input[data-field="itemId"]').first().val();
+
+        const itemId = select.length
+            ? (Number(select.val() as any) || 0)
+            : (Number(hiddenItemId) || 0);
+
+        const name = select.length ? (select.find('option:selected').text() || '') : '';
+        row.find('[data-role="import-name-collapsed"]').text(name);
+
+        const qtyVal: any = row.find('input[data-field="quantity"]').first().val();
+        const qtyText = (qtyVal ?? '').toString();
+        row.find('[data-role="import-qty-collapsed"]').text(qtyText);
+
+        const iconSrc = HtmlGeneration.getItemIconSrcForId(itemId);
+
+        const $imgs = row.find('img[data-role="import-icon"], img[data-role="import-icon-collapsed"]');
+        if (!iconSrc) {
+            $imgs.attr('src', '').css('display', 'none');
+        } else {
+            $imgs.attr('src', iconSrc).css('display', '');
+        }
+
+        // keep read-only qty display in sync when present
+        if (row.find('[data-role="import-qty-display"]').length) {
+            row.find('[data-role="import-qty-display"]').text(qtyText);
+        }
+    }
+
+    private bindImportCollapseControls() {
+        // Delegated handler so it keeps working when auto import/export re-renders #imports
+        $(document.body)
+            .off('click.pl-import-collapse', '.pl-import-collapse-toggle')
+            .on('click.pl-import-collapse', '.pl-import-collapse-toggle', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const btn = $(event.currentTarget as any);
+                const row = btn.closest('.pl-import-row');
+                this.setImportRowCollapsed(row, !row.hasClass('is-collapsed'));
+            });
+
+        // Fill collapsed summaries for existing rows (including read-only rows without a button)
+        $('#imports').find('.pl-import-row').each((_, el) => {
+            this.updateImportCollapsedSummary($(el));
+        });
+    }
+
+    private bindRecipeCollapseControls(scope: JQuery<HTMLElement>) {
+        // Per-row toggle
+        scope.find('.pl-collapse-toggle').off('click.pl-collapse').on('click.pl-collapse', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const btn = $(event.currentTarget as any);
+            const row = btn.closest('.pl-production-row');
+            this.setRecipeRowCollapsed(row, !row.hasClass('is-collapsed'));
+        });
+
+        // Global toggle
+        $('#pl-toggle-collapse-all').off('click.pl-collapse').on('click.pl-collapse', (event) => {
+            event.preventDefault();
+            const button = $(event.currentTarget as any);
+            const state = (button.data('state') as string) || 'expanded';
+            const collapse = state === 'expanded';
+
+            this.getRows('recipes').each((_, el) => {
+                this.setRecipeRowCollapsed($(el), collapse);
+            });
+
+            button.data('state', collapse ? 'collapsed' : 'expanded');
+            button.find('[data-role="label"]').text(collapse ? 'Expand all' : 'Collapse all');
+            const icon = button.find('i');
+            icon.removeClass('fa-compress fa-expand');
+            icon.addClass(collapse ? 'fa-expand' : 'fa-compress');
+        });
+    }
+
     /**
      * Updates the visual representation of the row in the table.
      * @param {string} tableId - The ID of the table.
@@ -435,22 +748,49 @@ export class TableHandler {
      * @param {any} row - The updated row object.
      */
     private updateRowInTable(tableId: string, rowIndex: number, row: any) {
-        const table = $(`#${tableId} tbody tr`);
+        const table = this.getRows(tableId);
         let rowToUpdate = $(table[rowIndex]);
-        rowToUpdate.find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])').each((index, element) => {
-            const key = Object.keys(row)[index];
-            let value: any;
 
-            if (row.recipe && row.recipe.hasOwnProperty(key)) {
-                value = row.recipe[key];  // Use value from recipe
-            } else {
-                value = row[key];  // Use value from row
+        if (this.isTableElement(tableId)) {
+            rowToUpdate.find('input:not([data-sp-skip="true"]), select:not([data-sp-skip="true"])').each((index, element) => {
+                const key = Object.keys(row)[index];
+                let value: any;
 
+                if (row.recipe && row.recipe.hasOwnProperty(key)) {
+                    value = row.recipe[key];
+                } else {
+                    value = row[key];
+                }
+                $(element).val(value);
+            });
+        } else {
+            // Component-mode: update only known fields explicitly (no column-index / Object.keys mapping)
+            if (tableId === 'imports') {
+                rowToUpdate.find('select[data-field="itemId"]').val(row.itemId);
+                rowToUpdate.find('input[data-field="quantity"]').val(row.quantity);
+
+                // keep collapsed summary (and icon) synced
+                this.updateImportCollapsedSummary(rowToUpdate);
             }
-            $(element).val(value);
-        });
+
+            if (tableId === 'recipes') {
+                // Keep recipe-select UI stable; only sync hidden id if present
+                const recipeIdInput = rowToUpdate.find('[data-field="recipeId"]');
+                if (recipeIdInput.length && row.recipeId) {
+                    recipeIdInput.val(row.recipeId);
+                }
+
+                rowToUpdate.find('.production-quantity[data-field="quantity"]').val(row.quantity);
+
+                rowToUpdate.find('input.product-name:not([data-sp-skip="true"])').val(row.product || '');
+                rowToUpdate.find('input.usage-amount:not([data-sp-skip="true"])').val(row.Usage ?? 0);
+                rowToUpdate.find('input.export-amount:not([data-sp-skip="true"])').val(row.exportPerMin ?? 0);
+            }
+        }
         if (tableId === 'recipes') {
             ProductionLineFunctions.handleDoubleExport(row, rowToUpdate);
+            ProductionLineFunctions.updateRowIcons(row, rowToUpdate);
+            ProductionLineFunctions.updateRowDisplay(row, rowToUpdate);
         }
     }
 
@@ -459,21 +799,68 @@ export class TableHandler {
      * @param {string} tableId - The ID of the table.
      */
     private addNewRow(tableId: string) {
-        let lastRow
-        if (tableId === 'power') {
-            lastRow = $(`#${tableId} tbody tr:nth-last-child(2)`);
+        const isComponent = !this.isTableElement(tableId);
+        const isComponentRecipes = tableId === 'recipes' && isComponent;
+
+        let sourceRow: JQuery<HTMLElement>;
+        let insertBeforeEl: JQuery<HTMLElement> | null = null;
+        let insertAfterEl: JQuery<HTMLElement> | null = null;
+
+        if (isComponentRecipes) {
+            const template = $('#recipes').find('[data-role="recipe-template"]').first();
+            if (!template.length) return;
+
+            sourceRow = template;
+            const addCard = $('#recipes').find('[data-role="add-recipe-card"]').first();
+            insertBeforeEl = addCard.length ? addCard : template;
         } else {
-            lastRow = $(`#${tableId} tbody tr:last`);
+            if (tableId === 'power') {
+                sourceRow = $(`#${tableId} tbody tr:nth-last-child(2)`);
+            } else {
+                sourceRow = this.getRows(tableId).last();
+            }
+            insertAfterEl = sourceRow;
         }
 
-        const newRow = lastRow.clone();
+        const newRow = sourceRow.clone();
+        if (isComponentRecipes) {
+            newRow.removeClass('pl-recipe-template d-none').removeAttr('data-role');
+            newRow.css('display', '');
+        }
         newRow.find('input[type="number"]').val(0);
         newRow.find('input[type="text"]').val('');
         newRow.find('input[name="power_clock_speed[]"]').val(100);
         newRow.find('select').prop('selectedIndex', 0);
-        newRow.insertAfter(lastRow);
+        newRow.find('.search-input').val('');
+        newRow.find('input.recipe-id').val('');
+        newRow.find('.extra-output').removeClass('is-visible');
+
+        // Component UI: keep production defaults sane when cloning the last row
+        newRow.find('.production-quantity').val('0');
+        newRow.find('.pl-clock-speed').val(100);
+        newRow.find('.pl-use-somersloop').prop('checked', false);
+
+        // New rows should start expanded
+        newRow.removeClass('is-collapsed');
+        if (tableId === 'recipes') {
+            this.setRecipeRowCollapsed(newRow, false);
+        }
+        if (tableId === 'imports') {
+            this.setImportRowCollapsed(newRow, false);
+        }
+
+        if (insertBeforeEl) {
+            newRow.insertBefore(insertBeforeEl);
+        } else if (insertAfterEl) {
+            newRow.insertAfter(insertAfterEl);
+        }
+
+        if (!this.isTableElement(tableId)) {
+            this.reindexComponentRows(tableId);
+        }
 
         this.addEventListenersRow(newRow, tableId);
+        this.initTooltips(newRow);
 
         switch (tableId) {
             case 'imports':
@@ -483,7 +870,24 @@ export class TableHandler {
                 const productionRow = new ProductionTableRow();
                 productionRow.recipeSetting = new RecipeSetting(this, productionRow, newRow);
                 this.productionTableRows.push(productionRow);
-                new ProductionSelect(newRow.find('.recipe-select'));
+
+                // Ensure the DOM row_id matches the in-memory row_id
+                newRow.find('input[type="hidden"][name="production_id[]"]').val(productionRow.row_id as any);
+                newRow.find('.delete-production-row').attr('data-id', productionRow.row_id as any);
+
+                // Clear cloned display values/icons (new row should look empty)
+                newRow.find('[data-role="building"]').attr('src', '').css('display', 'none');
+                newRow.find('[data-role="output1"], [data-role="output2"], [data-role="collapsed-output1"], [data-role="collapsed-output2"]').attr('src', '').css('display', 'none');
+                newRow.find('input.product-name').val('');
+                newRow.find('[data-role="product1-text"], [data-role="product2-text"]').text('');
+                newRow.find('[data-role="building-amount"]').text('');
+                newRow.find('.usage-amount, .export-amount').val('0');
+                newRow.find('[data-role="usage1-text"], [data-role="export1-text"], [data-role="usage2-text"], [data-role="export2-text"]').text('0');
+
+                const recipeSelect = newRow.find('.recipe-select');
+                if (recipeSelect.length) {
+                    new ProductionSelect(recipeSelect);
+                }
                 break;
             case 'power':
                 this.powerTableRows.push(new PowerTableRow());
@@ -500,6 +904,14 @@ export class TableHandler {
      * @returns {boolean} True if the element is in the last row, false otherwise.
      */
     private checkIfLastRow(target: JQuery, tableId: String): boolean {
+        if (!this.isTableElement(tableId as string)) {
+            const rowEl = target.closest('[data-row-index]');
+            if (rowEl.length) {
+                const idx = Number(rowEl.data('row-index'));
+                return idx === this.getRows(tableId as string).length - 1;
+            }
+        }
+
         if (tableId === 'power') {
             return target.closest('tr').is(':nth-last-child(2)');
         }
@@ -526,7 +938,8 @@ export class TableHandler {
             const checkAbleRows = this.productionTableRows.slice(0, index);
             const amountExtra = checkAbleRows.filter(row => row.doubleExport).length;
             const row = this.productionTableRows[index];
-            this.updateRowInTable('recipes', index + amountExtra, row);
+            const tableRowIndex = this.isTableElement('recipes') ? index + amountExtra : index;
+            this.updateRowInTable('recipes', tableRowIndex, row);
             // break;
         }
     }
@@ -600,8 +1013,19 @@ export class TableHandler {
 
     private generateTables() {
         $('#power tbody').html(HtmlGeneration.generatePowerTable(this.powerTableRows, buildingOptions, PowerTableFunctions.calculateTotalConsumption(this.powerTableRows)));
-        $('#imports tbody').html(HtmlGeneration.generateImportsTableRows(this.importsTableRows));
-        $('#recipes tbody').html(HtmlGeneration.generateProductionTableRows(this.productionTableRows));
+
+        if (this.isTableElement('imports')) {
+            $('#imports tbody').html(HtmlGeneration.generateImportsTableRows(this.importsTableRows));
+        } else {
+            $('#imports').html(HtmlGeneration.generateImportsCards(this.importsTableRows, this.settings.autoImportExport || this.viewOnly));
+        }
+
+        if (this.isTableElement('recipes')) {
+            $('#recipes tbody').html(HtmlGeneration.generateProductionTableRows(this.productionTableRows));
+        } else {
+            this.renderProductionCardsFromTemplate();
+        }
+
         this.addEventListeners();
     }
 
@@ -787,10 +1211,17 @@ export class TableHandler {
             this.loadFromLocal()
             this.showCacheAmount();
         });
+
+        $('#pl-add-recipe').on('click', (event) => {
+            event.preventDefault();
+            if (this.viewOnly) return;
+            this.addNewRow('recipes');
+        });
     }
 
     private deleteRow(tableId: string, rowIndex: number, target: JQuery<HTMLElement>) {
-        if (this.checkIfLastRow(target, tableId)) {
+        const isComponentRecipes = tableId === 'recipes' && !this.isTableElement(tableId);
+        if (!isComponentRecipes && this.checkIfLastRow(target, tableId)) {
             return;
         }
         switch (tableId) {
@@ -808,12 +1239,18 @@ export class TableHandler {
                 break;
         }
         this.updated = true;
-        // if it has the class extra-output, remove one lower row too
-        const tr = target.closest('tr')
-        if (tr.next().hasClass('extra-output')) {
-            tr.next().remove();
+
+        if (this.isTableElement(tableId)) {
+            const tr = target.closest('tr');
+            // if it has the class extra-output, remove one lower row too
+            if (tr.next().hasClass('extra-output')) {
+                tr.next().remove();
+            }
+            tr.remove();
+        } else {
+            target.closest('[data-row-index]').remove();
+            this.reindexComponentRows(tableId);
         }
-        tr.remove();
         if (tableId === 'recipes') {
             if (this.settings.autoImportExport) {
                 const data: {

@@ -26,6 +26,14 @@ export class Settings {
         }
 
         Ajax.saveSettings(productionLineId, this.autoImportExport, this.autoPowerMachine, this.autoSave);
+
+        document.dispatchEvent(new CustomEvent('pl-settings-changed', {
+            detail: {
+                autoImportExport: this.autoImportExport,
+                autoPowerMachine: this.autoPowerMachine,
+                autoSave: this.autoSave
+            }
+        }));
     }
 
     public addEventListeners() {

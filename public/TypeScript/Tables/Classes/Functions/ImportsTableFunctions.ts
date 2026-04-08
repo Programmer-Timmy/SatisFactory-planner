@@ -34,8 +34,13 @@ export class ImportsTableFunctions {
             }
         }
 
-        const html = HtmlGeneration.generateImportsTableRows(importsTableRows);
-        $('#imports tbody').html(html);
+        if ($('#imports').is('table')) {
+            const html = HtmlGeneration.generateImportsTableRows(importsTableRows);
+            $('#imports tbody').html(html);
+        } else {
+            // Auto import/export: show imports as read-only display cards
+            $('#imports').html(HtmlGeneration.generateImportsCards(importsTableRows, true));
+        }
 
         importsTableRows.push(new ImportsTableRow());
 
@@ -173,8 +178,8 @@ export class ImportsTableFunctions {
             }
 
             // Update usage for this produced row
-            producedRow.Usage += +canUse.toFixed(5);
-            producedRow.exportPerMin = +(producedRow.quantity - producedRow.Usage).toFixed(5);
+            producedRow.Usage += canUse;
+            producedRow.exportPerMin = producedRow.quantity - producedRow.Usage;
 
 
             // Update the total used amount
@@ -217,8 +222,8 @@ export class ImportsTableFunctions {
             }
 
             // Update usage for this extra row
-            doubleExport.extraCells.Usage += +canUse.toFixed(5);
-            doubleExport.extraCells.ExportPerMin = +(doubleExport.extraCells.Quantity - doubleExport.extraCells.Usage).toFixed(5);
+            doubleExport.extraCells.Usage += canUse;
+            doubleExport.extraCells.ExportPerMin = doubleExport.extraCells.Quantity - doubleExport.extraCells.Usage;
 
             // Update the total used amount
             totalUsed += canUse;
@@ -253,7 +258,6 @@ export class ImportsTableFunctions {
         product: string
     ): void {
         const existingImportRow = importsTableRows.find(r => r.itemId === itemId);
-        amountToImport = +amountToImport.toFixed(5)
         if (amountToImport <= 0.0001) {
             return;
         }

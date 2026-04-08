@@ -42,35 +42,60 @@ export class RecipeSetting {
      * Add event listeners to the context menu and the window.
      */
     private addEventListeners() {
-    //     on tr right click
-        this.htmlElement.find('.open-p-settings').on('click', (event: JQuery.ClickEvent) => {
-            // if somthing is selected, do not show the context menu
-            if (window.getSelection()?.toString()) {
-                return;
-            }
-            if (this.contextMenu) {
-                this.hideSettings();
-                return;
-            }
-            this.checkIfAnyOpenAndClose();
-            event.preventDefault();
-            this.showSettings(event);
-        });
-        this.htmlElement.on('contextmenu', (event: JQuery.ContextMenuEvent) => {
-            // if somthing is selected, do not show the context menu
-            if (window.getSelection()?.toString()) {
-                return;
-            }
+        // Inline settings (component UI): bind directly to inputs inside the card.
+        const clockSpeedInput = this.htmlElement.find('.pl-clock-speed');
+        const somersloopCheckbox = this.htmlElement.find('.pl-use-somersloop');
 
-            event.preventDefault();
-            if (this.contextMenu) {
-                this.hideSettings();
-                return;
-            }
+        if (clockSpeedInput.length) {
+            clockSpeedInput.val(this.clockSpeed);
+            clockSpeedInput.on('change', () => {
+                this.clockSpeed = this.validateClockSpeed(Number(clockSpeedInput.val() as string));
+                clockSpeedInput.val(this.clockSpeed);
+                this.htmlElement.find("input[name='production_quantity[]']").trigger('change');
+                this.tableHandler.checklist?.updateCheckList(this.productionTableRow);
+            });
+        }
 
-            this.checkIfAnyOpenAndClose();
-            this.showSettings(event);
-        });
+        if (somersloopCheckbox.length) {
+            somersloopCheckbox.prop('checked', this.useSomersloop);
+            somersloopCheckbox.on('change', () => {
+                this.useSomersloop = somersloopCheckbox.is(':checked');
+                this.htmlElement.find("input[name='production_quantity[]']").trigger('change');
+                this.tableHandler.checklist?.updateCheckList(this.productionTableRow);
+            });
+        }
+
+        // Legacy context menu: only enable when the gear button exists (table UI / old UI).
+        const gearButton = this.htmlElement.find('.open-p-settings');
+        if (gearButton.length) {
+            gearButton.on('click', (event: JQuery.ClickEvent) => {
+                if (window.getSelection()?.toString()) {
+                    return;
+                }
+                if (this.contextMenu) {
+                    this.hideSettings();
+                    return;
+                }
+                this.checkIfAnyOpenAndClose();
+                event.preventDefault();
+                this.showSettings(event);
+            });
+
+            this.htmlElement.on('contextmenu', (event: JQuery.ContextMenuEvent) => {
+                if (window.getSelection()?.toString()) {
+                    return;
+                }
+
+                event.preventDefault();
+                if (this.contextMenu) {
+                    this.hideSettings();
+                    return;
+                }
+
+                this.checkIfAnyOpenAndClose();
+                this.showSettings(event);
+            });
+        }
 
     //     on resizing the window, hide the context menu
         $(window).on('resize', () => {
@@ -88,7 +113,7 @@ export class RecipeSetting {
         });
 
         $(document).on('contextmenu', (event: JQuery.ContextMenuEvent) => {
-            if ($(event.target).closest('tr').length) {
+            if ($(event.target).closest('tr, .pl-production-row, [data-row-index]').length) {
                 return;
             }
             if (!$(event.target).closest('.context-menu').length) {
@@ -112,7 +137,7 @@ export class RecipeSetting {
         contextMenu.css('display', 'block');
         contextMenu.css(
             'top',
-            ((tr?.offset()?.top ?? 0) + (tr?.height() ?? 0) * (this.productionTableRow.doubleExport ? 2 : 1)) + 'px'
+            ((tr?.offset()?.top ?? 0) + (tr?.outerHeight() ?? tr?.height() ?? 0)) + 'px'
         );
         contextMenu.addClass('bg-body p-2 shadow rounded-bottom border border-primary');
         contextMenu.css('left', tr.offset()?.left + 'px');
@@ -169,12 +194,12 @@ export class RecipeSetting {
         // Add event listeners for the inputs
         maxClockSpeedInput.on('change', () => {
             this.updateSettings();
-            this.htmlElement.find("input[name='production_quantity[]'").trigger('change');
+            this.htmlElement.find("input[name='production_quantity[]']").trigger('change');
             this.tableHandler.checklist?.updateCheckList(this.productionTableRow);
         });
         useSomersloopInput.on('change', () => {
             this.updateSettings();
-            this.htmlElement.find("input[name='production_quantity[]'").trigger('change');
+            this.htmlElement.find("input[name='production_quantity[]']").trigger('change');
             this.tableHandler.checklist?.updateCheckList(this.productionTableRow);
         });
     }
