@@ -22,6 +22,21 @@ export class HtmlGeneration {
         return rounded.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
     }
 
+    /**
+     * Escapes a value for safe insertion into HTML.
+     * This is used to ensure that any dynamic text cannot break out of
+     * attributes or text nodes and be interpreted as HTML or script.
+     */
+    private static escapeHtml(value: unknown): string {
+        const str = String(value ?? '');
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     private static itemClassMap: Record<string, string> | null = null;
 
     private static getItemClassMap(): Record<string, string> {
@@ -47,7 +62,10 @@ export class HtmlGeneration {
         const map = this.getItemClassMap();
         const className = map[itemId.toString()];
         if (!className) return null;
-        return `/image/items/${this.normalizeItemClassName(className)}_256.png`;
+        // Allow only safe characters in the class name to prevent HTML/attribute injection
+        const safeClassName = className.replace(/[^a-zA-Z0-9_-]/g, '');
+        if (!safeClassName) return null;
+        return `/image/items/${this.normalizeItemClassName(safeClassName)}_256.png`;
     }
 
     public static getItemIconSrcForId(itemId: number | null | undefined): string | null {
@@ -63,25 +81,37 @@ export class HtmlGeneration {
      * @returns The generated HTML string for the power table.
      */
     public static generatePowerTable(powerRows: PowerTableRow[], buildingOptions: string, totalConsumption: number): string {
+        const escapedTotalConsumption = this.escapeHtml(totalConsumption);
         const rowsHtml = powerRows.map((row, index) => {
+            const escapedBuildingId = this.escapeHtml(row.buildingId);
+            const escapedQuantity = this.escapeHtml(row.quantity);
+            const escapedClockSpeed = this.escapeHtml(row.clockSpeed);
+            const escapedConsumption = this.escapeHtml(row.Consumption);
+            const escapedUserRow = this.escapeHtml(row.userRow ? 1 : 0);
+
+            const optionsWithSelected = buildingOptions.replace(
+                `<option value="${row.buildingId}">`,
+                `<option value="${escapedBuildingId}" selected>`
+            );
+
             return `
       <tr>
         <td class="m-0 p-0 w-50">
           <select class="form-control rounded-0" name="power_building_id[]" min="0">
-            ${buildingOptions.replace(`<option value="${row.buildingId}">`, `<option value="${row.buildingId}" selected>`)}
+            ${optionsWithSelected}
           </select>
         </td>
         <td class="m-0 p-0 w-25">
-          <input type="number" value="${row.quantity}" class="form-control rounded-0" name="power_amount[]" min="0" step="any" data-index="${index}" onchange="updateConsumption()">
+          <input type="number" value="${escapedQuantity}" class="form-control rounded-0" name="power_amount[]" min="0" step="any" data-index="${index}" onchange="updateConsumption()">
         </td>
         <td class="m-0 p-0 w-25">
-          <input type="number" value="${row.clockSpeed}" class="form-control rounded-0" name="power_clock_speed[]" min="1" max="250" step="any" data-index="${index}" onchange="updateConsumption()">
+          <input type="number" value="${escapedClockSpeed}" class="form-control rounded-0" name="power_clock_speed[]" min="1" max="250" step="any" data-index="${index}" onchange="updateConsumption()">
         </td>
         <td class="m-0 p-0 w-25">
-          <input type="number" value="${row.Consumption}" class="form-control rounded-0" disabled name="power_Consumption[]" min="0" step="any">
+          <input type="number" value="${escapedConsumption}" class="form-control rounded-0" disabled name="power_Consumption[]" min="0" step="any">
         </td>
         <td class="m-0 p-0 w-25">
-          <input type="hidden" value="${row.userRow ? 1 : 0}" class="form-control rounded-0" readonly name="user[]" min="0">
+          <input type="hidden" value="${escapedUserRow}" class="form-control rounded-0" readonly name="user[]" min="0">
         </td>
       </tr>
     `;
@@ -118,7 +148,7 @@ export class HtmlGeneration {
         </td>
         <td colspan="2"></td>
         <td class="w-25 m-0 p-0">
-          <input type="number" name="total_consumption" readonly class="form-control rounded-0" id="totalConsumption" value="${totalConsumption}">
+          <input type="number" name="total_consumption" readonly class="form-control rounded-0" id="totalConsumption" value="${escapedTotalConsumption}">
         </td>
       </tr>
     `;
@@ -135,11 +165,21 @@ export class HtmlGeneration {
     public static generateImportsTableRows(importsTableRows: ImportsTableRow[]): string {
         const rowsHTML = importsTableRows.map(row => {
             const formattedQuantity = this.formatNumber(row.quantity);
+            const escapedQuantity = this.escapeHtml(formattedQuantity);
 
             const iconSrc = this.getItemIconSrc(row.itemId);
-            const iconHtml = iconSrc
-                ? `<img class="pl-item-icon" data-role="import-icon" loading="lazy" src="${iconSrc}" alt="">`
+            const safeIconSrc = iconSrc != null ? this.escapeHtml(iconSrc) : null;
+            const iconHtml = safeIconSrc
+                ? `<img class="pl-item-icon" data-role="import-icon" loading="lazy" src="${safeIconSrc}" alt="">`
                 : `<img class="pl-item-icon" data-role="import-icon" loading="lazy" style="display:none" alt="">`;
+
+            const itemIdStr = row.itemId != null ? String(row.itemId) : '';
+            const escapedItemId = this.escapeHtml(itemIdStr);
+
+            const optionsWithSelected = ItemOptions.replace(
+                `value="${itemIdStr}"`,
+                `value="${escapedItemId}" selected`
+            );
 
             return `
             <tr>
@@ -147,12 +187,12 @@ export class HtmlGeneration {
                     <div class="pl-field-with-icon">
                         ${iconHtml}
                         <select name="imports_item_id[]" class="form-control rounded-0">
-                            ${ItemOptions.replace(`value="${row.itemId}"`, `value="${row.itemId}" selected`)}
+                            ${optionsWithSelected}
                         </select>
                     </div>
                 </td>
                 <td class="m-0 p-0 w-25" data-label="Qty / min">
-                    <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0" value="${formattedQuantity}" readonly>
+                    <input min="0" type="number" name="imports_ammount[]" class="form-control rounded-0" value="${escapedQuantity}" readonly>
                 </td>
             </tr>
         `;

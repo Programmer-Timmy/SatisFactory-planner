@@ -203,7 +203,11 @@ export class TableHandler {
 
         // Manual mode: show editable imports again
         if (this.isTableElement('imports')) {
-            $('#imports tbody').html(HtmlGeneration.generateImportsTableRows(this.importsTableRows));
+            const importsHtml = HtmlGeneration.generateImportsTableRows(this.importsTableRows);
+            const $tbody = $('#imports tbody');
+            $tbody.empty();
+            const parsedRows = $.parseHTML(importsHtml, document, false) || [];
+            $tbody.append(parsedRows);
         } else {
             $('#imports').html(HtmlGeneration.generateImportsCards(this.importsTableRows));
         }
