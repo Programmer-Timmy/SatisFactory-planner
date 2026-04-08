@@ -218,7 +218,6 @@ export class Checklist {
                 card.attr("id", `check-${newIndex}`);
             }
         });
-        console.log(this.checklist);
     }
 
 }

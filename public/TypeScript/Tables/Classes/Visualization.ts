@@ -504,7 +504,6 @@ export class Visualization {
         let index = 0;
         for (let i = 0; i < this.TableHandler.productionTableRows.length; i++) {
             const row = this.TableHandler.productionTableRows[i];
-            console.log(row);
 
             for (let j = 0; j < row.imports.length; j++) {
                 const importRow = row.imports[j];

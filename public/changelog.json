@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.15.1",
+    "date": "April 8 2026",
+    "changes": [
+      "Removed: console.log() from production line editor."
+    ]
+  },
+  {
     "version": "1.15.0",
     "date": "April 7 2026",
     "changes": [

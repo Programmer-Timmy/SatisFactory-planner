@@ -1266,8 +1266,6 @@ export class TableHandler {
                 this.addSpecificEventListener('power');
             }
         }
-
-        console.log(this.productionTableRows);
     }
 }
 
