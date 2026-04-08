@@ -83,7 +83,20 @@ export class ProductionLineFunctions {
         try {
             const el = document.getElementById('items-class-map');
             const json = el?.textContent?.trim() || '{}';
-            this.itemClassMap = JSON.parse(json);
+            const raw = JSON.parse(json);
+            const sanitized: Record<string, string> = {};
+
+            if (raw && typeof raw === 'object') {
+                const valuePattern = /^[A-Za-z0-9_-]+$/;
+                for (const key of Object.keys(raw)) {
+                    const value = (raw as Record<string, unknown>)[key];
+                    if (typeof value === 'string' && valuePattern.test(value)) {
+                        sanitized[key] = value;
+                    }
+                }
+            }
+
+            this.itemClassMap = sanitized;
         } catch {
             this.itemClassMap = {};
         }
@@ -92,7 +105,11 @@ export class ProductionLineFunctions {
     }
 
     private static normalizeItemClassName(className: string): string {
-        return className.toLowerCase().replaceAll('_', '-');
+        // Normalize to lowercase with dashes and strip any unexpected characters
+        return className
+            .toLowerCase()
+            .replaceAll('_', '-')
+            .replace(/[^a-z0-9-]/g, '');
     }
 
     private static normalizeBuildingClassName(className: string): string {
