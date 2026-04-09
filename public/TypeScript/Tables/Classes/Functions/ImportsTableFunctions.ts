@@ -22,7 +22,7 @@ export class ImportsTableFunctions {
         let updatedIndexes: number[] = this.resetUsage(productionTableRows);
 
         // Loop through each production row to calculate imports
-        for (let i = 0; i + 1 < productionTableRows.length; i++) {
+        for (let i = 0; i < productionTableRows.length; i++) {
             const row: ProductionTableRow = productionTableRows[i];
             const requiredItems: Resource[] | undefined = row.recipe?.resources;
 
