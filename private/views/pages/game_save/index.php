@@ -550,12 +550,3 @@ if (DedicatedServer::getBySaveGameId($gameSave->id) && GameSaves::checkAccess($g
     require __DIR__ .  '../../../Popups/saveGame/updatePowerProduction.php';
 } ?>
 <?php require_once '../private/views/Popups/saveGame/helpGameSave.php'; ?>
-
-<?php if (Users::checkIfFirstSaveGame($_SESSION['userId'])): ?>
-    <script>
-        jQuery(function () {
-            const popupModal = new bootstrap.Modal(document.getElementById('helpModal'));
-            popupModal.show();
-        });
-    </script>
-<?php endif; ?>

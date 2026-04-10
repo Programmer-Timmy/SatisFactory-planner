@@ -1214,15 +1214,6 @@ if (DedicatedServer::getBySaveGameId($productLine->game_saves_id) && GameSaves::
 
 <?php require_once '../private/views/Popups/productionLine/showVisualization.php'; ?>
 
-<?php if ($firstProduction) : ?>
-    <script>
-        jQuery(function () {
-            const popupModal = new bootstrap.Modal(document.getElementById('helpModal'));
-            popupModal.show();
-        });
-    </script>
-<?php endif; ?>
-
 <script>
     <!--    open off canvas-->
     var offcanvasChecklist = new bootstrap.Offcanvas(document.getElementById('Checklist'));
