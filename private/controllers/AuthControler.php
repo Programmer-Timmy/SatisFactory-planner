@@ -232,6 +232,10 @@ class AuthControler
      * @throws ErrorException
      */
     public static function blockIP($ip, $reason, $time = 1) {
+        // dont block if ::1
+        if ($ip === '::1') {
+            return;
+        }
         $time = date('Y-m-d H:i:s', strtotime("+$time hours"));
         return Database::insert('blocked_ips', ['ip_address', 'blocked_until', 'reason'], [$ip, $time, $reason]);
     }

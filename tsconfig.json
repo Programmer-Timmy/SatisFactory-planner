@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "lib": ["es2021", "dom", "dom.iterable"],
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "public/TypeScript/**/*.ts",
+    "public/TypeScript/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+
