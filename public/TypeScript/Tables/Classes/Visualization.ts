@@ -49,6 +49,7 @@ export class Visualization {
     private useRoots: boolean = true;
 
     private cy: Core | null = null;
+    private edgeLabelElements = new Map<string, HTMLElement>();
 
     /**
      * Constructor for the Visualization class
@@ -82,6 +83,9 @@ export class Visualization {
             await this.showLoadingScreen();
             await this.loadCytoscapeExtensions();
         }
+
+        for (const el of this.edgeLabelElements.values()) el.remove();
+        this.edgeLabelElements.clear();
 
         let elements = [];
         let roots = [];
@@ -1065,44 +1069,68 @@ export class Visualization {
     `;
     }
 
-    private renderEdgeLabels(cy: Core): void {
+    private renderEdgeLabels = (() => {
+        let rafId: number | null = null;
+        return (cy: Core) => {
+            if (rafId !== null) return;
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+                this._renderEdgeLabelsImpl(cy);
+            });
+        };
+    })();
+
+    private _renderEdgeLabelsImpl(cy: Core): void {
         const container = document.getElementById('graph');
         if (!container) return;
 
-        // Remove any previous overlays
-        container.querySelectorAll('.cy-edge-label-overlay').forEach(el => el.remove());
-
         const pan = cy.pan();
         const zoom = cy.zoom();
+        const seenIds = new Set<string>();
 
         cy.edges().forEach(edge => {
             const data = edge.data();
-            const icon = data.icon || null;
-            const product = data.product || '';
-            const qty = data.qty || '';
-            const color = data.color || '#888';
+            const id: string = data.id;
+            seenIds.add(id);
 
-            // Midpoint in rendered coordinates
             const midpoint = edge.midpoint();
             const x = midpoint.x * zoom + pan.x;
             const y = midpoint.y * zoom + pan.y;
 
-            const wrapper = document.createElement('div');
-            wrapper.className = 'cy-edge-label-overlay';
-            // Position the overlay and scale it according to Cytoscape zoom so the label visually zooms with the graph
-            wrapper.style.cssText = `
-            position:absolute;
-            left:${x}px;
-            top:${y}px;
-            /* Translate to center the element then scale by zoom to match Cytoscape's zoom level */
-            transform:translate(-50%,-50%) scale(${zoom});
-            transform-origin:center center;
-            pointer-events:none;
-            z-index:10;
-        `;
-            wrapper.innerHTML = this.buildEdgeLabelHtml(color, icon, product, qty);
-            container.appendChild(wrapper);
+            let el = this.edgeLabelElements.get(id);
+            if (!el) {
+                // Create once, never again
+                el = document.createElement('div');
+                el.className = 'cy-edge-label-overlay';
+                el.style.cssText = `
+                position:absolute;
+                pointer-events:none;
+                z-index:10;
+                transform-origin:center center;
+            `;
+                el.innerHTML = this.buildEdgeLabelHtml(
+                    data.color || '#888',
+                    data.icon || null,
+                    data.product || '',
+                    data.qty || ''
+                );
+                container.appendChild(el);
+                this.edgeLabelElements.set(id, el);
+            }
+
+            // Only touch transform — no innerHTML, no DOM creation
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            el.style.transform = `translate(-50%,-50%) scale(${zoom})`;
         });
+
+        // Remove labels for edges no longer present
+        for (const [id, el] of this.edgeLabelElements) {
+            if (!seenIds.has(id)) {
+                el.remove();
+                this.edgeLabelElements.delete(id);
+            }
+        }
     }
 
 }

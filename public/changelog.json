@@ -1,5 +1,13 @@
 [
   {
+  "version": "1.15.3",
+  "date": "April 10 2026",
+  "changes": [
+    "Fixed: Google logo not showing.",
+    "Improved: Performance of the production line visualisation."
+  ]
+  },
+  {
     "version": "1.15.2",
     "date": "April 8 2026",
     "changes": [

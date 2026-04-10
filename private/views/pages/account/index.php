@@ -96,7 +96,7 @@ $errorLogs = ErrorHandeler::getUserErrorLogs($user->id);
                     </h5>
                     <div class="border border-light shadow-sm rounded p-2">
                         <div class="d-flex align-items-center mb-2">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/800px-Google_%22G%22_logo.svg.png"
+                            <img src="/image/google_logo.png"
                                  alt="Google Logo" width="20" height="20" class="me-2">
                             <strong class="small">Google</strong>
                         </div>

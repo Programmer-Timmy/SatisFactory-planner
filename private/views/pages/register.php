@@ -99,7 +99,7 @@ if ($_POST) {
                             </div>
                             <div class="d-flex justify-content-center">
                                 <a href="/login/google-oauth" class=""><img
-                                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/800px-Google_%22G%22_logo.svg.png"
+                                            src="/image/google_logo.png"
                                             alt="Google" style="width: 40px; height: 40px;"></a>
                             </div>
                         </div>
