@@ -144,7 +144,7 @@ $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpf
                     </li>
                     <li class="nav-item me-lg-2 mt-lg-0 mt-2">
                         <a class="btn btn-success" aria-current="page" target="_blank"
-                           href="https://forms.gle/fAd5LrGRATYwFHzr7">Leave Feedback</a>
+                           href="https://forms.gle/fAd5LrGRATYwFHzr7" data-umami-event="Leave Feedback">Leave Feedback</a>
                     </li>
                     <li class="nav-item me-lg-2 mt-lg-0 mt-2 d-flex align-items-center" style="font-size: 1.5rem;">
                         <input type="checkbox" data-toggle="toggle" data-onstyle="dark" data-offstyle="light"

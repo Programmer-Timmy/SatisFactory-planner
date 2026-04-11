@@ -142,7 +142,7 @@ global $allowedIPs;
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap5-toggle@5.0.4/js/bootstrap5-toggle.jquery.min.js"></script>
 
-
+    <script defer src="https://analytics.timvanderkloet.com/script.js" data-website-id="ac848566-d60f-4c5b-8427-26071f0e034b"></script>
 </head>
 <body>
 
