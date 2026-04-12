@@ -656,27 +656,48 @@ function trimDecimal(string $value): string {
                     <button type="submit" id="save_button" class="btn btn-primary mb-1 disabled"
                             data-bs-toggle="tooltip"
                             data-bs-placement="top" data-bs-html="true"
-                            data-bs-title="Save production line.<br> <small>Hold <b>Shift</b> to save without returning to the save game.</small>">
+                            data-bs-title="Save production line.<br> <small>Hold <b>Shift</b> to save without returning to the save game.</small>"
+                            data-umami-event="Save Production Line"
+                            data-umami-event-production_line="<?= $productLine->id ?>"
+                            data-umami-event-game_save="<?= $gameSaveId ?>">
                         <i class="fa-solid fa-save"></i></button>
                     <button type="button" id="edit_product_line" class="btn btn-warning mb-1 disabled"
                             data-bs-toggle="tooltip"
-                            data-bs-placement="top" data-bs-title="Edit the production line"><i
+                            data-bs-placement="top" data-bs-title="Edit the production line"
+                            data-umami-event="Edit Production Line"
+                            data-umami-event-production_line="<?= $productLine->id ?>"
+                            data-umami-event-game_save="<?= $gameSaveId ?>"><i
                                 class="fa-solid fa-pencil"></i></button>
                     <button type="button" id="showPower" class="btn btn-info mb-1 disabled" data-bs-toggle="tooltip"
-                            data-bs-placement="top" data-bs-title="Show power consumption"><i
+                            data-bs-placement="top" data-bs-title="Show power consumption"
+                            data-umami-event="Open Production Line Power"
+                            data-umami-event-production_line="<?= $productLine->id ?>"
+                            data-umami-event-game_save="<?= $gameSaveId ?>"><i
                                 class="fa-solid fa-bolt"></i></button>
                     <button type="button" id="showVisualizationButton" class="btn btn-info mb-1 disabled"
-                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show visualization"><i
+                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Show visualization"
+                            data-umami-event="Open Production Line Visualization"
+                            data-umami-event-production_line="<?= $productLine->id ?>"
+                            data-umami-event-game_save="<?= $gameSaveId ?>"><i
                                 class="fa-solid fa-project-diagram"></i></button>
                     <button type="button" id="showCheckList" class="btn btn-info mb-1 disabled" data-bs-toggle="tooltip"
-                            data-bs-placement="top" data-bs-title="Checklist"><i class="fa-solid fa-list-check"></i>
+                            data-bs-placement="top" data-bs-title="Checklist"
+                            data-umami-event="Open Production Line Checklist"
+                            data-umami-event-production_line="<?= $productLine->id ?>"
+                            data-umami-event-game_save="<?= $gameSaveId ?>"><i class="fa-solid fa-list-check"></i>
                     </button>
                     <button type="button" id="showHelp" class="btn btn-info mb-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" data-bs-title="Need help? Click here!"><i
+                            data-bs-placement="top" data-bs-title="Need help? Click here!"
+                            data-umami-event="Open Production Line Help Modal"
+                            data-umami-event-production_line="<?= $productLine->id ?>"
+                            data-umami-event-game_save="<?= $gameSaveId ?>"><i
                                 class="fa-regular fa-question-circle"></i></button>
                     <a href="/game_save/<?= $gameSaveId ?>/" class="btn btn-secondary mb-1"
-                       data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"><i
-                                class="fa-solid fa-arrow-left"></i></a>
+                       data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Back to game save"
+                       data-umami-event="Back to Game Save"
+                       data-umami-event-production_line="<?= $productLine->id ?>"
+                       data-umami-event-game_save="<?= $gameSaveId ?>"><i
+                                 class="fa-solid fa-arrow-left"></i></a>
                 </div>
             </div>
         </div>
@@ -973,7 +994,11 @@ function trimDecimal(string $value): string {
                                 </div>
 
                                 <div class="pl-side-actions">
-                                    <button type="button" class="btn btn-sm delete-production-row" data-id="<?= $product->id ?>">
+                                    <button type="button" class="btn btn-sm delete-production-row" data-id="<?= $product->id ?>"
+                                            data-umami-event="Delete Recipe Row"
+                                            data-umami-event-production="<?= $product->id ?>"
+                                            data-umami-event-production_line="<?= $productLine->id ?>"
+                                            data-umami-event-game_save="<?= $gameSaveId ?>">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </div>
@@ -1014,7 +1039,10 @@ function trimDecimal(string $value): string {
                         <div class="pl-add-recipe-card" data-role="add-recipe-card">
                             <button type="button" class="pl-add-recipe-btn" id="pl-add-recipe"
                                     data-bs-toggle="tooltip" data-bs-placement="top" data-bs-container="body"
-                                    data-bs-title="Add a new recipe row">
+                                    data-bs-title="Add a new recipe row"
+                                    data-umami-event="Add Recipe Row"
+                                    data-umami-event-production_line="<?= $productLine->id ?>"
+                                    data-umami-event-game_save="<?= $gameSaveId ?>">
                                 <i class="fa-solid fa-plus"></i>
                                 <span>Add recipe</span>
                             </button>
@@ -1138,7 +1166,10 @@ function trimDecimal(string $value): string {
                             </div>
 
                             <div class="pl-side-actions">
-                                <button type="button" class="btn btn-sm delete-production-row">
+                                <button type="button" class="btn btn-sm delete-production-row"
+                                        data-umami-event="Delete Recipe Row"
+                                        data-umami-event-production_line="<?= $productLine->id ?>"
+                                        data-umami-event-game_save="<?= $gameSaveId ?>">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>

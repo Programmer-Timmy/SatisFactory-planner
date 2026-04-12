@@ -13,7 +13,7 @@ if (empty($gameSave)) {
     exit();
 }
 $viewOnly = GameSaves::checkAccess($_GET['id'], $_SESSION['userId'], Permission::SAVEGAME_EDIT, negate: true);
-if($viewOnly === null) {
+if ($viewOnly === null) {
     header('Location: /game_saves');
     exit();
 } elseif ($viewOnly) {
@@ -192,7 +192,7 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
 
     </script>
     <div class="container">
-        <?php GlobalUtility::displayFlashMessages()?>
+        <?php GlobalUtility::displayFlashMessages() ?>
         <div class="row">
             <div class="col-lg-3"></div>
             <h1 class="text-center pb-3 col-lg-6">Game Save - <?= $gameSave->title ?></h1>
@@ -200,11 +200,13 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
                 <?php if ($accessDedicatedServer): ?>
                     <a href="/game_save/<?= $gameSave->id ?>/dedicated_server"
                        class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
-                       data-bs-title="Dedicated Server Status"><i class="fa-solid fa-server"></i>
+                       data-bs-title="Dedicated Server Status" data-umami-event="Open Dedicated Server Modal" data-umami-event-game_save="<?= $gameSave->id ?>"
+                    ><i class="fa-solid fa-server"></i>
                     </a>
                 <?php endif; ?>
                 <button type="button" id="showSaveGameHelp" class="btn btn-info" data-bs-toggle="tooltip"
-                        data-bs-placement="top" data-bs-title="Need help? Click here!"><i
+                        data-bs-placement="top" data-bs-title="Need help? Click here!" data-umami-event="Open Game Save Help Modal" data-umami-event-game_save="<?= $gameSave->id ?>"
+                ><i
                             class="fa-regular fa-question-circle" aria-hidden="true"></i>
                 </button>
             </div>
@@ -229,7 +231,10 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
                                 <div style="width: 40px; height: 38px;">
                                    <button id="add_product_line" class="btn btn-primary" data-bs-toggle="tooltip"
                                            data-bs-placement="top"
-                                           data-bs-title="Add Production Line"><i class="fa-solid fa-plus"></i></button>
+                                           data-bs-title="Add Production Line"
+                                           data-umami-event="open Add Production Line Modal"
+                                           data-umami-event-game_save="<?= $gameSave->id ?>"
+                                   ><i class="fa-solid fa-plus"></i></button>
                                 </div>
                             </span>
                         <?php endif; ?>
@@ -270,7 +275,11 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
                                                 <input type="checkbox" data-toggle="toggle" data-onstyle="success"
                                                        onchange="changeActiveStats(<?= $productionLine->id ?>, this)"
                                                        data-offstyle="danger" data-size="sm" data-onlabel="Yes"
-                                                       data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>>
+                                                       data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>
+                                                       data-umami-event="Toggle Production Line Active"
+                                                       data-umami-event-production_line="<?= $productionLine->id ?>"
+                                                       data-umami-event-game_save="<?= $gameSave->id ?>"
+                                                >
                                             <?php else: ?>
                                                 <input type="checkbox" data-toggle="toggle" data-onstyle="success"
                                                        disabled
@@ -306,15 +315,23 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
 
                                     </div>
                                     <div class="card-footer d-flex justify-content-between">
-                                        <a href="/game_save/<?= $gameSaveId ?>/production_line/<?= $productionLine->id ?>" class="btn btn-primary"
+                                        <a href="/game_save/<?= $gameSaveId ?>/production_line/<?= $productionLine->id ?>"
+                                           class="btn btn-primary"
                                            data-bs-toggle="tooltip" data-bs-placement="top"
-                                           data-bs-title="Open Production Line">
+                                           data-bs-title="Open Production Line"
+                                           data-umami-event="Open Production Line"
+                                           data-umami-event-production_line="<?= $productionLine->id ?>"
+                                           data-umami-event-game_save="<?= $gameSave->id ?>"
+                                        >
                                             <i class="fa-solid fa-gears"></i> Open
                                         </a>
                                         <?php if (!$viewOnly): ?>
                                             <a href="/game_save/<?= $gameSaveId ?>/?productDelete=<?= $productionLine->id ?>"
                                                data-bs-toggle="tooltip" data-bs-placement="top"
                                                data-bs-title="Delete Production Line"
+                                               data-umami-event="Delete Production Line"
+                                               data-umami-event-production_line="<?= $productionLine->id ?>"
+                                               data-umami-event-game_save="<?= $gameSave->id ?>"
                                                onclick="return confirm('Are you sure you want to delete this production line?')"
                                                class="btn btn-danger">
                                                 <i class="fa-solid fa-x"></i> Delete
@@ -386,7 +403,11 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
                                             <input type="checkbox" data-toggle="toggle" data-onstyle="success"
                                                    onchange="changeActiveStats(<?= $productionLine->id ?>, this)"
                                                    data-offstyle="danger" data-size="sm" data-onlabel="Yes"
-                                                   data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>>
+                                                   data-offlabel="No" <?= $productionLine->active ? 'checked' : '' ?>
+                                                   data-umami-event="Toggle Production Line Active"
+                                                   data-umami-event-production_line="<?= $productionLine->id ?>"
+                                                   data-umami-event-game_save="<?= $gameSave->id ?>"
+                                            >
                                         <?php else: ?>
                                             <input type="checkbox" data-toggle="toggle" data-onstyle="success" disabled
                                                    data-offstyle="danger" data-size="sm" data-onlabel="Yes"
@@ -398,7 +419,11 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
                                             <a href="/game_save/<?= $gameSaveId ?>/production_line/<?= $productionLine->id ?>"
                                                class="btn btn-primary"
                                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                               data-bs-title="Open Production Line"><i
+                                               data-bs-title="Open Production Line"
+                                               data-umami-event="Open Production Line"
+                                               data-umami-event-production_line="<?= $productionLine->id ?>"
+                                               data-umami-event-game_save="<?= $gameSave->id ?>"
+                                            ><i
                                                         class="fa-solid fa-gears"></i></a>
                                     </td>
                                     <?php if (!$viewOnly): ?>
@@ -407,6 +432,10 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
                                             <a href="game_save?id=<?= $gameSave->id ?>&productDelete=<?= $productionLine->id ?>"
                                                data-bs-toggle="tooltip" data-bs-placement="top"
                                                data-bs-title="Delete Production Line"
+                                               data-umami-event="Delete Production Line"
+                                               data-umami-event-production_line="<?= $productionLine->id ?>"
+                                               data-umami-event-game_save="<?= $gameSave->id ?>"
+
                                                onclick="return confirm('Are you sure you want to delete this production line?')"
                                                class="btn btn-danger"><i class="fa-solid fa-x"></i></a>
                                         </td>
@@ -428,7 +457,9 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
                               data-bs-content="Add Power Production to have an prediction over your power capacity">
                             <div style="width: 40px; height: 38px;">
                                 <button id="update_power_production" class="btn btn-primary" data-bs-toggle="tooltip"
-                                        data-bs-placement="top" data-bs-title="Update Power Production"><i
+                                        data-bs-placement="top" data-bs-title="Update Power Production"
+                                        data-umami-event="Update Power Production"
+                                        data-umami-event-game_save="<?= $gameSave->id ?>"><i
                                             class="fa-solid fa-bolt-lightning"></i>
                                 </button>
                             </div>
@@ -461,7 +492,9 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
                                                 data-bs-toggle="collapse"
                                                 data-bs-target="#collapse-<?= $lineId ?>"
                                                 aria-expanded="false"
-                                                aria-controls="collapse-<?= $lineId ?>">
+                                                aria-controls="collapse-<?= $lineId ?>"
+                                                data-umami-event="Toggle Production Line Output"
+                                                data-umami-event-production_line="<?= $lineId ?>">
                                             <?= $lineTitle ?>
                                         </button>
                                     </h2>
@@ -547,6 +580,6 @@ if (DedicatedServer::getBySaveGameId($gameSave->id) && GameSaves::checkAccess($g
 <?php endif; ?>
 <?php if (!$viewOnly) {
     require '../private/views/Popups/productionLine/addProductionLine.php';
-    require __DIR__ .  '../../../Popups/saveGame/updatePowerProduction.php';
+    require __DIR__ . '../../../Popups/saveGame/updatePowerProduction.php';
 } ?>
 <?php require_once '../private/views/Popups/saveGame/helpGameSave.php'; ?>

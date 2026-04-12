@@ -86,10 +86,10 @@ if ($_POST) {
                                    minlength="8"
                                    autocomplete="off">
                         </div>
-                        <p class="small text-muted">By clicking Register, you agree to our <a href="/privacy">Privacy Policy</a>.</p>
+                        <p class="small text-muted">By clicking Register, you agree to our <a href="/privacy" data-umami-event="Privacy Policy">Privacy Policy</a>.</p>
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary">Register</button>
-                            <a href="/login" class="btn btn-secondary">Go back</a>
+                            <button type="submit" class="btn btn-primary" data-umami-event="Register">Register</button>
+                            <a href="/login" class="btn btn-secondary" data-umami-event="Go back to login">Go back</a>
                         </div>
                         <div class="mt-3">
                             <div style="display: flex; align-items: center; text-align: center;">
@@ -98,7 +98,7 @@ if ($_POST) {
                                 <hr style="flex: 1; border: none; border-top: 1px solid #ccc;">
                             </div>
                             <div class="d-flex justify-content-center">
-                                <a href="/login/google-oauth" class=""><img
+                                <a href="/login/google-oauth" class="" data-umami-event="Register with Google"><img
                                             src="/image/google_logo.png"
                                             alt="Google" style="width: 40px; height: 40px;"></a>
                             </div>

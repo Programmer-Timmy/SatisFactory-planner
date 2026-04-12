@@ -202,7 +202,7 @@ if (isset($_GET['code']) && !empty($_GET['code']) && !isset($_POST['type'])) {
 
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Yes, create account</button>
+                            <button type="submit" class="btn btn-primary" data-umami-event="Create Account">Yes, create account</button>
                             <a href="/login" class="btn btn-secondary">No, return to login</a>
                         </div>
                     </form>

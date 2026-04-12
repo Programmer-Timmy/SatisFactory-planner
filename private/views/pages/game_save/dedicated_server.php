@@ -54,7 +54,7 @@ function cleanGamePhase($phaseString) {
     <div class="alert alert-warning d-flex justify-content-between align-items-center"><i
                 class="fa-solid fa-triangle-exclamation me-2"></i>No dedicated server found for this save. Please set up
         and link a dedicated server first.
-        <a href="/game_save/<?= $saveGameId ?>" class="btn btn-primary btn-sm ms-3">
+        <a href="/game_save/<?= $saveGameId ?>" class="btn btn-primary btn-sm ms-3" data-umami-event="Back to Game Save from No Dedicated Server Warning">
             <i class="fa-solid fa-arrow-left"></i> Back to Game Save
         </a>
     </div>
@@ -66,7 +66,7 @@ endif; ?>
 <div class="row">
     <div class="col-md-12 d-flex justify-content-between align-items-center">
         <h1 class="mb-4">Dedicated Server Status</h1>
-        <a href="/game_save/<?= $saveGameId ?>" class="btn btn-primary mb-4">
+        <a href="/game_save/<?= $saveGameId ?>" class="btn btn-primary mb-4" data-umami-event="Back to Game Save from Dedicated Server Dashboard">
             <i class="fa-solid fa-arrow-left"></i> Back to Game Save
         </a>
     </div>
@@ -179,11 +179,13 @@ endif; ?>
                     <button id="stopServerBtn"
                             class="btn btn-danger flex-fill" <?= !$healthy ? 'disabled' : '' ?>
                             data-bs-toggle="modal"
-                            data-bs-target="#stopServerModal">
+                            data-bs-target="#stopServerModal"
+                            data-umami-event="Stop Dedicated Server">
                         <i class="fa-solid fa-stop me-2"></i> Stop Server
                     </button>
                     <button id="downloadSaveBtn" class="btn btn-secondary flex-fill" data-bs-toggle="modal"
-                            data-bs-target="#downloadSaveModal" <?= !$healthy ? 'disabled' : '' ?>>
+                            data-bs-target="#downloadSaveModal" <?= !$healthy ? 'disabled' : '' ?>
+                            data-umami-event="Download Save Game">
                         <i class="fa-solid fa-download me-2"></i> Download Save Game
                     </button>
 
@@ -207,7 +209,7 @@ endif; ?>
                     Is your dedicated server running? Then you dont have a correct SSL
                     certificate setup. Please check "✅ Creating a Proper Self-Signed Certificate" in the
                     <a href="https://programmer-timmy.github.io/satisfactory-dedicated-server-sdk/docs/guides/getting-started/#ssl-certificates-and-hostname-considerations"
-                       target="_blank" rel="noopener">documentation</a> for more
+                       target="_blank" rel="noopener" data-umami-event="Dedicated Server SSL Certificate Documentation">documentation</a> for more
                     information on how to set it up.
 
                     This is now enforced for security reasons (man in the middle attacks etc).
@@ -277,8 +279,10 @@ endif; ?>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                            data-umami-event="Close Download Save Modal">Close</button>
                     <button type="button" id="downloadSaveLink" class="btn btn-primary disabled"
+                            data-umami-event="Download Save Game"
                             aria-disabled="true">
                             <span class="spinner-border spinner-border-sm d-none" role="status"
                                   aria-hidden="true"></span>

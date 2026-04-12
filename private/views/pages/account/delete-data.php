@@ -21,7 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="d-flex justify-content-center mt-4">
         <form method="post">
-            <button type="submit" value="delete-personal-data" name="delete-personal-data" class="btn btn-danger me-3 px-4">Delete Data
+            <button type="submit" value="delete-personal-data" name="delete-personal-data" class="btn btn-danger me-3 px-4"
+                    data-umami-event="Delete Personal Data"
+                    data-umami-user="<?= isset($_SESSION['userId']) ? $_SESSION['userId'] : 'unknown' ?>">
+            >Delete Data
             </button>
         </form>
         <a href="/account" class="btn btn-primary me-3 px-4">Cancel</a>
