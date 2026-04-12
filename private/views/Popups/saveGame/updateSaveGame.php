@@ -32,7 +32,10 @@ if (isset($_GET['dedicatedServerId'])) {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="popupModalLabel">Update save game</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        data-umami-event="Update Save Game Modal Closed"
+                        data-umami-event-popup="update-save-game"
+                        data-umami-event-save-id="<?= $modalGameSave->id ?>"></button>
             </div>
             <div class="modal-body">
                 <form method="post" enctype="multipart/form-data" id="updateSaveGameForm_<?= $modalGameSave->id ?>"
@@ -98,7 +101,9 @@ if (isset($_GET['dedicatedServerId'])) {
                         <button class="btn btn-primary w-100 dedicatedServerButton" type="button"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#dedicatedServerCollapse<?= $modalGameSave->id ?>" aria-expanded="false"
-                                aria-controls="dedicatedServerCollapse<?= $modalGameSave->id ?>">
+                                aria-controls="dedicatedServerCollapse<?= $modalGameSave->id ?>"
+                                data-umami-event="Update Save Game Dedicated Server Toggle"
+                                data-umami-event-save-id="<?= $modalGameSave->id ?>">
                             <i class="fas fa-server"></i>
                             Edit dedicated server credentials
                         </button>
@@ -131,14 +136,20 @@ if (isset($_GET['dedicatedServerId'])) {
                                                aria-required="false">
                                         <button class="btn btn-outline-secondary togglePassword" type="button"
                                                 aria-label="Toggle password visibility" style="width: 45px"
-                                                autocomplete="off">
+                                                autocomplete="off"
+                                                data-umami-event="Dedicated Server Password Visibility Toggled"
+                                                data-umami-event-popup="update-save-game"
+                                                data-umami-event-save-id="<?= $modalGameSave->id ?>">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                     </div>
                                 </div>
                                 <?php if ($dedicatedServer): ?>
                                     <a href="game_saves?dedicatedServerId=<?= $modalGameSave->id ?>"
-                                       class="btn btn-danger">Remove dedicated server</a>
+                                       class="btn btn-danger"
+                                       data-umami-event="Dedicated Server Removed"
+                                       data-umami-event-popup="update-save-game"
+                                       data-umami-event-save-id="<?= $modalGameSave->id ?>">Remove dedicated server</a>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -149,7 +160,10 @@ if (isset($_GET['dedicatedServerId'])) {
                     </div>
                 </form>
                 <div class="modal-footer pb-0 px-0">
-                    <button type="submit" class="btn btn-primary me-0" form="updateSaveGameForm_<?= $modalGameSave->id ?>">
+                    <button type="submit" class="btn btn-primary me-0" form="updateSaveGameForm_<?= $modalGameSave->id ?>"
+                            data-umami-event="Update Save Game"
+                            data-umami-event-popup="update-save-game"
+                            data-umami-event-save-id="<?= $modalGameSave->id ?>">
                         Update
                         Save Game
                     </button>
@@ -169,8 +183,48 @@ if (isset($_GET['dedicatedServerId'])) {
 
 <script>
     document.getElementById('update_save_game_line_<?= $modalGameSave->id ?>').addEventListener('click', function () {
+        if (window.umami && typeof window.umami.track === 'function') {
+            window.umami.track('Update Save Game Modal Opened', {
+                save_id: <?= json_encode((string)$modalGameSave->id) ?>,
+                save_title: <?= json_encode($modalGameSave->title) ?>,
+                has_dedicated_server: <?= $dedicatedServer ? 'true' : 'false' ?>
+            });
+        }
         const popupModal = new bootstrap.Modal(document.getElementById('UpdatedSaveGame_<?= $modalGameSave->id ?>'));
         popupModal.show();
+    });
+
+    document.getElementById('updateSaveGameForm_<?= $modalGameSave->id ?>')?.addEventListener('submit', function () {
+        if (!(window.umami && typeof window.umami.track === 'function')) {
+            return;
+        }
+
+        const allowedUsersRaw = this.querySelector('input[name="allowed_users"]')?.value ?? '[]';
+        const requestedUsersRaw = this.querySelector('input[name="requested_users"]')?.value ?? '[]';
+        let allowedUsersCount = 0;
+        let requestedUsersCount = 0;
+
+        try {
+            const parsedAllowedUsers = JSON.parse(allowedUsersRaw);
+            allowedUsersCount = Array.isArray(parsedAllowedUsers) ? parsedAllowedUsers.length : 0;
+        } catch (e) {
+            allowedUsersCount = 0;
+        }
+
+        try {
+            const parsedRequestedUsers = JSON.parse(requestedUsersRaw);
+            requestedUsersCount = Array.isArray(parsedRequestedUsers) ? parsedRequestedUsers.length : 0;
+        } catch (e) {
+            requestedUsersCount = 0;
+        }
+
+        window.umami.track('Update Save Game Attempt', {
+            save_id: <?= json_encode((string)$modalGameSave->id) ?>,
+            has_new_image: Boolean(this.querySelector('input[name="UpdatedSaveGameImage"]')?.files?.length),
+            has_dedicated_server: Boolean(this.querySelector('input[name="dedicatedServerIp"]')?.value?.trim()),
+            allowed_users_count: allowedUsersCount,
+            requested_users_count: requestedUsersCount
+        });
     });
 </script>
 

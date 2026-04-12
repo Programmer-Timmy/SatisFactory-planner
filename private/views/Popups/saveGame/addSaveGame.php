@@ -67,7 +67,9 @@ $roles = Roles::getAllRoles();
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="popupModalLabel">Add Save Game</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        data-umami-event="Add Save Game Modal Closed"
+                        data-umami-event-popup="add-save-game"></button>
             </div>
             <div class="modal-body">
                 <form method="post" enctype="multipart/form-data" autocomplete="off" id="addSaveGameForm">
@@ -111,7 +113,9 @@ $roles = Roles::getAllRoles();
                         <button class="btn btn-success w-100 dedicatedServerButton" type="button"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#dedicatedServerCollapse" aria-expanded="false"
-                                aria-controls="dedicatedServerCollapse">
+                                aria-controls="dedicatedServerCollapse"
+                                data-umami-event="Add Save Game Dedicated Server Toggle"
+                                data-umami-event-popup="add-save-game">
                             <i class="fas fa-server"></i>
                             Add Dedicated Server Credentials
                         </button>
@@ -141,12 +145,14 @@ $roles = Roles::getAllRoles();
                                                autocomplete="off"
                                                aria-describedby="passwordHelp"
                                                aria-required="false">
-                                        <button class="btn btn-outline-secondary togglePassword" type="button"
-                                                id="togglePassword"
-                                                aria-label="Toggle password visibility " style="width: 45px"
-                                                autocomplete="off">
+                                         <button class="btn btn-outline-secondary togglePassword" type="button"
+                                                 id="togglePassword"
+                                                 aria-label="Toggle password visibility " style="width: 45px"
+                                                 autocomplete="off"
+                                                 data-umami-event="Dedicated Server Password Visibility Toggled"
+                                                 data-umami-event-popup="add-save-game">
                                             <i class="fas fa-eye"></i>
-                                        </button>
+                                         </button>
                                     </div>
                                 </div>
 
@@ -163,7 +169,9 @@ $roles = Roles::getAllRoles();
             <div class="modal-footer">
                 <button type="submit" class="btn btn-primary" form="addSaveGameForm"
                         data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true"
-                        title="Create a new save game with the provided details.">
+                        title="Create a new save game with the provided details."
+                        data-umami-event="Create Save Game"
+                        data-umami-event-popup="add-save-game">
                     <i class="fas fa-save"></i>
                     <span class="d-none d-md-inline">Create Save Game</span>
                 </button>
@@ -181,8 +189,34 @@ $roles = Roles::getAllRoles();
 
 
     document.getElementById('add_game_save').addEventListener('click', function () {
+        if (window.umami && typeof window.umami.track === 'function') {
+            window.umami.track('Add Save Game Modal Opened', {
+                source: 'button'
+            });
+        }
         const popupModal = new bootstrap.Modal(document.getElementById('popupModal'));
         popupModal.show();
+    });
+
+    document.getElementById('addSaveGameForm')?.addEventListener('submit', function () {
+        if (!(window.umami && typeof window.umami.track === 'function')) {
+            return;
+        }
+
+        const requestedUsersRaw = document.querySelector('input[name="requested_users"]')?.value ?? '[]';
+        let requestedUsersCount = 0;
+        try {
+            const parsedUsers = JSON.parse(requestedUsersRaw);
+            requestedUsersCount = Array.isArray(parsedUsers) ? parsedUsers.length : 0;
+        } catch (e) {
+            requestedUsersCount = 0;
+        }
+
+        window.umami.track('Create Save Game Attempt', {
+            has_image: Boolean(document.getElementById('saveGameImage')?.files?.length),
+            has_dedicated_server: Boolean(document.querySelector('input[name="dedicatedServerIp"]')?.value?.trim()),
+            requested_users_count: requestedUsersCount
+        });
     });
 
     <?php if ($error): ?>

@@ -6,7 +6,10 @@ global $productLine, $buildings, $powers;
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="popupModalLabel">Power</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        data-umami-event="Production Line Power Modal Closed"
+                        data-umami-event-popup="production-line-power"
+                        data-umami-event-production-line-id="<?= $productLine->id ?>"></button>
             </div>
             <div class="modal-body">
                 <table class="table table-striped" id="power">
@@ -99,6 +102,12 @@ global $productLine, $buildings, $powers;
 
 <script>
     document.getElementById('showPower').addEventListener('click', function () {
+        if (window.umami && typeof window.umami.track === 'function') {
+            window.umami.track('Production Line Power Modal Opened', {
+                production_line_id: <?= json_encode((string)$productLine->id) ?>,
+                rows: <?= count($powers) ?>
+            });
+        }
         const addProductionLine = new bootstrap.Modal(document.getElementById('showPowerModal'));
         addProductionLine.show();
     });

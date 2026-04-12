@@ -33,7 +33,10 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="popupModalLabel">Update production line</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        data-umami-event="Edit Production Line Modal Closed"
+                        data-umami-event-popup="edit-production-line"
+                        data-umami-event-production-line-id="<?= $productLine->id ?>"></button>
             </div>
             <div class="modal-body">
                 <div id="successAlert" class="alert alert-success d-none fade" role="alert">
@@ -48,8 +51,11 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
                              title="This will automatically calculate the import and export values for the production line.">
                             <label for="auto_import_export" class="form-label me-2">Auto Import-Export</label>
                             <input type="checkbox" id="auto_import_export" class="from-control" data-onstyle="success"
-                                   data-offstyle="danger"
-                                   data-toggle="toggle" <?= $productionLineSettings->auto_import_export ? 'checked' : '' ?>>
+                                    data-offstyle="danger"
+                                    data-toggle="toggle" <?= $productionLineSettings->auto_import_export ? 'checked' : '' ?>
+                                   data-umami-event="Production Line Setting Toggled"
+                                   data-umami-event-setting="auto-import-export"
+                                   data-umami-event-production-line-id="<?= $productLine->id ?>">
                         </div>
                     </div>
                     <div class="col-6 py-2">
@@ -58,8 +64,11 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
                              title="This will automatically calculate the power and machine values for the production line.">
                             <label for="auto_power_machine" class="form-label me-2">Auto Power-Machine</label>
                             <input type="checkbox" id="auto_power_machine" class="from-control" data-onstyle="success"
-                                   data-offstyle="danger"
-                                   data-toggle="toggle" <?= $productionLineSettings->auto_power_machine ? 'checked' : '' ?>>
+                                    data-offstyle="danger"
+                                    data-toggle="toggle" <?= $productionLineSettings->auto_power_machine ? 'checked' : '' ?>
+                                   data-umami-event="Production Line Setting Toggled"
+                                   data-umami-event-setting="auto-power-machine"
+                                   data-umami-event-production-line-id="<?= $productLine->id ?>">
                         </div>
                     </div>
                 </div>
@@ -75,8 +84,11 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
                     <div class="mb-3 col-2">
                         <label for="productionLineActive" class="form-label">Active</label><br>
                         <input type="checkbox" id="productionLineActive" class="from-control" data-onstyle="success"
-                               data-offstyle="danger" data-toggle="toggle" name="productionLineActive"
-                            <?php if ($productLine->active) echo 'checked'; ?>>
+                                data-offstyle="danger" data-toggle="toggle" name="productionLineActive"
+                               data-umami-event="Production Line Setting Toggled"
+                               data-umami-event-setting="active"
+                               data-umami-event-production-line-id="<?= $productLine->id ?>"
+                             <?php if ($productLine->active) echo 'checked'; ?>>
                     </div>
                 </form>
                 <div class="row mb-3">
@@ -87,17 +99,23 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
                         <div class="invalid-feedback">Please select a valid JSON file.</div>
                     </div>
                     <div class="col-2 p-0">
-                        <button class="btn btn-success w-100 rounded-0" id="importButton">Import</button>
+                        <button class="btn btn-success w-100 rounded-0" id="importButton"
+                                data-umami-event="Production Line Imported"
+                                data-umami-event-production-line-id="<?= $productLine->id ?>">Import</button>
                     </div>
                     <div class="col-2 ps-0">
-                        <button class="btn btn-primary w-100 rounded-0 rounded-end" id="exportButton">Export</button>
+                        <button class="btn btn-primary w-100 rounded-0 rounded-end" id="exportButton"
+                                data-umami-event="Production Line Exported"
+                                data-umami-event-production-line-id="<?= $productLine->id ?>">Export</button>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-12">
                         <!-- Collapsible Button -->
                         <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#cachedData" aria-expanded="false" aria-controls="cachedData">
+                                data-bs-target="#cachedData" aria-expanded="false" aria-controls="cachedData"
+                                data-umami-event="Production Line Cached Data Toggled"
+                                data-umami-event-production-line-id="<?= $productLine->id ?>">
                             Cached Data
                         </button>
                         <!-- Collapsible Content -->
@@ -114,7 +132,9 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
                                     </div>
                                     <div class="col-6">
                                         <h6>Remove Cache</h6>
-                                        <button class="btn btn-danger w-100" id="removeCache">Remove Cache</button>
+                                        <button class="btn btn-danger w-100" id="removeCache"
+                                                data-umami-event="Production Line Cache Removed"
+                                                data-umami-event-production-line-id="<?= $productLine->id ?>">Remove Cache</button>
                                     </div>
                                 </div>
                             </div>
@@ -127,7 +147,10 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
             <div class="modal-footer">
                 <button type="submit" form="editProductionLineForm" class="btn btn-primary" data-bs-toggle="tooltip"
                         data-bs-placement="top" data-bs-html="true"
-                        title="This will update the production line with the new settings. Only needed if you changed the name or active status.">
+                        title="This will update the production line with the new settings. Only needed if you changed the name or active status."
+                        data-umami-event="Production Line Updated"
+                        data-umami-event-popup="edit-production-line"
+                        data-umami-event-production-line-id="<?= $productLine->id ?>">
                     Update Production Line
                 </button>
             </div>
@@ -136,7 +159,26 @@ $productionLineSettings = ProductionLineSettings::getProductionLineSettings(intv
 </div>
 <script>
     document.getElementById('edit_product_line').addEventListener('click', function () {
+        if (window.umami && typeof window.umami.track === 'function') {
+            window.umami.track('Edit Production Line Modal Opened', {
+                production_line_id: <?= json_encode((string)$productLine->id) ?>,
+                game_save_id: <?= json_encode((string)$productLine->game_saves_id) ?>
+            });
+        }
         const addProductionLine = new bootstrap.Modal(document.getElementById('editProductionLine'));
         addProductionLine.show();
+    });
+
+    document.getElementById('editProductionLineForm')?.addEventListener('submit', function () {
+        if (!(window.umami && typeof window.umami.track === 'function')) {
+            return;
+        }
+
+        window.umami.track('Production Line Update Attempt', {
+            production_line_id: <?= json_encode((string)$productLine->id) ?>,
+            active: Boolean(document.getElementById('productionLineActive')?.checked),
+            auto_import_export: Boolean(document.getElementById('auto_import_export')?.checked),
+            auto_power_machine: Boolean(document.getElementById('auto_power_machine')?.checked)
+        });
     });
 </script>

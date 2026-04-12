@@ -14,7 +14,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="helpModalLabel">Production Line Guide</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        data-umami-event="Production Line Help Closed"
+                        data-umami-event-popup="production-line-help"></button>
             </div>
             <div class="modal-body">
                 <div id="welcome">
@@ -32,25 +34,46 @@
                 </div>
                 <h3 class="text-primary">Sections Overview</h3>
                 <div class="list-group mb-3">
-                    <a href="#importSection" class="list-group-item list-group-item-action">
+                    <a href="#importSection" class="list-group-item list-group-item-action"
+                       data-umami-event="Production Line Help Section Opened"
+                       data-umami-event-popup="production-line-help"
+                       data-umami-event-section="import-section">
                         <i class="fa-solid fa-arrow-up-right-dots"></i> Import Section
                     </a>
-                    <a href="#productionSection" class="list-group-item list-group-item-action">
+                    <a href="#productionSection" class="list-group-item list-group-item-action"
+                       data-umami-event="Production Line Help Section Opened"
+                       data-umami-event-popup="production-line-help"
+                       data-umami-event-section="production-section">
                         <i class="fa-solid fa-cogs"></i> Production Section
                     </a>
-                    <a href="#powerSection" class="list-group-item list-group-item-action">
+                    <a href="#powerSection" class="list-group-item list-group-item-action"
+                       data-umami-event="Production Line Help Section Opened"
+                       data-umami-event-popup="production-line-help"
+                       data-umami-event-section="power-section">
                         <i class="fa-solid fa-bolt"></i> Power Section
                     </a>
-                    <a href="#visualizationSection" class="list-group-item list-group-item-action">
+                    <a href="#visualizationSection" class="list-group-item list-group-item-action"
+                       data-umami-event="Production Line Help Section Opened"
+                       data-umami-event-popup="production-line-help"
+                       data-umami-event-section="visualization-section">
                         <i class="fa-solid fa-project-diagram"></i> Visualization Section
                     </a>
-                    <a href="#editSection" class="list-group-item list-group-item-action">
+                    <a href="#editSection" class="list-group-item list-group-item-action"
+                       data-umami-event="Production Line Help Section Opened"
+                       data-umami-event-popup="production-line-help"
+                       data-umami-event-section="edit-section">
                         <i class="fa-solid fa-edit"></i> Edit Screen
                     </a>
-                    <a href="#toolbar" class="list-group-item list-group-item-action">
+                    <a href="#toolbar" class="list-group-item list-group-item-action"
+                       data-umami-event="Production Line Help Section Opened"
+                       data-umami-event-popup="production-line-help"
+                       data-umami-event-section="toolbar">
                         <i class="fa-solid fa-tools"></i> Toolbar
                     </a>
-                    <a href="#shortcuts" class="list-group-item list-group-item-action">
+                    <a href="#shortcuts" class="list-group-item list-group-item-action"
+                       data-umami-event="Production Line Help Section Opened"
+                       data-umami-event-popup="production-line-help"
+                       data-umami-event-section="shortcuts">
                         <i class="fa-solid fa-keyboard"></i> Shortcuts
                     </a>
                 </div>
@@ -269,12 +292,17 @@
                 </div>
                 <p class="text-muted text-center">
                     If you have any feedback or suggestions, please let me know. <a
-                            href="https://forms.gle/fAd5LrGRATYwFHzr7" target="_blank">Leave feedback</a>
+                            href="https://forms.gle/fAd5LrGRATYwFHzr7" target="_blank"
+                            data-umami-event="Production Line Help Feedback Clicked"
+                            data-umami-event-popup="production-line-help">Leave feedback</a>
                 </p>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        data-umami-event="Production Line Help Closed"
+                        data-umami-event-popup="production-line-help"
+                        data-umami-event-close-source="footer">Close</button>
             </div>
         </div>
     </div>
@@ -284,6 +312,11 @@
     document.getElementById('showHelp').addEventListener('click', function () {
         const helpModal = $('#helpModal');
         helpModal.find('#welcome').hide();
+        if (window.umami && typeof window.umami.track === 'function') {
+            window.umami.track('Production Line Help Opened', {
+                source: 'button'
+            });
+        }
         const popupModal = new bootstrap.Modal(helpModal);
         popupModal.show();
     });

@@ -15,7 +15,10 @@ $powerProduction = PowerProduction::getPowerProduction($_GET['id']);
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="popupModalLabel">Power Production</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        data-umami-event="Power Production Modal Closed"
+                        data-umami-event-popup="power-production"
+                        data-umami-event-save-id="<?= $_GET['id'] ?>"></button>
             </div>
             <form method="post">
                 <div class="modal-body">
@@ -51,7 +54,11 @@ $powerProduction = PowerProduction::getPowerProduction($_GET['id']);
                                         </div>
                                         <div class="col-3 col-lg-2 text-end ps-1 pe-3">
                                             <button type="button" class="btn btn-danger deletePowerProduction"
-                                                    data-id="<?= $power->building_id ?>">Delete
+                                                    data-id="<?= $power->building_id ?>"
+                                                    data-umami-event="Power Production Entry Deleted"
+                                                    data-umami-event-popup="power-production"
+                                                    data-umami-event-save-id="<?= $_GET['id'] ?>"
+                                                    data-umami-event-building-id="<?= $power->building_id ?>">Delete
                                             </button>
                                         </div>
                                     </div>
@@ -90,7 +97,10 @@ $powerProduction = PowerProduction::getPowerProduction($_GET['id']);
                                     <div class="invalid-feedback">Clock speed must be 1-250</div>
                                 </div>
                                 <div class="col-3 col-lg-2 text-end px-1 pe-3">
-                                    <button type="button" class="btn btn-primary" id="addPowerProduction">Add</button>
+                                    <button type="button" class="btn btn-primary" id="addPowerProduction"
+                                            data-umami-event="Power Production Entry Added"
+                                            data-umami-event-popup="power-production"
+                                            data-umami-event-save-id="<?= $_GET['id'] ?>">Add</button>
                                 </div>
                             </div>
 
@@ -106,6 +116,12 @@ $powerProduction = PowerProduction::getPowerProduction($_GET['id']);
         const popoverProduction = $('#popover-production');
 
         event.stopPropagation();
+        if (window.umami && typeof window.umami.track === 'function') {
+            window.umami.track('Power Production Modal Opened', {
+                save_id: <?= json_encode((string)$_GET['id']) ?>,
+                current_entries: <?= count($powerProduction) ?>
+            });
+        }
         $(document).ready(function () {
             $('#popover-production').popover('hide');
             $('#popover-power').popover('hide');

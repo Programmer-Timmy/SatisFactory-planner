@@ -167,10 +167,10 @@ $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpf
 
                             <hr class="dropdown-divider">
                             <?php if (isset($_SESSION['userId'])) : ?>
-                                <a class="dropdown-item" href="/logout">Logout</a>
+                                <a class="dropdown-item" href="/logout" data-umami-event="Logout">Logout</a>
                             <?php else : ?>
-                                <a class="dropdown-item" href="/login">Login</a>
-                                <a class="dropdown-item" href="/register">Register</a>
+                                <a class="dropdown-item" href="/login" data-umami-event="Login">Login</a>
+                                <a class="dropdown-item" href="/register" data-umami-event="Register">Register</a>
                             <?php endif; ?>
                         </div>
                     </li>

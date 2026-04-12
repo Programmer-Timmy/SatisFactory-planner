@@ -5,7 +5,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="showVisualizationLabel">Visualization</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        data-umami-event="Visualization Modal Closed"
+                        data-umami-event-popup="production-line-visualization"></button>
             </div>
             <div class="modal-body p-0 overflow-hidden">
                 <div class="d-flex justify-content-center align-items-center flex-column px-5" id="loadingScreenGraph" style="height: 100%; width: 100%;">
@@ -22,7 +24,9 @@
 <!--                </select>-->
                 <!-- Checklist -->
                 <div class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" title="Show or hide the checklist. <br> 🟢 Built and tested <br> 🟡 Built but not tested <br> ⚪ Not built" data-bs-html="true">
-                    <input type="checkbox" id="showChecklist" class="form-check-input" style="width: 20px; height: 20px;" checked>
+                    <input type="checkbox" id="showChecklist" class="form-check-input" style="width: 20px; height: 20px;" checked
+                           data-umami-event="Visualization Filter Toggled"
+                           data-umami-event-filter="checklist">
                     <label for="showChecklist" class="form-check-label">Checklist</label>
                 </div>
 
@@ -30,27 +34,47 @@
 
                 <!-- Export -->
                 <div class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" title="Shows the 🔴 export nodes in the graph" data-bs-html="true">
-                    <input type="checkbox" id="export" class="form-check-input" style="width: 20px; height: 20px;">
+                    <input type="checkbox" id="export" class="form-check-input" style="width: 20px; height: 20px;"
+                           data-umami-event="Visualization Filter Toggled"
+                           data-umami-event-filter="export">
                     <label for="export" class="form-check-label">Export</label>
                 </div>
 
                 <!-- Import -->
                 <div class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" title="Shows the 🔵 import nodes in the graph" data-bs-html="true">
-                    <input type="checkbox" id="import" class="form-check-input" style="width: 20px; height: 20px;" checked>
+                    <input type="checkbox" id="import" class="form-check-input" style="width: 20px; height: 20px;" checked
+                           data-umami-event="Visualization Filter Toggled"
+                           data-umami-event-filter="import">
                     <label for="import" class="form-check-label">Import</label>
                 </div>
 
                 <!-- Roots -->
                 <div class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" title="Fixes the root nodes in the graph" data-bs-html="true">
-                    <input type="checkbox" id="roots" class="form-check-input" style="width: 20px; height: 20px;" checked>
+                    <input type="checkbox" id="roots" class="form-check-input" style="width: 20px; height: 20px;" checked
+                           data-umami-event="Visualization Filter Toggled"
+                           data-umami-event-filter="roots">
                     <label for="roots" class="form-check-label">Roots</label>
                 </div>
 
                 <div class="vr"></div>
 
-                <button type="button" class="btn btn-primary" id="refresh">Refresh</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="refresh"
+                        data-umami-event="Visualization Refreshed"
+                        data-umami-event-popup="production-line-visualization">Refresh</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                        data-umami-event="Visualization Modal Closed"
+                        data-umami-event-popup="production-line-visualization"
+                        data-umami-event-close-source="footer">Close</button>
             </div>
         </div>
     </div>
 </div>
+<script>
+    document.getElementById('showVisualization')?.addEventListener('shown.bs.modal', function () {
+        if (window.umami && typeof window.umami.track === 'function') {
+            window.umami.track('Visualization Modal Opened', {
+                source: 'toolbar'
+            });
+        }
+    });
+</script>
