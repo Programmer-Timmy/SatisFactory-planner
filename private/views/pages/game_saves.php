@@ -256,7 +256,9 @@ foreach ($gameSaves as $save) {
                         <div class="position-relative">
                             <a href="game_save/<?= $gameSave->game_saves_id ?>"
                                class="card-link text-black text-decoration-none"
-                               data-umami-event="View Game Save">
+                               data-umami-event="View Game Save"
+                               data-umami-event-game_save="<?= $gameSave->game_saves_id ?>"
+                            >
                                 <img src="image/<?= $gameSave->image ?>"
                                      class="card-img-top object-fit-cover savegame-image"
                                      style="max-height: 400px" alt="...">
@@ -327,7 +329,7 @@ foreach ($gameSaves as $save) {
                                 <div class="position-relative">
                                     <a href="game_save/<?= $gameSave->game_saves_id ?>"
                                        class="card-link text-black text-decoration-none"
-                                       data-umami-event="View Game Save">
+                                       data-umami-event="View Game Save" data-umami-event-game_save="<?= $gameSave->game_saves_id ?>"
                                         <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover"
                                              style="max-height: 400px" alt="...">
                                     </a>
