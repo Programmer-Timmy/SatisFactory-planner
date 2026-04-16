@@ -146,7 +146,7 @@ foreach ($gameSaves as $save) {
                         <?php endif; ?>
                         <button id="Invites" class="btn btn-secondary" data-bs-toggle="tooltip"
                                 data-bs-placement="top"
-                                data-bs-title="Invites"
+                                data-bs-title="Invites">
                         <i class="fa-solid fa-envelope"></i>
                         </button>
 
