@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import PageTitle from "./PageTitle";
 import ImportsCard from "./ImportsCard";
+import ProductionRowCard from "./ProductionCard";
 
 interface ProductLine {
     id: number;
@@ -20,7 +21,7 @@ interface ImportItem {
     item_class_name: string;
 }
 
-interface ProductionItem {
+export interface ProductionItem {
     id: number;
     item_name_1: string;
     item_class_name_1: string;
@@ -90,7 +91,7 @@ interface RecipeProduct {
     class_name: string;
 }
 
-interface Recipe {
+export interface Recipe {
     id: number;
     name: string;
     export_amount_per_min: number;
@@ -152,6 +153,7 @@ const ProductionLineApp: React.FC = () => {
             setAppData(data);
             setLoading(false);
         }
+        console.log(data);
     }, []);
 
     if (loading) {
@@ -195,9 +197,25 @@ const ProductionLineApp: React.FC = () => {
                         Read-only
                         values are shown as labels (not inputs).</p>
                     <div className="pl-list">
-                        {/*{appData.production.map((productionItem, index) => (*/}
-
-                        {/*))}*/}
+                        {appData.production.map((productionItem, index) => (
+                            //type Props = {
+                            //     row: ProductionRow;
+                            //     recipe: Recipe;
+                            //     recipes: Recipe[];
+                            //
+                            //     onDelete: (id: number) => void;
+                            //     onRecipeChange: (rowId: number, recipeId: number) => void;
+                            //     onQuantityChange: (rowId: number, value: number) => void;
+                            //     onClockSpeedChange: (rowId: number, value: number) => void;
+                            //     onSomersloopChange: (rowId: number, checked: boolean) => void;
+                            // };
+                            <ProductionRowCard key={index} row={productionItem} recipe={appData.recipes.find(r => r.id === productionItem.recipe_id)!} recipes={appData.recipes} onDelete={() => {
+                            }} onRecipeChange={() => {
+                            }} onQuantityChange={() => {
+                            }} onClockSpeedChange={() => {
+                            }} onSomersloopChange={() => {
+                            }}/>
+                        ))}
                     </div>
                 </div>
             </div>
