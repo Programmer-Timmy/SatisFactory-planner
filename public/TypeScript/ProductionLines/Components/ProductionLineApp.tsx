@@ -151,6 +151,7 @@ const ProductionLineApp: React.FC = () => {
     // local editable production rows and imports
     const [productionRows, setProductionRows] = useState<ProductionItem[]>([]);
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
+    const [collapseAll, setCollapseAll] = useState(false);
 
     useEffect(() => {
         const data = window.appData;
@@ -308,7 +309,9 @@ const ProductionLineApp: React.FC = () => {
                         <button type="button" className="btn btn-outline-secondary btn-sm" id="pl-toggle-collapse-all"
                                 data-state="expanded" data-bs-toggle="tooltip" data-bs-placement="top"
                                 data-bs-container="body"
-                                data-bs-title="Collapse or expand all recipe cards.">
+                                data-bs-title="Collapse or expand all recipe cards."
+                                onClick={() => setCollapseAll(prev => !prev)}
+                        >
                             <i className="fa-solid fa-compress me-1" aria-hidden="true"></i>
                             <span data-role="label">Collapse all</span>
                         </button>
@@ -327,6 +330,7 @@ const ProductionLineApp: React.FC = () => {
                                                onQuantityChange={(rowId, value) => { handleQuantityChange(rowId, value); }}
                                                onClockSpeedChange={(rowId, value) => { handleClockSpeedChange(rowId, value); }}
                                                onSomersloopChange={(rowId, checked) => { handleSomersloopChange(rowId, checked); }}
+                                               collapsed={collapseAll}
                             />
                         ))}
                     </div>

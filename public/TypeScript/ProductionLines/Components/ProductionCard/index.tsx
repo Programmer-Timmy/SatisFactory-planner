@@ -12,11 +12,14 @@ type Props = {
     recipe: Recipe;
     recipes: Recipe[];
 
+    collapsed: boolean;
+
     onDelete: (id: number) => void;
     onRecipeChange: (rowId: number, recipeId: number) => void;
     onQuantityChange: (rowId: number, value: number) => void;
     onClockSpeedChange: (rowId: number, value: number | '') => void;
     onSomersloopChange: (rowId: number, checked: boolean) => void;
+    onToggleCollapse: (rowId: number) => void;
 };
 
 const getIcon = (className?: string) => {
@@ -24,16 +27,18 @@ const getIcon = (className?: string) => {
     return `/image/items/${className.toLowerCase().replaceAll('_', '-')}_256.png`;
 };
 
-export default function ProductionRowCard({
+const ProductionRowCard = ({
     row,
     recipe,
     recipes,
+    collapsed,
     onDelete,
     onRecipeChange,
     onQuantityChange,
     onClockSpeedChange,
     onSomersloopChange,
-}: Props) {
+    onToggleCollapse
+}: Props) => {
     const output1 = recipe.products[0];
     const output2 = recipe.products[1];
     const building = recipe.building;
@@ -65,18 +70,30 @@ export default function ProductionRowCard({
     const exportPerMin2 = extraQuantity - localUsage2;
 
     return (
-        <div className="pl-row pl-production-row" data-row-index={row.id}>
+        <div className={`pl-row pl-production-row ${collapsed ? 'is-collapsed' : ''}`} data-row-index={row.id}>
             <button
                 type="button"
                 className="btn btn-sm pl-collapse-toggle"
                 aria-label="Collapse/expand recipe details"
+                aria-expanded={!collapsed}
+                onClick={() => onToggleCollapse(row.id)}
             >
-                <i className="fa-solid fa-chevron-up" />
+                <i className={`fa-solid ${collapsed ? 'fa-chevron-down' : 'fa-chevron-up'}`} />
             </button>
+
+            <div className="pl-side-actions">
+                <button
+                    type="button"
+                    className="btn btn-sm delete-production-row"
+                    onClick={() => onDelete(row.id)}
+                >
+                    <i className="fa-solid fa-trash" />
+                </button>
+            </div>
 
             <input type="hidden" value={row.id} />
 
-            <div className="pl-row-grid">
+            <div className={`pl-row-grid ${collapsed ? 'is-hidden' : 'is-visible'}`} aria-hidden={collapsed}>
                 <div className="pl-row-main">
                     <div className="pl-header-main">
                         <div className="pl-field">
@@ -119,16 +136,6 @@ export default function ProductionRowCard({
                     </div>
                 </div>
 
-                <div className="pl-side-actions">
-                    <button
-                        type="button"
-                        className="btn btn-sm delete-production-row"
-                        onClick={() => onDelete(row.id)}
-                    >
-                        <i className="fa-solid fa-trash" />
-                    </button>
-                </div>
-
                 <div className="pl-row-side">
                     <div className="pl-machine-settings">
                         <BuildingStack building={building} buildingAmount={buildingAmount} />
@@ -142,6 +149,26 @@ export default function ProductionRowCard({
                     </div>
                 </div>
             </div>
+
+            <div className={`pl-collapsed-summary ${collapsed ? 'is-visible' : 'is-hidden'}`}>
+                <div className="pl-collapsed-recipe" data-role="collapsed-recipe-name">{recipe.name}</div>
+                <div className="pl-collapsed-right">
+                    <span className="pl-collapsed-output">
+                        <img className="pl-item-icon" data-role="collapsed-output-icon" loading="lazy"
+                             src={getIcon(output1?.class_name)} alt=""/>
+                        <span className="pl-collapsed-qty" data-role="collapsed-output-qty">{formatNumber(row.product_quantity)}/min</span>
+                    </span>
+                    {output2 && recipe.export_amount_per_min2 && (
+                        <span className="pl-collapsed-output">
+                            <img className="pl-item-icon" data-role="collapsed-output-icon" loading="lazy"
+                                 src={getIcon(output2?.class_name)} alt=""/>
+                            <span className="pl-collapsed-qty" data-role="collapsed-output-qty">{formatNumber(row.product_quantity * (recipe.export_amount_per_min2 / recipe.export_amount_per_min))}/min</span>
+                        </span>
+                    )}
+                </div>
+            </div>
         </div>
     );
-}
+};
+
+export default React.memo(ProductionRowCard);
