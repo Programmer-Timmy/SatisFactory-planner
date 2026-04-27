@@ -1,5 +1,5 @@
-import {Item} from "./ProductionLineApp";
-import {FC} from "react";
+import React, {FC} from 'react';
+import { Item } from '../ProductionLineApp';
 
 interface ImportsCardProps {
     itemName: string;
@@ -7,11 +7,7 @@ interface ImportsCardProps {
     amount: number;
 }
 
-const ImportsCard: FC<ImportsCardProps> = ({
-                                               itemName,
-                                               itemClass,
-                                               amount,
-                                           }) => {
+const ImportsCard: FC<ImportsCardProps> = ({ itemName, itemClass, amount }) => {
     return (
         <div className="pl-row pl-import-row is-collapsed" data-row-index="0">
             <div className="pl-import-collapsed" aria-hidden="true">
@@ -26,8 +22,7 @@ const ImportsCard: FC<ImportsCardProps> = ({
                 </div>
             </div>
         </div>
-
-    )
+    );
 }
 
 export default ImportsCard;

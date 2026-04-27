@@ -1,4 +1,4 @@
-import {FC} from "react";
+import React, {FC} from 'react';
 
 const PageTitle = ({GameSaveId, ProductionLineTitle}: { GameSaveId: number, ProductionLineTitle: string }) => {
     return (

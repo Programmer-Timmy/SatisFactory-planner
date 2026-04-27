@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import PageTitle from "./PageTitle";
 import ImportsCard from "./ImportsCard";
-import ProductionRowCard from "./ProductionCard";
+import ProductionRowCard from "./ProductionCard/index";
 
 interface ProductLine {
     id: number;
@@ -37,8 +37,9 @@ export interface ProductionItem {
     building_class_name: string;
     power_used: number;
     product_quantity: number;
-    clock_speed: number;
-    use_somersloop: number;
+    // allow empty string while editing clock
+    clock_speed: number | '';
+    use_somersloop: number | boolean | null;
 }
 
 interface PowerItem {
@@ -155,7 +156,7 @@ const ProductionLineApp: React.FC = () => {
         const data = window.appData;
         if (data) {
             setAppData(data);
-            setProductionRows(data.production.map(p => ({ ...p, clock_speed: Math.max(0, Math.min(250, (p.clock_speed ?? 100))) })));
+            setProductionRows(data.production.map(p => ({ ...p, clock_speed: Math.max(0, Math.min(250, Number(p.clock_speed ?? 100))) })));
             setImportsList(data.imports.map(i => ({ ...i })));
             setLoading(false);
         }
@@ -180,7 +181,7 @@ const ProductionLineApp: React.FC = () => {
         const usageArr = new Array(rows.length).fill(0);
         const extraUsageArr = new Array(rows.length).fill(0);
 
-        const importsMap: Record<number, { itemId: number; className: string; name: string; amount: number }> = {};
+        const importsMap: Record<string, { itemId: number; className: string; name: string; amount: number }> = {};
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
@@ -336,3 +337,4 @@ const ProductionLineApp: React.FC = () => {
 };
 
 export default ProductionLineApp;
+
