@@ -1,6 +1,10 @@
 import React, {FC, useEffect, useMemo, useRef, useState} from 'react';
 import {Recipe} from './ProductionLineApp';
 
+// Global cache to avoid expensive DOM cloning on many instances
+let cachedMenuHeight: number | null = null;
+let menuHeightMeasured = false;
+
 type SearchByMenuSettings = {
     show: boolean;
     searchByProducts: boolean;
@@ -29,6 +33,68 @@ const RecipeSelect: FC<Props> = ({recipes, value, onChange}) => {
     });
 
     const containerRef = useRef<HTMLDivElement | null>(null);
+    const menuRef = useRef<HTMLDivElement | null>(null);
+    const [anchorAbove, setAnchorAbove] = useState<boolean>(false);
+
+    const computeAnchor = () => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        let menuHeight = 300;
+
+        if (cachedMenuHeight != null) {
+            menuHeight = cachedMenuHeight;
+        } else {
+            // Fast synchronous estimate based on number of items to avoid heavy DOM ops
+            const itemHeight = showVisuals ? 70 : 40;
+            const est = (filtered ? filtered.length : 5) * itemHeight + 16;
+            menuHeight = Math.min(300, est);
+
+            // Kick off one asynchronous measurement to cache exact size for future opens
+            if (!menuHeightMeasured && menuRef.current && open) {
+                // Only measure once and only when menu is actually open to avoid work during background operations
+                menuHeightMeasured = true;
+                requestAnimationFrame(() => {
+                    try {
+                        const clone = menuRef.current!.cloneNode(true) as HTMLElement;
+                        clone.style.visibility = 'hidden';
+                        clone.style.display = 'block';
+                        clone.style.position = 'absolute';
+                        clone.style.left = '-9999px';
+                        clone.style.top = '-9999px';
+                        document.body.appendChild(clone);
+                        const measured = Math.min(600, clone.scrollHeight || clone.offsetHeight || 300);
+                        document.body.removeChild(clone);
+                        cachedMenuHeight = measured;
+                        // Recompute anchor with accurate measurement if component still mounted
+                        if (containerRef.current) {
+                            const rect2 = containerRef.current.getBoundingClientRect();
+                            const availableBelow2 = window.innerHeight - rect2.bottom;
+                            const availableAbove2 = rect2.top;
+                            setAnchorAbove(availableBelow2 < measured && availableAbove2 > availableBelow2);
+                        }
+                    } catch (e) {
+                        // ignore measurement errors
+                    }
+                });
+            }
+        }
+
+        const availableBelow = window.innerHeight - rect.bottom;
+        const availableAbove = rect.top;
+        // prefer below unless it doesn't fit and above has more space
+        setAnchorAbove(availableBelow < menuHeight && availableAbove > availableBelow);
+    };
+
+    useEffect(() => {
+        if (!open) return;
+        computeAnchor();
+        window.addEventListener('resize', computeAnchor);
+        window.addEventListener('scroll', computeAnchor, true);
+        return () => {
+            window.removeEventListener('resize', computeAnchor);
+            window.removeEventListener('scroll', computeAnchor, true);
+        };
+    }, [open, search]); // recompute when open or search changes
 
     useEffect(() => {
         const selected = recipes.find(r => r.id === value);
@@ -111,9 +177,11 @@ const RecipeSelect: FC<Props> = ({recipes, value, onChange}) => {
                 value={search}
                 onChange={e => {
                     setSearch(e.target.value);
+                    computeAnchor();
                     setOpen(true);
                 }}
                 onFocus={() => {
+                    computeAnchor();
                     setOpen(true);
                 }}
                 autoComplete="off"
@@ -122,8 +190,16 @@ const RecipeSelect: FC<Props> = ({recipes, value, onChange}) => {
             <input type="hidden" name="recipeId" className="recipe-id" data-field="recipeId" value={value ?? ''}/>
 
             <div
+                ref={menuRef}
                 className={`select-items-menu collapse position-absolute child bg-white z-2 rounded ${open ? 'show' : ''}`}
-                style={{minWidth: 300, maxHeight: 300, left: 0, width: '100%'}}>
+                style={{
+                    minWidth: 300,
+                    maxHeight: 300,
+                    left: 0,
+                    width: '100%',
+                    top: anchorAbove ? 'auto' : '100%',
+                    bottom: anchorAbove ? '100%' : 'auto'
+                }}>
                 <div className="d-flex justify-content-between align-items-center position-absolute end-0 icon-group">
                     <button name="searchByMenu"
                             className="btn btn-sm bg-transparent border-0 text-dark search-by-menu-button p-1 rounded-0"

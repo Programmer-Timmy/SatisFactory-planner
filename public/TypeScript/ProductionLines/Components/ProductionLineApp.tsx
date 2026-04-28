@@ -1,8 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useMemo, useRef, useCallback} from 'react';
 import PageTitle from "./PageTitle";
 import ImportsCard from "./ImportsCard";
 import ProductionRowCard from "./ProductionCard/index";
-import {Tooltip} from "bootstrap";
+import Tooltip from "./Tooltip";
+import ProductionAddCard from "./ProductionAddCard";
+import { v4 as uuidv4 } from "uuid";
 
 interface ProductLine {
     id: number;
@@ -154,12 +156,34 @@ const ProductionLineApp: React.FC = () => {
     const [productionRows, setProductionRows] = useState<ProductionItem[]>([]);
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
 
+    // optimization helpers
+    const importsTimerRef = useRef<number | null>(null);
+    const idleRecalcRef = useRef<number | null>(null);
+    const recipeMap = useMemo(() => {
+        const m: Record<number, Recipe> = {};
+        if (appData && appData.recipes) {
+            for (const r of appData.recipes) m[r.id] = r;
+        }
+        return m;
+    }, [appData?.recipes]);
+
+    const itemsByName = useMemo(() => {
+        const m: Record<string, Item> = {};
+        if (appData && appData.items) {
+            for (const it of appData.items) m[it.name.toLowerCase()] = it;
+        }
+        return m;
+    }, [appData?.items]);
+
     useEffect(() => {
         const data = window.appData;
         if (data) {
             setAppData(data);
-            setProductionRows(data.production.map(p => ({ ...p, clock_speed: Math.max(0, Math.min(250, Number(p.clock_speed ?? 100))) })));
-            setImportsList(data.imports.map(i => ({ ...i })));
+            setProductionRows(data.production.map(p => ({
+                ...p,
+                clock_speed: Math.max(0, Math.min(250, Number(p.clock_speed ?? 100)))
+            })));
+            setImportsList(data.imports.map(i => ({...i})));
             setLoading(false);
         }
         console.log(data);
@@ -167,92 +191,95 @@ const ProductionLineApp: React.FC = () => {
 
     useEffect(() => {
         if (!appData) return;
-        // Recalculate imports whenever productionRows change
-        recalculateImports();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [productionRows]);
+        // schedule import recalculation during browser idle to keep add/delete instant
+        if (idleRecalcRef.current != null) {
+            if ('cancelIdleCallback' in window) {
+                (window as any).cancelIdleCallback(idleRecalcRef.current);
+            } else {
+                clearTimeout(idleRecalcRef.current);
+            }
+            idleRecalcRef.current = null;
+        }
 
-    useEffect(() => {
-        const handleMouseOver = (event: Event) => {
-            const target = event.target as HTMLElement;
-            const trigger = target.closest('[data-bs-toggle="tooltip"]') as HTMLElement;
-
-            if (!trigger) return;
-
-            if (!Tooltip.getInstance(trigger)) {
-                new Tooltip(trigger, {
-                    trigger: 'hover',
-                    container: 'body'
-                });
-
-                trigger.dispatchEvent(new Event('mouseenter'));
+        const schedule = () => {
+            if ('requestIdleCallback' in window) {
+                idleRecalcRef.current = (window as any).requestIdleCallback(() => {
+                    recalculateImports();
+                    idleRecalcRef.current = null;
+                }, {timeout: 200});
+            } else {
+                idleRecalcRef.current = window.setTimeout(() => {
+                    recalculateImports();
+                    idleRecalcRef.current = null;
+                }, 100);
             }
         };
 
-        document.addEventListener('mouseover', handleMouseOver);
+        schedule();
 
         return () => {
-            document.removeEventListener('mouseover', handleMouseOver);
+            if (idleRecalcRef.current != null) {
+                if ('cancelIdleCallback' in window) (window as any).cancelIdleCallback(idleRecalcRef.current);
+                else clearTimeout(idleRecalcRef.current);
+                idleRecalcRef.current = null;
+            }
         };
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [productionRows]);
 
-    const findRecipe = (id: number | undefined) => appData?.recipes.find(r => r.id === id) || null;
+    const findRecipe = (id?: number) => id != null ? (recipeMap[id] ?? null) : null;
 
-    const recalculateImports = () => {
+    const recalculateImports = useCallback(() => {
         if (!appData) return;
-        // clone rows to mutate
-        const rows = productionRows.map(r => ({ ...r })) as ProductionItem[];
-
-        // reset usage and extra usage
-        const usageArr = new Array(rows.length).fill(0);
-        const extraUsageArr = new Array(rows.length).fill(0);
-
+        const rows = productionRows;
+        const n = rows.length;
+        const usageArr = new Array(n).fill(0);
+        const extraUsageArr = new Array(n).fill(0);
         const importsMap: Record<string, { itemId: number; className: string; name: string; amount: number }> = {};
 
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            const recipe = findRecipe(row.recipe_id);
-            if (!recipe) continue;
+        // precompute producer metadata to avoid repeated finds
+        const producers = rows.map(p => {
+            const rec = recipeMap[p.recipe_id] ?? null;
+            const primaryName = rec && rec.products && rec.products[0] ? rec.products[0].name : p.item_name_1 || '';
+            const secondName = rec && rec.products && rec.products[1] ? rec.products[1].name : p.item_name_2 || '';
+            const exportPerMin = rec?.export_amount_per_min ?? 0;
+            const exportPerMin2 = rec?.export_amount_per_min2 ?? 0;
+            const productQty = Number(p.product_quantity) || 0;
+            const primaryNameLower = primaryName.toLowerCase();
+            const secondNameLower = secondName.toLowerCase();
+            const extraQty = (exportPerMin2 && exportPerMin) ? productQty * (exportPerMin2 / exportPerMin) : 0;
+            return { rec, primaryNameLower, secondNameLower, exportPerMin, exportPerMin2, productQty, extraQty };
+        });
 
+        for (let i = 0; i < n; i++) {
+            const row = rows[i];
+            const recipe = recipeMap[row.recipe_id] ?? null;
+            if (!recipe) continue;
             const rowQty = Number(row.product_quantity) || 0;
             const productionRate = recipe.export_amount_per_min ? rowQty / recipe.export_amount_per_min : 0;
-            // for each ingredient
+
             for (const ing of (recipe.ingredients || [])) {
                 const useSomersloop = !!row.use_somersloop;
                 const amountNeeded = (ing.quantity * productionRate) / (useSomersloop ? 2 : 1);
                 let remainingNeed = amountNeeded;
+                const ingNameLower = ing.name.toLowerCase();
 
-                // try to consume from produced rows primary products
-                for (let j = 0; j < rows.length && remainingNeed > 0; j++) {
-                    const producer = rows[j];
-                    const producerRecipe = findRecipe(producer.recipe_id);
-                    if (!producerRecipe) continue;
-                    // primary product name
-                    const producedName = producerRecipe.products && producerRecipe.products[0] ? producerRecipe.products[0].name : producer.item_name_1;
-                    if (producedName?.toLowerCase() !== ing.name.toLowerCase()) continue;
-
-                    const producerQty = Number(producer.product_quantity) || 0;
-                    const available = producerQty - usageArr[j];
+                // consume from primary products
+                for (let j = 0; j < n && remainingNeed > 0; j++) {
+                    if (producers[j].primaryNameLower !== ingNameLower) continue;
+                    const available = producers[j].productQty - usageArr[j];
                     if (available <= 0) continue;
                     const take = Math.min(available, remainingNeed);
                     usageArr[j] += take;
                     remainingNeed -= take;
                 }
 
-                // try to consume from double-export extra products
+                // consume from secondary products (extra)
                 if (remainingNeed > 0) {
-                    for (let j = 0; j < rows.length && remainingNeed > 0; j++) {
-                        const producer = rows[j];
-                        const producerRecipe = findRecipe(producer.recipe_id);
-                        if (!producerRecipe) continue;
-                        if (!producerRecipe.export_amount_per_min2) continue;
-                        const secondName = producerRecipe.products && producerRecipe.products[1] ? producerRecipe.products[1].name : producer.item_name_2 || '';
-                        if (secondName?.toLowerCase() !== ing.name.toLowerCase()) continue;
-
-                        // compute extraQuantity for producer using its recipe data
-                        const producerQty = Number(producer.product_quantity) || 0;
-                        const extraQty = (producerRecipe.export_amount_per_min2 != null && producerRecipe.export_amount_per_min) ? producerQty * (producerRecipe.export_amount_per_min2 / producerRecipe.export_amount_per_min) : 0;
-                        const available = extraQty - extraUsageArr[j];
+                    for (let j = 0; j < n && remainingNeed > 0; j++) {
+                        if (!producers[j].rec || !producers[j].exportPerMin2) continue;
+                        if (producers[j].secondNameLower !== ingNameLower) continue;
+                        const available = producers[j].extraQty - extraUsageArr[j];
                         if (available <= 0) continue;
                         const take = Math.min(available, remainingNeed);
                         extraUsageArr[j] += take;
@@ -260,46 +287,52 @@ const ProductionLineApp: React.FC = () => {
                     }
                 }
 
-                // if still remaining, add to imports
-                if (remainingNeed > 0.0000001) {
-                    // find item id and class from appData.items
-                    const foundItem = appData.items.find(it => it.name.toLowerCase() === ing.name.toLowerCase());
+                if (remainingNeed > 1e-7) {
+                    const foundItem = itemsByName[ing.name.toLowerCase()];
                     const itemId = foundItem ? foundItem.id : 0;
                     const className = foundItem ? foundItem.class_name : '';
                     const name = ing.name;
                     const key = `${itemId}-${name}`;
-                    if (!importsMap[key]) importsMap[key] = { itemId: itemId, className: className, name: name, amount: 0 };
+                    if (!importsMap[key]) importsMap[key] = { itemId, className, name, amount: 0 };
                     importsMap[key].amount += remainingNeed;
                 }
             }
         }
 
-        // build importsList
-        const newImports: ImportItem[] = Object.values(importsMap).map(it => ({ ammount: it.amount, name: it.name, items_id: it.itemId, item_class_name: it.className }));
+        const newImports: ImportItem[] = Object.values(importsMap).map(it => ({
+            ammount: it.amount,
+            name: it.name,
+            items_id: it.itemId,
+            item_class_name: it.className
+        }));
         setImportsList(newImports);
-    };
+    }, [appData, productionRows, recipeMap, itemsByName]);
 
     // helper to change quantity
     const handleQuantityChange = (rowId: number, value: number) => {
-        setProductionRows(prev => prev.map(r => r.id === rowId ? { ...r, product_quantity: value } : r));
+        setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, product_quantity: value} : r));
     };
 
     const handleRecipeChange = (rowId: number, recipeId: number) => {
-        setProductionRows(prev => prev.map(r => r.id === rowId ? { ...r, recipe_id: recipeId, recipe_name: (appData?.recipes.find(x=>x.id===recipeId)?.name) || '' } : r));
+        setProductionRows(prev => prev.map(r => r.id === rowId ? {
+            ...r,
+            recipe_id: recipeId,
+            recipe_name: (appData?.recipes.find(x => x.id === recipeId)?.name) || ''
+        } : r));
     };
 
-    const handleClockSpeedChange = (rowId: number, value: number | '' ) => {
+    const handleClockSpeedChange = (rowId: number, value: number | '') => {
         // allow empty string during editing
         if (value === '') {
-            setProductionRows(prev => prev.map(r => r.id === rowId ? { ...r, clock_speed: '' as unknown as number } : r));
+            setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, clock_speed: '' as unknown as number} : r));
             return;
         }
         const v = Math.max(0, Math.min(250, Number(value)));
-        setProductionRows(prev => prev.map(r => r.id === rowId ? { ...r, clock_speed: v } : r));
+        setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, clock_speed: v} : r));
     };
 
     const handleSomersloopChange = (rowId: number, checked: boolean) => {
-        setProductionRows(prev => prev.map(r => r.id === rowId ? { ...r, use_somersloop: checked } : r));
+        setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, use_somersloop: checked} : r));
     };
 
     if (loading) {
@@ -320,8 +353,8 @@ const ProductionLineApp: React.FC = () => {
                     <p className="text-muted small mb-2">Auto-calculated imports update as you edit recipes (toggle Auto
                         Import-Export in Edit).</p>
                     <div className="pl-list">
-                        {importsList.map((importItem, index) => (
-                            <ImportsCard key={index} itemName={importItem.name} itemClass={importItem.item_class_name}
+                        {importsList.map((importItem) => (
+                            <ImportsCard key={`${importItem.items_id}-${importItem.name}`} itemName={importItem.name} itemClass={importItem.item_class_name}
                                          amount={importItem.ammount}/>
                         ))}
                     </div>
@@ -329,39 +362,74 @@ const ProductionLineApp: React.FC = () => {
                 <div className="col-md-9">
                     <div className="pl-production-header mb-1">
                         <h2 className="mb-0">Production</h2>
-                        <button type="button" className="btn btn-outline-secondary btn-sm" id="pl-toggle-collapse-all"
-                                data-state="expanded" data-bs-toggle="tooltip" data-bs-placement="top"
-                                data-bs-container="body"
-                                data-bs-title="Collapse or expand all recipe cards."
-                                onClick={() => {
-                                    const allCollapsed = productionRows.every(r => r.collapsed);
-                                    setProductionRows(prev => prev.map(r => ({ ...r, collapsed: !allCollapsed })));
-                                }}
-                        >
-                            <i className="fa-solid fa-compress me-1" aria-hidden="true"></i>
-                            <span data-role="label">{productionRows.every(r => r.collapsed) ? 'Expand All' : 'Collapse All'}</span>
-                        </button>
+                        <Tooltip content="Collapse or expand all recipe cards." placement="top">
+                            <button type="button" className="btn btn-outline-secondary btn-sm"
+                                    onClick={() => {
+                                        const allCollapsed = productionRows.every(r => r.collapsed);
+                                        setProductionRows(prev => prev.map(r => ({...r, collapsed: !allCollapsed})));
+                                    }}
+                            >
+                                <i className="fa-solid fa-compress me-1" aria-hidden="true"></i>
+                                <span
+                                    data-role="label">{productionRows.every(r => r.collapsed) ? 'Expand All' : 'Collapse All'}</span>
+                            </button>
+                        </Tooltip>
                     </div>
                     <p className="text-muted small mb-2">Flow: pick Recipe → set Qty/min → see output, usage and export.
                         Read-only
                         values are shown as labels (not inputs).</p>
-                    <div className="pl-list">
-                        {productionRows.map((productionItem, index) => (
-                            <ProductionRowCard key={index}
+                    <div className="pl-list mb-2">
+                        {productionRows.map((productionItem) => (
+                            <ProductionRowCard key={productionItem.id}
                                                row={productionItem}
-                                               recipe={appData.recipes.find(r => r.id === productionItem.recipe_id)!}
+                                               recipe={recipeMap[productionItem.recipe_id] || undefined}
                                                recipes={appData.recipes}
-                                               onDelete={(id) => { setProductionRows(prev => prev.filter(r => r.id !== id)); }}
-                                               onRecipeChange={(rowId, recipeId) => { handleRecipeChange(rowId, recipeId); }}
-                                               onQuantityChange={(rowId, value) => { handleQuantityChange(rowId, value); }}
-                                               onClockSpeedChange={(rowId, value) => { handleClockSpeedChange(rowId, value); }}
-                                               onSomersloopChange={(rowId, checked) => { handleSomersloopChange(rowId, checked); }}
+                                               onDelete={(id) => {
+                                                   setProductionRows(prev => prev.filter(r => r.id !== id));
+                                               }}
+                                               onRecipeChange={(rowId, recipeId) => {
+                                                   handleRecipeChange(rowId, recipeId);
+                                               }}
+                                               onQuantityChange={(rowId, value) => {
+                                                   handleQuantityChange(rowId, value);
+                                               }}
+                                               onClockSpeedChange={(rowId, value) => {
+                                                   handleClockSpeedChange(rowId, value);
+                                               }}
+                                               onSomersloopChange={(rowId, checked) => {
+                                                   handleSomersloopChange(rowId, checked);
+                                               }}
                                                onToggleCollapse={(rowId) => {
-                                                   setProductionRows(prev => prev.map(r => r.id === rowId ? { ...r, collapsed: !r.collapsed } : r));
+                                                   setProductionRows(prev => prev.map(r => r.id === rowId ? {
+                                                       ...r,
+                                                       collapsed: !r.collapsed
+                                                   } : r));
                                                }}
                                                collapsed={productionItem.collapsed || false}
                             />
                         ))}
+                        <ProductionAddCard onAdd={() => {
+                            const newRow: ProductionItem = {
+                                id: Date.now(),
+                                item_name_1: '',
+                                item_class_name_1: '',
+                                item_name_2: null,
+                                item_class_name_2: null,
+                                local_usage: 0,
+                                recipe_id: 0,
+                                recipe_name: '',
+                                export_amount_per_min: 0,
+                                building_name: '',
+                                building_class_name: '',
+                                power_used: 0,
+                                product_quantity: 0,
+                                clock_speed: 100,
+                                use_somersloop: false,
+                                local_usage2: null,
+                                export_ammount_per_min2: null
+                            };
+                            setProductionRows(prev => [...prev, newRow]);
+                        }}/>
                     </div>
                 </div>
             </div>

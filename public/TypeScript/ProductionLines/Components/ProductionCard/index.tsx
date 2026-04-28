@@ -1,15 +1,15 @@
-import React from 'react';
-import { ProductionItem, Recipe } from '../../Types/global';
+import React, {useState} from 'react';
+import {ProductionItem, Recipe} from '../../Types/global';
 import RecipeSelect from '../RecipeSelect';
 import OutputBlock from './OutputBlock';
 import ExtraOutput from './ExtraOutput';
 import BuildingStack from './BuildingStack';
 import MachineControls from './MachineControls';
-import { formatNumber } from '../../Utils/format';
+import {formatNumber} from '../../Utils/format';
 
 type Props = {
     row: ProductionItem;
-    recipe: Recipe;
+    recipe: Recipe | undefined;  // can be undefined when no recipe is selected yet
     recipes: Recipe[];
 
     collapsed: boolean;
@@ -28,32 +28,26 @@ const getIcon = (className?: string) => {
 };
 
 const ProductionRowCard = ({
-    row,
-    recipe,
-    recipes,
-    collapsed,
-    onDelete,
-    onRecipeChange,
-    onQuantityChange,
-    onClockSpeedChange,
-    onSomersloopChange,
-    onToggleCollapse
-}: Props) => {
-    const output1 = recipe.products[0];
-    const output2 = recipe.products[1];
-    const building = recipe.building;
-
-    const productionRate = (() => {
-        const exportPerMin = recipe?.export_amount_per_min || 0;
-        if (!exportPerMin) return 0;
-        return Number(row.product_quantity) / exportPerMin;
-    })();
+                               row,
+                               recipe,
+                               recipes,
+                               collapsed,
+                               onDelete,
+                               onRecipeChange,
+                               onQuantityChange,
+                               onClockSpeedChange,
+                               onSomersloopChange,
+                               onToggleCollapse
+                           }: Props) => {
+    const output1 = recipe?.products[0];
+    const output2 = recipe?.products[1];
+    const building = recipe?.building;
 
     const rawClock = (row.clock_speed === '' || row.clock_speed === undefined || row.clock_speed === null) ? 100 : Number(row.clock_speed);
     const clockValue = Math.min(250, Math.max(0, rawClock));
 
     const buildingAmount = (() => {
-        if (!recipe || !recipe.export_amount_per_min) return 0;
+        if (!recipe?.export_amount_per_min) return 0;
         const useSomersloop = !!row.use_somersloop;
         return Number(row.product_quantity) / (recipe.export_amount_per_min * (clockValue / 100)) / (useSomersloop ? 2 : 1);
     })();
@@ -62,7 +56,7 @@ const ProductionRowCard = ({
     const exportPerMin = Number(row.product_quantity) - localUsage;
 
     const extraQuantity = (() => {
-        if (!recipe || recipe.export_amount_per_min2 == null || !recipe.export_amount_per_min) return 0;
+        if (!recipe?.export_amount_per_min || recipe.export_amount_per_min2 == null) return 0;
         return Number(row.product_quantity) * (recipe.export_amount_per_min2 / recipe.export_amount_per_min);
     })();
 
@@ -78,7 +72,7 @@ const ProductionRowCard = ({
                 aria-expanded={!collapsed}
                 onClick={() => onToggleCollapse(row.id)}
             >
-                <i className={`fa-solid ${collapsed ? 'fa-chevron-down' : 'fa-chevron-up'}`} />
+                <i className={`fa-solid ${collapsed ? 'fa-chevron-down' : 'fa-chevron-up'}`}/>
             </button>
 
             <div className="pl-side-actions">
@@ -87,11 +81,11 @@ const ProductionRowCard = ({
                     className="btn btn-sm delete-production-row"
                     onClick={() => onDelete(row.id)}
                 >
-                    <i className="fa-solid fa-trash" />
+                    <i className="fa-solid fa-trash"/>
                 </button>
             </div>
 
-            <input type="hidden" value={row.id} />
+            <input type="hidden" value={row.id}/>
 
             <div className={`pl-row-grid ${collapsed ? 'is-hidden' : 'is-visible'}`} aria-hidden={collapsed}>
                 <div className="pl-row-main">
@@ -123,13 +117,14 @@ const ProductionRowCard = ({
 
                     <div className="pl-row-details">
                         <div className="pl-row-flow">
-                            <OutputBlock product={output1} localUsage={localUsage} exportPerMin={exportPerMin} />
+                            <OutputBlock product={output1} localUsage={localUsage} exportPerMin={exportPerMin}/>
                         </div>
 
                         {output2 && (
                             <div className="pl-extra-output is-visible">
                                 <div className="pl-row-flow">
-                                    <ExtraOutput product={output2} localUsage={localUsage2} exportPerMin={exportPerMin2} />
+                                    <ExtraOutput product={output2} localUsage={localUsage2}
+                                                 exportPerMin={exportPerMin2}/>
                                 </div>
                             </div>
                         )}
@@ -138,7 +133,9 @@ const ProductionRowCard = ({
 
                 <div className="pl-row-side">
                     <div className="pl-machine-settings">
-                        <BuildingStack building={building} buildingAmount={buildingAmount} />
+                        {building && (
+                            <BuildingStack building={building} buildingAmount={buildingAmount}/>
+                        )}
 
                         <MachineControls
                             clockValue={row.clock_speed === '' ? '' : (row.clock_speed ?? 100)}
@@ -151,21 +148,31 @@ const ProductionRowCard = ({
             </div>
 
             <div className={`pl-collapsed-summary ${collapsed ? 'is-visible' : 'is-hidden'}`}>
-                <div className="pl-collapsed-recipe" data-role="collapsed-recipe-name">{recipe.name}</div>
-                <div className="pl-collapsed-right">
-                    <span className="pl-collapsed-output">
-                        <img className="pl-item-icon" data-role="collapsed-output-icon" loading="lazy"
-                             src={getIcon(output1?.class_name)} alt=""/>
-                        <span className="pl-collapsed-qty" data-role="collapsed-output-qty">{formatNumber(row.product_quantity)}/min</span>
-                    </span>
-                    {output2 && recipe.export_amount_per_min2 && (
-                        <span className="pl-collapsed-output">
-                            <img className="pl-item-icon" data-role="collapsed-output-icon" loading="lazy"
-                                 src={getIcon(output2?.class_name)} alt=""/>
-                            <span className="pl-collapsed-qty" data-role="collapsed-output-qty">{formatNumber(row.product_quantity * (recipe.export_amount_per_min2 / recipe.export_amount_per_min))}/min</span>
-                        </span>
-                    )}
-                </div>
+                {recipe ? (
+                    <>
+                        <div className="pl-collapsed-recipe" data-role="collapsed-recipe-name">{recipe.name}</div>
+                        <div className="pl-collapsed-right">
+                            {output1 && (
+                                <span className="pl-collapsed-output">
+                                    <img className="pl-item-icon" data-role="collapsed-output-icon" loading="lazy"
+                                         src={getIcon(output1.class_name)} alt=""/>
+                                    <span className="pl-collapsed-qty"
+                                          data-role="collapsed-output-qty">{formatNumber(row.product_quantity)}/min</span>
+                                </span>
+                            )}
+                            {output2 && recipe.export_amount_per_min2 && recipe.export_amount_per_min && (
+                                <span className="pl-collapsed-output">
+                                    <img className="pl-item-icon" data-role="collapsed-output-icon" loading="lazy"
+                                         src={getIcon(output2.class_name)} alt=""/>
+                                    <span className="pl-collapsed-qty"
+                                          data-role="collapsed-output-qty">{formatNumber(row.product_quantity * (recipe.export_amount_per_min2 / recipe.export_amount_per_min))}/min</span>
+                                </span>
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <div className="pl-collapsed-recipe text-muted" data-role="collapsed-recipe-name">No recipe</div>
+                )}
             </div>
         </div>
     );

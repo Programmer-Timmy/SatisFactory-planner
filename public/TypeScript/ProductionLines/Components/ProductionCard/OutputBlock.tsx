@@ -15,6 +15,7 @@ const getIcon = (className?: string) => {
 };
 
 const OutputBlock: React.FC<Props> = ({product, localUsage, exportPerMin}) => {
+    console.log("product", product);
     return (
         <>
             <div className="pl-field">
@@ -27,7 +28,7 @@ const OutputBlock: React.FC<Props> = ({product, localUsage, exportPerMin}) => {
                         <img className="pl-item-icon" data-role="output1" src={getIcon(product.class_name)}
                              loading="lazy"/>
                     )}
-                    <div className="pl-value">{product?.name}</div>
+                    <div className="pl-value">{product?.name ?? 'No product'}</div>
                 </div>
             </div>
 
