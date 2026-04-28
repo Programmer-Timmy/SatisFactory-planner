@@ -1,12 +1,7 @@
 import React, {FC, useEffect, useMemo, useRef, useState} from 'react';
 import {useFloating, offset, flip, shift, autoUpdate} from '@floating-ui/react';
 import {Recipe} from './ProductionLineApp';
-
-type SearchByMenuSettings = {
-    show: boolean;
-    searchByProducts: boolean;
-    searchByIngredients: boolean;
-};
+import {useProductionSettings} from "../Contexts/ProductionSettingsContext";
 
 type Props = {
     recipes: Recipe[];
@@ -17,18 +12,7 @@ type Props = {
 const RecipeSelect: FC<Props> = ({recipes, value, onChange}) => {
     const [search, setSearch] = useState<string>('');
     const [open, setOpen] = useState<boolean>(false);
-    const [showVisuals, setShowVisuals] = useState<boolean>(() => {
-        const v = localStorage.getItem('showVisuals');
-        return v === 'true' || v === null;
-    });
-
-    const [searchByMenu, setSearchByMenu] = useState<SearchByMenuSettings>(() => {
-        return localStorage.getItem('searchByMenuSettings') ? JSON.parse(localStorage.getItem('searchByMenuSettings') as string) : {
-            show: false,
-            searchByProducts: true,
-            searchByIngredients: false
-        };
-    });
+    const { showVisuals, setShowVisuals, searchByMenu, setSearchByMenu } = useProductionSettings();
 
     const containerRef = useRef<HTMLDivElement | null>(null);
     const menuRef = useRef<HTMLDivElement | null>(null);
@@ -61,14 +45,6 @@ const RecipeSelect: FC<Props> = ({recipes, value, onChange}) => {
         document.addEventListener('mousedown', onDocClick);
         return () => document.removeEventListener('mousedown', onDocClick);
     }, []);
-
-    useEffect(() => {
-        localStorage.setItem('showVisuals', showVisuals.toString());
-    }, [showVisuals]);
-
-    useEffect(() => {
-        localStorage.setItem('searchByMenuSettings', JSON.stringify(searchByMenu));
-    }, [searchByMenu]);
 
     const formatNumber = (val: number | string | undefined) => {
         const n = Number(val ?? 0);
