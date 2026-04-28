@@ -16,6 +16,7 @@ type Props = {
     value: number;
     onChange: (recipeId: number) => void;
 };
+
 const RecipeSelect: FC<Props> = ({recipes, value, onChange}) => {
     const [search, setSearch] = useState<string>('');
     const [open, setOpen] = useState<boolean>(false);
@@ -161,6 +162,39 @@ const RecipeSelect: FC<Props> = ({recipes, value, onChange}) => {
         return [...fullMatches, ...others];
     }, [recipes, search, searchByMenu]);
 
+    // Virtualization helpers: only render visible slice to avoid large DOM when open
+    const listRef = useRef<HTMLDivElement | null>(null);
+    const [scrollTop, setScrollTop] = useState(0);
+    const [listHeight, setListHeight] = useState(300);
+
+    useEffect(() => {
+        const el = listRef.current;
+        if (!el) return;
+        const onScroll = () => setScrollTop(el.scrollTop);
+        const onResize = () => setListHeight(el.clientHeight || 300);
+        el.addEventListener('scroll', onScroll);
+        window.addEventListener('resize', onResize);
+        // initialize
+        setListHeight(el.clientHeight || 300);
+        setScrollTop(el.scrollTop || 0);
+        return () => {
+            el.removeEventListener('scroll', onScroll);
+            window.removeEventListener('resize', onResize);
+        };
+    }, [open, showVisuals, filtered.length]);
+
+    const itemHeight = showVisuals ? 70 : 40;
+    const buffer = 6; // items before/after visible window
+    const totalItems = filtered.length;
+    const totalHeight = totalItems * itemHeight;
+    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - buffer);
+    const visibleCount = Math.min(totalItems, Math.ceil(listHeight / itemHeight) + buffer * 2);
+    const endIndex = Math.min(totalItems, startIndex + visibleCount);
+    const visibleItems = filtered.slice(startIndex, endIndex);
+    const paddingTop = startIndex * itemHeight;
+    const paddingBottom = Math.max(0, (totalItems - endIndex) * itemHeight);
+
+
     const handleSelect = (r: Recipe) => {
         setSearch(r.name);
         onChange(r.id);
@@ -240,59 +274,72 @@ const RecipeSelect: FC<Props> = ({recipes, value, onChange}) => {
                     </div>
                 </div>
 
-                <div className="select-items overflow-y-auto z-2"
+                <div className="select-items overflow-y-auto z-2" ref={listRef}
                      style={{maxHeight: 300, minWidth: 300, width: '100%'}}>
-                    {filtered.length === 0 ? (
-                        <div className="no-results text-muted text-center p-2">No results found</div>
-                    ) : filtered.map(r => (
-                        <div key={r.id} className={`p-1 select-item z-2 ${r.id === value ? 'active' : ''}`}
-                             data-recipe-id={r.id} data-recipe-name={r.name} onClick={() => handleSelect(r)}>
-                            <h6 className="m-0 text-center small recipe-name">{r.name}</h6>
+                    {open ? (
+                        filtered.length === 0 ? (
+                            <div className="no-results text-muted text-center p-2">No results found</div>
+                        ) : (
+                            // Virtualized list container with spacers
+                            <div>
+                                <div style={{height: paddingTop}} />
 
-                            {showVisuals && (
-                                <div
-                                    className="d-flex justify-content-center align-items-center mt-1 flex-wrap recipe-visuals"
-                                    style={{gap: 4}}>
-                                    {r.ingredients && r.ingredients.map((ing: any) => (
-                                        <div key={ing.id} className="d-flex align-items-center recipe-ingredient"
-                                             style={{gap: 2}} data-ingredient-id={ing.id}
-                                             data-ingredient-name={ing.name}>
-                                            <img
-                                                src={`/image/items/${String(ing.class_name).toLowerCase().replace(/_/g, '-')}_256.png`}
-                                                title={ing.name} className="img-fluid" style={{width: 26, height: 26}}
-                                                loading="lazy"/>
-                                            <small className="text-muted">{formatNumber(ing.quantity)}</small>
-                                        </div>
-                                    ))}
+                                {visibleItems.map(r => (
+                                    <div key={r.id} className={`p-1 select-item z-2 ${r.id === value ? 'active' : ''}`}
+                                         data-recipe-id={r.id} data-recipe-name={r.name}
+                                         onClick={() => handleSelect(r)}
+                                         style={{boxSizing: 'border-box', overflow: 'hidden'}}>
+                                        <h6 className="m-0 text-center small recipe-name">{r.name}</h6>
 
-                                    {(r.ingredients && r.ingredients.length) ?
-                                        <i className="fa-solid fa-arrow-right" style={{fontSize: 12}}/> : null}
+                                        {showVisuals && (
+                                            <div
+                                                className="d-flex justify-content-center align-items-center mt-1 flex-wrap recipe-visuals"
+                                                style={{gap: 4}}>
+                                                {r.ingredients && r.ingredients.map((ing: any) => (
+                                                    <div key={ing.id} className="d-flex align-items-center recipe-ingredient"
+                                                         style={{gap: 2}} data-ingredient-id={ing.id}
+                                                         data-ingredient-name={ing.name}>
+                                                        <img
+                                                            src={`/image/items/${String(ing.class_name).toLowerCase().replace(/_/g, '-')}_256.png`}
+                                                            title={ing.name} className="img-fluid" style={{width: 26, height: 26}}
+                                                            loading="lazy"/>
+                                                        <small className="text-muted">{formatNumber(ing.quantity)}</small>
+                                                    </div>
+                                                ))}
 
-                                    {r.building && r.building[0] ? (
-                                        <img
-                                            src={`/image/items/${String(r.building[0].class_name).toLowerCase().replace(/_/g, '-').replace(/build/i, 'desc')}_256.png`}
-                                            title={r.building[0].name} className="img-fluid"
-                                            style={{width: 26, height: 26}} loading="lazy"/>
-                                    ) : null}
+                                                {(r.ingredients && r.ingredients.length) ?
+                                                    <i className="fa-solid fa-arrow-right" style={{fontSize: 12}}/> : null}
 
-                                    {(r.products && r.products.length) ?
-                                        <i className="fa-solid fa-arrow-right" style={{fontSize: 12}}/> : null}
+                                                {r.building && r.building[0] ? (
+                                                    <img
+                                                        src={`/image/items/${String(r.building[0].class_name).toLowerCase().replace(/_/g, '-').replace(/build/i, 'desc')}_256.png`}
+                                                        title={r.building[0].name} className="img-fluid"
+                                                        style={{width: 26, height: 26}} loading="lazy"/>
+                                                ) : null}
 
-                                    {r.products && r.products.map((prod: any) => (
-                                        <div key={prod.id} className="d-flex align-items-center recipe-product"
-                                             style={{gap: 2}} data-product-id={prod.id} data-product-name={prod.name}>
-                                            <img
-                                                src={`/image/items/${String(prod.class_name).toLowerCase().replace(/_/g, '-')}_256.png`}
-                                                title={prod.name} className="img-fluid" style={{width: 26, height: 26}}
-                                                loading="lazy"/>
-                                            <small className="text-muted">{formatNumber(prod.quantity)}</small>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                                {(r.products && r.products.length) ?
+                                                    <i className="fa-solid fa-arrow-right" style={{fontSize: 12}}/> : null}
 
-                        </div>
-                    ))}
+                                                {r.products && r.products.map((prod: any) => (
+                                                    <div key={prod.id} className="d-flex align-items-center recipe-product"
+                                                         style={{gap: 2}} data-product-id={prod.id} data-product-name={prod.name}>
+                                                        <img
+                                                            src={`/image/items/${String(prod.class_name).toLowerCase().replace(/_/g, '-')}_256.png`}
+                                                            title={prod.name} className="img-fluid" style={{width: 26, height: 26}}
+                                                            loading="lazy"/>
+                                                        <small className="text-muted">{formatNumber(prod.quantity)}</small>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                    </div>
+                                ))}
+
+                                <div style={{height: paddingBottom}} />
+                            </div>
+                        )
+                    ) : null}
                 </div>
             </div>
         </div>
