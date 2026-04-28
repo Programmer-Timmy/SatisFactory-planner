@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import PageTitle from "./PageTitle";
 import ImportsCard from "./ImportsCard";
 import ProductionRowCard from "./ProductionCard/index";
+import {Tooltip} from "bootstrap";
 
 interface ProductLine {
     id: number;
@@ -40,6 +41,7 @@ export interface ProductionItem {
     // allow empty string while editing clock
     clock_speed: number | '';
     use_somersloop: number | boolean | null;
+    collapsed?: boolean;
 }
 
 interface PowerItem {
@@ -151,7 +153,6 @@ const ProductionLineApp: React.FC = () => {
     // local editable production rows and imports
     const [productionRows, setProductionRows] = useState<ProductionItem[]>([]);
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
-    const [collapseAll, setCollapseAll] = useState(false);
 
     useEffect(() => {
         const data = window.appData;
@@ -170,6 +171,30 @@ const ProductionLineApp: React.FC = () => {
         recalculateImports();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productionRows]);
+
+    useEffect(() => {
+        const handleMouseOver = (event: Event) => {
+            const target = event.target as HTMLElement;
+            const trigger = target.closest('[data-bs-toggle="tooltip"]') as HTMLElement;
+
+            if (!trigger) return;
+
+            if (!Tooltip.getInstance(trigger)) {
+                new Tooltip(trigger, {
+                    trigger: 'hover',
+                    container: 'body'
+                });
+
+                trigger.dispatchEvent(new Event('mouseenter'));
+            }
+        };
+
+        document.addEventListener('mouseover', handleMouseOver);
+
+        return () => {
+            document.removeEventListener('mouseover', handleMouseOver);
+        };
+    }, []);
 
     const findRecipe = (id: number | undefined) => appData?.recipes.find(r => r.id === id) || null;
 
@@ -285,8 +310,6 @@ const ProductionLineApp: React.FC = () => {
         return <div className="container mt-5"><p>No data available</p></div>;
     }
 
-    console.log(appData);
-
     return (
         <div className="px-3 px-lg-5">
             <PageTitle GameSaveId={appData.productLine.game_saves_id}
@@ -310,10 +333,13 @@ const ProductionLineApp: React.FC = () => {
                                 data-state="expanded" data-bs-toggle="tooltip" data-bs-placement="top"
                                 data-bs-container="body"
                                 data-bs-title="Collapse or expand all recipe cards."
-                                onClick={() => setCollapseAll(prev => !prev)}
+                                onClick={() => {
+                                    const allCollapsed = productionRows.every(r => r.collapsed);
+                                    setProductionRows(prev => prev.map(r => ({ ...r, collapsed: !allCollapsed })));
+                                }}
                         >
                             <i className="fa-solid fa-compress me-1" aria-hidden="true"></i>
-                            <span data-role="label">Collapse all</span>
+                            <span data-role="label">{productionRows.every(r => r.collapsed) ? 'Expand All' : 'Collapse All'}</span>
                         </button>
                     </div>
                     <p className="text-muted small mb-2">Flow: pick Recipe → set Qty/min → see output, usage and export.
@@ -330,7 +356,10 @@ const ProductionLineApp: React.FC = () => {
                                                onQuantityChange={(rowId, value) => { handleQuantityChange(rowId, value); }}
                                                onClockSpeedChange={(rowId, value) => { handleClockSpeedChange(rowId, value); }}
                                                onSomersloopChange={(rowId, checked) => { handleSomersloopChange(rowId, checked); }}
-                                               collapsed={collapseAll}
+                                               onToggleCollapse={(rowId) => {
+                                                   setProductionRows(prev => prev.map(r => r.id === rowId ? { ...r, collapsed: !r.collapsed } : r));
+                                               }}
+                                               collapsed={productionItem.collapsed || false}
                             />
                         ))}
                     </div>
