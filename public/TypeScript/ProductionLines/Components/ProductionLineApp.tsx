@@ -208,7 +208,7 @@ const ProductionLineApp: React.FC = () => {
                     idleRecalcRef.current = null;
                 }, {timeout: 200});
             } else {
-                idleRecalcRef.current = window.setTimeout(() => {
+                idleRecalcRef.current = (window as any).setTimeout(() => {
                     recalculateImports();
                     idleRecalcRef.current = null;
                 }, 100);
