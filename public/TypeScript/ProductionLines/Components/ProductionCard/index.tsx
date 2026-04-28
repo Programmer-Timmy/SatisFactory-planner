@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {ProductionItem, Recipe} from '../../Types/global';
 import RecipeSelect from '../RecipeSelect';
 import OutputBlock from './OutputBlock';
@@ -19,7 +19,7 @@ type Props = {
     onQuantityChange: (rowId: number, value: number) => void;
     onClockSpeedChange: (rowId: number, value: number | '') => void;
     onSomersloopChange: (rowId: number, checked: boolean) => void;
-    onToggleCollapse: (rowId: number) => void;
+    onToggleCollapse : (rowId: number) => void;
 };
 
 const getIcon = (className?: string) => {
@@ -43,21 +43,41 @@ const ProductionRowCard = ({
     const output2 = recipe?.products[1];
     const building = recipe?.building;
 
+    // allow product quantity input to be empty for free typing while treating empty as 0 in calculations
+    const [localQuantity, setLocalQuantity] = useState<string>(
+        row.product_quantity === undefined || row.product_quantity === null
+            ? ''
+            : String(row.product_quantity)
+    );
+    const [isFocused, setIsFocused] = useState<boolean>(false);
+    useEffect(() => {
+        // don't overwrite local typing when the input is focused
+        if (isFocused) return;
+        const propStr = row.product_quantity === undefined || row.product_quantity === null
+            ? ''
+            : String(row.product_quantity);
+        if (propStr !== localQuantity && Number(propStr) !== Number(localQuantity)) {
+            setLocalQuantity(propStr);
+        }
+    }, [row.product_quantity, isFocused]);
+
+    const numericProductQuantity = localQuantity === '' || localQuantity === undefined ? 0 : Number(localQuantity);
+
     const rawClock = (row.clock_speed === '' || row.clock_speed === undefined || row.clock_speed === null) ? 100 : Number(row.clock_speed);
     const clockValue = Math.min(250, Math.max(0, rawClock));
 
     const buildingAmount = (() => {
         if (!recipe?.export_amount_per_min) return 0;
         const useSomersloop = !!row.use_somersloop;
-        return Number(row.product_quantity) / (recipe.export_amount_per_min * (clockValue / 100)) / (useSomersloop ? 2 : 1);
+        return numericProductQuantity / (recipe.export_amount_per_min * (clockValue / 100)) / (useSomersloop ? 2 : 1);
     })();
 
     const localUsage = Number(row.local_usage ?? 0);
-    const exportPerMin = Number(row.product_quantity) - localUsage;
+    const exportPerMin = numericProductQuantity - localUsage;
 
     const extraQuantity = (() => {
         if (!recipe?.export_amount_per_min || recipe.export_amount_per_min2 == null) return 0;
-        return Number(row.product_quantity) * (recipe.export_amount_per_min2 / recipe.export_amount_per_min);
+        return numericProductQuantity * (recipe.export_amount_per_min2 / recipe.export_amount_per_min);
     })();
 
     const localUsage2 = Number(row.local_usage2 ?? 0);
@@ -107,10 +127,27 @@ const ProductionRowCard = ({
                                 min={0}
                                 step="any"
                                 className="form-control rounded-0"
-                                value={row.product_quantity}
-                                onChange={(e) =>
-                                    onQuantityChange(row.id, Number(e.target.value))
-                                }
+                                value={localQuantity}
+                                onChange={(e) => {
+                                    const v = e.target.value;
+                                    setLocalQuantity(v);
+                                    // If the field is empty while focused, don't push 0 to parent yet to allow free typing
+                                    if (v === '') {
+                                        if (!isFocused) {
+                                            onQuantityChange(row.id, 0);
+                                        }
+                                    } else {
+                                        onQuantityChange(row.id, Number(v));
+                                    }
+                                }}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() => {
+                                    setIsFocused(false);
+                                    if (localQuantity === '') {
+                                        setLocalQuantity('0');
+                                        onQuantityChange(row.id, 0);
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -157,7 +194,7 @@ const ProductionRowCard = ({
                                     <img className="pl-item-icon" data-role="collapsed-output-icon" loading="lazy"
                                          src={getIcon(output1.class_name)} alt=""/>
                                     <span className="pl-collapsed-qty"
-                                          data-role="collapsed-output-qty">{formatNumber(row.product_quantity)}/min</span>
+                                          data-role="collapsed-output-qty">{formatNumber(numericProductQuantity)}/min</span>
                                 </span>
                             )}
                             {output2 && recipe.export_amount_per_min2 && recipe.export_amount_per_min && (
@@ -165,7 +202,7 @@ const ProductionRowCard = ({
                                     <img className="pl-item-icon" data-role="collapsed-output-icon" loading="lazy"
                                          src={getIcon(output2.class_name)} alt=""/>
                                     <span className="pl-collapsed-qty"
-                                          data-role="collapsed-output-qty">{formatNumber(row.product_quantity * (recipe.export_amount_per_min2 / recipe.export_amount_per_min))}/min</span>
+                                          data-role="collapsed-output-qty">{formatNumber(numericProductQuantity * (recipe.export_amount_per_min2 / recipe.export_amount_per_min))}/min</span>
                                 </span>
                             )}
                         </div>

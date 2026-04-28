@@ -169,9 +169,10 @@ const RecipeSelect: FC<Props> = ({recipes, value, onChange}) => {
                     setOpen(true);
                     update?.();
                 }}
-                onFocus={() => {
+                onFocus={e => {
                     setOpen(true);
                     update?.();
+                    e.target.select();
                 }}
                 autoComplete="off"
                 type="text"

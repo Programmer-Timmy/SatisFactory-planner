@@ -227,8 +227,6 @@ const ProductionLineApp: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productionRows]);
 
-    const findRecipe = (id?: number) => id != null ? (recipeMap[id] ?? null) : null;
-
     const recalculateImports = useCallback(() => {
         if (!appData) return;
         const rows = productionRows;
