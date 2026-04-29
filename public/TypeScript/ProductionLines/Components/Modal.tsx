@@ -23,7 +23,7 @@ const modal = ({
         <>
             <div className="modal-backdrop fade show"/>
             <div className={`modal fade show d-block ${className}`} tabIndex={-1} onClick={onClose}>
-                <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-dialog modal-dialog-scrollable" onClick={(e) => e.stopPropagation()}>
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">{title}</h5>
