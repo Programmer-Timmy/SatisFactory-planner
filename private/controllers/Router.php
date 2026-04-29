@@ -23,6 +23,7 @@ class Router {
             if (preg_match($pattern, $uri, $matches)) {
                 array_shift($matches);
                 call_user_func_array($route['callback'], $matches);
+                self::includeFooter();
                 return true;
             }
         }

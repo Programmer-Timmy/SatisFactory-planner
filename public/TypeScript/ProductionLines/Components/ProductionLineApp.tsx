@@ -8,6 +8,7 @@ import ProductionAddCard from "./ProductionAddCard";
 import {calculateImports} from "./service/ProductionService";
 import {calculateAutoPowerRows, computeConsumption, totalConsumption} from "./service/PowerService";
 import VisualizationPanel from "./modals/VisualizationPanel";
+import HelpModal from "./modals/HelpModal";
 import Alert from "./Alert";
 
 
@@ -157,6 +158,7 @@ const ProductionLineApp: React.FC = () => {
     const [appData, setAppData] = useState<AppData | null>(null);
     const [loading, setLoading] = useState(true);
     const [visualizationOpen, setVisualizationOpen] = useState(false);
+    const [helpOpen, setHelpOpen] = useState(false);
 
     const [productionRows, setProductionRows] = useState<ProductionItem[]>([]);
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
@@ -302,12 +304,20 @@ const ProductionLineApp: React.FC = () => {
                 if (mappings && mappings.length > 0) {
                     const mapOldToNew = new Map<number, number>();
                     mappings.forEach((m: any) => mapOldToNew.set(Number(m.old), Number(m.new)));
-                    setProductionRows(prev => prev.map(r => ({ ...r, id: mapOldToNew.get(Number(r.id)) ?? r.id })));
-                    setAppData(prev => prev ? { ...prev, production: (productionRows || []).map(r => ({ ...r, id: mapOldToNew.get(Number(r.id)) ?? r.id })) } : prev);
+                    setProductionRows(prev => prev.map(r => ({...r, id: mapOldToNew.get(Number(r.id)) ?? r.id})));
+                    setAppData(prev => prev ? {
+                        ...prev,
+                        production: (productionRows || []).map(r => ({...r, id: mapOldToNew.get(Number(r.id)) ?? r.id}))
+                    } : prev);
                 } else {
-                    setAppData(prev => prev ? { ...prev, production: productionRows } : prev);
+                    setAppData(prev => prev ? {...prev, production: productionRows} : prev);
                 }
-                setAppData(prev => prev ? { ...prev, imports: importsList, powers: powerRows, checklist: appData?.checklist || [] } : prev);
+                setAppData(prev => prev ? {
+                    ...prev,
+                    imports: importsList,
+                    powers: powerRows,
+                    checklist: appData?.checklist || []
+                } : prev);
 
                 saveService.showSaveMessage(true, 'Production line saved successfully.');
             } else {
@@ -346,7 +356,6 @@ const ProductionLineApp: React.FC = () => {
                 setPowerOpen(prev => !prev);
                 return;
             }
-            // only open it when user is not in a input field
             if (event.ctrlKey && key === 'v' && (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA')) {
                 event.preventDefault();
                 setVisualizationOpen(true);
@@ -356,13 +365,29 @@ const ProductionLineApp: React.FC = () => {
                 event.preventDefault();
                 handleSave();
             }
+            if (event.ctrlKey && key === 'h') {
+                event.preventDefault();
+                setHelpOpen(true);
+            }
+            if (event.ctrlKey && key === 'q') {
+                event.preventDefault();
+                window.location.href = `/game_save/${appData?.productLine.game_saves_id}`
+            }
         };
         document.addEventListener('keydown', handler, true);
         return () => document.removeEventListener('keydown', handler, true);
     }, [handleSave, appData]);
 
     if (loading) {
-        return <div className="container mt-5"><p>Loading...</p></div>;
+        return (
+            <div className="mt-auto position-absolute top-50 start-50 translate-middle-x w-100">
+                <div className="container mt-auto d-flex justify-content-center align-items-center">
+                    <div className="spinner-border text-primary" role="status" style={{width: '3rem', height: '3rem'}}>
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (!appData) {
@@ -371,14 +396,16 @@ const ProductionLineApp: React.FC = () => {
 
     return (
         <div className="px-3 px-lg-5">
-            <Alert />
+            <Alert/>
             <PageTitle
                 GameSaveId={appData.productLine.game_saves_id}
                 ProductionLineTitle={appData.productLine.title || "Unnamed Production Line"}
-                onEdit={() => {}}
+                onEdit={() => {
+                }}
                 onSave={handleSave}
-                onChecklist={() => {}}
-                onHelp={() => {}}
+                onChecklist={() => {
+                }}
+                onHelp={() => setHelpOpen(true)}
                 onPower={() => setPowerOpen(true)}
                 onVisualization={() => setVisualizationOpen(true)}
             />
@@ -389,6 +416,11 @@ const ProductionLineApp: React.FC = () => {
                 productionRows={productionRows}
                 importsList={importsList}
                 recipeMap={recipeMap}
+            />
+
+            <HelpModal
+                isOpen={helpOpen}
+                onClose={() => setHelpOpen(false)}
             />
             <div className="row">
                 <div className="col-md-3">

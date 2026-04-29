@@ -1,5 +1,6 @@
 <?php
 require_once '../private/types/role.php';
+global $changelog;
 
 $error = null;
 $productLineId = $_GET['id'] ?? null;
@@ -664,7 +665,16 @@ foreach ($production as $product) {
 </script>
 
 <!-- Load React App -->
-<script src="/js/productionLines.js"></script>
+<script src="/js/productionLines.js?v=<?= $changelog['version'] ?>"></script>
+
+<?php
+if (DedicatedServer::getBySaveGameId($gameSaveId) && GameSaves::checkAccess($gameSaveId, $_SESSION['userId'], Permission::SERVER_VIEW)): ?>
+    <script src="/js/dedicatedServer.js?v=<?= $changelog['version'] ?>"></script>
+    <script>
+        new DedicatedServer(<?=$gameSaveId ?>);
+    </script>
+<?php endif; ?>
+
 
 <script>
     // Make data accessible to React component
