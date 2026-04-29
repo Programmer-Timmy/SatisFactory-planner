@@ -1091,9 +1091,26 @@ export class Visualization {
             const id: string = data.id;
             seenIds.add(id);
 
-            const midpoint = edge.midpoint();
-            const x = midpoint.x * zoom + pan.x;
-            const y = midpoint.y * zoom + pan.y;
+            // Skip edges whose endpoints are missing (avoid cytoscape renderer null errors)
+            let x: number, y: number;
+            try {
+                const src = edge.source();
+                const tgt = edge.target();
+                if (!src || (src as any).length === 0 || !tgt || (tgt as any).length === 0) {
+                    return; // continue to next edge
+                }
+
+                const midpoint = (edge as any).midpoint?.();
+                if (!midpoint || midpoint.x == null || midpoint.y == null) {
+                    return; // can't calculate midpoint
+                }
+
+                x = midpoint.x * zoom + pan.x;
+                y = midpoint.y * zoom + pan.y;
+            } catch (e) {
+                // If cytoscape renderer throws (e.g., internal null), skip this edge
+                return;
+            }
 
             let el = this.edgeLabelElements.get(id);
             if (!el) {
