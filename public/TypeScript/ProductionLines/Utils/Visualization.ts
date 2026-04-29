@@ -52,18 +52,28 @@ export class Visualization {
     private cy: Core | null = null;
     private edgeLabelElements = new Map<string, HTMLElement>();
 
+    public ready: Promise<void>;
+    private _readyResolve?: () => void;
+
+    private onProgress?: (pct: number) => void;
+
     /**
      * Constructor for the Visualization class
      * @constructor
      * @param {TableHandler} tableHandler - The table handler object
+     * @param options Optional settings (e.g., onProgress)
      */
-    constructor(tableHandler: TableHandler) {
+    constructor(tableHandler: TableHandler, options?: { onProgress?: (pct: number) => void }) {
         this.TableHandler = tableHandler;
+        this.onProgress = options?.onProgress;
+
+        // Prepare ready promise; resolve when async initialization is complete
+        this.ready = new Promise<void>((resolve) => { this._readyResolve = resolve; });
 
         // Get the data
         this.getterData();
 
-        // Create the visualization
+        // Create the visualization (async). The ready promise will resolve when finished.
         this.createVisualization();
 
         // Add event listeners
@@ -271,6 +281,7 @@ export class Visualization {
         });
 
         this.cy = cy;
+        try { this._readyResolve?.(); } catch (e) { /* ignore */ }
     }
 
     private applyQTip(element: NodeSingular | EdgeSingular, content: string): void {
@@ -662,38 +673,14 @@ export class Visualization {
 
     private async hideLoadingScreen() {
         return new Promise<void>((resolve) => {
-            const loadingScreen = $('#loadingScreenGraph');
-            const graph = $('#graph');
-
-            // Fade out only opacity, keep other styles intact
-            loadingScreen.css('transition', 'opacity 0.5s');
-            loadingScreen.css('opacity', '0');
-
-            setTimeout(() => {
-                loadingScreen.addClass('d-none'); // Hide the loading screen after fade out
-
-                // Show the graph by removing a "hidden" class, instead of using fadeIn
-                graph.removeClass('hidden-graph'); // This class can handle opacity/display safely
-                resolve();
-            }, 500);
+            try { if (typeof this.onProgress === 'function') this.onProgress(100); } catch (e) { /* ignore */ }
+            resolve();
         });
     }
 
     private async showLoadingScreen() {
         return new Promise<void>((resolve) => {
-            const loadingScreen = $('#loadingScreenGraph');
-            const graph = $('#graph');
-            const loadingProgress = $('#loadingProgressGraph');
-
-            // Reset the loading progress bar
-            loadingProgress.css('width', '0%');
-
-            // Show the loading screen
-            loadingScreen.removeClass('d-none'); // Ensure it's visible
-            loadingScreen.css('opacity', '1'); // Reset opacity to 1
-
-            // Hide the graph by adding a "hidden" class, instead of using fadeOut
-            graph.addClass('hidden-graph'); // This class can handle opacity/display safely
+            try { if (typeof this.onProgress === 'function') this.onProgress(0); } catch (e) { /* ignore */ }
             resolve();
         });
     }

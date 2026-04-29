@@ -1,7 +1,7 @@
 import { Visualization } from "../../Tables/Classes/Visualization";
 import { Import as ProductionImport } from "../../Tables/Classes/Data/Import";
 
-export function createVisualizationFromData(appData: any, productionRows: any[], importsList: any[], recipeMap: Record<number, any>) {
+export function createVisualizationFromData(appData: any, productionRows: any[], importsList: any[], recipeMap: Record<number, any>, options?: { onProgress?: (pct: number) => void }) {
     const rows = productionRows || [];
     const n = rows.length;
 
@@ -180,5 +180,5 @@ export function createVisualizationFromData(appData: any, productionRows: any[],
         items: appData?.items || [],
     };
 
-    return new Visualization(fakeTableHandler as any);
+    return new Visualization(fakeTableHandler as any, options);
 }

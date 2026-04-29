@@ -1,7 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 import Modal from "../Modal";
-// Import the Visualization class
-import {createVisualizationFromData} from "../../Utils/VisualizationAdapter";
+
 import Tooltip from "../Tooltip";
 
 interface Props {
@@ -15,28 +14,51 @@ interface Props {
 
 const VisualizationPanel: React.FC<Props> = ({isOpen, onClose, appData, productionRows, importsList, recipeMap}) => {
     const vizRef = useRef<any | null>(null);
+    const [loading, setLoading] = React.useState<boolean>(false);
+    const [progress, setProgress] = React.useState<number>(0);
 
     useEffect(() => {
         if (!isOpen) return;
         if (!appData) return;
 
-        try {
-            vizRef.current = createVisualizationFromData(appData, productionRows, importsList, recipeMap);
-        } catch (e) {
-            console.error('Failed to create Visualization', e);
-        }
-
-        return () => {
+        let cancelled = false;
+        setLoading(true);
+        setProgress(0);
+        (async () => {
             try {
-                // Try to cleanup DOM overlays if any
-                const graph = document.getElementById('graph');
-                if (graph) {
-                    graph.innerHTML = '';
+                const mod = await import('../../Utils/VisualizationAdapter');
+                if (cancelled) return;
+                if (mod && typeof mod.createVisualizationFromData === 'function') {
+                    const viz = (mod.createVisualizationFromData as any)(appData, productionRows, importsList, recipeMap, { onProgress: (p:number) => { if (!cancelled) setProgress(Math.max(0, Math.min(100, Math.round(p)))) } });
+                    vizRef.current = viz;
+                    if (viz && typeof viz.ready === 'object' && typeof (viz.ready as Promise<void>).then === 'function') {
+                        try {
+                            await (viz.ready as Promise<void>);
+                            try { if (typeof viz.update === 'function') viz.update(); } catch (e) { /* ignore */ }
+                            setTimeout(() => {
+                                try { if (!cancelled && typeof viz.update === 'function') viz.update(); } catch (e) { /* ignore */ }
+                            }, 250);
+                        } catch (e) {
+                            console.warn('Visualization ready promise rejected', e);
+                        }
+                    }
                 }
             } catch (e) {
-                // ignore
+                console.error('Failed to create Visualization', e);
+            } finally {
+                if (!cancelled) setLoading(false);
             }
+        })();
+
+        return () => {
+            cancelled = true;
+            try {
+                const graph = document.getElementById('graph');
+                if (graph) graph.innerHTML = '';
+            } catch {}
             vizRef.current = null;
+            setLoading(false);
+            setProgress(0);
         };
     }, [isOpen, appData, productionRows, importsList, recipeMap]);
 
@@ -54,7 +76,21 @@ const VisualizationPanel: React.FC<Props> = ({isOpen, onClose, appData, producti
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Visualization" size="xl" fullscreen>
             <Modal.Body className="p-0">
-                <div id="graph" style={{width: '100%', height: '100%', overflow: 'hidden'}}/>
+                <div style={{position: 'relative', width: '100%', height: '100%'}}>
+                    {/* Graph container always present to ensure cytoscape can mount */}
+                    <div id="graph" style={{width: '100%', height: '100%', overflow: 'hidden', minHeight: 300}} className={loading ? 'd-none' : ''}/>
+
+                    <div className={`d-flex justify-content-center align-items-center flex-column px-5 ${loading ? '' : 'd-none'}`}
+                         style={{height: '100%'}}>
+                        <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                        <div className="progress w-100 mt-3">
+                            <div className="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                 role="progressbar" id="loadingProgressGraph" style={{width: `${progress}%`}} aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} />
+                        </div>
+                    </div>
+                </div>
             </Modal.Body>
             <Modal.Footer>
                 <div className="d-flex gap-3 mb-2 align-items-center">
