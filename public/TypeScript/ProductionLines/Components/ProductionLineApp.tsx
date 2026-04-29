@@ -181,12 +181,10 @@ const ProductionLineApp: React.FC = () => {
             setImportsList(data.imports.map(i => ({...i})));
             setLoading(false);
         }
-        console.log(data);
     }, []);
 
     useEffect(() => {
         if (!appData) return;
-        // schedule import recalculation during browser idle to keep add/delete instant
         if (idleRecalcRef.current != null) {
             if ('cancelIdleCallback' in window) {
                 (window as any).cancelIdleCallback(idleRecalcRef.current);
@@ -228,7 +226,6 @@ const ProductionLineApp: React.FC = () => {
         setImportsList(newImports);
     }, [appData, productionRows, recipeMap]);
 
-    // helper to change quantity
     const handleQuantityChange = (rowId: number, value: number) => {
         setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, product_quantity: value} : r));
     };
@@ -242,7 +239,6 @@ const ProductionLineApp: React.FC = () => {
     };
 
     const handleClockSpeedChange = (rowId: number, value: number | '') => {
-        // allow empty string during editing
         if (value === '') {
             setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, clock_speed: '' as unknown as number} : r));
             return;
@@ -255,7 +251,6 @@ const ProductionLineApp: React.FC = () => {
         setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, use_somersloop: checked} : r));
     };
 
-    // Power modal state and handlers
     const [powerOpen, setPowerOpen] = useState(false);
     const [powerRows, setPowerRows] = useState<PowerItem[]>([]);
 
@@ -268,7 +263,6 @@ const ProductionLineApp: React.FC = () => {
         })));
     }, [appData]);
 
-    // Auto-calculate power rows from production rows via service. Preserve user rows (user===1).
     useEffect(() => {
         if (!appData) return;
         const autoRows = calculateAutoPowerRows(appData, productionRows, recipeMap);
@@ -278,7 +272,6 @@ const ProductionLineApp: React.FC = () => {
         });
     }, [productionRows, recipeMap, appData]);
 
-    // use service for consumption calculations
     const totalConsumptionValue = useMemo(() => {
         return totalConsumption(powerRows, appData);
     }, [powerRows, appData]);
@@ -298,6 +291,34 @@ const ProductionLineApp: React.FC = () => {
         }
         setPowerRows(prev => prev.map((r, i) => i === index ? {...r, [field]: value} : r));
     };
+
+    const handleSave = async () => {
+        const saveService = await import('./service/SaveService');
+        try {
+            const resp = await saveService.saveProductionLineData(appData, productionRows, powerRows, importsList);
+            if (resp && resp.success) {
+                const mappings = resp.data?.newAndOldIds || resp.data?.newAndOldIds || resp.newAndOldIds || [];
+
+                if (mappings && mappings.length > 0) {
+                    const mapOldToNew = new Map<number, number>();
+                    mappings.forEach((m: any) => mapOldToNew.set(Number(m.old), Number(m.new)));
+                    setProductionRows(prev => prev.map(r => ({ ...r, id: mapOldToNew.get(Number(r.id)) ?? r.id })));
+                    setAppData(prev => prev ? { ...prev, production: (productionRows || []).map(r => ({ ...r, id: mapOldToNew.get(Number(r.id)) ?? r.id })) } : prev);
+                } else {
+                    setAppData(prev => prev ? { ...prev, production: productionRows } : prev);
+                }
+                setAppData(prev => prev ? { ...prev, imports: importsList, powers: powerRows, checklist: appData?.checklist || [] } : prev);
+
+                saveService.showSaveMessage(true, 'Production line saved successfully.');
+            } else {
+                const err = resp?.error || 'Failed to save production line';
+                saveService.showSaveMessage(false, err);
+            }
+        } catch (e) {
+            console.error('Save failed', e);
+            saveService.showSaveMessage(false, String(e));
+        }
+    }
 
     const addPowerRow = () => {
         setPowerRows(prev => [...prev, {
@@ -323,11 +344,22 @@ const ProductionLineApp: React.FC = () => {
             if (event.ctrlKey && key === 'p') {
                 event.preventDefault();
                 setPowerOpen(prev => !prev);
+                return;
+            }
+            // only open it when user is not in a input field
+            if (event.ctrlKey && key === 'v' && (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA')) {
+                event.preventDefault();
+                setVisualizationOpen(true);
+                return;
+            }
+            if (event.ctrlKey && key === 's') {
+                event.preventDefault();
+                handleSave();
             }
         };
-        document.addEventListener('keydown', handler);
-        return () => document.removeEventListener('keydown', handler);
-    }, []);
+        document.addEventListener('keydown', handler, true);
+        return () => document.removeEventListener('keydown', handler, true);
+    }, [handleSave, appData]);
 
     if (loading) {
         return <div className="container mt-5"><p>Loading...</p></div>;
@@ -344,34 +376,7 @@ const ProductionLineApp: React.FC = () => {
                 GameSaveId={appData.productLine.game_saves_id}
                 ProductionLineTitle={appData.productLine.title || "Unnamed Production Line"}
                 onEdit={() => {}}
-                onSave={async () => {
-                    const saveService = await import('./service/SaveService');
-                    try {
-                        const resp = await saveService.saveProductionLineData(appData, productionRows, powerRows, importsList);
-                        if (resp && resp.success) {
-                            const mappings = resp.data?.newAndOldIds || resp.data?.newAndOldIds || resp.newAndOldIds || [];
-
-                            if (mappings && mappings.length > 0) {
-                                const mapOldToNew = new Map<number, number>();
-                                mappings.forEach((m: any) => mapOldToNew.set(Number(m.old), Number(m.new)));
-                                setProductionRows(prev => prev.map(r => ({ ...r, id: mapOldToNew.get(Number(r.id)) ?? r.id })));
-                                setAppData(prev => prev ? { ...prev, production: (productionRows || []).map(r => ({ ...r, id: mapOldToNew.get(Number(r.id)) ?? r.id })) } : prev);
-                            } else {
-                                setAppData(prev => prev ? { ...prev, production: productionRows } : prev);
-                            }
-                            setAppData(prev => prev ? { ...prev, imports: importsList, powers: powerRows, checklist: appData.checklist || [] } : prev);
-
-                            saveService.showSaveMessage(true, 'Production line saved successfully.');
-                        } else {
-                            const err = resp?.error || 'Failed to save production line';
-                            saveService.showSaveMessage(false, err);
-                        }
-                    } catch (e) {
-                        console.error('Save failed', e);
-                        saveService.showSaveMessage(false, String(e));
-                    }
-                }}
-                onBack={() => {}}
+                onSave={handleSave}
                 onChecklist={() => {}}
                 onHelp={() => {}}
                 onPower={() => setPowerOpen(true)}

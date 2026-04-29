@@ -11,7 +11,6 @@ const PageTitle = (
         onVisualization,
         onChecklist,
         onHelp,
-        onBack
     }: {
         GameSaveId: number,
         ProductionLineTitle: string,
@@ -21,7 +20,6 @@ const PageTitle = (
         onVisualization: () => void,
         onChecklist: () => void,
         onHelp: () => void,
-        onBack: () => void
     }) => {
     return (
         <div className="row justify-content-end align-items-center">
@@ -84,7 +82,6 @@ const PageTitle = (
                         variant="secondary"
                         icon="fa-solid fa-arrow-left"
                         tooltip="Back to game save"
-                        onClick={onBack}
                     />
                 </div>
             </div>
