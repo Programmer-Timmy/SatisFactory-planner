@@ -26,12 +26,10 @@ const PowerModal: FC<Props> = ({
                                    onChangeRow,
                                    onAddRow,
                                    onDeleteRow,
-                                   onSave,
                                    computeConsumption,
                                    totalConsumption
                                }) => {
     if (!appData) return null;
-    console.log(rows);
     // @ts-ignore
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Power" className="modal-lg">
