@@ -75,7 +75,7 @@ const PowerModal: FC<Props> = ({
 
                                         <div className="power-meta ms-auto text-end">
                                             <div className="text-muted small">Consumption</div>
-                                            <div><strong>{computeConsumption(r).toFixed(2)}</strong></div>
+                                            <div><strong>{formatNumber(computeConsumption(r))}</strong> MW</div>
                                         </div>
                                     </div>
                                 </div>
@@ -91,20 +91,13 @@ const PowerModal: FC<Props> = ({
                             </div>
                         </div>
                     ))}
-
-                    <div className="my-2 d-flex justify-content-between align-items-center">
-                        <div></div>
-                        <div className="text-end">
-
-                        </div>
-                    </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>
                 <div className="d-flex justify-content-between w-100 align-items-center">
                     <div>
                         <div className="text-muted small">Total</div>
-                        <div><strong>{formatNumber(totalConsumption)}</strong></div>
+                        <div><strong>{formatNumber(totalConsumption)}</strong> MW</div>
                     </div>
                     <div>
                         <Tooltip
@@ -112,7 +105,9 @@ const PowerModal: FC<Props> = ({
                             placement="top">
                             <button className="btn btn-outline-primary" onClick={onAddRow}>Add row</button>
                         </Tooltip>
-                        <button className="btn btn-secondary ms-2" onClick={onClose}>Close</button>
+                        <span>
+                            <button className="btn btn-secondary ms-2" onClick={onClose}>Close</button>
+                        </span>
                     </div>
                 </div>
             </Modal.Footer>

@@ -8,6 +8,7 @@ import ProductionAddCard from "./ProductionAddCard";
 import {calculateImports} from "./service/ProductionService";
 import {calculateAutoPowerRows, computeConsumption, totalConsumption} from "./service/PowerService";
 import VisualizationPanel from "./modals/VisualizationPanel";
+import Alert from "./Alert";
 
 
 interface ProductLine {
@@ -157,11 +158,9 @@ const ProductionLineApp: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [visualizationOpen, setVisualizationOpen] = useState(false);
 
-    // local editable production rows and imports
     const [productionRows, setProductionRows] = useState<ProductionItem[]>([]);
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
 
-    // optimization helpers
     const idleRecalcRef = useRef<number | null>(null);
     const recipeMap = useMemo(() => {
         const m: Record<number, Recipe> = {};
@@ -170,14 +169,6 @@ const ProductionLineApp: React.FC = () => {
         }
         return m;
     }, [appData?.recipes]);
-
-    const itemsByName = useMemo(() => {
-        const m: Record<string, Item> = {};
-        if (appData && appData.items) {
-            for (const it of appData.items) m[it.name.toLowerCase()] = it;
-        }
-        return m;
-    }, [appData?.items]);
 
     useEffect(() => {
         const data = window.appData;
@@ -348,11 +339,38 @@ const ProductionLineApp: React.FC = () => {
 
     return (
         <div className="px-3 px-lg-5">
+            <Alert />
             <PageTitle
                 GameSaveId={appData.productLine.game_saves_id}
                 ProductionLineTitle={appData.productLine.title || "Unnamed Production Line"}
                 onEdit={() => {}}
-                onSave={() => {}}
+                onSave={async () => {
+                    const saveService = await import('./service/SaveService');
+                    try {
+                        const resp = await saveService.saveProductionLineData(appData, productionRows, powerRows, importsList);
+                        if (resp && resp.success) {
+                            const mappings = resp.data?.newAndOldIds || resp.data?.newAndOldIds || resp.newAndOldIds || [];
+
+                            if (mappings && mappings.length > 0) {
+                                const mapOldToNew = new Map<number, number>();
+                                mappings.forEach((m: any) => mapOldToNew.set(Number(m.old), Number(m.new)));
+                                setProductionRows(prev => prev.map(r => ({ ...r, id: mapOldToNew.get(Number(r.id)) ?? r.id })));
+                                setAppData(prev => prev ? { ...prev, production: (productionRows || []).map(r => ({ ...r, id: mapOldToNew.get(Number(r.id)) ?? r.id })) } : prev);
+                            } else {
+                                setAppData(prev => prev ? { ...prev, production: productionRows } : prev);
+                            }
+                            setAppData(prev => prev ? { ...prev, imports: importsList, powers: powerRows, checklist: appData.checklist || [] } : prev);
+
+                            saveService.showSaveMessage(true, 'Production line saved successfully.');
+                        } else {
+                            const err = resp?.error || 'Failed to save production line';
+                            saveService.showSaveMessage(false, err);
+                        }
+                    } catch (e) {
+                        console.error('Save failed', e);
+                        saveService.showSaveMessage(false, String(e));
+                    }
+                }}
                 onBack={() => {}}
                 onChecklist={() => {}}
                 onHelp={() => {}}

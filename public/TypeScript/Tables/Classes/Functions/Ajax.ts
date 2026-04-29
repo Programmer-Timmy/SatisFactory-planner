@@ -4,7 +4,20 @@ import {IChecklist} from "../Checklist";
 
 
 export class Ajax {
-    private static gameSaveId: number = Number($('#gameSaveId').val()) ?? 0;
+    private static gameSaveId: number = ((): number => {
+        const val = Number($('#gameSaveId').val());
+        if (!Number.isFinite(val) || val <= 0) {
+            try {
+                const fromApp = (window as any)?.appData?.productLine?.game_saves_id;
+                const parsed = Number(fromApp);
+                if (Number.isFinite(parsed) && parsed > 0) return parsed;
+            } catch (e) {
+                // ignore
+            }
+            return 0;
+        }
+        return val;
+    })();
     private static url: URL = new URL(window.location.href);
     private static productionLineId: number = parseInt(this.url.searchParams.get('id') as string);
 
