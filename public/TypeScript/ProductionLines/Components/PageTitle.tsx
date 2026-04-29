@@ -1,4 +1,5 @@
 import React, {FC} from 'react';
+import Tooltip from "./Tooltip";
 
 const PageTitle = ({GameSaveId, ProductionLineTitle}: { GameSaveId: number, ProductionLineTitle: string }) => {
     return (
@@ -91,26 +92,26 @@ export const ActionButton: FC<SmartButtonProps> = ({
     const commonProps = {
         id,
         className: baseClass,
-        "data-bs-toggle": "tooltip",
-        "data-bs-placement": "top",
-        ...(htmlTooltip && {"data-bs-html": "true"}),
-        "data-bs-title": tooltip
     };
 
     const iconEl = <i className={icon} aria-hidden="true"></i>;
 
     if (href) {
         return (
-            <a href={href} {...commonProps}>
-                {iconEl}
-            </a>
+            <Tooltip content={tooltip}>
+                <a href={href} {...commonProps}>
+                    {iconEl}
+                </a>
+            </Tooltip>
         );
     }
 
     return (
-        <button type={type} onClick={onClick} {...commonProps}>
-            {iconEl}
-        </button>
+        <Tooltip content={tooltip}>
+            <button type={type} onClick={onClick} {...commonProps}>
+                {iconEl}
+            </button>
+        </Tooltip>
     );
 };
 

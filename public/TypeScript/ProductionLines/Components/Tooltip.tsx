@@ -96,7 +96,7 @@ const Tooltip: React.FC<Props> = ({
                             maxWidth: '240px',
                         }}
                     >
-                        {content}
+                        <div dangerouslySetInnerHTML={{ __html: content as string }} />
                     </div>
                 </div>
             )}
