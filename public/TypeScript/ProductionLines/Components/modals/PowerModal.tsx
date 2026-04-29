@@ -32,7 +32,7 @@ const PowerModal: FC<Props> = ({
     if (!appData) return null;
     // @ts-ignore
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Power" className="modal-lg">
+        <Modal isOpen={isOpen} onClose={onClose} title="Power" size="lg">
             <Modal.Body>
                 <div className="pl-list">
                     {rows.map((r, idx) => (

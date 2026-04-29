@@ -7,6 +7,7 @@ import Tooltip from "./Tooltip";
 import ProductionAddCard from "./ProductionAddCard";
 import {calculateImports} from "./service/ProductionService";
 import {calculateAutoPowerRows, computeConsumption, totalConsumption} from "./service/PowerService";
+import VisualizationPanel from "./VisualizationPanel";
 
 
 interface ProductLine {
@@ -154,6 +155,7 @@ declare global {
 const ProductionLineApp: React.FC = () => {
     const [appData, setAppData] = useState<AppData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [visualizationOpen, setVisualizationOpen] = useState(false);
 
     // local editable production rows and imports
     const [productionRows, setProductionRows] = useState<ProductionItem[]>([]);
@@ -355,7 +357,15 @@ const ProductionLineApp: React.FC = () => {
                 onChecklist={() => {}}
                 onHelp={() => {}}
                 onPower={() => setPowerOpen(true)}
-                onVisualization={() => {}}
+                onVisualization={() => setVisualizationOpen(true)}
+            />
+            <VisualizationPanel
+                isOpen={visualizationOpen}
+                onClose={() => setVisualizationOpen(false)}
+                appData={appData}
+                productionRows={productionRows}
+                importsList={importsList}
+                recipeMap={recipeMap}
             />
             <div className="row">
                 <div className="col-md-3">

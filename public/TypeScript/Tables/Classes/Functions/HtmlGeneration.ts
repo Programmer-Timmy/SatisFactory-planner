@@ -44,8 +44,15 @@ export class HtmlGeneration {
 
         try {
             const el = document.getElementById('items-class-map');
-            const json = el?.textContent?.trim() || '{}';
-            this.itemClassMap = JSON.parse(json);
+            if (el) {
+                const json = el.textContent?.trim() || '{}';
+                this.itemClassMap = JSON.parse(json);
+            } else if (typeof window !== 'undefined' && (window as any).appData && (window as any).appData.itemClassMap) {
+                // Fallback: React embeds itemClassMap in window.appData; use that if DOM element is not present
+                this.itemClassMap = (window as any).appData.itemClassMap || {};
+            } else {
+                this.itemClassMap = {};
+            }
         } catch {
             this.itemClassMap = {};
         }
