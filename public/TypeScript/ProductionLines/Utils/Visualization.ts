@@ -7,6 +7,7 @@ import type {Core, EdgeSingular, LayoutOptions, NodeSingular} from "cytoscape";
 import {IChecklist} from "../../Tables/Classes/Checklist";
 import {PowerTableFunctions} from "../../Tables/Classes/Functions/PowerTableFunctions";
 import {HtmlGeneration} from "../../Tables/Classes/Functions/HtmlGeneration";
+import getBuildingIcon from "./getBuildingIcon";
 
 let cytoscape: typeof import("cytoscape")
 
@@ -722,10 +723,7 @@ export class Visualization {
     }
 
     private getBuildingIconSrc(className: string): string {
-        return `/image/items/${className
-            .replaceAll('_', '-')
-            .replace(/build/gi, 'desc')
-            .toLowerCase()}_256.png`;
+        return getBuildingIcon(className);
     }
 
     private buildSimpleTitleHtml(kind: string, icon: string | null, name: string, quantity: number): string {

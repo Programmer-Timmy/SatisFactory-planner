@@ -5,6 +5,28 @@ export function createVisualizationFromData(appData: any, productionRows: any[],
     const rows = productionRows || [];
     const n = rows.length;
 
+    // set building to = recipe.building[0]
+    recipeMap = Object.fromEntries(
+        Object.entries(recipeMap).map(([key, rec]) => {
+            if (!rec) return [key, null];
+
+            const buildingInfo = rec.building?.[0] || null;
+
+            const foundBuilding =
+                appData.buildings.find((b: any) => b.class_name === (buildingInfo?.class_name || "")) ||
+                appData.buildings.find((b: any) => b.id === (rec.buildings_id || 0)) ||
+                null;
+
+            return [
+                key,
+                {
+                    ...rec,
+                    building: foundBuilding,
+                },
+            ];
+        })
+    ) as Record<number, any>;
+
     // Precompute producer metadata similar to ProductionService
     const producers = rows.map((p: any) => {
         const rec = recipeMap[p.recipe_id] ?? null;

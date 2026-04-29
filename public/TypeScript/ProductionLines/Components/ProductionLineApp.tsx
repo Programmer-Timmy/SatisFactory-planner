@@ -7,7 +7,7 @@ import Tooltip from "./Tooltip";
 import ProductionAddCard from "./ProductionAddCard";
 import {calculateImports} from "./service/ProductionService";
 import {calculateAutoPowerRows, computeConsumption, totalConsumption} from "./service/PowerService";
-import VisualizationPanel from "./VisualizationPanel";
+import VisualizationPanel from "./modals/VisualizationPanel";
 
 
 interface ProductLine {

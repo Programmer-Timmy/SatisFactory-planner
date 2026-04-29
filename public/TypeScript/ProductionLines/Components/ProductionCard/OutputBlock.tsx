@@ -15,7 +15,6 @@ const getIcon = (className?: string) => {
 };
 
 const OutputBlock: React.FC<Props> = ({product, localUsage, exportPerMin}) => {
-    console.log("product", product);
     return (
         <>
             <div className="pl-field">
