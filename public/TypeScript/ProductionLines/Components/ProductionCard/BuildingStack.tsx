@@ -1,16 +1,12 @@
 import React from 'react';
 import { RecipeBuilding } from '../../Types/global';
 import { formatNumber } from '../../Utils/format';
+import getBuildingIcon from "../../Utils/getBuildingIcon";
 
 interface Props {
   building?: RecipeBuilding[];
   buildingAmount: number;
 }
-
-const getBuildingIcon = (className?: string) => {
-  if (!className) return '';
-  return `/image/items/${className.toLowerCase().replaceAll('_', '-').replace(/build/gi, 'desc')}_256.png`;
-};
 
 const BuildingStack: React.FC<Props> = ({ building, buildingAmount }) => {
   return (

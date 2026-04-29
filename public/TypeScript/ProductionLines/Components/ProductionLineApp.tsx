@@ -1,10 +1,10 @@
-import React, {useEffect, useState, useMemo, useRef, useCallback} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import PageTitle from "./PageTitle";
+import PowerModal from "./modals/PowerModal";
 import ImportsCard from "./ImportsCard";
 import ProductionRowCard from "./ProductionCard/index";
 import Tooltip from "./Tooltip";
 import ProductionAddCard from "./ProductionAddCard";
-import { v4 as uuidv4 } from "uuid";
 
 interface ProductLine {
     id: number;
@@ -46,7 +46,7 @@ export interface ProductionItem {
     collapsed?: boolean;
 }
 
-interface PowerItem {
+export interface PowerItem {
     idpower: number;
     building_ammount: number;
     clock_speed: number;
@@ -54,7 +54,7 @@ interface PowerItem {
     production_lines_id: number;
     power_used: number;
     user: number;
-    building: string;
+    building: Building | null;
 }
 
 interface ChecklistItem {
@@ -110,7 +110,7 @@ export interface Recipe {
     products: RecipeProduct[];
 }
 
-interface Building {
+export interface Building {
     id: number;
     name: string;
     class_name: string;
@@ -125,7 +125,7 @@ interface ProductionSetting {
     useSomersloop: boolean;
 }
 
-interface AppData {
+export interface AppData {
     productLine: ProductLine;
     imports: ImportItem[];
     production: ProductionItem[];
@@ -157,7 +157,6 @@ const ProductionLineApp: React.FC = () => {
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
 
     // optimization helpers
-    const importsTimerRef = useRef<number | null>(null);
     const idleRecalcRef = useRef<number | null>(null);
     const recipeMap = useMemo(() => {
         const m: Record<number, Recipe> = {};
@@ -246,7 +245,7 @@ const ProductionLineApp: React.FC = () => {
             const primaryNameLower = primaryName.toLowerCase();
             const secondNameLower = secondName.toLowerCase();
             const extraQty = (exportPerMin2 && exportPerMin) ? productQty * (exportPerMin2 / exportPerMin) : 0;
-            return { rec, primaryNameLower, secondNameLower, exportPerMin, exportPerMin2, productQty, extraQty };
+            return {rec, primaryNameLower, secondNameLower, exportPerMin, exportPerMin2, productQty, extraQty};
         });
 
         for (let i = 0; i < n; i++) {
@@ -291,7 +290,7 @@ const ProductionLineApp: React.FC = () => {
                     const className = foundItem ? foundItem.class_name : '';
                     const name = ing.name;
                     const key = `${itemId}-${name}`;
-                    if (!importsMap[key]) importsMap[key] = { itemId, className, name, amount: 0 };
+                    if (!importsMap[key]) importsMap[key] = {itemId, className, name, amount: 0};
                     importsMap[key].amount += remainingNeed;
                 }
             }
@@ -333,6 +332,76 @@ const ProductionLineApp: React.FC = () => {
         setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, use_somersloop: checked} : r));
     };
 
+    // Power modal state and handlers
+    const [powerOpen, setPowerOpen] = useState(false);
+    const [powerRows, setPowerRows] = useState<PowerItem[]>([]);
+
+    useEffect(() => {
+        if (!appData) return;
+        setPowerRows(appData.powers.map(p => ({
+            ...p,
+            clock_speed: Math.max(0, Math.min(250, Number(p.clock_speed ?? 100))),
+            building: appData.buildings.find(b => b.id === p.buildings_id) || null
+        })));
+    }, [appData]);
+
+    const computeConsumption = (row: PowerItem) => {
+        const clock = Number(row.clock_speed) || 0;
+        const amount = Number(row.building_ammount) || 0;
+        const powerUsed = Number(row.power_used) || (appData?.buildings.find(b => b.id === row.buildings_id)?.power_used ?? 0);
+        return amount * powerUsed * Math.pow(clock / 100, 1.321928);
+    };
+
+    const totalConsumption = useMemo(() => {
+        return powerRows.reduce((s, r) => s + computeConsumption(r), 0);
+    }, [powerRows, appData]);
+
+    const handlePowerRowChange = (index: number, field: keyof PowerItem, value: any) => {
+        switch (field) {
+            case 'clock_speed':
+                value = Math.max(0, Math.min(250, Number(value)));
+                break;
+            case 'building_ammount':
+                value = Math.max(0, Number(value));
+                break;
+            case 'buildings_id':
+                const building = appData?.buildings.find(b => b.id === Number(value)) || null;
+                setPowerRows(prev => prev.map((r, i) => i === index ? {...r, [field]: value, building} : r));
+                return;
+        }
+        setPowerRows(prev => prev.map((r, i) => i === index ? {...r, [field]: value} : r));
+    };
+
+    const addPowerRow = () => {
+        setPowerRows(prev => [...prev, {
+            idpower: Date.now(),
+            building_ammount: 0,
+            clock_speed: 100,
+            buildings_id: 0,
+            production_lines_id: appData?.productLine.id || 0,
+            power_used: 0,
+            user: 1,
+            building: null
+        }]);
+    };
+
+    const savePowerRows = () => {
+        setAppData(prev => prev ? {...prev, powers: powerRows} : prev);
+        setPowerOpen(false);
+    };
+
+    useEffect(() => {
+        const handler = (event: KeyboardEvent) => {
+            const key = (event.key || '').toLowerCase();
+            if (event.ctrlKey && key === 'p') {
+                event.preventDefault();
+                setPowerOpen(prev => !prev);
+            }
+        };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, []);
+
     if (loading) {
         return <div className="container mt-5"><p>Loading...</p></div>;
     }
@@ -343,8 +412,17 @@ const ProductionLineApp: React.FC = () => {
 
     return (
         <div className="px-3 px-lg-5">
-            <PageTitle GameSaveId={appData.productLine.game_saves_id}
-                       ProductionLineTitle={appData.productLine.title || "Unnamed Production Line"}/>
+            <PageTitle
+                GameSaveId={appData.productLine.game_saves_id}
+                ProductionLineTitle={appData.productLine.title || "Unnamed Production Line"}
+                onEdit={() => {}}
+                onSave={() => {}}
+                onBack={() => {}}
+                onChecklist={() => {}}
+                onHelp={() => {}}
+                onPower={() => setPowerOpen(true)}
+                onVisualization={() => {}}
+            />
             <div className="row">
                 <div className="col-md-3">
                     <h2 className="mb-0">Imports</h2>
@@ -352,7 +430,8 @@ const ProductionLineApp: React.FC = () => {
                         Import-Export in Edit).</p>
                     <div className="pl-list">
                         {importsList.map((importItem) => (
-                            <ImportsCard key={`${importItem.items_id}-${importItem.name}`} itemName={importItem.name} itemClass={importItem.item_class_name}
+                            <ImportsCard key={`${importItem.items_id}-${importItem.name}`} itemName={importItem.name}
+                                         itemClass={importItem.item_class_name}
                                          amount={importItem.ammount}/>
                         ))}
                     </div>
@@ -431,6 +510,21 @@ const ProductionLineApp: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Power modal */}
+            <PowerModal
+                isOpen={powerOpen}
+                onClose={() => setPowerOpen(false)}
+                rows={powerRows}
+                appData={appData}
+                onChangeRow={handlePowerRowChange}
+                onAddRow={addPowerRow}
+                onDeleteRow={(idx) => setPowerRows(prev => prev.filter((_, i) => i !== idx))}
+                onSave={savePowerRows}
+                computeConsumption={computeConsumption}
+                totalConsumption={totalConsumption}
+            />
+
         </div>
     );
 };

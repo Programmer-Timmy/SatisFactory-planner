@@ -597,6 +597,49 @@ foreach ($production as $product) {
     }
 </style>
 
+<!-- Power modal custom styles (isolated, do not change existing styles) -->
+<style>
+    /* Use isolated class names to avoid touching existing styles */
+    .power-card {
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        position: relative; /* allow corner button positioning */
+    }
+
+    .power-card-body { display:flex; gap:12px; align-items:flex-start; width:100%; }
+
+    .power-icon {
+        width:44px; height:44px; object-fit:contain; border:1px solid var(--bs-border-color);
+        border-radius:8px; background:var(--bs-tertiary-bg); padding:4px; flex:0 0 auto;
+    }
+
+    .power-fields { flex:1 1 auto; min-width:0; }
+
+    .power-field-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+
+    .power-field { display:flex; flex-direction:column; gap:4px; min-width:0; }
+
+    .power-label { font-size:11px; font-weight:600; color:var(--bs-secondary-color); }
+
+    .power-input { min-width:120px; max-width:220px; }
+
+    .power-meta { min-width:120px; text-align:right; }
+
+    .power-actions { display:flex; align-items:flex-start; }
+
+    /* Small screens: stack fields */
+    @media (max-width:575.98px) {
+        .power-field-row { flex-direction:column; align-items:stretch; }
+        .power-meta { text-align:left; }
+    }
+</style>
+
 <!-- React App Root -->
 <div id="app-root"></div>
 

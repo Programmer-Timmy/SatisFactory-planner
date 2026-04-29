@@ -1,7 +1,28 @@
 import React, {FC} from 'react';
 import Tooltip from "./Tooltip";
 
-const PageTitle = ({GameSaveId, ProductionLineTitle}: { GameSaveId: number, ProductionLineTitle: string }) => {
+const PageTitle = (
+    {
+        GameSaveId,
+        ProductionLineTitle,
+        onSave,
+        onEdit,
+        onPower,
+        onVisualization,
+        onChecklist,
+        onHelp,
+        onBack
+    }: {
+        GameSaveId: number,
+        ProductionLineTitle: string,
+        onSave: () => void,
+        onEdit: () => void,
+        onPower: () => void,
+        onVisualization: () => void,
+        onChecklist: () => void,
+        onHelp: () => void,
+        onBack: () => void
+    }) => {
     return (
         <div className="row justify-content-end align-items-center">
             <div className="col-lg-3"></div>
@@ -16,7 +37,7 @@ const PageTitle = ({GameSaveId, ProductionLineTitle}: { GameSaveId: number, Prod
                         variant="primary"
                         icon="fa-solid fa-save"
                         tooltip="Save production line.<br> <small>Hold <b>Shift</b> to save without returning to the save game.</small>"
-                        htmlTooltip
+                        onClick={onSave}
                     />
                     <ActionButton
                         type="button"
@@ -24,6 +45,7 @@ const PageTitle = ({GameSaveId, ProductionLineTitle}: { GameSaveId: number, Prod
                         variant="warning"
                         icon="fa-solid fa-pencil"
                         tooltip="Edit the production line"
+                        onClick={onEdit}
                     />
                     <ActionButton
                         type="button"
@@ -31,6 +53,7 @@ const PageTitle = ({GameSaveId, ProductionLineTitle}: { GameSaveId: number, Prod
                         variant="info"
                         icon="fa-solid fa-bolt"
                         tooltip="Show power consumption"
+                        onClick={onPower}
                     />
                     <ActionButton
                         type="button"
@@ -38,6 +61,7 @@ const PageTitle = ({GameSaveId, ProductionLineTitle}: { GameSaveId: number, Prod
                         variant="info"
                         icon="fa-solid fa-project-diagram"
                         tooltip="Show visualization"
+                        onClick={onVisualization}
                     />
                     <ActionButton
                         type="button"
@@ -45,6 +69,7 @@ const PageTitle = ({GameSaveId, ProductionLineTitle}: { GameSaveId: number, Prod
                         variant="info"
                         icon="fa-solid fa-list-check"
                         tooltip="Checklist"
+                        onClick={onChecklist}
                     />
                     <ActionButton
                         type="button"
@@ -52,12 +77,14 @@ const PageTitle = ({GameSaveId, ProductionLineTitle}: { GameSaveId: number, Prod
                         variant="info"
                         icon="fa-regular fa-question-circle"
                         tooltip="Need help? Click here!"
+                        onClick={onHelp}
                     />
                     <ActionButton
                         href={`/game_save/${GameSaveId}/`}
                         variant="secondary"
                         icon="fa-solid fa-arrow-left"
                         tooltip="Back to game save"
+                        onClick={onBack}
                     />
                 </div>
             </div>
