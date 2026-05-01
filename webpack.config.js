@@ -2,7 +2,6 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        tables: './public/TypeScript/Tables/index.ts',          // Entry point for Tables
         powerProduction: './public/TypeScript/PowerProduction/index.ts',  // Entry point for Power Production
         dedicatedServer: './public/TypeScript/DedicatedServer/index.ts',  // Entry point for Dedicated Server
         userSelect: './public/TypeScript/UserSelect/index.ts', // Entry point for User Select
