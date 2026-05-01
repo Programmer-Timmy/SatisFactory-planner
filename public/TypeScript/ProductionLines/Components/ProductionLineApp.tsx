@@ -9,6 +9,7 @@ import {calculateImports} from "./service/ProductionService";
 import {calculateAutoPowerRows, computeConsumption, totalConsumption} from "./service/PowerService";
 import VisualizationPanel from "./modals/VisualizationPanel";
 import HelpModal from "./modals/HelpModal";
+import ChecklistModal from "./modals/ChecklistModal";
 import Alert from "./Alert";
 
 
@@ -159,6 +160,7 @@ const ProductionLineApp: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [visualizationOpen, setVisualizationOpen] = useState(false);
     const [helpOpen, setHelpOpen] = useState(false);
+    const [checklistOpen, setChecklistOpen] = useState(false);
 
     const [productionRows, setProductionRows] = useState<ProductionItem[]>([]);
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
@@ -403,8 +405,7 @@ const ProductionLineApp: React.FC = () => {
                 onEdit={() => {
                 }}
                 onSave={handleSave}
-                onChecklist={() => {
-                }}
+                onChecklist={() => { setChecklistOpen(true); }}
                 onHelp={() => setHelpOpen(true)}
                 onPower={() => setPowerOpen(true)}
                 onVisualization={() => setVisualizationOpen(true)}
@@ -421,6 +422,16 @@ const ProductionLineApp: React.FC = () => {
             <HelpModal
                 isOpen={helpOpen}
                 onClose={() => setHelpOpen(false)}
+            />
+
+            <ChecklistModal
+                isOpen={checklistOpen}
+                onClose={() => setChecklistOpen(false)}
+                appData={appData}
+                productionRows={productionRows}
+                onSave={(checklist) => {
+                    setAppData(prev => prev ? {...prev, checklist: checklist} : prev);
+                }}
             />
             <div className="row">
                 <div className="col-md-3">
