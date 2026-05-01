@@ -105,7 +105,7 @@ const ProductionLineSettingsModal: React.FC<Props> = ({isOpen, onClose, appData,
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
-            setMessage('Exported production line JSON (full).');
+            setMessage('Export started, check your downloads folder.');
             setTimeout(() => setMessage(null), 2500);
         } catch (e) {
             setMessage('Export failed');
@@ -171,7 +171,7 @@ const ProductionLineSettingsModal: React.FC<Props> = ({isOpen, onClose, appData,
 
                 <form id="editProductionLineForm" onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="row">
                     <h5>Production Line</h5>
-                    <div className="mb-3 col-12">
+                    <div className="mb-3 col-10">
                         <label htmlFor="productionLineName" className="form-label">Production Line Name</label>
                         <input id="productionLineName" name="productionLineName" type="text" value={title}
                                onChange={e => setTitle(e.target.value)} className="form-control" maxLength={45} required />
@@ -189,7 +189,7 @@ const ProductionLineSettingsModal: React.FC<Props> = ({isOpen, onClose, appData,
                                 data-offstyle="dark"
                                 data-onlabel="<i class='fa-solid fa-check'></i>"
                                 data-offlabel="<i class='fa-solid fa-times'></i>"
-                                data-size="sm"
+                                data-size="md"
                                 data-style="ios"
                                 data-theme="dark"
                                 data-pl-active="1"

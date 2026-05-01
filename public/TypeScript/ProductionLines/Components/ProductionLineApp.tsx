@@ -486,6 +486,7 @@ const ProductionLineApp: React.FC = () => {
                             } : prev);
 
                             saveService.showSaveMessage(true, 'Production line imported and saved successfully.');
+                            setSettingsOpen(false);
                         } else {
                             const err = resp?.error || 'Failed to save imported production line';
                             saveService.showSaveMessage(false, err);
