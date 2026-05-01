@@ -1,4 +1,4 @@
-import {FC, ReactNode, useEffect, useRef} from "react";
+import {FC, ReactNode, useEffect, useRef, useState} from "react";
 
 type Size = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -44,35 +44,79 @@ const modal = ({
         };
     }, [isOpen]);
 
-    // Add a ref and mount class to trigger CSS fade-in/slide animation
+    // Manage mounting state so we can animate on close instead of unmounting instantly
     const modalRef = useRef<HTMLDivElement | null>(null);
+    const [rendered, setRendered] = useState<boolean>(isOpen);
+    const hideTimeoutRef = useRef<number | null>(null);
+
     useEffect(() => {
         const el = modalRef.current;
-        if (!el) return;
-        // Remove class first then add on next frame so transition runs
-        el.classList.remove('modal-mounted');
-        const raf = requestAnimationFrame(() => el.classList.add('modal-mounted'));
-        return () => cancelAnimationFrame(raf);
-    }, [isOpen]);
+        // If opening: ensure rendered and add mounted class on next frame
+        if (isOpen) {
+            // clear any pending close timer
+            if (hideTimeoutRef.current) {
+                window.clearTimeout(hideTimeoutRef.current);
+                hideTimeoutRef.current = null;
+            }
+            if (!rendered) setRendered(true);
+            if (!el) return;
 
-    if (!isOpen) return null;
+            // Start from 'opening' state (above) then animate to mounted (center)
+            el.classList.remove('modal-mounted', 'modal-closing');
+            el.classList.add('modal-opening');
+            const raf = requestAnimationFrame(() => {
+                el.classList.remove('modal-opening');
+                el.classList.add('modal-mounted');
+            });
+            return () => cancelAnimationFrame(raf);
+        }
+
+        // If closing: remove mounted class to play hide animation (which goes down), then unmount after duration
+        if (!isOpen && rendered) {
+            if (el) {
+                el.classList.remove('modal-mounted', 'modal-opening');
+                el.classList.add('modal-closing');
+            }
+            // match the CSS transition duration (360ms)
+            hideTimeoutRef.current = window.setTimeout(() => {
+                setRendered(false);
+                hideTimeoutRef.current = null;
+            }, 380);
+        }
+
+        return () => {
+            if (hideTimeoutRef.current) {
+                window.clearTimeout(hideTimeoutRef.current);
+                hideTimeoutRef.current = null;
+            }
+        };
+    }, [isOpen, rendered]);
 
     // Only two states: fullscreen or not. No runtime toggle inside the component.
     const fullscreenActive = !!fullscreen;
     const dialogClass = `modal-dialog modal-dialog-scrollable${fullscreenActive ? ' modal-fullscreen' : (size ? ` modal-${size}` : '')}`;
 
+    if (!rendered) return null;
+
     return (
         <>
             {/* Inline styles for a small fade-in animation scoped to this component */}
             <style>{`
-                .custom-modal { opacity: 0; transform: translateY(8px); transition: opacity 220ms ease, transform 220ms ease; }
+                .custom-modal { opacity: 0; transform: translateY(-8px); transition: opacity 360ms ease, transform 360ms ease; }
+                /* Opening starts from slightly above */
+                .custom-modal.modal-opening { opacity: 0; transform: translateY(-8px); }
+                /* Mounted (visible) */
                 .custom-modal.modal-mounted { opacity: 1; transform: translateY(0); }
+                /* Closing class (keeps same downward target as base) */
+                .custom-modal.modal-closing { opacity: 0; transform: translateY(8px); }
+
                 /* Backdrop slight fade to match modal */
-                .modal-backdrop.fade.show { opacity: 0.45; transition: opacity 220ms ease; }
+                .modal-backdrop.fade { opacity: 0; transition: opacity 360ms ease; }
+                .modal-backdrop.fade.show { opacity: 0.45; }
             `}</style>
 
-            <div className="modal-backdrop fade show"/>
-            <div ref={modalRef} className={`modal fade show d-block custom-modal ${className}`} tabIndex={-1} onClick={onClose}>
+            <div className={`modal-backdrop fade ${isOpen ? 'show' : ''}`}/>
+            <div ref={modalRef} className={`modal fade d-block custom-modal ${className} ${isOpen ? 'show' : ''}`} tabIndex={-1} onClick={onClose}>
                 <div className={dialogClass} onClick={(e) => e.stopPropagation()}>
                     <div className="modal-content">
                         <div className="modal-header">
