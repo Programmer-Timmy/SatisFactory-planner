@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.16.0",
+    "date": "May 1, 2026",
+    "changes": [
+      "Improved: Major performance boost for the production line page, reducing load time to near-instant rendering.",
+      "Changed: Migrated the production line page to React for better structure and maintainability.",
+      "Improved: Redesigned the power modal with a card-based layout instead of a table for better readability.",
+      "Improved: Added building icons in the power modal to improve quick recognition.",
+      "Improved: Replaced text-based checklist with icon-based indicators for clearer visual feedback.",
+      "Changed: Save button no longer redirects to the game save page after saving, improving workflow continuity.",
+      "Removed: Auto-function settings from the production line page to simplify configuration options.",
+      "Improved: Enhanced export and import functionality for better reliability and usability."
+    ]
+  },
+  {
     "version": "1.15.4",
     "date": "April 10 2026",
     "changes": [

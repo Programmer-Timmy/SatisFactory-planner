@@ -2,11 +2,11 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        tables: './public/TypeScript/Tables/index.ts',          // Entry point for Tables
         powerProduction: './public/TypeScript/PowerProduction/index.ts',  // Entry point for Power Production
         dedicatedServer: './public/TypeScript/DedicatedServer/index.ts',  // Entry point for Dedicated Server
         userSelect: './public/TypeScript/UserSelect/index.ts', // Entry point for User Select
         dedicatedServerDashboard: './public/TypeScript/DedicatedServerDashboard/index.ts', // Entry point for Dedicated Server Dashboard
+        productionLines: './public/TypeScript/ProductionLines/index.tsx', // Entry point for Production Lines
     },
     output: {
         filename: '[name].js',  // Output filenames will match the entry keys (e.g., tables.js, dedicatedServer.js, powerProduction.js)
@@ -17,7 +17,7 @@ module.exports = {
         globalObject: 'this',   // Ensures compatibility in different environments
     },
     resolve: {
-        extensions: ['.ts', '.js'],
+        extensions: ['.ts', '.js', '.tsx', '.jsx'],
         fallback: {
             "https": false,
         }
@@ -25,8 +25,13 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.ts$/,
-                use: 'ts-loader',
+                test: /\.tsx?$/,
+                use: {
+                    loader: 'ts-loader',
+                    options: {
+                        configFile: path.resolve(__dirname, 'tsconfig.json')
+                    }
+                },
                 exclude: /node_modules/,
             },
         ],

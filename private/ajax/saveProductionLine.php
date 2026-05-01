@@ -32,6 +32,20 @@ $productionData = [];
 $powerData = [];
 $totalPower = 0;
 
+// If productLine metadata supplied (title / active), apply update before saving rows
+if (isset($data['productLine']) && is_array($data['productLine'])) {
+    $pl = $data['productLine'];
+    try {
+        $existing = ProductionLines::getProductionLineById($productionLineId);
+        $newTitle = isset($pl['title']) ? trim($pl['title']) : ($existing->title ?? '');
+        $newActive = isset($pl['active']) ? intval($pl['active']) : ($existing->active ?? 0);
+        ProductionLines::updateProductionLine($productionLineId, $newTitle, $newActive);
+    } catch (Exception $e) {
+        // ignore update failures here; continue to save other data
+    }
+}
+
+
 
 $importRows = $data['importsTableRows'];
 foreach ($importRows as $row) {
@@ -45,12 +59,24 @@ foreach ($importRows as $row) {
 }
 $productionRows = $data['productionTableRows'];
 
+$forceInsertIds = [];
+if (isset($data['import_force_ids']) && is_array($data['import_force_ids'])) {
+    // normalize to strings for comparison
+    $forceInsertIds = array_map('strval', $data['import_force_ids']);
+}
+
 foreach ($productionRows as $row) {
     if ($row['recipeId'] == null || $row['recipeId'] == 0 || $row['quantity'] == 0 || $row['quantity'] == '') {
         continue;
     }
     $secondUsage = $row['doubleExport'] == 'true' ? $row['extraCells']['Usage'] : null;
     $secondExport = $row['doubleExport'] == 'true' ? $row['extraCells']['ExportPerMin'] : null;
+
+    $shouldForceInsert = in_array(strval($row['row_id']), $forceInsertIds, true);
+
+    // mark row with a flag so later save logic can decide to always insert
+    $row['_force_insert'] = $shouldForceInsert;
+
     $productionData[] = (object)[
         'id' => $row['row_id'],
         'recipe_id' => $row['recipeId'],
@@ -62,7 +88,8 @@ foreach ($productionRows as $row) {
         'produciton_settings' => [
             'clock_speed' => $row['recipeSetting']['clockSpeed'],
             'use_somersloop'=> $row['recipeSetting']['useSomersloop'],
-        ]
+        ],
+        '_force_insert' => $shouldForceInsert
     ];
 }
 
