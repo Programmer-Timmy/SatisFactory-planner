@@ -144,7 +144,7 @@ $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpf
                     </li>
                     <li class="nav-item me-lg-2 mt-lg-0 mt-2">
                         <a class="btn btn-success" aria-current="page" target="_blank"
-                           href="https://forms.gle/fAd5LrGRATYwFHzr7">Leave Feedback</a>
+                           href="https://forms.gle/fAd5LrGRATYwFHzr7" data-umami-event="Leave Feedback">Leave Feedback</a>
                     </li>
                     <li class="nav-item me-lg-2 mt-lg-0 mt-2 d-flex align-items-center" style="font-size: 1.5rem;">
                         <input type="checkbox" data-toggle="toggle" data-onstyle="dark" data-offstyle="light"
@@ -167,10 +167,10 @@ $navItems[] = new NavItem('/helpfulLinks', 'Helpful Links', $require === '/helpf
 
                             <hr class="dropdown-divider">
                             <?php if (isset($_SESSION['userId'])) : ?>
-                                <a class="dropdown-item" href="/logout">Logout</a>
+                                <a class="dropdown-item" href="/logout" data-umami-event="Logout">Logout</a>
                             <?php else : ?>
-                                <a class="dropdown-item" href="/login">Login</a>
-                                <a class="dropdown-item" href="/register">Register</a>
+                                <a class="dropdown-item" href="/login" data-umami-event="Login">Login</a>
+                                <a class="dropdown-item" href="/register" data-umami-event="Register">Register</a>
                             <?php endif; ?>
                         </div>
                     </li>

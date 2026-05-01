@@ -4,8 +4,7 @@
         <h1 class="display-4">Welcome to Satisfactory Planner</h1>
         <p class="lead">Design. Optimize. Collaborate.</p>
         <div class="mt-4">
-            <a href="/game_saves" class="btn btn-primary mr-2">Start Planning</a>
-<!--            <a href="/login" class="btn btn-outline-secondary">Login</a>-->
+            <a href="/game_saves" class="btn btn-primary mr-2" data-umami-event="Start Planning">Start Planning</a>
         </div>
     </div>
 
@@ -82,7 +81,7 @@
                 <p>Save your project and share it with your friends.</p>
             </div>
             <div class="col-12 text-center">
-                <a href="/game_saves" class="btn btn-primary btn">Get Started</a>
+                <a href="/game_saves" class="btn btn-primary btn" data-umami-event="Get Started">Get Started</a>
             </div>
         </div>
     </div>
@@ -94,14 +93,14 @@
             <div class="col-md-6">
                 <h2>About the Creator</h2>
                 <p class="lead">Hi, I'm <strong>Programmer Timmy</strong> — a passionate developer and gamer. I built Satisfactory Planner to make factory building more intuitive and fun for players like us. Whether you're a min-maxer or a casual builder, I hope this tool makes your planning easier and more enjoyable.</p>
-                <a href="https://github.com/Programmer-Timmy" class="btn btn-outline-primary">Check out my GitHub</a>
+                <a href="https://github.com/Programmer-Timmy" class="btn btn-outline-primary" data-umami-event="Check out GitHub">Check out my GitHub</a>
             </div>
 
             <!-- Feedback -->
             <div class="col-md-6">
                 <h2>Got Feedback?</h2>
                 <p class="lead">I'd love to hear from you! Whether it's a bug report, a new feature idea, or just a kind word. Your input helps make Satisfactory Planner even better for everyone.</p>
-                <a href="https://forms.gle/fAd5LrGRATYwFHzr7" class="btn btn-outline-success">Leave Feedback</a>
+                <a href="https://forms.gle/fAd5LrGRATYwFHzr7" class="btn btn-outline-success" target="_blank" data-umami-event="Leave Feedback">Leave Feedback</a>
             </div>
         </div>
     </div>

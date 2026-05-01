@@ -18,7 +18,7 @@ if ($_POST && isset($_POST['UpdatedSaveGameName'])) {
     } elseif ($updatedSaveGameName !== strip_tags($updatedSaveGameName)) {
         $error = 'Security Alert: Unauthorized characters detected in Save Game Name. Nice try, but FICSIT Security has blocked that!';
     } elseif (isset($_FILES['saveGameImage']['tmp_name']) && $_FILES['saveGameImage']['tmp_name'] &&
-        !in_array(mime_content_type($_FILES['saveGameImage']['tmp_name']), ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
+            !in_array(mime_content_type($_FILES['saveGameImage']['tmp_name']), ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
         $error = 'Invalid image format. Please upload an image in JPEG, PNG, GIF, or WebP format.';
     } elseif (isset($_FILES['saveGameImage']['tmp_name']) && $_FILES['saveGameImage']['tmp_name'] && $_FILES['saveGameImage']['size'] > 2097152) {
         $error = 'Image size is too large. Please upload an image under 2MB.';
@@ -128,7 +128,6 @@ foreach ($gameSaves as $save) {
 }
 
 
-
 ?>
 <div class="container">
     <?php GlobalUtility::displayFlashMessages() ?>
@@ -148,7 +147,7 @@ foreach ($gameSaves as $save) {
                         <button id="Invites" class="btn btn-secondary" data-bs-toggle="tooltip"
                                 data-bs-placement="top"
                                 data-bs-title="Invites">
-                            <i class="fa-solid fa-envelope"></i>
+                        <i class="fa-solid fa-envelope"></i>
                         </button>
 
                     </div>
@@ -176,12 +175,15 @@ foreach ($gameSaves as $save) {
                                                    class="btn btn-success btn-sm"
                                                    style="width: 30px;"
                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                   data-bs-title="Accept Request"><i class="fa-solid fa-check"></i>
+                                                   data-bs-title="Accept Request"
+                                                   data-umami-event="Accept Invite"
+                                                ><i class="fa-solid fa-check"></i>
                                                 </a>
                                                 <a href="?request=<?= $request->id ?>&decline=true"
                                                    class="btn btn-danger btn-sm" style="width: 30px;"
                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                   data-bs-title="Decline Request"><i class="fa-solid fa-times"></i>
+                                                   data-bs-title="Decline Request" data-umami-event="Decline Invite"
+                                                ><i class="fa-solid fa-times"></i>
                                                 </a>
                                             </div>
                                         </div>
@@ -253,13 +255,17 @@ foreach ($gameSaves as $save) {
                     <div class="card h-100 w-100">
                         <div class="position-relative">
                             <a href="game_save/<?= $gameSave->game_saves_id ?>"
-                               class="card-link text-black text-decoration-none">
-                                <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover savegame-image"
-
+                               class="card-link text-black text-decoration-none"
+                               data-umami-event="View Game Save"
+                               data-umami-event-game_save="<?= $gameSave->game_saves_id ?>"
+                            >
+                                <img src="image/<?= $gameSave->image ?>"
+                                     class="card-img-top object-fit-cover savegame-image"
                                      style="max-height: 400px" alt="...">
                             </a>
                             <?php if (in_array(Permission::SAVEGAME_DELETE->value, $gameSave->permissions)) : ?>
                                 <a class="btn btn-danger position-absolute top-0 end-0"
+                                   data-umami-event="Delete Game Save"
                                    href="game_saves?delete=<?= $gameSave->game_saves_id ?>"
                                    onclick="return confirm('Delete this game save?')"
                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"><i
@@ -267,6 +273,7 @@ foreach ($gameSaves as $save) {
                             <?php endif; ?>
                             <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) : ?>
                                 <button class="btn btn-primary position-absolute top-0 start-0"
+                                        data-umami-event="Edit Game Save"
                                         id="update_save_game_line_<?= $gameSave->id ?>"
                                         data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i
                                             class="fa-solid fa-pencil"></i></button>
@@ -280,11 +287,15 @@ foreach ($gameSaves as $save) {
                             <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
                             <div>
                                 <a href="game_saves?hide=<?= $gameSave->game_saves_id ?>"
+                                   data-umami-event="Hide Game Save"
                                    class="btn btn-outline-secondary btn-sm"
                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Hide"><i
                                             class="fa-solid fa-eye-slash"></i></a>
                                 <a href="game_save/<?= $gameSave->game_saves_id ?>"
-                                   class="btn btn-outline-primary btn-sm">
+                                   class="btn btn-outline-primary btn-sm"
+                                   data-umami-event="Open Game Save"
+                                   data-umami-event-game_save="<?= $gameSave->game_saves_id ?>"
+                                >
                                     Open
                                 </a>
                             </div>
@@ -296,73 +307,87 @@ foreach ($gameSaves as $save) {
         </div>
 
         <?php if (count($hiddenGameSaves) > 0) : ?>
-        <!-- Toggle button -->
-        <div class="d-flex justify-content-center mt-4">
-            <button class="btn btn-outline-primary mb-3 " type="button" data-bs-toggle="collapse" data-bs-target="#hiddenGameSavesCollapse" aria-expanded="false" aria-controls="hiddenGameSavesCollapse">
-                Hidden Game Saves (<?= count($hiddenGameSaves) ?>)
-            </button>
-        </div>
+            <!-- Toggle button -->
+            <div class="d-flex justify-content-center mt-4">
+                <button class="btn btn-outline-primary mb-3 " type="button" data-bs-toggle="collapse"
+                        data-bs-target="#hiddenGameSavesCollapse" aria-expanded="false"
+                        aria-controls="hiddenGameSavesCollapse">
+                    Hidden Game Saves (<?= count($hiddenGameSaves) ?>)
+                </button>
+            </div>
 
-        <!-- Collapsible content -->
-        <div class="collapse" id="hiddenGameSavesCollapse">
-            <div class="row mt-3 <?= count($hiddenGameSaves) == 1 ? "justify-content-center" : "" ?>">
-                <?php foreach ($hiddenGameSaves as $gameSave) :
-                    global $modalGameSave;
-                    $modalGameSave = $gameSave;
-                    $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
-                    ?>
-                    <div class="d-flex align-items-stretch <?= $class ?> mt-3">
-                        <div class="card h-100 w-100">
-                            <div class="position-relative">
-                                <a href="game_save/<?= $gameSave->game_saves_id ?>" class="card-link text-black text-decoration-none">
-                                    <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover" style="max-height: 400px" alt="...">
-                                </a>
-
-                                <?php if (in_array(Permission::SAVEGAME_DELETE->value, $gameSave->permissions)) : ?>
-                                    <a class="btn btn-danger position-absolute top-0 end-0"
-                                       href="game_saves?delete=<?= $gameSave->game_saves_id ?>"
-                                       onclick="return confirm('Delete this game save?')"
-                                       data-bs-toggle="tooltip" data-bs-placement="top" title="Delete">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </a>
-                                <?php endif; ?>
-
-                                <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) : ?>
-                                    <button class="btn btn-primary position-absolute top-0 start-0"
-                                            id="update_save_game_line_<?= $gameSave->id ?>"
-                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
-                                        <i class="fa-solid fa-pencil"></i>
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-
-                            <div class="card-body">
-                                <h5 class="card-title"><?= $gameSave->title ?></h5>
-                                <p class="card-text">Owner: <?= $gameSave->Owner ?></p>
-                            </div>
-
-                            <div class="card-footer d-flex justify-content-between align-items-center">
-                                <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
-                                <div>
-                                    <a href="game_saves?unhide=<?= $gameSave->game_saves_id ?>"
-                                       class="btn btn-outline-secondary btn-sm"
-                                       data-bs-toggle="tooltip" data-bs-placement="top" title="Unhide">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </a>
+            <!-- Collapsible content -->
+            <div class="collapse" id="hiddenGameSavesCollapse">
+                <div class="row mt-3 <?= count($hiddenGameSaves) == 1 ? "justify-content-center" : "" ?>">
+                    <?php foreach ($hiddenGameSaves as $gameSave) :
+                        global $modalGameSave;
+                        $modalGameSave = $gameSave;
+                        $gameSave->image = (file_exists('image/' . $gameSave->image) && !empty($gameSave->image)) ? $gameSave->image : 'default_img.png';
+                        ?>
+                        <div class="d-flex align-items-stretch <?= $class ?> mt-3">
+                            <div class="card h-100 w-100">
+                                <div class="position-relative">
                                     <a href="game_save/<?= $gameSave->game_saves_id ?>"
-                                       class="btn btn-outline-primary btn-sm">
-                                        Open
+                                       class="card-link text-black text-decoration-none"
+                                       data-umami-event="View Game Save" data-umami-event-game_save="<?= $gameSave->game_saves_id ?>"
+                                        <img src="image/<?= $gameSave->image ?>" class="card-img-top object-fit-cover"
+                                             style="max-height: 400px" alt="...">
                                     </a>
+
+                                    <?php if (in_array(Permission::SAVEGAME_DELETE->value, $gameSave->permissions)) : ?>
+                                        <a class="btn btn-danger position-absolute top-0 end-0"
+                                           href="game_saves?delete=<?= $gameSave->game_saves_id ?>"
+                                           onclick="return confirm('Delete this game save?')"
+                                           data-bs-toggle="tooltip" data-bs-placement="top" title="Delete"
+                                           data-umami-event="Delete Game Save"
+                                        >
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    <?php endif; ?>
+
+                                    <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) : ?>
+                                        <button class="btn btn-primary position-absolute top-0 start-0"
+                                                id="update_save_game_line_<?= $gameSave->id ?>"
+                                                data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"
+                                                data-umami-event="Edit Game Save"
+                                        >
+                                            <i class="fa-solid fa-pencil"></i>
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="card-body">
+                                    <h5 class="card-title"><?= $gameSave->title ?></h5>
+                                    <p class="card-text">Owner: <?= $gameSave->Owner ?></p>
+                                </div>
+
+                                <div class="card-footer d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">Created At: <?= $gameSave->created_at ?></small>
+                                    <div>
+                                        <a href="game_saves?unhide=<?= $gameSave->game_saves_id ?>"
+                                           class="btn btn-outline-secondary btn-sm"
+                                           data-bs-toggle="tooltip" data-bs-placement="top" title="Unhide"
+                                           data-umami-event="Unhide Game Save"
+                                        >
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        <a href="game_save/<?= $gameSave->game_saves_id ?>"
+                                           class="btn btn-outline-primary btn-sm"
+                                           data-umami-event="Open Game Save"
+                                           data-umami-event-game_save="<?= $gameSave->game_saves_id ?>"
+                                        >
+                                            Open
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) include '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
-                <?php endforeach; ?>
+                        <?php if (in_array(Permission::SAVEGAME_METADATA->value, $gameSave->permissions)) include '../private/views/Popups/saveGame/updateSaveGame.php'; ?>
+                    <?php endforeach; ?>
+                </div>
             </div>
-        </div>
-        <?php endif;?>
+        <?php endif; ?>
 
     <?php endif; ?>
 </div>

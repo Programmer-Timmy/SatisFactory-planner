@@ -12,7 +12,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="helpModalLabel">Save Game Guide</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        data-umami-event="Save Game Help Closed"
+                        data-umami-event-popup="save-game-help"></button>
             </div>
             <div class="modal-body">
                 <div id="welcome">
@@ -28,13 +30,28 @@
                 <div class="card-body">
                     <h3 class="text-primary">Sections Overview</h3>
                     <div class="list-group mb-3">
-                        <a href="#productionLines" class="list-group-item list-group-item-action">Production Lines</a>
-                        <a href="#powerOverview" class="list-group-item list-group-item-action">Power Overview
+                        <a href="#productionLines" class="list-group-item list-group-item-action"
+                           data-umami-event="Save Game Help Section Opened"
+                           data-umami-event-popup="save-game-help"
+                           data-umami-event-section="production-lines">Production Lines</a>
+                        <a href="#powerOverview" class="list-group-item list-group-item-action"
+                           data-umami-event="Save Game Help Section Opened"
+                           data-umami-event-popup="save-game-help"
+                           data-umami-event-section="power-overview">Power Overview
                             Section</a>
-                        <a href="#manegingPowerGenerators" class="list-group-item list-group-item-action">Maneging Power
+                        <a href="#manegingPowerGenerators" class="list-group-item list-group-item-action"
+                           data-umami-event="Save Game Help Section Opened"
+                           data-umami-event-popup="save-game-help"
+                           data-umami-event-section="managing-power-generators">Maneging Power
                             Generators</a>
-                        <a href="#output" class="list-group-item list-group-item-action">Output</a>
-                        <a href="#buttonOverview" class="list-group-item list-group-item-action">Button Overview</a>
+                        <a href="#output" class="list-group-item list-group-item-action"
+                           data-umami-event="Save Game Help Section Opened"
+                           data-umami-event-popup="save-game-help"
+                           data-umami-event-section="output">Output</a>
+                        <a href="#buttonOverview" class="list-group-item list-group-item-action"
+                           data-umami-event="Save Game Help Section Opened"
+                           data-umami-event-popup="save-game-help"
+                           data-umami-event-section="button-overview">Button Overview</a>
                     </div>
                 </div>
                 <div class="card mb-3 border-0">
@@ -171,12 +188,17 @@
                     </div>
                 </div>
                 <p class="text-muted text-center">
-                    If you have any feedback or suggestions, please let me know. <a
-                            href="https://forms.gle/fAd5LrGRATYwFHzr7" target="_blank">Leave feedback</a>
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                     If you have any feedback or suggestions, please let me know. <a
+                             href="https://forms.gle/fAd5LrGRATYwFHzr7" target="_blank"
+                             data-umami-event="Save Game Help Feedback Clicked"
+                             data-umami-event-popup="save-game-help">Leave feedback</a>
+                 </p>
+             </div>
+             <div class="modal-footer">
+                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                         data-umami-event="Save Game Help Closed"
+                         data-umami-event-popup="save-game-help"
+                         data-umami-event-close-source="footer">Close</button>
 
             </div>
         </div>
@@ -187,6 +209,11 @@
     document.getElementById('showSaveGameHelp').addEventListener('click', function () {
         const helpModal = $('#helpModal');
         helpModal.find('#welcome').hide();
+        if (window.umami && typeof window.umami.track === 'function') {
+            window.umami.track('Save Game Help Opened', {
+                source: 'button'
+            });
+        }
         const popupModal = new bootstrap.Modal(helpModal);
         popupModal.show();
     });

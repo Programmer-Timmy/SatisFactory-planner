@@ -20,7 +20,8 @@ if ($_POST && isset($_POST['disconnect'])) {
 
     <div class="d-flex justify-content-center mt-4">
         <form method="post">
-            <button type="submit" value="disconnect" name="disconnect" class="btn btn-danger me-3 px-4">Disconnect
+            <button type="submit" value="disconnect" name="disconnect" class="btn btn-danger me-3 px-4"
+                    data-umami-event="Disconnect Google Account">Disconnect
             </button>
         </form>
         <a href="/account" class="btn btn-primary me-3 px-4">Cancel</a>

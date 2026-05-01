@@ -69,8 +69,8 @@ if (isset($_GET['verify']) && strtok($_SERVER['REQUEST_URI'], '?') == '/login') 
                                    autocomplete="current-password">
                         </div>
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary">Login</button>
-                            <a href="/register" class="btn btn-secondary">Register</a>
+                            <button type="submit" class="btn btn-primary" data-umami-event="Login">Login</button>
+                            <a href="/register" class="btn btn-secondary" data-umami-event="Register">Register</a>
                         </div>
                     </form>
                     <div class="mt-3">
@@ -80,7 +80,7 @@ if (isset($_GET['verify']) && strtok($_SERVER['REQUEST_URI'], '?') == '/login') 
                             <hr style="flex: 1; border: none; border-top: 1px solid #ccc;">
                         </div>
                         <div class="d-flex justify-content-center">
-                            <a href="/login/google-oauth" class=""><img
+                            <a href="/login/google-oauth" class="" data-umami-event="Google Login"><img
                                         src="image/google_logo.png"
                                         alt="Google" style="width: 40px; height: 40px;"></a>
                         </div>

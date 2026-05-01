@@ -36,7 +36,9 @@ if ($_POST && isset($_POST['productionLineName'])) {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="popupModalLabel">Add production line</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        data-umami-event="Add Production Line Modal Closed"
+                        data-umami-event-popup="add-production-line"></button>
             </div>
             <form method="post">
                 <div class="modal-body">
@@ -51,7 +53,10 @@ if ($_POST && isset($_POST['productionLineName'])) {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Add Production Line</button>
+                    <button type="submit" class="btn btn-primary"
+                            data-umami-event="Add Production Line"
+                            data-umami-event-popup="add-production-line"
+                            data-umami-event-save-id="<?= $_GET['id'] ?>">Add Production Line</button>
                 </div>
             </form>
         </div>
@@ -62,6 +67,11 @@ if ($_POST && isset($_POST['productionLineName'])) {
     document.getElementById('add_product_line').addEventListener('click', function (event) {
         event.stopPropagation();
         const popoverProduction = $('#popover-production');
+        if (window.umami && typeof window.umami.track === 'function') {
+            window.umami.track('Add Production Line Modal Opened', {
+                save_id: <?= json_encode((string)$_GET['id']) ?>
+            });
+        }
 
         $(document).ready(function () {
             popoverProduction.popover('hide');
@@ -69,6 +79,18 @@ if ($_POST && isset($_POST['productionLineName'])) {
         });
         const addProductionLine = new bootstrap.Modal(document.getElementById('addProductionLine'));
         addProductionLine.show();
+    });
+
+    document.querySelector('#addProductionLine form')?.addEventListener('submit', function () {
+        if (!(window.umami && typeof window.umami.track === 'function')) {
+            return;
+        }
+
+        const name = document.getElementById('productionLineName')?.value ?? '';
+        window.umami.track('Add Production Line Attempt', {
+            save_id: <?= json_encode((string)$_GET['id']) ?>,
+            name_length: name.trim().length
+        });
     });
 
     <?php if ($error): ?>

@@ -80,7 +80,7 @@ $errorLogs = ErrorHandeler::getUserErrorLogs($user->id);
                                 <?= isset($_POST['updates']) || $user->updates ? 'checked' : '' ?>>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Update Account</button>
+                        <button type="submit" class="btn btn-primary" data-umami-event="Update Account Info">Update Account</button>
                         <a href="/account" class="btn btn-secondary">Cancel</a>
                     </div>
                 </div>
@@ -103,10 +103,10 @@ $errorLogs = ErrorHandeler::getUserErrorLogs($user->id);
                         <?php if ($user->google_id) : ?>
                             <p class="mb-2 text-success small">Connected
                                 - <?= htmlspecialchars($user->google_email) ?></p>
-                            <a href="/login/google-oauth/disconnect"
+                            <a href="/login/google-oauth/disconnect" data-umami-event="Disconnect Google"
                                class="btn btn-outline-danger btn-sm">Disconnect</a>
                         <?php else : ?>
-                            <a href="/login/google-oauth" class="btn btn-outline-primary btn-sm">Connect Google</a>
+                            <a href="/login/google-oauth" class="btn btn-outline-primary btn-sm" data-umami-event="Connect Google">Connect Google</a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -133,7 +133,7 @@ $errorLogs = ErrorHandeler::getUserErrorLogs($user->id);
                             <input type="password" class="form-control" id="password2" name="password2" required
                                    autocomplete="off">
                         </div>
-                        <button type="submit" class="btn btn-primary">Change Password</button>
+                        <button type="submit" class="btn btn-primary" data-umami-event="Change Password">Change Password</button>
                     </div>
                 </div>
             </div>
@@ -215,10 +215,10 @@ $errorLogs = ErrorHandeler::getUserErrorLogs($user->id);
                     </ul>
 
                     <div class="mt-3 d-flex gap-2">
-                        <a href="/privacy" class="btn btn-outline-primary">
+                        <a href="/privacy" class="btn btn-outline-primary" data-umami-event="Privacy Policy">
                             <i class="fa-solid fa-file-shield me-1"></i> Privacy Policy
                         </a>
-                        <a href="account/delete-data" class="btn btn-outline-danger">
+                        <a href="account/delete-data" class="btn btn-outline-danger" data-umami-event="Open Delete Data Modal">
                             <i class="fa-solid fa-trash me-1"></i> Delete Personal Data
                         </a>
                     </div>
@@ -232,7 +232,7 @@ $errorLogs = ErrorHandeler::getUserErrorLogs($user->id);
     <!-- Delete Account button -->
     <div class="row">
         <div class="col-12">
-            <a href="/account?delete" class="btn btn-danger mt-3"
+            <a href="/account?delete" class="btn btn-danger mt-3" data-umami-event="Delete Account"
                onclick="return confirm('Are you sure you want to delete your account?')">Delete Account</a>
         </div>
     </div>

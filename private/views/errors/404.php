@@ -92,3 +92,7 @@ TIP: No amount of productivity points will recover this page. Maybe try turning 
         }
     </style>
 </div>
+
+<script>
+    umami.track('404 Page Not Found');
+</script>

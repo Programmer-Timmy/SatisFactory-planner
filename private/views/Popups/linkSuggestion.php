@@ -37,13 +37,15 @@ if ($_POST && isset($_POST['link_name'])) {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="suggestionModalLabel">Suggest a New Link</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        data-umami-event="Link Suggestion Closed"
+                        data-umami-event-popup="link-suggestion"></button>
             </div>
             <div class="modal-body">
                 <?php if ($error) : ?>
                     <div class="alert alert-danger"><?= $error ?></div>
                 <?php endif; ?>
-                <form method="POST">
+                <form method="POST" id="linkSuggestionForm">
                     <div class="mb-3">
                         <label for="linkName" class="form-label">Link Name</label>
                         <input type="text" class="form-control" id="linkName" name="link_name" required maxlength="100"
@@ -61,7 +63,10 @@ if ($_POST && isset($_POST['link_name'])) {
                         <textarea class="form-control" required id="linkDescription" name="link_description" rows="3"
                                   placeholder="A brief description of the link"><?= isset($linkDescription) ? htmlspecialchars($linkDescription) : '' ?></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit Suggestion</button>
+                    <button type="submit" class="btn btn-primary"
+                            data-umami-event="Submit Link Suggestion"
+                            data-umami-event-popup="link-suggestion"
+                            data-umami-event-action="submit">Submit Suggestion</button>
                 </form>
             </div>
         </div>
@@ -73,6 +78,33 @@ if ($_POST && isset($_POST['link_name'])) {
         $(document).ready(function () {
             const modal = new bootstrap.Modal(document.getElementById('suggestionModal'));
             modal.show();
+            if (window.umami && typeof window.umami.track === 'function') {
+                window.umami.track('Link Suggestion Validation Error', {
+                    has_error: true
+                });
+            }
         });
     </script>
 <?php endif; ?>
+
+<script>
+    document.getElementById('linkSuggestionForm')?.addEventListener('submit', function () {
+        if (!(window.umami && typeof window.umami.track === 'function')) {
+            return;
+        }
+
+        const linkUrl = document.getElementById('linkUrl')?.value ?? '';
+        let host = '';
+        try {
+            host = new URL(linkUrl).hostname;
+        } catch (e) {
+            host = 'invalid';
+        }
+
+        window.umami.track('Link Suggestion Submit Attempt', {
+            link_host: host,
+            name_length: (document.getElementById('linkName')?.value ?? '').trim().length,
+            description_length: (document.getElementById('linkDescription')?.value ?? '').trim().length
+        });
+    });
+</script>

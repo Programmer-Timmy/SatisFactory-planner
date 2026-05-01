@@ -14,6 +14,13 @@
     ]
   },
   {
+    "version": "1.15.4",
+    "date": "April 10 2026",
+    "changes": [
+      "Improved: Performance of the production line visualisation."
+    ]
+  },
+  {
   "version": "1.15.3",
   "date": "April 10 2026",
   "changes": [

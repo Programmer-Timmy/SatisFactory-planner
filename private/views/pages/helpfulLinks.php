@@ -60,7 +60,7 @@ if (isset($_POST['action']) && isset($_POST['link_id'])) {
                     <div class="card shadow-sm h-100 w-100">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title fw-bold m-0 text-center">
-                                <a href="<?= $link->url ?>" target="_blank" class="text-decoration-none">
+                                <a href="<?= $link->url ?>" target="_blank" class="text-decoration-none" data-umami-event="Helpful Link Clicked" data-umami-event-link="<?= $link->url ?>" data-umami-event-name="<?= $link->name ?>">
                                     <?= $link->name ?>
                                     <i class="fas fa-external-link-alt ms-2"></i>
                                 </a>
@@ -83,7 +83,7 @@ if (isset($_POST['action']) && isset($_POST['link_id'])) {
         <div class="col d-flex justify-content-center align-items-center">
             <!-- Suggestion Button -->
             <div <?= !empty($unapprovedHelpfulLinks) ? 'class="me-3"' : '' ?>>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#suggestionModal">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#suggestionModal" data-umami-event="Open Link Suggestion Modal">
                     Suggest a New Link
                 </button>
             </div>

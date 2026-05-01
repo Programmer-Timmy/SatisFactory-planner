@@ -49,6 +49,9 @@ TIP: Conveyor belts and jump pads won't help you here. Suggest returning to your
         // Start typing the text
         typeText();
     </script>
+    <script>
+        umami.track('403 Access Attempted'); // Track the 403 access attempt event with Umami
+    </script>
 
     <style>
         /* Set the background color and image */

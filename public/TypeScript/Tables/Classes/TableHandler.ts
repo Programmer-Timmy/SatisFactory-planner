@@ -586,6 +586,28 @@ export class TableHandler {
             } else if (columnIndex >= 0) {
                 this.updateRowData(row, columnIndex, value);
             }
+            // Track Umami events for data changes
+            if (tableId === 'recipes') {
+                const gameSaveId = $('#gameSaveId').val();
+                const productionLineId = $('#productionLineId').val();
+                const umami = (window as any).umami;
+                
+                if (target.hasClass('production-quantity')) {
+                    if (umami) {
+                        umami.track('Change Recipe Quantity', {
+                            game_save: gameSaveId,
+                            production_line: productionLineId
+                        });
+                    }
+                } else if (target.hasClass('recipe-select') || target.hasClass('search-input')) {
+                    if (umami) {
+                        umami.track('Change Recipe', {
+                            game_save: gameSaveId,
+                            production_line: productionLineId
+                        });
+                    }
+                }
+            }
 
             switch (tableId) {
                 case 'imports':
@@ -1268,4 +1290,5 @@ export class TableHandler {
         }
     }
 }
+
 

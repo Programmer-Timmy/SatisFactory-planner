@@ -74,7 +74,9 @@ $verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
                         <p class="card-text"><?= $success ?></p>
 
                         <?php if ($resend): ?>
-                            <a href="/login/verify?resend=<?= htmlspecialchars($resend) ?>" class="btn btn-primary">Resend
+                            <a href="/login/verify?resend=<?= htmlspecialchars($resend) ?>" class="btn btn-primary"
+                               data-umami-event="Resend Verification Email"
+                            >Resend
                                 Verification Email</a>
                         <?php endif; ?>
 
@@ -88,7 +90,8 @@ $verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
                     <div class="card-body">
                         <h5 class="card-title">Email Verified!</h5>
                         <p class="card-text">Your email has been successfully verified.</p>
-                        <a href="/login" class="btn btn-success">Proceed to Login</a>
+                        <a href="/login" class="btn btn-success" data-umami-event="Go to Login After Verification"
+                        >Proceed to Login</a>
                     </div>
                 </div>
             <?php endif; ?>
@@ -100,7 +103,8 @@ $verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
                         <h5 class="card-title text-danger">Invalid Token</h5>
                         <p class="card-text">The verification link is invalid. Please check your email for the correct
                             link or resend it.</p>
-                        <a href="?resent=<?= htmlspecialchars($userName) ?>" class="btn btn-danger">Resend Verification
+                        <a href="?resent=<?= htmlspecialchars($userName) ?>" class="btn btn-danger"
+                            data-umami-event="Resend Verification Email After Invalid Token">Resend Verification
                             Email</a>
                     </div>
                 </div>
@@ -111,7 +115,7 @@ $verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
                     <div class="card-body">
                         <h5 class="card-title">Your Email is Already Verified</h5>
                         <p class="card-text">You can now Log in using the button below.</p>
-                        <a href="/login" class="btn btn-success">Go to Login</a>
+                        <a href="/login" class="btn btn-success" data-umami-event="Go to Login After Already Verified">Go to Login</a>
                     </div>
                 </div>
             <?php endif; ?>
@@ -124,7 +128,7 @@ $verificationStatus = Users::CheckVerificationStatus($userName, $email, $token);
                         <form method="post"
                               action="/login/verify?usr=<?= htmlspecialchars($userName) ?>&eml=<?= htmlspecialchars($email) ?>&tkn=<?= htmlspecialchars($token) ?>">
                             <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
-                            <button type="submit" class="btn btn-info">Verify Email</button>
+                            <button type="submit" class="btn btn-info" data-umami-event="Verify Email">Verify Email</button>
                         </form>
                     </div>
                 </div>
