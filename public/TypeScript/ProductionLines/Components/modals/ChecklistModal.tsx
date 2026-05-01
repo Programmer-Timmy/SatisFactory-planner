@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import Tooltip from "../Tooltip";
 
 interface Props {
@@ -10,6 +10,9 @@ interface Props {
 }
 
 const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRows, onSave}) => {
+    const offcanvasRef = useRef<HTMLDivElement | null>(null);
+    const [rendered, setRendered] = useState<boolean>(isOpen);
+    const hideTimeoutRef = useRef<number | null>(null);
     const [checks, setChecks] = useState<{production_id:number, been_build:boolean, been_tested:boolean}[]>([]);
     const [filter, setFilter] = useState('');
     const [saving, setSaving] = useState(false);
@@ -50,6 +53,46 @@ const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRo
 
         setChecks(built);
     }, [isOpen, appData, productionRows]);
+
+    // Manage mount state and animate the offcanvas from the right
+    useEffect(() => {
+        const el = offcanvasRef.current;
+        if (isOpen) {
+            if (hideTimeoutRef.current) {
+                window.clearTimeout(hideTimeoutRef.current);
+                hideTimeoutRef.current = null;
+            }
+            if (!rendered) setRendered(true);
+            if (!el) return;
+
+            el.classList.remove('offcanvas-mounted', 'offcanvas-closing');
+            el.classList.add('offcanvas-opening');
+            const raf = requestAnimationFrame(() => {
+                el.classList.remove('offcanvas-opening');
+                el.classList.add('offcanvas-mounted');
+            });
+            return () => cancelAnimationFrame(raf);
+        }
+
+        if (!isOpen && rendered) {
+            if (el) {
+                el.classList.remove('offcanvas-mounted', 'offcanvas-opening');
+                el.classList.add('offcanvas-closing');
+            }
+            // match transition (360ms)
+            hideTimeoutRef.current = window.setTimeout(() => {
+                setRendered(false);
+                hideTimeoutRef.current = null;
+            }, 380);
+        }
+
+        return () => {
+            if (hideTimeoutRef.current) {
+                window.clearTimeout(hideTimeoutRef.current);
+                hideTimeoutRef.current = null;
+            }
+        };
+    }, [isOpen, rendered]);
 
     const updateCheck = React.useCallback((production_id:number, field: 'been_build'|'been_tested', value:boolean) => {
         setChecks(prev => {
@@ -151,7 +194,7 @@ const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRo
         return recipeName.includes(search);
     });
 
-    if (!isOpen) return null;
+    if (!rendered) return null;
 
     return (
         <>
@@ -160,10 +203,19 @@ const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRo
                 .offcanvas .toggle .btn { padding: 0.25rem 0.4rem; }
                 .offcanvas .card-title { font-size: 1rem; }
                 .pl-help-icon { cursor: pointer; color: rgba(0,0,0,0.45); }
+
+                /* Custom offcanvas animation */
+                .custom-offcanvas { transform: translateX(12px); opacity: 0; transition: transform 360ms ease, opacity 360ms ease; }
+                .custom-offcanvas.offcanvas-opening { transform: translateX(12px); opacity: 0; }
+                .custom-offcanvas.offcanvas-mounted { transform: translateX(0); opacity: 1; }
+                .custom-offcanvas.offcanvas-closing { transform: translateX(12px); opacity: 0; }
+
+                .offcanvas-backdrop.fade { opacity: 0; transition: opacity 360ms ease; }
+                .offcanvas-backdrop.fade.show { opacity: 0.45; }
             `}</style>
 
             <div className="offcanvas-backdrop fade show" onClick={onClose} />
-            <div className="offcanvas offcanvas-end show" data-bs-scroll="true" data-bs-backdrop="false" tabIndex={-1} id="Checklist" aria-labelledby="offcanvasChecklist" aria-modal="true" role="dialog">
+            <div ref={offcanvasRef} className="offcanvas offcanvas-end show custom-offcanvas" data-bs-scroll="true" data-bs-backdrop="false" tabIndex={-1} id="Checklist" aria-labelledby="offcanvasChecklist" aria-modal="true" role="dialog">
                 <div className="offcanvas-header pb-1">
                     <h5 className="offcanvas-title" id="offcanvasChecklist">Checklist</h5>
                     <button type="button" className="btn-close" aria-label="Close" onClick={onClose}></button>
