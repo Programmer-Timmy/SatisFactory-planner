@@ -110,8 +110,13 @@ class ProductionLines {
             $database->delete("output", ['production_lines_id' => $id]);
             foreach ($production as $prod) {
                 $recipes = Recipes::getRecipeById($prod->recipe_id);
-                $existingProduction = $database->get("production", ['id', 'production_settings_id'], [], ['id' => $prod->id]);
-                $production_settings_id = self::insertUpdateProductionSettings($existingProduction->production_settings_id ?? null, $prod->produciton_settings, $database);
+                // Support forced-insert flag from import: if _force_insert is truthy, skip existing lookup
+                $forceInsertThis = isset($prod->_force_insert) && $prod->_force_insert;
+                $existingProduction = null;
+                if (!$forceInsertThis) {
+                    $existingProduction = $database->get("production", ['id', 'production_settings_id'], [], ['id' => $prod->id]);
+                }
+                $production_settings_id = self::insertUpdateProductionSettings($existingProduction ? ($existingProduction->production_settings_id ?? null) : null, $prod->produciton_settings, $database);
                 if ($existingProduction) {
                     // if prod id is uuid
                     if (!is_numeric($prod->id) && $existingProduction->id !== $prod->id) {
@@ -218,8 +223,6 @@ class ProductionLines {
 
         self::changeActiveStats($productLineId, $active);
         Database::update("production_lines", ['title', 'updated_at'], [$productionLineName, date('Y-m-d H:i:s')], ['id' => $productLineId]);
-
-        $_SESSION['success'] = 'Production line updated successfully';
     }
 
     public static function changeActiveStats(int $productLineId, int $active) {

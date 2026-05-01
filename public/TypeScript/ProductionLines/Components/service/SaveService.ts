@@ -3,6 +3,9 @@ import { computeConsumption } from './PowerService';
 interface AppDataLike {
     checklist?: any[] | null;
     productLine?: any;
+    production?: any[];
+    powers?: any[];
+    imports?: any[];
 }
 
 function localSaveData(data: Record<string, any>, id: number): Promise<Record<string, any>> {
@@ -67,6 +70,7 @@ export async function saveProductionLineData(
     productionRows: any[],
     powerRows: any[],
     importsList: any[],
+    importForceIds?: Array<string|number>
 ): Promise<Record<string, any>> {
     // Map importsList -> legacy importsTableRows (itemId, quantity)
     const importsTableRows = (importsList || []).map((r: any) => ({
@@ -141,12 +145,20 @@ export async function saveProductionLineData(
         beenTested: !!(c.been_tested ?? c.beenTested ?? false),
     }));
 
-    const payload = {
+    const payload: Record<string, any> = {
         importsTableRows,
         productionTableRows,
         powerTableRows,
-        checklist
+        checklist,
+        productLine: {
+            title: (appData as any)?.productLine?.title || null,
+            active: (appData as any)?.productLine?.active !== undefined ? Number((appData as any).productLine.active) : null
+        }
     };
+
+    if (importForceIds && importForceIds.length) {
+        payload.import_force_ids = importForceIds.map(String);
+    }
 
     // Determine production line id. Prefer appData.productLine.id, then DOM hidden #productionLineId, then URL param
     const url = new URL(window.location.href);

@@ -10,6 +10,7 @@ import {calculateAutoPowerRows, computeConsumption, totalConsumption} from "./se
 import VisualizationPanel from "./modals/VisualizationPanel";
 import HelpModal from "./modals/HelpModal";
 import ChecklistModal from "./modals/ChecklistModal";
+import ProductionLineSettingsModal from "./modals/ProductionLineSettingsModal";
 import Alert from "./Alert";
 
 
@@ -161,6 +162,7 @@ const ProductionLineApp: React.FC = () => {
     const [visualizationOpen, setVisualizationOpen] = useState(false);
     const [helpOpen, setHelpOpen] = useState(false);
     const [checklistOpen, setChecklistOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     const [productionRows, setProductionRows] = useState<ProductionItem[]>([]);
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
@@ -304,12 +306,12 @@ const ProductionLineApp: React.FC = () => {
                 const mappings = resp.data?.newAndOldIds || resp.data?.newAndOldIds || resp.newAndOldIds || [];
 
                 if (mappings && mappings.length > 0) {
-                    const mapOldToNew = new Map<number, number>();
-                    mappings.forEach((m: any) => mapOldToNew.set(Number(m.old), Number(m.new)));
-                    setProductionRows(prev => prev.map(r => ({...r, id: mapOldToNew.get(Number(r.id)) ?? r.id})));
+                    const mapOldToNew = new Map<string, number>();
+                    mappings.forEach((m: any) => mapOldToNew.set(String(m.old), Number(m.new)));
+                    setProductionRows(prev => prev.map(r => ({...r, id: mapOldToNew.get(String(r.id)) ?? r.id})));
                     setAppData(prev => prev ? {
                         ...prev,
-                        production: (productionRows || []).map(r => ({...r, id: mapOldToNew.get(Number(r.id)) ?? r.id}))
+                        production: (productionRows || []).map(r => ({...r, id: mapOldToNew.get(String(r.id)) ?? r.id}))
                     } : prev);
                 } else {
                     setAppData(prev => prev ? {...prev, production: productionRows} : prev);
@@ -402,8 +404,7 @@ const ProductionLineApp: React.FC = () => {
             <PageTitle
                 GameSaveId={appData.productLine.game_saves_id}
                 ProductionLineTitle={appData.productLine.title || "Unnamed Production Line"}
-                onEdit={() => {
-                }}
+                onEdit={() => { setSettingsOpen(true); }}
                 onSave={handleSave}
                 onChecklist={() => { setChecklistOpen(true); }}
                 onHelp={() => setHelpOpen(true)}
@@ -431,6 +432,71 @@ const ProductionLineApp: React.FC = () => {
                 productionRows={productionRows}
                 onSave={(checklist) => {
                     setAppData(prev => prev ? {...prev, checklist: checklist} : prev);
+                }}
+            />
+
+            <ProductionLineSettingsModal
+                isOpen={settingsOpen}
+                onClose={() => setSettingsOpen(false)}
+                appData={appData}
+                productionRows={productionRows}
+                powerRows={powerRows}
+                importsList={importsList}
+                onSave={(pl) => {
+                    setAppData(prev => prev ? {...prev, productLine: {...prev.productLine, ...pl}} : prev);
+                }}
+                onImport={async (data) => {
+                    // prepare new local data but DO NOT change the productLine name
+                    const newProduction = (data.production && data.production.length) ? data.production.map((p: any, idx: number) => ({...p, id: (p.row_id ?? p.id ?? p.rowId ?? p.recipeId ?? `import-${Date.now()}-${idx}`), clock_speed: Math.max(0, Math.min(250, Number(p.clock_speed ?? 100)))})) : productionRows;
+                    const newPowers = (data.powers && data.powers.length) ? data.powers.map((p: any) => ({...p, clock_speed: Math.max(0, Math.min(250, Number(p.clock_speed ?? 100)))})) : powerRows;
+                    const newImports = (data.imports && data.imports.length) ? data.imports.map((i: any) => ({...i})) : importsList;
+                    const newChecklist = (data.checklist && data.checklist.length) ? data.checklist : appData.checklist || [];
+
+                    // apply locally first
+                    setProductionRows(newProduction);
+                    setPowerRows(newPowers);
+                    setImportsList(newImports);
+                    setAppData(prev => prev ? {...prev, powers: newPowers, production: newProduction, imports: newImports, checklist: newChecklist} : prev);
+
+                    // Now save the production line using SaveService (same behaviour as Save button)
+                    try {
+                        const saveService = await import('./service/SaveService');
+                        const resp = await saveService.saveProductionLineData({...appData, production: newProduction, powers: newPowers, imports: newImports, checklist: newChecklist}, newProduction, newPowers, newImports, (newProduction || []).map((r:any) => r.id));
+                        if (resp && resp.success) {
+                            const mappings = resp.data?.newAndOldIds || resp.data?.newAndOldIds || resp.newAndOldIds || [];
+
+                            if (mappings && mappings.length > 0) {
+                                const mapOldToNew = new Map<number, number>();
+                                mappings.forEach((m: any) => mapOldToNew.set(Number(m.old), Number(m.new)));
+                                // update productionRows ids
+                                setProductionRows(prev => prev.map(r => ({...r, id: mapOldToNew.get(Number(r.id)) ?? r.id})));
+                                setAppData(prev => prev ? {
+                                    ...prev,
+                                    production: (newProduction || []).map(r => ({...r, id: mapOldToNew.get(Number(r.id)) ?? r.id}))
+                                } : prev);
+                            } else {
+                                setAppData(prev => prev ? {...prev, production: newProduction} : prev);
+                            }
+
+                            setAppData(prev => prev ? {
+                                ...prev,
+                                imports: newImports,
+                                powers: newPowers,
+                                checklist: newChecklist
+                            } : prev);
+
+                            saveService.showSaveMessage(true, 'Production line imported and saved successfully.');
+                        } else {
+                            const err = resp?.error || 'Failed to save imported production line';
+                            saveService.showSaveMessage(false, err);
+                        }
+                    } catch (e) {
+                        console.error('Import+Save failed', e);
+                        try {
+                            const saveService = await import('./service/SaveService');
+                            saveService.showSaveMessage(false, String(e));
+                        } catch {}
+                    }
                 }}
             />
             <div className="row">
