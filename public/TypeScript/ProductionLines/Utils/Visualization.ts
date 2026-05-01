@@ -1,12 +1,11 @@
-import {TableHandler} from "../../Tables/Classes/TableHandler";
-import {ImportNodes} from "../../Tables/Classes/Data/Visualization/ImportNodes";
-import {ProductionNodes} from "../../Tables/Classes/Data/Visualization/ProductionNodes";
-import {ExportNodes} from "../../Tables/Classes/Data/Visualization/ExportNodes";
-import {Connection} from "../../Tables/Classes/Data/Visualization/Connection";
+import {ImportNodes} from "./visualization-data/ImportNodes";
+import {ProductionNodes} from "./visualization-data/ProductionNodes";
+import {ExportNodes} from "./visualization-data/ExportNodes";
+import {Connection} from "./visualization-data/Connection";
 import type {Core, EdgeSingular, LayoutOptions, NodeSingular} from "cytoscape";
-import {IChecklist} from "../../Tables/Classes/Checklist";
-import {PowerTableFunctions} from "../../Tables/Classes/Functions/PowerTableFunctions";
-import {HtmlGeneration} from "../../Tables/Classes/Functions/HtmlGeneration";
+import {IChecklist} from "./visualization-data/IChecklist";
+import {calculateBuildingAmount} from "./PowerUtils";
+import {getItemIconSrcForId} from "./HtmlIcons";
 import getBuildingIcon from "./getBuildingIcon";
 
 let cytoscape: typeof import("cytoscape")
@@ -33,7 +32,7 @@ const EDGE_TEXT_SIZE = 13;
  */
 export class Visualization {
 
-    public TableHandler: TableHandler;
+    public TableHandler: any;
     public importNodes: ImportNodes[] = [];
     public productionNodes: ProductionNodes[] = [];
     public exportNodes: ExportNodes[] = [];
@@ -63,7 +62,7 @@ export class Visualization {
      * @param {TableHandler} tableHandler - The table handler object
      * @param options Optional settings (e.g., onProgress)
      */
-    constructor(tableHandler: TableHandler, options?: { onProgress?: (pct: number) => void }) {
+    constructor(tableHandler: any, options?: { onProgress?: (pct: number) => void }) {
         this.TableHandler = tableHandler;
         this.onProgress = options?.onProgress;
 
@@ -433,7 +432,7 @@ export class Visualization {
 
         // Resolve icon from the product name or id stored on the connection
         const icon = connection.itemId
-            ? HtmlGeneration.getItemIconSrcForId(connection.itemId)
+            ? getItemIconSrcForId(connection.itemId)
             : null;
 
         return {
@@ -538,15 +537,15 @@ export class Visualization {
 
             const recipe = row.recipe;
             const building = recipe?.building;
-            const checklist = this.TableHandler.checklist?.getChecklist().find(check => check.productionRow.row_id == row.row_id);
+            const checklist = this.TableHandler.checklist?.getChecklist().find((check: any) => check.productionRow.row_id == row.row_id);
 
             if (!recipe) {
                 continue;
             }
 
-            const buildingAmount = PowerTableFunctions.calculateBuildingAmount(recipe, row);
-            const outputIcon = HtmlGeneration.getItemIconSrcForId(recipe.item_id);
-            const byproductIcon = recipe.item_id2 ? HtmlGeneration.getItemIconSrcForId(recipe.item_id2) : null;
+            const buildingAmount = calculateBuildingAmount(recipe, row);
+            const outputIcon = getItemIconSrcForId(recipe.item_id);
+            const byproductIcon = recipe.item_id2 ? getItemIconSrcForId(recipe.item_id2) : null;
             const buildingIcon = recipe?.building?.class_name ? this.getBuildingIconSrc(recipe.building.class_name) : null;
 
             const node = new ProductionNodes(
@@ -595,7 +594,7 @@ export class Visualization {
             const row = this.TableHandler.importsTableRows[i];
             if (row.product !== '' && row.quantity > 0) {
                 const node = new ImportNodes(i, row.product, row.quantity);
-                const icon = HtmlGeneration.getItemIconSrcForId(row.itemId);
+                const icon = getItemIconSrcForId(row.itemId);
                 (node as any).icon = icon;
                 (node as any).titleHtml = this.buildSimpleTitleHtml('Import', icon, row.product, row.quantity);
                 this.importNodes.push(node);
@@ -615,7 +614,7 @@ export class Visualization {
 
             if (row.exportPerMin > 0) {
                 const productName = recipe?.itemName || row.product;
-                const icon = recipe ? HtmlGeneration.getItemIconSrcForId(recipe.item_id) : null;
+                const icon = recipe ? getItemIconSrcForId(recipe.item_id) : null;
                 const node = new ExportNodes(index, productName, row.exportPerMin);
                 (node as any).icon = icon;
                 (node as any).titleHtml = this.buildSimpleTitleHtml('Export', icon, productName, row.exportPerMin);
@@ -629,7 +628,7 @@ export class Visualization {
             if (row.extraCells?.ExportPerMin > 0) {
                 // @ts-ignore
                 const byName = row.extraCells?.Product || recipe?.secondItemName || row.product;
-                const byIcon = recipe?.item_id2 ? HtmlGeneration.getItemIconSrcForId(recipe.item_id2) : null;
+                const byIcon = recipe?.item_id2 ? getItemIconSrcForId(recipe.item_id2) : null;
                 const qty = Number(row.extraCells?.ExportPerMin || 0);
                 const node = new ExportNodes(index, byName, qty);
                 (node as any).icon = byIcon;
@@ -934,7 +933,7 @@ export class Visualization {
         const resources = Array.isArray(recipe?.resources) ? recipe.resources : [];
         const resourcesHtml = resources.length
             ? resources.map((r: any) => {
-                const icon = HtmlGeneration.getItemIconSrcForId(r.itemId);
+                const icon = getItemIconSrcForId(r.itemId);
                 return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">
                     ${this.iconImg(icon, r.name)}
                     <span>${this.escapeHtml(r.name)}</span>
@@ -947,7 +946,7 @@ export class Visualization {
         const externalHtml = externalImports.length
             ? externalImports.map((imp: any) => {
                 const importRow = this.TableHandler.importsTableRows?.[imp.index];
-                const icon = HtmlGeneration.getItemIconSrcForId(importRow?.itemId);
+                const icon = getItemIconSrcForId(importRow?.itemId);
                 const name = importRow?.product || imp.product;
                 return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">
                     ${this.iconImg(icon, name)}
@@ -962,8 +961,8 @@ export class Visualization {
             ? prodImports.map((imp: any) => {
                 const sourceRow = this.TableHandler.productionTableRows?.[imp.index];
                 const icon = imp.doubleExport
-                    ? (sourceRow?.recipe?.item_id2 ? HtmlGeneration.getItemIconSrcForId(sourceRow.recipe.item_id2) : null)
-                    : (sourceRow?.recipe?.item_id ? HtmlGeneration.getItemIconSrcForId(sourceRow.recipe.item_id) : null);
+                    ? (sourceRow?.recipe?.item_id2 ? getItemIconSrcForId(sourceRow.recipe.item_id2) : null)
+                    : (sourceRow?.recipe?.item_id ? getItemIconSrcForId(sourceRow.recipe.item_id) : null);
                 const name = imp.product;
                 const from = sourceRow?.recipe?.itemName || sourceRow?.product || sourceRow?.recipe?.name;
                 return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">

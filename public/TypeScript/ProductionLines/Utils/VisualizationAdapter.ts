@@ -1,5 +1,5 @@
-import { Visualization } from "../../Tables/Classes/Visualization";
-import { Import as ProductionImport } from "../../Tables/Classes/Data/Import";
+import { Import as ProductionImport } from "./visualization-data/Import";
+import {Visualization} from "./Visualization";
 
 export function createVisualizationFromData(appData: any, productionRows: any[], importsList: any[], recipeMap: Record<number, any>, options?: { onProgress?: (pct: number) => void }) {
     const rows = productionRows || [];

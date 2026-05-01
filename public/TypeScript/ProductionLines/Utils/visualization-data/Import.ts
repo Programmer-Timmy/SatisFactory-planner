@@ -9,6 +9,5 @@ export class Import {
         this.amount = amount;
         this.product = product;
         this.doubleExport = doubleExport;
-
     }
 }
