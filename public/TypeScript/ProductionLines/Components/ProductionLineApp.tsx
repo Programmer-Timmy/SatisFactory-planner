@@ -230,10 +230,30 @@ const ProductionLineApp: React.FC = () => {
         if (!appData) return;
         const newImports = calculateImports(appData, productionRows, recipeMap);
         setImportsList(newImports);
+
+        // Umami tracking for import recalculation
+        try {
+            const umami = (window as any).umami;
+            if (umami) {
+                umami.track('Calculate Imports', {
+                    game_save: appData.productLine.game_saves_id,
+                    production_line: appData.productLine.id
+                });
+            }
+        } catch (e) { /* ignore */ }
     }, [appData, productionRows, recipeMap]);
 
     const handleQuantityChange = (rowId: number, value: number) => {
         setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, product_quantity: value} : r));
+        try {
+            const umami = (window as any).umami;
+            if (umami) {
+                umami.track('Change Recipe Quantity', {
+                    game_save: appData?.productLine.game_saves_id,
+                    production_line: appData?.productLine.id
+                });
+            }
+        } catch (e) { /* ignore */ }
     };
 
     const handleRecipeChange = (rowId: number, recipeId: number) => {
@@ -242,6 +262,15 @@ const ProductionLineApp: React.FC = () => {
             recipe_id: recipeId,
             recipe_name: (appData?.recipes.find(x => x.id === recipeId)?.name) || ''
         } : r));
+        try {
+            const umami = (window as any).umami;
+            if (umami) {
+                umami.track('Change Recipe', {
+                    game_save: appData?.productLine.game_saves_id,
+                    production_line: appData?.productLine.id
+                });
+            }
+        } catch (e) { /* ignore */ }
     };
 
     const handleClockSpeedChange = (rowId: number, value: number | '') => {
@@ -276,6 +305,17 @@ const ProductionLineApp: React.FC = () => {
             const manual = (prev || []).filter(r => !!r.user);
             return [...autoRows, ...manual];
         });
+
+        // Umami tracking for power recalculation
+        try {
+            const umami = (window as any).umami;
+            if (umami) {
+                umami.track('Calculate Power', {
+                    game_save: appData.productLine.game_saves_id,
+                    production_line: appData.productLine.id
+                });
+            }
+        } catch (e) { /* ignore */ }
     }, [productionRows, recipeMap, appData]);
 
     const totalConsumptionValue = useMemo(() => {
@@ -299,6 +339,12 @@ const ProductionLineApp: React.FC = () => {
     };
 
     const handleSave = async () => {
+        // Umami tracking: save action
+        try {
+            const umami = (window as any).umami;
+            if (umami) umami.track('Save Production Line', { game_save: appData?.productLine.game_saves_id, production_line: appData?.productLine.id });
+        } catch (e) { /* ignore */ }
+
         const saveService = await import('./service/SaveService');
         try {
             const resp = await saveService.saveProductionLineData(appData, productionRows, powerRows, importsList);
@@ -335,6 +381,7 @@ const ProductionLineApp: React.FC = () => {
     }
 
     const addPowerRow = () => {
+        try { const umami = (window as any).umami; if (umami) umami.track('Add Power Row', { game_save: appData?.productLine.game_saves_id, production_line: appData?.productLine.id }); } catch(e){}
         setPowerRows(prev => [...prev, {
             idpower: Date.now(),
             building_ammount: 0,
@@ -348,6 +395,7 @@ const ProductionLineApp: React.FC = () => {
     };
 
     const savePowerRows = () => {
+        try { const umami = (window as any).umami; if (umami) umami.track('Save Power', { game_save: appData?.productLine.game_saves_id, production_line: appData?.productLine.id }); } catch(e){}
         setAppData(prev => prev ? {...prev, powers: powerRows} : prev);
         setPowerOpen(false);
     };
@@ -404,12 +452,12 @@ const ProductionLineApp: React.FC = () => {
             <PageTitle
                 GameSaveId={appData.productLine.game_saves_id}
                 ProductionLineTitle={appData.productLine.title || "Unnamed Production Line"}
-                onEdit={() => { setSettingsOpen(true); }}
+                onEdit={() => { try { const umami = (window as any).umami; if (umami) umami.track('Open Settings', { game_save: appData.productLine.game_saves_id, production_line: appData.productLine.id }); } catch(e){}; setSettingsOpen(true); }}
                 onSave={handleSave}
-                onChecklist={() => { setChecklistOpen(true); }}
-                onHelp={() => setHelpOpen(true)}
-                onPower={() => setPowerOpen(true)}
-                onVisualization={() => setVisualizationOpen(true)}
+                onChecklist={() => { try { const umami = (window as any).umami; if (umami) umami.track('Open Checklist', { game_save: appData.productLine.game_saves_id, production_line: appData.productLine.id }); } catch(e){}; setChecklistOpen(true); }}
+                onHelp={() => { try { const umami = (window as any).umami; if (umami) umami.track('Open Help', { game_save: appData.productLine.game_saves_id, production_line: appData.productLine.id }); } catch(e){}; setHelpOpen(true) }}
+                onPower={() => { try { const umami = (window as any).umami; if (umami) umami.track('Open Power', { game_save: appData.productLine.game_saves_id, production_line: appData.productLine.id }); } catch(e){}; setPowerOpen(true) }}
+                onVisualization={() => { try { const umami = (window as any).umami; if (umami) umami.track('Open Visualization', { game_save: appData.productLine.game_saves_id, production_line: appData.productLine.id }); } catch(e){}; setVisualizationOpen(true) }}
             />
             <VisualizationPanel
                 isOpen={visualizationOpen}
@@ -539,6 +587,7 @@ const ProductionLineApp: React.FC = () => {
                                                recipe={recipeMap[productionItem.recipe_id] || undefined}
                                                recipes={appData.recipes}
                                                onDelete={(id) => {
+                                                   try { const umami = (window as any).umami; if (umami) umami.track('Delete Recipe', { game_save: appData.productLine.game_saves_id, production_line: appData.productLine.id, production_id: id }); } catch(e){}
                                                    setProductionRows(prev => prev.filter(r => r.id !== id));
                                                }}
                                                onRecipeChange={(rowId, recipeId) => {
@@ -583,6 +632,7 @@ const ProductionLineApp: React.FC = () => {
                                 export_ammount_per_min2: null
                             };
                             setProductionRows(prev => [...prev, newRow]);
+                            try { const umami = (window as any).umami; if (umami) umami.track('Add Recipe', { game_save: appData?.productLine.game_saves_id, production_line: appData?.productLine.id }); } catch(e){}
                         }}/>
                     </div>
                 </div>
