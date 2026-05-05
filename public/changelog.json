@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.16.1",
+    "date": "May 5, 2026",
+    "changes": [
+      "Fixed: Local usage fields not being populated during production calculations.",
+      "Fixed: Infinite loop causing excessive analytics tracking events."
+    ]
+  },
+  {
     "version": "1.16.0",
     "date": "May 1, 2026",
     "changes": [
