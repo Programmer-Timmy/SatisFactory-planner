@@ -372,7 +372,6 @@ foreach ($production as $product) {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding-right: 34px; /* reserve space for the corner button */
     }
 
     .pl-import-collapsed-main {

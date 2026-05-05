@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.16.2",
+    "date": "May 5, 2026",
+    "changes": [
+      "Added: Plus button on import items to quickly add production recipes that can produce them.",
+      "Added: Auto-selection of recipe if only one option available, or modal to choose if multiple recipes produce the same item.",
+      "Added: Import quantity is automatically set as the initial production amount when adding from imports."
+    ]
+  },
+  {
     "version": "1.16.1",
     "date": "May 5, 2026",
     "changes": [

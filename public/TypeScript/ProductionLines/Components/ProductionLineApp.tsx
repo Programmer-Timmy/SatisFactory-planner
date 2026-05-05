@@ -275,6 +275,34 @@ const ProductionLineApp: React.FC = () => {
         } catch (e) { /* ignore */ }
     };
 
+    const handleAddRecipeFromImport = (recipeId: number, importAmount: number) => {
+        const recipe = appData?.recipes.find(r => r.id === recipeId);
+        if (!recipe) return;
+
+        const newRow: ProductionItem = {
+            id: Date.now(),
+            item_name_1: recipe.products?.[0]?.name || '',
+            item_class_name_1: recipe.products?.[0]?.class_name || recipe.class_name || '',
+            item_name_2: recipe.products?.[1]?.name || null,
+            item_class_name_2: recipe.products?.[1]?.class_name || null,
+            local_usage: 0,
+            recipe_id: recipeId,
+            recipe_name: recipe.name || '',
+            export_amount_per_min: recipe.export_amount_per_min || 0,
+            building_name: recipe.building?.[0]?.name || '',
+            building_class_name: recipe.building?.[0]?.class_name || '',
+            power_used: recipe.building?.[0]?.power_used || 0,
+            product_quantity: importAmount,
+            clock_speed: 100,
+            use_somersloop: false,
+            local_usage2: null,
+            export_ammount_per_min2: recipe.export_amount_per_min2 || null,
+            collapsed: false
+        };
+        setProductionRows(prev => [...prev, newRow]);
+        try { const umami = (window as any).umami; if (umami) umami.track('Add Recipe From Import', { game_save: appData?.productLine.game_saves_id, production_line: appData?.productLine.id }); } catch(e){}
+    };
+
     const handleRecipeChange = (rowId: number, recipeId: number) => {
         setProductionRows(prev => prev.map(r => r.id === rowId ? {
             ...r,
@@ -573,11 +601,22 @@ const ProductionLineApp: React.FC = () => {
                     <p className="text-muted small mb-2">Auto-calculated imports update as you edit recipes (toggle Auto
                         Import-Export in Edit).</p>
                     <div className="pl-list">
-                        {importsList.map((importItem) => (
-                            <ImportsCard key={`${importItem.items_id}-${importItem.name}`} itemName={importItem.name}
-                                         itemClass={importItem.item_class_name}
-                                         amount={importItem.ammount}/>
-                        ))}
+                        {importsList.map((importItem) => {
+                            const producingRecipes = appData?.recipes.filter(r => 
+                                r.products?.some(p => p.name?.toLowerCase() === importItem.name.toLowerCase())
+                            ) || [];
+                            return (
+                                <ImportsCard 
+                                    key={`${importItem.items_id}-${importItem.name}`} 
+                                    itemName={importItem.name}
+                                    itemClass={importItem.item_class_name}
+                                    amount={importItem.ammount}
+                                    itemId={importItem.items_id}
+                                    producingRecipes={producingRecipes}
+                                    onAddRecipe={(recipeId) => handleAddRecipeFromImport(recipeId, importItem.ammount)}
+                                />
+                            );
+                        })}
                     </div>
                 </div>
                 <div className="col-md-9">
