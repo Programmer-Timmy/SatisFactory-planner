@@ -228,8 +228,27 @@ const ProductionLineApp: React.FC = () => {
 
     const recalculateImports = useCallback(() => {
         if (!appData) return;
-        const newImports = calculateImports(appData, productionRows, recipeMap);
+        const result = calculateImports(appData, productionRows, recipeMap) as any;
+        const newImports = result.imports || result;
+        const usageArr = result.usageArr || [];
+        const extraUsageArr = result.extraUsageArr || [];
         setImportsList(newImports);
+
+        // Update local_usage fields in production rows only if values actually changed
+        setProductionRows(prev => {
+            const needsUpdate = prev.some((row, idx) => 
+                row.local_usage !== (usageArr[idx] ?? 0) || 
+                row.local_usage2 !== (extraUsageArr[idx] ?? null)
+            );
+            
+            if (!needsUpdate) return prev; // Prevent infinite loop
+            
+            return prev.map((row, idx) => ({
+                ...row,
+                local_usage: usageArr[idx] ?? 0,
+                local_usage2: extraUsageArr[idx] ?? null
+            }));
+        });
 
         // Umami tracking for import recalculation
         try {
