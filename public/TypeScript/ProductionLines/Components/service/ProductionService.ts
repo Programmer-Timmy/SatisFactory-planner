@@ -1,10 +1,12 @@
 // Service to calculate imports from production rows (moved from ProductionLineApp)
 export function calculateImports(appData: any, productionRows: any[], recipeMap: Record<number, any>) {
-    if (!appData) return [];
     const rows = productionRows || [];
     const n = rows.length;
     const usageArr = new Array(n).fill(0);
     const extraUsageArr = new Array(n).fill(0);
+    
+    if (!appData) return { imports: [], usageArr, extraUsageArr };
+    
     const importsMap: Record<string, { itemId: number; className: string; name: string; amount: number }> = {};
 
     // precompute producer metadata
@@ -76,5 +78,5 @@ export function calculateImports(appData: any, productionRows: any[], recipeMap:
         item_class_name: it.className
     }));
 
-    return newImports;
+    return { imports: newImports, usageArr, extraUsageArr };
 }
