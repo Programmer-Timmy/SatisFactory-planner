@@ -253,26 +253,31 @@ function renderNativeClassOptions(array $classes): void {
             return new TextDecoder('utf-8', {fatal: true}).decode(bytes.slice(3));
         }
 
-        if (looksLikeUtf16(bytes)) {
-            throw createUploadError(
-                'The selected Docs file appears to use UTF-16 encoding. Satisfactory Docs.json is expected to be UTF-8 without BOM. Export or convert the file to UTF-8 and try again.',
-                null,
-                {details: 'Unexpected file encoding.'}
-            );
+        if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) {
+            return new TextDecoder('utf-16le').decode(bytes.slice(2));
+        }
+
+        if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) {
+            return new TextDecoder('utf-16be').decode(bytes.slice(2));
+        }
+
+        const utf16Encoding = detectUtf16Encoding(bytes);
+        if (utf16Encoding !== null) {
+            return new TextDecoder(utf16Encoding).decode(bytes);
         }
 
         try {
             return new TextDecoder('utf-8', {fatal: true}).decode(bytes);
         } catch (error) {
             throw createUploadError(
-                'The selected Docs file is not valid UTF-8 text. Satisfactory Docs.json is expected to be UTF-8 without BOM.',
+                'The selected Docs file is not valid UTF-8 or UTF-16 text.',
                 null,
-                {details: error.message || 'UTF-8 decoding failed.'}
+                {details: error.message || 'Text decoding failed.'}
             );
         }
     }
 
-    function looksLikeUtf16(bytes) {
+    function detectUtf16Encoding(bytes) {
         let evenNulls = 0;
         let oddNulls = 0;
         const sampleLength = Math.min(bytes.length, 200);
@@ -290,14 +295,14 @@ function renderNativeClassOptions(array $classes): void {
         }
 
         if (oddNulls > 5 && oddNulls > evenNulls * 2) {
-            return true;
+            return 'utf-16le';
         }
 
         if (evenNulls > 5 && evenNulls > oddNulls * 2) {
-            return true;
+            return 'utf-16be';
         }
 
-        return false;
+        return null;
     }
 
     function extractJsonParsePosition(message, text) {

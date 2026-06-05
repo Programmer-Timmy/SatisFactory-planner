@@ -309,21 +309,25 @@ function cleanupChunkUpload(string $chunkDir): void {
 
 function normalizeJsonEncoding(string $jsonData): string {
     if (str_starts_with($jsonData, "\xEF\xBB\xBF")) {
-        $jsonData = substr($jsonData, 3);
+        return substr($jsonData, 3);
     }
 
-    if (looksLikeUtf16($jsonData)) {
-        throw new InvalidJsonDataException(
-            'Unexpected file encoding. Satisfactory Docs.json is expected to be UTF-8 without BOM, but this upload looks like UTF-16.',
-            null,
-            null,
-            ''
-        );
+    if (str_starts_with($jsonData, "\xFF\xFE")) {
+        return convertJsonEncoding(substr($jsonData, 2), 'UTF-16LE');
+    }
+
+    if (str_starts_with($jsonData, "\xFE\xFF")) {
+        return convertJsonEncoding(substr($jsonData, 2), 'UTF-16BE');
+    }
+
+    $utf16Encoding = detectUtf16Encoding($jsonData);
+    if ($utf16Encoding !== null) {
+        return convertJsonEncoding($jsonData, $utf16Encoding);
     }
 
     if (!mb_check_encoding($jsonData, 'UTF-8')) {
         throw new InvalidJsonDataException(
-            'Unexpected file encoding. Satisfactory Docs.json must be valid UTF-8 text.',
+            'Unexpected file encoding. The Docs file must be valid UTF-8 or UTF-16 text.',
             null,
             null,
             ''
@@ -333,12 +337,27 @@ function normalizeJsonEncoding(string $jsonData): string {
     return $jsonData;
 }
 
-function looksLikeUtf16(string $data): bool {
+function convertJsonEncoding(string $jsonData, string $fromEncoding): string {
+    $converted = mb_convert_encoding($jsonData, 'UTF-8', $fromEncoding);
+
+    if ($converted === false || $converted === '') {
+        throw new InvalidJsonDataException(
+            'Failed to convert the Docs file from ' . $fromEncoding . ' to UTF-8.',
+            null,
+            null,
+            ''
+        );
+    }
+
+    return $converted;
+}
+
+function detectUtf16Encoding(string $data): ?string {
     $sample = substr($data, 0, 200);
     $length = strlen($sample);
 
     if ($length < 4) {
-        return false;
+        return null;
     }
 
     $evenNulls = 0;
@@ -357,14 +376,14 @@ function looksLikeUtf16(string $data): bool {
     }
 
     if ($oddNulls > 5 && $oddNulls > $evenNulls * 2) {
-        return true;
+        return 'UTF-16LE';
     }
 
     if ($evenNulls > 5 && $evenNulls > $oddNulls * 2) {
-        return true;
+        return 'UTF-16BE';
     }
 
-    return false;
+    return null;
 }
 
 function decodeJsonPayload(string $jsonData): array {
