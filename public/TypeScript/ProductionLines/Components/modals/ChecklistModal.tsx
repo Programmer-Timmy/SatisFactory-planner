@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react';
 import Tooltip from "../Tooltip";
+import {formatNumber} from "../../Utils/format";
 
 interface Props {
     isOpen: boolean;
@@ -93,6 +94,21 @@ const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRo
             }
         };
     }, [isOpen, rendered]);
+
+    const getRowRecipe = (row: any) => {
+        return row?.recipe ?? appData?.recipes?.find((recipe: any) => Number(recipe.id) === Number(row?.recipe_id));
+    };
+
+    const buildingAmount = ((row: any) => {
+        const numericProductQuantity = Number(row?.product_quantity ?? row?.quantity ?? row?.quantityPerMin ?? 0);
+        const rawClock = (row?.clock_speed === '' || row?.clock_speed === undefined || row?.clock_speed === null) ? 100 : Number(row.clock_speed);
+        const clockValue = Math.min(250, Math.max(0, rawClock));
+        const recipe = getRowRecipe(row);
+        const exportAmountPerMin = Number(recipe?.export_amount_per_min ?? row?.export_amount_per_min ?? 0);
+        if (!exportAmountPerMin) return 0;
+        const useSomersloop = !!row.use_somersloop;
+        return numericProductQuantity / (exportAmountPerMin * (clockValue / 100)) / (useSomersloop ? 2 : 1);
+    });
 
     const updateCheck = React.useCallback((production_id:number, field: 'been_build'|'been_tested', value:boolean) => {
         setChecks(prev => {
@@ -231,14 +247,15 @@ const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRo
                     {visibleChecks.length === 0 && <div className="text-muted p-3">No checklist items</div>}
                     {visibleChecks.map((c) => {
                         const row = productionRows.find(r => (Number(r.id ?? r.row_id ?? 0)) === c.production_id);
-                        const recipeName = row?.recipe_name || row?.recipe?.name || 'Unknown';
+                        const recipe = getRowRecipe(row);
+                        const recipeName = row?.recipe_name || recipe?.name || 'Unknown';
                         const qty = row?.product_quantity ?? row?.quantity ?? row?.quantityPerMin ?? 0;
-                        const building = (row?.building_name || row?.recipe?.building?.name) || '';
+                        const building = (row?.building_name || recipe?.building?.[0]?.name) || '';
                         const getIcon = (cls?: string) => {
                             if (!cls) return '';
                             return `/image/items/${cls.toLowerCase().replaceAll('_', '-')}_256.png`;
                         };
-                        const iconSrc = getIcon(row?.recipe?.products?.[0]?.class_name || row?.item_class_name_1 || row?.item_class_name || '');
+                        const iconSrc = getIcon(recipe?.products?.[0]?.class_name || row?.item_class_name_1 || row?.item_class_name || '');
                         return (
                             <div key={c.production_id} className="card mb-2" id={`check-${c.production_id}`}>
                                 <div className="card-body p-3">
@@ -246,7 +263,7 @@ const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRo
                                         {iconSrc && <img src={iconSrc} alt="" className="pl-item-icon me-2" style={{width:32,height:32}} loading="lazy" />}
                                         <h5 className="card-title recipeName mb-0">{recipeName}</h5>
                                     </div>
-                                    <p className="card-text mt-2"><span className="productionAmount">{qty}</span> per min - <span className="buildingAmount">{Math.round((qty/ (row?.recipe?.buildings?.[0]?.power_used || 1))*100)/100}</span> <span className="buildingName">{building}</span></p>
+                                    <p className="card-text mt-2"><span className="productionAmount">{formatNumber(qty)}</span> per min - <span className="buildingAmount">{formatNumber(buildingAmount(row))}</span> <span className="buildingName">{building}</span></p>
                                     <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                                         <div style={{display:'flex', alignItems:'center', gap: '0.5rem'}}>
                                             <input
