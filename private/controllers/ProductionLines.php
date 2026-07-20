@@ -53,6 +53,56 @@ class ProductionLines {
         );
     }
 
+
+    public static function getImportSourceCandidates(int $gameSaveId, int $productionLineId): array {
+        return Database::query(
+            "SELECT
+                pl.id as production_line_id,
+                pl.title as production_line_title,
+                o.items_id,
+                items.name as item_name,
+                items.class_name as item_class_name,
+                SUM(o.ammount) as output_amount,
+                COALESCE(used_sources.assigned_amount, 0) as assigned_amount,
+                GREATEST(SUM(o.ammount) - COALESCE(used_sources.assigned_amount, 0), 0) as available_amount
+            FROM output o
+            JOIN production_lines pl ON pl.id = o.production_lines_id
+            JOIN items ON items.id = o.items_id
+            LEFT JOIN (
+                SELECT exporting_production_lines_id, items_id, SUM(assigned_amount) as assigned_amount
+                FROM production_line_import_sources
+                WHERE importing_production_lines_id <> ?
+                GROUP BY exporting_production_lines_id, items_id
+            ) used_sources ON used_sources.exporting_production_lines_id = pl.id AND used_sources.items_id = o.items_id
+            WHERE pl.game_saves_id = ?
+              AND pl.active = 1
+              AND pl.id <> ?
+              AND o.ammount > 0
+            GROUP BY pl.id, pl.title, o.items_id, items.name, items.class_name, used_sources.assigned_amount
+            ORDER BY items.name ASC, pl.title ASC",
+            [$productionLineId, $gameSaveId, $productionLineId]
+        ) ?: [];
+    }
+
+    public static function getImportSourceSelectionsByProductionLine(int $productionLineId): array {
+        return Database::query(
+            "SELECT
+                sources.exporting_production_lines_id,
+                sources.items_id,
+                sources.requested_amount,
+                sources.assigned_amount,
+                pl.title as production_line_title,
+                items.name as item_name,
+                items.class_name as item_class_name
+            FROM production_line_import_sources sources
+            JOIN production_lines pl ON pl.id = sources.exporting_production_lines_id
+            JOIN items ON items.id = sources.items_id
+            WHERE sources.importing_production_lines_id = ?
+            ORDER BY items.name ASC, pl.title ASC",
+            [$productionLineId]
+        ) ?: [];
+    }
+
     public static function getProductionByProductionLine(int $productionLineId) {
         return Database::getAll(
             "production",
@@ -91,17 +141,36 @@ class ProductionLines {
         return Database::getAll("power", ['power.*, buildings.name as building', 'buildings.power_used'], ["buildings" => "buildings.id = power.buildings_id"], ["production_lines_id" => $productionLineId]);
     }
 
-    public static function saveProductionLine(array $imports, array $production, array $power, string $totalConsumption, int $id) {
+    public static function saveProductionLine(array $imports, array $production, array $power, string $totalConsumption, int $id, array $importSources = []) {
         $database = new NewDatabase();
         $database->beginTransaction();
         try {
+            $productLine = $database->get("production_lines", ['game_saves_id'], [], ['id' => $id]);
+            if (!$productLine) {
+                throw new Exception("Production line not found");
+            }
+
             $database->delete("input", ['production_lines_id' => $id]);
             $database->delete("power", ['production_lines_id' => $id]);
             $database->delete("output", ['production_lines_id' => $id]);
+            $database->delete("production_line_import_sources", ['importing_production_lines_id' => $id]);
 
             $database->update("production_lines", ['power_consumbtion', 'updated_at'], [$totalConsumption, date('Y-m-d H:i:s')], ['id' => $id]);
+
+            $savedImportSources = self::saveImportSources($importSources, $id, (int)$productLine->game_saves_id, $database);
+            $assignedImportsByItem = [];
+            foreach ($savedImportSources as $source) {
+                $itemId = (int)$source['items_id'];
+                $assignedImportsByItem[$itemId] = ($assignedImportsByItem[$itemId] ?? 0) + (float)$source['assigned_amount'];
+            }
+
             foreach ($imports as $import) {
-                $database->insert("input", ['production_lines_id', 'items_id', 'ammount'], [$id, $import->id, $import->ammount]);
+                $itemId = (int)$import->id;
+                $unresolvedAmount = max(0, (float)$import->ammount - ($assignedImportsByItem[$itemId] ?? 0));
+                if ($unresolvedAmount <= 0) {
+                    continue;
+                }
+                $database->insert("input", ['production_lines_id', 'items_id', 'ammount'], [$id, $itemId, $unresolvedAmount]);
             }
 
             $updatedAndNewProduction = [];
@@ -180,7 +249,10 @@ class ProductionLines {
             }
             $database->commit();
 
-            return $newAndOldIds;
+            return [
+                'newAndOldIds' => $newAndOldIds,
+                'importSources' => $savedImportSources
+            ];
         } catch (Exception $e) {
             $database->rollBack();
             error_log('Failed to save production line ID: ' . $id . ' - ' . $e->getMessage());
@@ -193,6 +265,8 @@ class ProductionLines {
         Database::delete("production", ['production_lines_id' => $id]);
         Database::delete("power", ['production_lines_id' => $id]);
         Database::delete("output", ['production_lines_id' => $id]);
+        Database::delete("production_line_import_sources", ['importing_production_lines_id' => $id]);
+        Database::delete("production_line_import_sources", ['exporting_production_lines_id' => $id]);
         Database::delete("production_lines", ['id' => $id]);
         return true;
     }
@@ -205,6 +279,8 @@ class ProductionLines {
             $database->delete("production", ['production_lines_id' => $prodId->id]);
             $database->delete("power", ['production_lines_id' => $prodId->id]);
             $database->delete("output", ['production_lines_id' => $prodId->id]);
+            $database->delete("production_line_import_sources", ['importing_production_lines_id' => $prodId->id]);
+            $database->delete("production_line_import_sources", ['exporting_production_lines_id' => $prodId->id]);
             $database->delete("production_lines", ['id' => $prodId->id]);
         }
     }
@@ -242,6 +318,98 @@ class ProductionLines {
         }
 
         return $id;
+    }
+
+    private static function saveImportSources(array $importSources, int $importingProductionLineId, int $gameSaveId, NewDatabase $database): array {
+        $grouped = [];
+        foreach ($importSources as $source) {
+            $exportingProductionLineId = (int)($source->exporting_production_lines_id ?? $source->exportingProductionLineId ?? 0);
+            $itemId = (int)($source->items_id ?? $source->itemId ?? 0);
+            $requestedAmount = (float)($source->requested_amount ?? $source->requestedAmount ?? 0);
+
+            if ($exportingProductionLineId <= 0 || $itemId <= 0 || $requestedAmount <= 0) {
+                continue;
+            }
+
+            $key = $exportingProductionLineId . '-' . $itemId;
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'exportingProductionLineId' => $exportingProductionLineId,
+                    'itemId' => $itemId,
+                    'requestedAmount' => 0
+                ];
+            }
+            $grouped[$key]['requestedAmount'] += $requestedAmount;
+        }
+
+        $saved = [];
+        foreach ($grouped as $source) {
+            $sourceLine = $database->get(
+                "production_lines",
+                ['id', 'title'],
+                [],
+                [
+                    'id' => $source['exportingProductionLineId'],
+                    'game_saves_id' => $gameSaveId,
+                    'active' => 1
+                ]
+            );
+
+            if (!$sourceLine || (int)$sourceLine->id === $importingProductionLineId) {
+                continue;
+            }
+
+            $outputRows = $database->query(
+                "SELECT COALESCE(SUM(ammount), 0) as output_amount
+                FROM output
+                WHERE production_lines_id = ? AND items_id = ? AND ammount > 0",
+                [$source['exportingProductionLineId'], $source['itemId']]
+            );
+            $outputAmount = (float)($outputRows[0]->output_amount ?? 0);
+            if ($outputAmount <= 0) {
+                continue;
+            }
+
+            $usedRows = $database->query(
+                "SELECT COALESCE(SUM(assigned_amount), 0) as assigned_amount
+                FROM production_line_import_sources
+                WHERE exporting_production_lines_id = ?
+                  AND items_id = ?
+                  AND importing_production_lines_id <> ?",
+                [$source['exportingProductionLineId'], $source['itemId'], $importingProductionLineId]
+            );
+            $alreadyAssigned = (float)($usedRows[0]->assigned_amount ?? 0);
+            $availableAmount = max(0, $outputAmount - $alreadyAssigned);
+            $assignedAmount = min($source['requestedAmount'], $availableAmount);
+
+            $database->insert(
+                "production_line_import_sources",
+                [
+                    'importing_production_lines_id',
+                    'exporting_production_lines_id',
+                    'items_id',
+                    'requested_amount',
+                    'assigned_amount'
+                ],
+                [
+                    $importingProductionLineId,
+                    $source['exportingProductionLineId'],
+                    $source['itemId'],
+                    $source['requestedAmount'],
+                    $assignedAmount
+                ]
+            );
+
+            $saved[] = [
+                'exporting_production_lines_id' => $source['exportingProductionLineId'],
+                'items_id' => $source['itemId'],
+                'requested_amount' => $source['requestedAmount'],
+                'assigned_amount' => $assignedAmount,
+                'production_line_title' => $sourceLine->title
+            ];
+        }
+
+        return $saved;
     }
 
     public static function validateAccess(int $gameSaveId, int $productionLineId, int $userId): bool {

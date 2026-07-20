@@ -6,14 +6,17 @@ class Outputs
     {
         $productionLines = Database::getAll("production_lines", ['id', 'title'], [], ['game_saves_id' => $id, 'active' => 1]);
         $outputArray = [];
-        $importArray = [];
 
-        // Gather all outputs and imports per production line
         foreach ($productionLines as $productionLine) {
-            $outputs = Database::getAll("output", ['output.*', 'items.name as item'], ['items' => 'items.id = output.items_id where output.ammount > 0 and production_lines_id = ' . $productionLine->id], [], 'items.name ASC');
-            $imports = Database::getAll("input", ['input.*', 'items.name as item'], ['items' => 'items.id = input.items_id where input.ammount > 0 and production_lines_id = ' . $productionLine->id], [], 'items.name ASC');
+            $outputs = Database::query(
+                "SELECT output.*, items.name as item
+                FROM output
+                JOIN items ON items.id = output.items_id
+                WHERE output.ammount > 0 AND output.production_lines_id = ?
+                ORDER BY items.name ASC",
+                [$productionLine->id]
+            );
 
-            // Accumulate outputs per production line
             foreach ($outputs as $output) {
                 if (isset($outputArray[$productionLine->title][$output->items_id])) {
                     $outputArray[$productionLine->title][$output->items_id]->ammount += $output->ammount;
@@ -21,32 +24,42 @@ class Outputs
                     $outputArray[$productionLine->title][$output->items_id] = $output;
                 }
             }
-
-            // Accumulate imports globally
-            foreach ($imports as $import) {
-                if (isset($importArray[$import->items_id])) {
-                    $importArray[$import->items_id]->ammount += $import->ammount;
-                } else {
-                    $importArray[$import->items_id] = $import;
-                }
-            }
         }
 
-        // Subtract the global imports from the outputs of each production line
-        foreach ($outputArray as $lineTitle => &$outputs) {
-            foreach ($outputs as $outputItem) {
-                if (isset($importArray[$outputItem->items_id])) {
-                    $outputItem->ammount -= $importArray[$outputItem->items_id]->ammount;
-                }
+        $sourceUsageRows = Database::query(
+            "SELECT sources.exporting_production_lines_id, sources.items_id, SUM(sources.assigned_amount) as assigned_amount
+            FROM production_line_import_sources sources
+            JOIN production_lines exporting_lines ON exporting_lines.id = sources.exporting_production_lines_id
+            JOIN production_lines importing_lines ON importing_lines.id = sources.importing_production_lines_id
+            WHERE exporting_lines.game_saves_id = ?
+              AND importing_lines.game_saves_id = ?
+              AND exporting_lines.active = 1
+              AND importing_lines.active = 1
+            GROUP BY sources.exporting_production_lines_id, sources.items_id",
+            [$id, $id]
+        ) ?: [];
+
+        $sourceUsageByLine = [];
+        foreach ($sourceUsageRows as $usage) {
+            $sourceUsageByLine[(int)$usage->exporting_production_lines_id][(int)$usage->items_id] = (float)$usage->assigned_amount;
+        }
+
+        foreach ($productionLines as $productionLine) {
+            $lineTitle = $productionLine->title;
+            if (!isset($outputArray[$lineTitle])) {
+                continue;
             }
 
-            // Filter out items with zero or negative output
-            $outputs = array_filter($outputs, function ($outputItem) {
+            foreach ($outputArray[$lineTitle] as $itemId => $outputItem) {
+                $assignedAmount = $sourceUsageByLine[(int)$productionLine->id][(int)$itemId] ?? 0;
+                $outputItem->ammount -= $assignedAmount;
+            }
+
+            $outputArray[$lineTitle] = array_filter($outputArray[$lineTitle], function ($outputItem) {
                 return $outputItem->ammount > 0;
             });
 
-            // Sort outputs by item name for each line
-            usort($outputs, function ($a, $b) {
+            usort($outputArray[$lineTitle], function ($a, $b) {
                 return strcmp($a->item, $b->item);
             });
         }
@@ -54,4 +67,3 @@ class Outputs
         return $outputArray;
     }
 }
-

@@ -29,6 +29,8 @@ $firstProduction = Users::checkIfFirstProduction($_SESSION['userId']);
 
 // Fetch all data for React to use
 $imports = ProductionLines::getImportsByProductionLine($productLine->id);
+$importSourceCandidates = ProductionLines::getImportSourceCandidates($productLine->game_saves_id, $productLine->id);
+$importSourceSelections = ProductionLines::getImportSourceSelectionsByProductionLine($productLine->id);
 $production = ProductionLines::getProductionByProductionLine($productLine->id);
 $powers = ProductionLines::getPowerByProductionLine($productLine->id);
 $checklist = Checklist::getChecklist($productLine->id);
@@ -648,6 +650,8 @@ foreach ($production as $product) {
 <?= json_encode([
     'productLine' => $productLine,
     'imports' => $imports,
+    'importSourceCandidates' => $importSourceCandidates,
+    'importSourceSelections' => $importSourceSelections,
     'production' => $production,
     'powers' => $powers,
     'checklist' => $checklist,
