@@ -393,7 +393,7 @@ export class Visualization {
         const baseWidth = isProduction ? 290 : 200;
         const baseHeight = isProduction ? 185 : 110;
         const cardWidth = baseWidth;
-        const cardHeight = isProduction ? (baseHeight + (hasRecipeName ? 12 : 0) + (hasSomersloop ? 12 : 0)) : baseHeight;
+        const cardHeight = isProduction ? (baseHeight + (hasRecipeName ? 12 : 0) + (hasSomersloop ? 12 : 0)) : (type === 'import' && (node?.sourceSelections || []).length ? 145 : baseHeight);
 
         const data: any = {
             id: `${type}_${node.id}`,
@@ -416,6 +416,9 @@ export class Visualization {
             somersloop: typeof node?.somersloop === 'boolean' ? node.somersloop : null,
             byproductName: node?.byproductName || null,
             byproductExportPerMin: node?.byproductExportPerMin ?? null,
+            importSources: node?.sourceSelections || [],
+            sourcedQuantity: node?.sourcedQuantity ?? 0,
+            unresolvedQuantity: node?.unresolvedQuantity ?? null,
 
             cardWidth,
             cardHeight
@@ -596,7 +599,10 @@ export class Visualization {
                 const node = new ImportNodes(i, row.product, row.quantity);
                 const icon = getItemIconSrcForId(row.itemId);
                 (node as any).icon = icon;
-                (node as any).titleHtml = this.buildSimpleTitleHtml('Import', icon, row.product, row.quantity);
+                (node as any).sourceSelections = row.sourceSelections || [];
+                (node as any).sourcedQuantity = row.sourcedQuantity ?? 0;
+                (node as any).unresolvedQuantity = row.unresolvedQuantity ?? row.quantity;
+                (node as any).titleHtml = this.buildImportTitleHtml(icon, row.product, row.quantity, row.sourceSelections || [], row.sourcedQuantity ?? 0, row.unresolvedQuantity ?? row.quantity);
                 this.importNodes.push(node);
             }
         }
@@ -725,19 +731,70 @@ export class Visualization {
             </div>
         `;
     }
+    private buildImportSourcesHtml(sources: any[], unresolvedQuantity: number, compact: boolean): string {
+        const validSources = Array.isArray(sources) ? sources.filter((source: any) => Number(source.assignedAmount ?? 0) > 0 || Number(source.requestedAmount ?? 0) > 0) : [];
+        const rows = validSources.map((source: any) => {
+            const title = this.escapeHtml(String(source.productionLineTitle || 'Unknown line'));
+            const assigned = this.formatNumber(source.assignedAmount ?? 0);
+            const shortAmount = Math.max(0, Number(source.shortAmount ?? 0));
+            const shortHtml = shortAmount > 0 ? `<span style="color:#856404;margin-left:4px">short ${this.formatNumber(shortAmount)}/min</span>` : '';
+            return `<div style="display:flex;gap:6px;align-items:baseline;min-width:0;line-height:1.1;margin-top:2px">
+                <span style="color:#777;flex:0 0 auto">from</span>
+                <span style="font-weight:650;color:#333;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${title}</span>
+                <span style="margin-left:auto;color:#0d6efd;font-weight:750;white-space:nowrap">${assigned}/min</span>
+                ${compact ? '' : shortHtml}
+            </div>`;
+        });
+
+        if (unresolvedQuantity > 0) {
+            rows.push(`<div style="display:flex;gap:6px;align-items:baseline;line-height:1.1;margin-top:2px">
+                <span style="color:#777">from</span>
+                <span style="font-weight:650;color:#333">external import</span>
+                <span style="margin-left:auto;color:#6c757d;font-weight:750;white-space:nowrap">${this.formatNumber(unresolvedQuantity)}/min</span>
+            </div>`);
+        }
+
+        if (!rows.length) {
+            return compact ? '' : `<div style="color:#777">(no selected source)</div>`;
+        }
+
+        return rows.join('');
+    }
+
+    private buildImportTitleHtml(icon: string | null, name: string, quantity: number, sources: any[], sourcedQuantity: number, unresolvedQuantity: number): string {
+        const sourceHtml = this.buildImportSourcesHtml(sources, unresolvedQuantity, false);
+        return `
+            <div style="min-width:300px;max-width:460px;font-size:13px;line-height:1.25">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    ${this.iconImg(icon, name, 26)}
+                    <div>
+                        <div style="font-weight:600">Import: ${this.escapeHtml(name)}</div>
+                        <div style="color:#555">Required ${this.formatNumber(quantity)}/min</div>
+                        ${sourcedQuantity > 0 ? `<div style="color:#0d6efd">Sourced ${this.formatNumber(sourcedQuantity)}/min</div>` : ''}
+                    </div>
+                </div>
+                <hr style="margin:8px 0">
+                <div style="font-weight:600;margin-bottom:4px">Imported from</div>
+                ${sourceHtml}
+            </div>
+        `;
+    }
+
     private buildImportNodeHtml(data: any): string {
         const icon = data?.icon || null;
         const product = String(data?.product || '');
         const quantity = this.formatNumber(data?.quantity ?? 0);
         const unit = String(data?.unit || '/min');
+        const sources = Array.isArray(data?.importSources) ? data.importSources : [];
+        const sourcedQuantity = Number(data?.sourcedQuantity ?? 0);
+        const unresolvedQuantity = Math.max(0, Number(data?.unresolvedQuantity ?? 0));
+        const sourceHtml = this.buildImportSourcesHtml(sources, unresolvedQuantity, true);
         const cardW = 200;
-        const cardH = 110;
+        const cardH = Number(data?.cardHeight ?? 110);
 
         return `
         <div style="width:${cardW}px;height:${cardH}px;pointer-events:none;box-sizing:border-box;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch">
             <div style="width:${cardW}px;height:${cardH}px;box-sizing:border-box;overflow:hidden;background:#fff;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column">
-
-                <!-- Product section -->
                 <div style="display:flex;gap:8px;align-items:flex-start;min-width:0">
                     <div style="flex:0 0 auto;padding-top:2px">
                         ${icon ? `<img src="${icon}" alt="${this.escapeHtml(product)}" style="width:30px;height:30px;object-fit:contain" loading="lazy">` : ''}
@@ -745,21 +802,21 @@ export class Visualization {
                     <div style="flex:1;min-width:0">
                         <div style="font-size:12px;font-weight:750;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${this.escapeHtml(product)}</div>
                         <div style="display:grid;grid-template-columns:max-content 1fr;column-gap:8px;row-gap:2px;font-size:11px;color:#555;line-height:1.15;margin-top:3px;align-items:baseline">
-                            <div>Qty</div><div style="text-align:right"><b>${this.escapeHtml(quantity)}</b>${this.escapeHtml(unit)}</div>
+                            <div>Need</div><div style="text-align:right"><b>${this.escapeHtml(quantity)}</b>${this.escapeHtml(unit)}</div>
+                            ${sourcedQuantity > 0 ? `<div>From lines</div><div style="text-align:right"><b>${this.escapeHtml(this.formatNumber(sourcedQuantity))}</b>/min</div>` : ''}
                         </div>
                     </div>
                 </div>
 
-                <!-- Label pinned to bottom -->
+                ${sourceHtml ? `<div style="margin-top:5px;padding:5px 7px;border-radius:9px;background:rgba(13,110,253,0.07);font-size:10px;color:#555;overflow:hidden">${sourceHtml}</div>` : ''}
+
                 <div style="margin-top:auto;padding:5px 8px;border-radius:10px;background:rgba(0,0,0,0.035)">
                     <div style="font-size:10.5px;font-weight:700;color:#0d6efd;text-transform:uppercase;letter-spacing:0.04em">Import</div>
                 </div>
-
             </div>
         </div>
     `;
     }
-
     private buildExportNodeHtml(data: any): string {
         const icon = data?.icon || null;
         const product = String(data?.product || '');

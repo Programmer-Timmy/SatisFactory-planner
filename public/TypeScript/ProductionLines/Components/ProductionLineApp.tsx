@@ -555,6 +555,7 @@ const ProductionLineApp: React.FC = () => {
                 productionRows={productionRows}
                 importsList={importsList}
                 recipeMap={recipeMap}
+                importSourceSelections={importSourceSelections}
             />
 
             <HelpModal

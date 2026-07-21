@@ -397,6 +397,27 @@ foreach ($production as $product) {
         line-height: 1.1;
     }
 
+    .pl-import-source-badge {
+        color: var(--bs-body-color);
+        background: rgba(var(--bs-primary-rgb), 0.10);
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.28);
+    }
+
+    .pl-import-source-badge .pl-number {
+        color: var(--bs-primary);
+        font-weight: 600;
+    }
+
+    .pl-import-source-badge.is-warning {
+        color: var(--bs-body-color);
+        background: rgba(var(--bs-warning-rgb), 0.18);
+        border-color: rgba(var(--bs-warning-rgb), 0.45);
+    }
+
+    .pl-import-source-badge.is-warning .pl-number {
+        color: var(--bs-warning-text-emphasis, var(--bs-warning));
+    }
+
     .pl-header-main {
         display: grid;
         grid-template-columns: 1fr 160px;

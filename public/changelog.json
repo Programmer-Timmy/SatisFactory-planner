@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.17.1",
+    "date": "July 21, 2026",
+    "changes": [
+      "Improved: Import source badges now adapt correctly in dark mode.",
+      "Improved: Production line import sources are now shown in the production line visualization import nodes and tooltips."
+    ]
+  },
+  {
     "version": "1.17.0",
     "date": "July 21, 2026",
     "changes": [

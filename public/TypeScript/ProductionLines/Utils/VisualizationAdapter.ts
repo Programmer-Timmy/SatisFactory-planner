@@ -78,6 +78,23 @@ export function createVisualizationFromData(appData: any, productionRows: any[],
         };
     });
 
+    const importSourceSelections = (appData?.importSourceSelections || []).map((source: any) => ({
+        exportingProductionLineId: Number(source.exportingProductionLineId ?? source.exporting_production_lines_id ?? 0),
+        itemId: Number(source.itemId ?? source.items_id ?? 0),
+        requestedAmount: Number(source.requestedAmount ?? source.requested_amount ?? 0),
+        assignedAmount: Number(source.assignedAmount ?? source.assigned_amount ?? 0),
+        productionLineTitle: source.productionLineTitle ?? source.production_line_title ?? 'Unknown line',
+    })).filter((source: any) => source.itemId > 0 && source.requestedAmount > 0);
+
+    const importSourcesByItem = new Map<number, any[]>();
+    for (const source of importSourceSelections) {
+        const list = importSourcesByItem.get(source.itemId) || [];
+        list.push({
+            ...source,
+            shortAmount: Math.max(0, source.requestedAmount - source.assignedAmount),
+        });
+        importSourcesByItem.set(source.itemId, list);
+    }
     // Prepare imports mapping (external imports) and iterate/consume ingredients from producers
     const importsMap: Record<string, { itemId: number; className: string; name: string; amount: number }> = {};
     const importsOrder: string[] = []; // keys in insertion order
@@ -149,13 +166,20 @@ export function createVisualizationFromData(appData: any, productionRows: any[],
         }
     }
 
-    const importsTableRows = importsOrder.map((key, i) => ({
-        index: i,
-        product: importsMap[key].name,
-        quantity: importsMap[key].amount,
-        itemId: importsMap[key].itemId
-    }));
-
+    const importsTableRows = importsOrder.map((key, i) => {
+        const row = importsMap[key];
+        const sourceSelections = importSourcesByItem.get(row.itemId) || [];
+        const sourcedQuantity = sourceSelections.reduce((total: number, source: any) => total + Math.max(0, Number(source.assignedAmount || 0)), 0);
+        return {
+            index: i,
+            product: row.name,
+            quantity: row.amount,
+            itemId: row.itemId,
+            sourceSelections,
+            sourcedQuantity,
+            unresolvedQuantity: Math.max(0, row.amount - sourcedQuantity)
+        };
+    });
     // Build a checklist in the shape expected by Visualization/Checklist.ts
     const checklistFromServer: any[] = appData?.checklist || [];
     const checklistArray: any[] = [];
