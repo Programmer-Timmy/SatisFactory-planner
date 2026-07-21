@@ -1,5 +1,6 @@
 /.env
-
+/scss/.sass-cache
+/private/certs
 /.idea/
 /node_modules/
 /package-lock.json
