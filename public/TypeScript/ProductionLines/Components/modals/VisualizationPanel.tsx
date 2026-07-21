@@ -10,9 +10,10 @@ interface Props {
     productionRows: any[];
     importsList: any[];
     recipeMap: Record<number, any>;
+    importSourceSelections?: any[];
 }
 
-const VisualizationPanel: React.FC<Props> = ({isOpen, onClose, appData, productionRows, importsList, recipeMap}) => {
+const VisualizationPanel: React.FC<Props> = ({isOpen, onClose, appData, productionRows, importsList, recipeMap, importSourceSelections = []}) => {
     const vizRef = useRef<any | null>(null);
     const [loading, setLoading] = React.useState<boolean>(false);
     const [progress, setProgress] = React.useState<number>(0);
@@ -29,7 +30,7 @@ const VisualizationPanel: React.FC<Props> = ({isOpen, onClose, appData, producti
                 const mod = await import('../../Utils/VisualizationAdapter');
                 if (cancelled) return;
                 if (mod && typeof mod.createVisualizationFromData === 'function') {
-                    const viz = (mod.createVisualizationFromData as any)(appData, productionRows, importsList, recipeMap, { onProgress: (p:number) => { if (!cancelled) setProgress(Math.max(0, Math.min(100, Math.round(p)))) } });
+                    const viz = (mod.createVisualizationFromData as any)({...appData, importSourceSelections}, productionRows, importsList, recipeMap, { onProgress: (p:number) => { if (!cancelled) setProgress(Math.max(0, Math.min(100, Math.round(p)))) } });
                     vizRef.current = viz;
                     if (viz && typeof viz.ready === 'object' && typeof (viz.ready as Promise<void>).then === 'function') {
                         try {
@@ -60,7 +61,7 @@ const VisualizationPanel: React.FC<Props> = ({isOpen, onClose, appData, producti
             setLoading(false);
             setProgress(0);
         };
-    }, [isOpen, appData, productionRows, importsList, recipeMap]);
+    }, [isOpen, appData, productionRows, importsList, recipeMap, importSourceSelections]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -71,7 +72,7 @@ const VisualizationPanel: React.FC<Props> = ({isOpen, onClose, appData, producti
                 console.warn(e);
             }
         }
-    }, [productionRows, importsList, recipeMap, isOpen]);
+    }, [productionRows, importsList, recipeMap, importSourceSelections, isOpen]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Visualization" size="xl" fullscreen>

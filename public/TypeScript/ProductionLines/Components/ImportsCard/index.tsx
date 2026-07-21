@@ -79,7 +79,7 @@ const ImportsCard: FC<ImportsCardProps> = ({
                                     {sourceSummaries.map(source => (
                                         <span
                                             key={`${source.exportingProductionLineId}-${source.itemId}`}
-                                            className={`badge rounded-pill fw-normal d-inline-flex flex-wrap align-items-center gap-1 text-wrap text-start ${source.shortAmount > 0 ? 'text-bg-warning' : 'text-bg-light border text-muted'}`}
+                                            className={`badge rounded-pill fw-normal d-inline-flex flex-wrap align-items-center gap-1 text-wrap text-start pl-import-source-badge ${source.shortAmount > 0 ? 'is-warning' : ''}`}
                                             style={{whiteSpace: 'normal', overflowWrap: 'anywhere', maxWidth: '100%'}}
                                             title={`${source.title}: ${formatNumber(source.assignedAmount)}/min`}
                                         >
