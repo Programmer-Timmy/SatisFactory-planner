@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.17.0",
+    "date": "July 21, 2026",
+    "changes": [
+      "Added: Imports can now be sourced from exports of other active production lines in the same game save.",
+      "Added: Import rows now show subtle source badges with the production line and amount imported from it.",
+      "Added: Combined import modal for sourcing from other production lines or adding a local production recipe.",
+      "Improved: Game save outputs now subtract only explicitly assigned cross-line imports from the exporting production line.",
+      "Improved: Source imports are capped to available exports and shortages remain visible."
+    ]
+  },
+  {
     "version": "1.16.2",
     "date": "May 5, 2026",
     "changes": [

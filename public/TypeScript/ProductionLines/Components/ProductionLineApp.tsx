@@ -32,6 +32,27 @@ interface ImportItem {
     item_class_name: string;
 }
 
+interface ImportSourceCandidate {
+    production_line_id: number;
+    production_line_title: string;
+    items_id: number;
+    item_name: string;
+    item_class_name: string;
+    output_amount: number;
+    assigned_amount: number;
+    available_amount: number;
+}
+
+interface ImportSourceSelection {
+    exportingProductionLineId: number;
+    itemId: number;
+    requestedAmount: number;
+    assignedAmount: number;
+    productionLineTitle?: string;
+    itemName?: string;
+    itemClassName?: string;
+}
+
 export interface ProductionItem {
     id: number;
     item_name_1: string;
@@ -136,6 +157,8 @@ interface ProductionSetting {
 export interface AppData {
     productLine: ProductLine;
     imports: ImportItem[];
+    importSourceCandidates: ImportSourceCandidate[];
+    importSourceSelections: any[];
     production: ProductionItem[];
     powers: PowerItem[];
     checklist: ChecklistItem[];
@@ -166,7 +189,17 @@ const ProductionLineApp: React.FC = () => {
 
     const [productionRows, setProductionRows] = useState<ProductionItem[]>([]);
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
+    const [importSourceSelections, setImportSourceSelections] = useState<ImportSourceSelection[]>([]);
 
+    const normalizeImportSourceSelection = (source: any): ImportSourceSelection => ({
+        exportingProductionLineId: Number(source.exportingProductionLineId ?? source.exporting_production_lines_id ?? 0),
+        itemId: Number(source.itemId ?? source.items_id ?? 0),
+        requestedAmount: Number(source.requestedAmount ?? source.requested_amount ?? 0),
+        assignedAmount: Number(source.assignedAmount ?? source.assigned_amount ?? 0),
+        productionLineTitle: source.productionLineTitle ?? source.production_line_title,
+        itemName: source.itemName ?? source.item_name,
+        itemClassName: source.itemClassName ?? source.item_class_name,
+    });
     const idleRecalcRef = useRef<number | null>(null);
     const recipeMap = useMemo(() => {
         const m: Record<number, Recipe> = {};
@@ -185,6 +218,7 @@ const ProductionLineApp: React.FC = () => {
                 clock_speed: Math.max(0, Math.min(250, Number(p.clock_speed ?? 100)))
             })));
             setImportsList(data.imports.map(i => ({...i})));
+            setImportSourceSelections((data.importSourceSelections || []).map(normalizeImportSourceSelection));
             setLoading(false);
         }
     }, []);
@@ -394,9 +428,10 @@ const ProductionLineApp: React.FC = () => {
 
         const saveService = await import('./service/SaveService');
         try {
-            const resp = await saveService.saveProductionLineData(appData, productionRows, powerRows, importsList);
+            const resp = await saveService.saveProductionLineData(appData, productionRows, powerRows, importsList, undefined, importSourceSelections);
             if (resp && resp.success) {
                 const mappings = resp.data?.newAndOldIds || resp.data?.newAndOldIds || resp.newAndOldIds || [];
+                const savedImportSources = resp.data?.importSources || resp.importSources || [];
 
                 if (mappings && mappings.length > 0) {
                     const mapOldToNew = new Map<string, number>();
@@ -409,11 +444,18 @@ const ProductionLineApp: React.FC = () => {
                 } else {
                     setAppData(prev => prev ? {...prev, production: productionRows} : prev);
                 }
+                if (savedImportSources.length > 0 || importSourceSelections.length > 0) {
+                    const normalizedSources = savedImportSources.map(normalizeImportSourceSelection);
+                    setImportSourceSelections(normalizedSources);
+                    setAppData(prev => prev ? {...prev, importSourceSelections: savedImportSources} : prev);
+                }
+
                 setAppData(prev => prev ? {
                     ...prev,
                     imports: importsList,
                     powers: powerRows,
-                    checklist: appData?.checklist || []
+                    checklist: appData?.checklist || [],
+                    importSourceSelections: savedImportSources
                 } : prev);
 
                 saveService.showSaveMessage(true, 'Production line saved successfully.');
@@ -556,9 +598,10 @@ const ProductionLineApp: React.FC = () => {
                     // Now save the production line using SaveService (same behaviour as Save button)
                     try {
                         const saveService = await import('./service/SaveService');
-                        const resp = await saveService.saveProductionLineData({...appData, production: newProduction, powers: newPowers, imports: newImports, checklist: newChecklist}, newProduction, newPowers, newImports, (newProduction || []).map((r:any) => r.id));
+                        const resp = await saveService.saveProductionLineData({...appData, production: newProduction, powers: newPowers, imports: newImports, checklist: newChecklist}, newProduction, newPowers, newImports, (newProduction || []).map((r:any) => r.id), importSourceSelections);
                         if (resp && resp.success) {
                             const mappings = resp.data?.newAndOldIds || resp.data?.newAndOldIds || resp.newAndOldIds || [];
+                            const savedImportSources = resp.data?.importSources || resp.importSources || [];
 
                             if (mappings && mappings.length > 0) {
                                 const mapOldToNew = new Map<number, number>();
@@ -573,11 +616,18 @@ const ProductionLineApp: React.FC = () => {
                                 setAppData(prev => prev ? {...prev, production: newProduction} : prev);
                             }
 
+                            if (savedImportSources.length > 0 || importSourceSelections.length > 0) {
+                                const normalizedSources = savedImportSources.map(normalizeImportSourceSelection);
+                                setImportSourceSelections(normalizedSources);
+                                setAppData(prev => prev ? {...prev, importSourceSelections: savedImportSources} : prev);
+                            }
+
                             setAppData(prev => prev ? {
                                 ...prev,
                                 imports: newImports,
                                 powers: newPowers,
-                                checklist: newChecklist
+                                checklist: newChecklist,
+                                importSourceSelections: savedImportSources
                             } : prev);
 
                             saveService.showSaveMessage(true, 'Production line imported and saved successfully.');
@@ -605,6 +655,8 @@ const ProductionLineApp: React.FC = () => {
                             const producingRecipes = appData?.recipes.filter(r => 
                                 r.products?.some(p => p.name?.toLowerCase() === importItem.name.toLowerCase())
                             ) || [];
+                            const itemSourceCandidates = (appData.importSourceCandidates || []).filter(source => Number(source.items_id) === Number(importItem.items_id));
+                            const itemSourceSelections = importSourceSelections.filter(source => Number(source.itemId) === Number(importItem.items_id));
                             return (
                                 <ImportsCard 
                                     key={`${importItem.items_id}-${importItem.name}`} 
@@ -613,6 +665,14 @@ const ProductionLineApp: React.FC = () => {
                                     amount={importItem.ammount}
                                     itemId={importItem.items_id}
                                     producingRecipes={producingRecipes}
+                                    sourceCandidates={itemSourceCandidates}
+                                    sourceSelections={itemSourceSelections}
+                                    onChangeSources={(sources) => {
+                                        setImportSourceSelections(prev => [
+                                            ...prev.filter(source => Number(source.itemId) !== Number(importItem.items_id)),
+                                            ...sources
+                                        ]);
+                                    }}
                                     onAddRecipe={(recipeId) => handleAddRecipeFromImport(recipeId, importItem.ammount)}
                                 />
                             );

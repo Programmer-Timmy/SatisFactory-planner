@@ -107,7 +107,20 @@ foreach ($powerRows as $row) {
     ];
     $totalPower += $row['Consumption'];
 }
-$oldAndNewIds = ProductionLines::saveProductionLine($importsData, $productionData, $powerData, $totalPower, $productionLineId);
+$importSourcesData = [];
+if (isset($data['importSources']) && is_array($data['importSources'])) {
+    foreach ($data['importSources'] as $source) {
+        $importSourcesData[] = (object)[
+            'exporting_production_lines_id' => $source['exportingProductionLineId'] ?? $source['exporting_production_lines_id'] ?? 0,
+            'items_id' => $source['itemId'] ?? $source['items_id'] ?? 0,
+            'requested_amount' => $source['requestedAmount'] ?? $source['requested_amount'] ?? 0,
+        ];
+    }
+}
+
+$saveResult = ProductionLines::saveProductionLine($importsData, $productionData, $powerData, $totalPower, $productionLineId, $importSourcesData);
+$oldAndNewIds = $saveResult !== false ? ($saveResult['newAndOldIds'] ?? []) : false;
+$savedImportSources = $saveResult !== false ? ($saveResult['importSources'] ?? []) : [];
 $checklist = $data['checklist'];
 $checklists = [];
 foreach ($checklist as $check) {
@@ -140,8 +153,14 @@ if ($checklists) {
     }
 }
 
-if ($oldAndNewIds !== false) {
-    echo json_encode(['success' => 'Production line updated successfully', 'data' => ['newAndOldIds' => $oldAndNewIds]]);
+if ($saveResult !== false) {
+    echo json_encode([
+        'success' => 'Production line updated successfully',
+        'data' => [
+            'newAndOldIds' => $oldAndNewIds,
+            'importSources' => $savedImportSources
+        ]
+    ]);
     exit();
 }
 

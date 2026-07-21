@@ -70,3 +70,23 @@ export interface ImportItem {
     items_id: number;
     item_class_name: string;
 }
+export interface ImportSourceCandidate {
+    production_line_id: number;
+    production_line_title: string;
+    items_id: number;
+    item_name: string;
+    item_class_name: string;
+    output_amount: number;
+    assigned_amount: number;
+    available_amount: number;
+}
+
+export interface ImportSourceSelection {
+    exportingProductionLineId: number;
+    itemId: number;
+    requestedAmount: number;
+    assignedAmount: number;
+    productionLineTitle?: string;
+    itemName?: string;
+    itemClassName?: string;
+}

@@ -70,12 +70,20 @@ export async function saveProductionLineData(
     productionRows: any[],
     powerRows: any[],
     importsList: any[],
-    importForceIds?: Array<string|number>
+    importForceIds?: Array<string|number>,
+    importSources: any[] = []
 ): Promise<Record<string, any>> {
-    // Map importsList -> legacy importsTableRows (itemId, quantity)
+    const activeImportItemIds = new Set((importsList || []).map((r: any) => Number(r.items_id ?? r.itemId ?? 0)));
+    const activeImportSources = (importSources || []).filter((source: any) => {
+        const itemId = Number(source.itemId ?? source.items_id ?? 0);
+        const requestedAmount = Number(source.requestedAmount ?? source.requested_amount ?? 0);
+        return itemId > 0 && requestedAmount > 0 && activeImportItemIds.has(itemId);
+    });
+
+    // Map importsList -> legacy importsTableRows. The server subtracts capped source assignments before persisting input rows.
     const importsTableRows = (importsList || []).map((r: any) => ({
-        itemId: r.items_id ?? r.itemId ?? 0,
-        quantity: r.ammount ?? r.amount ?? 0,
+        itemId: Number(r.items_id ?? r.itemId ?? 0),
+        quantity: Number(r.ammount ?? r.amount ?? 0),
     }));
 
     // Map productionRows -> legacy productionTableRows
@@ -153,7 +161,12 @@ export async function saveProductionLineData(
         productLine: {
             title: (appData as any)?.productLine?.title || null,
             active: (appData as any)?.productLine?.active !== undefined ? Number((appData as any).productLine.active) : null
-        }
+        },
+        importSources: activeImportSources.map((source: any) => ({
+            exportingProductionLineId: Number(source.exportingProductionLineId ?? source.exporting_production_lines_id ?? 0),
+            itemId: Number(source.itemId ?? source.items_id ?? 0),
+            requestedAmount: Math.max(0, Number(source.requestedAmount ?? source.requested_amount ?? 0)),
+        }))
     };
 
     if (importForceIds && importForceIds.length) {
