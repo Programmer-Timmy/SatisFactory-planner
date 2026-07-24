@@ -21,7 +21,8 @@
     "build": "webpack --mode production",
     "watch": "webpack --watch --mode development",
     "prepare": "husky",
-    "build-check": "npm run clean && npm run build"
+    "build-check": "npm run clean && npm run build",
+    "verify:production-lines": "npx tsc --noEmit --pretty false && npm run build"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",

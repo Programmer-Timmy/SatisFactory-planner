@@ -1,61 +1,91 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import Tooltip from "../Tooltip";
+import LegacyBootstrapToggle from "../LegacyBootstrapToggle";
 import {formatNumber} from "../../Utils/format";
+import type {AppData, ProductionItem, Recipe} from "../../Types/global";
+
+interface ChecklistStateItem {
+    production_id: number;
+    been_build: boolean;
+    been_tested: boolean;
+}
+
+interface ChecklistSourceItem {
+    production_id?: number;
+    productionRow?: { row_id?: number };
+    been_build?: boolean | number;
+    beenBuild?: boolean | number;
+    been_tested?: boolean | number;
+    beenTested?: boolean | number;
+}
+
+type ChecklistProductionRow = ProductionItem & {
+    recipe?: Recipe;
+    row_id?: number;
+    production_id?: number;
+    quantity?: number;
+    quantityPerMin?: number;
+    item_class_name?: string;
+};
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    appData: any;
-    productionRows: any[];
+    appData: AppData;
+    productionRows: ChecklistProductionRow[];
     onSave: (checklist: any[]) => void;
 }
+
+const buildStorageKey = (appData: AppData): string => {
+    const productionLineId = appData?.productLine?.id || Number(new URL(window.location.href).searchParams.get('id')) || 0;
+    return `pl-checklist-${productionLineId}`;
+};
 
 const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRows, onSave}) => {
     const offcanvasRef = useRef<HTMLDivElement | null>(null);
     const [rendered, setRendered] = useState<boolean>(isOpen);
     const hideTimeoutRef = useRef<number | null>(null);
-    const [checks, setChecks] = useState<{production_id:number, been_build:boolean, been_tested:boolean}[]>([]);
+    const [checks, setChecks] = useState<ChecklistStateItem[]>([]);
     const [filter, setFilter] = useState('');
-    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         if (!isOpen) return;
-        const productionLineId = appData?.productLine?.id || Number(new URL(window.location.href).searchParams.get('id')) || 0;
-        const storageKey = `pl-checklist-${productionLineId}`;
+        const storageKey = buildStorageKey(appData);
 
-        // Prefer persisted localStorage copy (so toggles survive close/reopen), otherwise use appData.checklist
-        let persisted: any[] | null = null;
+        let persisted: ChecklistSourceItem[] | null = null;
         try {
             const raw = localStorage.getItem(storageKey);
-            if (raw) persisted = JSON.parse(raw);
-        } catch (e) { /* ignore */ }
+            if (raw) persisted = JSON.parse(raw) as ChecklistSourceItem[];
+        } catch (e) {
+            // Ignore invalid local checklist cache and fall back to appData.
+        }
 
-        const source = persisted ?? (appData?.checklist || []);
-
-        const existing = (source || []).map((c: any) => ({
-            production_id: Number(c.production_id ?? c.productionRow?.row_id ?? 0),
-            been_build: !!(c.been_build ?? c.beenBuild ?? c.beenBuild ?? false),
-            been_tested: !!(c.been_tested ?? c.beenTested ?? c.beenTested ?? false)
+        const source = (persisted ?? (appData?.checklist || [])) as ChecklistSourceItem[];
+        const existing = (source || []).map((check) => ({
+            production_id: Number(check.production_id ?? check.productionRow?.row_id ?? 0),
+            been_build: !!(check.been_build ?? check.beenBuild ?? false),
+            been_tested: !!(check.been_tested ?? check.beenTested ?? false),
         }));
 
-        const map = new Map<number, {production_id:number, been_build:boolean, been_tested:boolean}>();
-        existing.forEach((e: any) => { if (e.production_id) map.set(e.production_id, e); });
+        const checkByProductionId = new Map<number, ChecklistStateItem>();
+        existing.forEach((check) => {
+            if (check.production_id) checkByProductionId.set(check.production_id, check);
+        });
 
-        const built: any[] = [];
-        productionRows.forEach((r: any) => {
-            const pid = Number(r.id ?? r.row_id ?? r.production_id ?? 0);
-            if (!pid) return; // skip rows without id
-            if (map.has(pid)) {
-                built.push(map.get(pid));
-            } else {
-                built.push({production_id: pid, been_build: false, been_tested: false});
-            }
+        const built: ChecklistStateItem[] = [];
+        productionRows.forEach((row) => {
+            const productionId = Number(row.id ?? row.row_id ?? row.production_id ?? 0);
+            if (!productionId) return;
+            built.push(checkByProductionId.get(productionId) || {
+                production_id: productionId,
+                been_build: false,
+                been_tested: false,
+            });
         });
 
         setChecks(built);
     }, [isOpen, appData, productionRows]);
 
-    // Manage mount state and animate the offcanvas from the right
     useEffect(() => {
         const el = offcanvasRef.current;
         if (isOpen) {
@@ -80,7 +110,6 @@ const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRo
                 el.classList.remove('offcanvas-mounted', 'offcanvas-opening');
                 el.classList.add('offcanvas-closing');
             }
-            // match transition (360ms)
             hideTimeoutRef.current = window.setTimeout(() => {
                 setRendered(false);
                 hideTimeoutRef.current = null;
@@ -95,117 +124,43 @@ const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRo
         };
     }, [isOpen, rendered]);
 
-    const getRowRecipe = (row: any) => {
-        return row?.recipe ?? appData?.recipes?.find((recipe: any) => Number(recipe.id) === Number(row?.recipe_id));
+    const getRowRecipe = (row: ChecklistProductionRow | undefined) => {
+        return row?.recipe ?? appData?.recipes?.find((recipe) => Number(recipe.id) === Number(row?.recipe_id));
     };
 
-    const buildingAmount = ((row: any) => {
+    const buildingAmount = (row: ChecklistProductionRow | undefined) => {
         const numericProductQuantity = Number(row?.product_quantity ?? row?.quantity ?? row?.quantityPerMin ?? 0);
         const rawClock = (row?.clock_speed === '' || row?.clock_speed === undefined || row?.clock_speed === null) ? 100 : Number(row.clock_speed);
         const clockValue = Math.min(250, Math.max(0, rawClock));
         const recipe = getRowRecipe(row);
         const exportAmountPerMin = Number(recipe?.export_amount_per_min ?? row?.export_amount_per_min ?? 0);
         if (!exportAmountPerMin) return 0;
-        const useSomersloop = !!row.use_somersloop;
+        const useSomersloop = !!row?.use_somersloop;
         return numericProductQuantity / (exportAmountPerMin * (clockValue / 100)) / (useSomersloop ? 2 : 1);
-    });
+    };
 
-    const updateCheck = React.useCallback((production_id:number, field: 'been_build'|'been_tested', value:boolean) => {
-        setChecks(prev => {
-            const updated = prev.map(c => c.production_id === production_id ? {...c, [field]: value} : c);
-            // Persist to localStorage so closing + reopening the offcanvas keeps state
+    const updateCheck = React.useCallback((productionId: number, field: 'been_build' | 'been_tested', value: boolean) => {
+        setChecks((previousChecks) => {
+            const updated = previousChecks.map((check) => check.production_id === productionId ? {...check, [field]: value} : check);
             try {
-                const productionLineId = appData?.productLine?.id || Number(new URL(window.location.href).searchParams.get('id')) || 0;
-                const storageKey = `pl-checklist-${productionLineId}`;
-                localStorage.setItem(storageKey, JSON.stringify(updated));
-            } catch (e) { /* ignore */ }
+                localStorage.setItem(buildStorageKey(appData), JSON.stringify(updated));
+            } catch (e) {
+                // Local persistence is helpful, but the parent state remains authoritative for saving.
+            }
 
-            // Immediately reflect changes in parent app state so saveProductionLine will include them
             try { onSave(updated); } catch (e) { /* ignore */ }
             try {
-                if (appData) (appData as any).checklist = updated;
-                if ((window as any).appData) (window as any).appData.checklist = updated;
+                if (appData) (appData as unknown as { checklist: ChecklistStateItem[] }).checklist = updated;
+                if (window.appData) (window.appData as unknown as { checklist: ChecklistStateItem[] }).checklist = updated;
             } catch (e) { /* ignore */ }
             return updated;
         });
     }, [appData, onSave]);
 
-    useEffect(() => {
-        if (!isOpen) return;
-        const selector = '#Checklist input[data-checklist-toggle="1"]';
-        const $ = (window as any).$;
-        try {
-            // Run init after DOM updates to ensure inputs exist (handles filter changes)
-            setTimeout(() => {
-                try {
-                    if ($ && $.fn && $.fn.bootstrapToggle) {
-                        // destroy any previous instances to avoid duplicates
-                        $(selector).each(function () {
-                            // @ts-ignore
-                            try { if ($(this).data('bs.toggle')) $(this).bootstrapToggle('destroy'); } catch (e) { /* ignore */ }
-                        });
-                        $(selector).bootstrapToggle();
-
-                        // Attach legacy jQuery change handler to detect toggle changes
-                        $(selector).off('.checklist').on('change.checklist', function () {
-                            try {
-                                // @ts-ignore
-                                const el = this as HTMLInputElement;
-                                const m = el.id?.match(/-(\d+)$/);
-                                const pid = m ? Number(m[1]) : 0;
-                                const field = el.id?.startsWith('build-') ? 'been_build' : 'been_tested';
-                                const checked = !!$(el).prop('checked');
-                                // small delay to let plugin finish its animation/state
-                                setTimeout(() => {
-                                    updateCheck(pid, field as any, checked);
-                                }, 60);
-                            } catch (e) { /* ignore */ }
-                        });
-                    } else {
-                        // Fallback: attach native change listeners
-                        const els = Array.from(document.querySelectorAll(selector));
-                        els.forEach((el) => {
-                            const handler = (ev: Event) => {
-                                try {
-                                    const input = ev.currentTarget as HTMLInputElement;
-                                    const m = input.id.match(/-(\d+)$/);
-                                    const pid = m ? Number(m[1]) : 0;
-                                    const field = input.id.startsWith('build-') ? 'been_build' : 'been_tested';
-                                    // small timeout
-                                    setTimeout(() => {
-                                        updateCheck(pid, field as any, input.checked);
-                                    }, 60);
-                                } catch (e) { /* ignore */ }
-                            };
-                            (el as any).__plChecklistHandler = handler;
-                            el.addEventListener('change', handler);
-                        });
-                    }
-                } catch (inner) { /* ignore */ }
-            }, 0);
-        } catch (e) {
-            // ignore
-        }
-
-        return () => {
-            try {
-                if ($ && $.fn) $(selector).off('.checklist');
-                else {
-                    const els = Array.from(document.querySelectorAll(selector));
-                    els.forEach((el) => {
-                        const h = (el as any).__plChecklistHandler;
-                        if (h) el.removeEventListener('change', h);
-                    });
-                }
-            } catch (e) { /* ignore */ }
-        };
-    }, [isOpen, checks, filter, updateCheck]);
-
-    const visibleChecks = checks.filter(c => {
+    const visibleChecks = checks.filter((check) => {
         if (!filter) return true;
         const search = filter.toLowerCase();
-        // find production row data
-        const row = productionRows.find(r => (Number(r.id ?? r.row_id ?? 0)) === c.production_id);
+        const row = productionRows.find((candidate) => Number(candidate.id ?? candidate.row_id ?? 0) === check.production_id);
         const recipeName = (row?.recipe_name || row?.recipe?.name || '').toString().toLowerCase();
         return recipeName.includes(search);
     });
@@ -245,65 +200,49 @@ const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRo
                 <div className="offcanvas-body overflow-y-auto">
                     <div className="d-none" id="checkListData">{/* legacy data placeholder */}</div>
                     {visibleChecks.length === 0 && <div className="text-muted p-3">No checklist items</div>}
-                    {visibleChecks.map((c) => {
-                        const row = productionRows.find(r => (Number(r.id ?? r.row_id ?? 0)) === c.production_id);
+                    {visibleChecks.map((check) => {
+                        const row = productionRows.find((candidate) => Number(candidate.id ?? candidate.row_id ?? 0) === check.production_id);
                         const recipe = getRowRecipe(row);
                         const recipeName = row?.recipe_name || recipe?.name || 'Unknown';
                         const qty = row?.product_quantity ?? row?.quantity ?? row?.quantityPerMin ?? 0;
                         const building = (row?.building_name || recipe?.building?.[0]?.name) || '';
-                        const getIcon = (cls?: string) => {
-                            if (!cls) return '';
-                            return `/image/items/${cls.toLowerCase().replaceAll('_', '-')}_256.png`;
+                        const getIcon = (className?: string) => {
+                            if (!className) return '';
+                            return `/image/items/${className.toLowerCase().replaceAll('_', '-')}_256.png`;
                         };
                         const iconSrc = getIcon(recipe?.products?.[0]?.class_name || row?.item_class_name_1 || row?.item_class_name || '');
                         return (
-                            <div key={c.production_id} className="card mb-2" id={`check-${c.production_id}`}>
+                            <div key={check.production_id} className="card mb-2" id={`check-${check.production_id}`}>
                                 <div className="card-body p-3">
                                     <div className="d-flex align-items-center">
-                                        {iconSrc && <img src={iconSrc} alt="" className="pl-item-icon me-2" style={{width:32,height:32}} loading="lazy" />}
+                                        {iconSrc && <img src={iconSrc} alt="" className="pl-item-icon me-2" style={{width: 32, height: 32}} loading="lazy" />}
                                         <h5 className="card-title recipeName mb-0">{recipeName}</h5>
                                     </div>
                                     <p className="card-text mt-2"><span className="productionAmount">{formatNumber(qty)}</span> per min - <span className="buildingAmount">{formatNumber(buildingAmount(row))}</span> <span className="buildingName">{building}</span></p>
-                                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                                        <div style={{display:'flex', alignItems:'center', gap: '0.5rem'}}>
-                                            <input
-                                                type="checkbox"
-                                                id={`build-${c.production_id}`}
-                                                data-toggle="toggle"
-                                                data-onstyle="success"
-                                                data-offstyle="dark"
-                                                data-onlabel="&lt;i class='fa-solid fa-check'&gt;&lt;/i&gt;"
-                                                data-offlabel="&lt;i class='fa-solid fa-times'&gt;&lt;/i&gt;"
-                                                data-size="sm"
-                                                data-style="ios"
-                                                data-theme="dark"
-                                                data-checklist-toggle="1"
-                                                defaultChecked={!!c.been_build}
-                                                aria-label="Mark as built"
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                                            <LegacyBootstrapToggle
+                                                id={`build-${check.production_id}`}
+                                                checked={!!check.been_build}
+                                                onChange={(checked) => updateCheck(check.production_id, 'been_build', checked)}
+                                                ariaLabel="Mark as built"
+                                                dataAttributes={{'data-checklist-toggle': 1}}
                                             />
-                                            <label htmlFor={`build-${c.production_id}`} className="mb-0">Build</label>
+                                            <label htmlFor={`build-${check.production_id}`} className="mb-0">Build</label>
                                             <Tooltip content="Mark this recipe as built. You've constructed this part of the line.">
                                                 <i className="fa-solid fa-circle-question ms-1 pl-help-icon" />
                                             </Tooltip>
                                         </div>
 
-                                        <div style={{display:'flex', alignItems:'center', gap: '0.5rem'}}>
-                                            <input
-                                                type="checkbox"
-                                                id={`tested-${c.production_id}`}
-                                                data-toggle="toggle"
-                                                data-onstyle="success"
-                                                data-offstyle="dark"
-                                                data-onlabel="&lt;i class='fa-solid fa-check'&gt;&lt;/i&gt;"
-                                                data-offlabel="&lt;i class='fa-solid fa-times'&gt;&lt;/i&gt;"
-                                                data-size="sm"
-                                                data-style="ios"
-                                                data-theme="dark"
-                                                data-checklist-toggle="1"
-                                                defaultChecked={!!c.been_tested}
-                                                aria-label="Mark as tested"
+                                        <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                                            <LegacyBootstrapToggle
+                                                id={`tested-${check.production_id}`}
+                                                checked={!!check.been_tested}
+                                                onChange={(checked) => updateCheck(check.production_id, 'been_tested', checked)}
+                                                ariaLabel="Mark as tested"
+                                                dataAttributes={{'data-checklist-toggle': 1}}
                                             />
-                                            <label htmlFor={`tested-${c.production_id}`} className="mb-0">Tested</label>
+                                            <label htmlFor={`tested-${check.production_id}`} className="mb-0">Tested</label>
                                             <Tooltip content="Mark as tested. Production and outputs have been verified.">
                                                 <i className="fa-solid fa-circle-question ms-1 pl-help-icon" />
                                             </Tooltip>
@@ -322,6 +261,6 @@ const ChecklistModal: React.FC<Props> = ({isOpen, onClose, appData, productionRo
             </div>
         </>
     );
-}
+};
 
 export default ChecklistModal;
