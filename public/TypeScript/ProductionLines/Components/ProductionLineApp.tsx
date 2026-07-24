@@ -191,8 +191,6 @@ const ProductionLineApp: React.FC = () => {
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
     const [importSourceSelections, setImportSourceSelections] = useState<ImportSourceSelection[]>([]);
 
-    console.log("productionRows", productionRows);
-
     const normalizeImportSourceSelection = (source: any): ImportSourceSelection => ({
         exportingProductionLineId: Number(source.exportingProductionLineId ?? source.exporting_production_lines_id ?? 0),
         itemId: Number(source.itemId ?? source.items_id ?? 0),
