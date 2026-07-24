@@ -191,6 +191,8 @@ const ProductionLineApp: React.FC = () => {
     const [importsList, setImportsList] = useState<ImportItem[]>([]);
     const [importSourceSelections, setImportSourceSelections] = useState<ImportSourceSelection[]>([]);
 
+    console.log("productionRows", productionRows);
+
     const normalizeImportSourceSelection = (source: any): ImportSourceSelection => ({
         exportingProductionLineId: Number(source.exportingProductionLineId ?? source.exporting_production_lines_id ?? 0),
         itemId: Number(source.itemId ?? source.items_id ?? 0),
@@ -208,6 +210,38 @@ const ProductionLineApp: React.FC = () => {
         }
         return m;
     }, [appData?.recipes]);
+
+    const getCalculatedProductionFields = useCallback((
+        row: ProductionItem,
+        index: number,
+        usageArr: number[],
+        extraUsageArr: number[]
+    ): Pick<ProductionItem, 'local_usage' | 'local_usage2' | 'export_amount_per_min' | 'export_ammount_per_min2'> => {
+        const recipe = recipeMap[row.recipe_id];
+        const productQuantity = Number(row.product_quantity ?? 0) || 0;
+        const localUsage = usageArr[index] ?? 0;
+        const hasSecondProduct = !!(recipe?.export_amount_per_min && recipe.export_amount_per_min2 != null);
+        const localUsage2 = hasSecondProduct ? (extraUsageArr[index] ?? 0) : null;
+        const extraQuantity = hasSecondProduct
+            ? productQuantity * (Number(recipe.export_amount_per_min2) / Number(recipe.export_amount_per_min))
+            : null;
+
+        return {
+            local_usage: localUsage,
+            local_usage2: localUsage2,
+            export_amount_per_min: productQuantity - localUsage,
+            export_ammount_per_min2: extraQuantity === null ? null : extraQuantity - Number(localUsage2 ?? 0),
+        };
+    }, [recipeMap]);
+
+    const applyProductionCalculations = useCallback((
+        rows: ProductionItem[],
+        usageArr: number[],
+        extraUsageArr: number[]
+    ): ProductionItem[] => rows.map((row, index) => ({
+        ...row,
+        ...getCalculatedProductionFields(row, index, usageArr, extraUsageArr),
+    })), [getCalculatedProductionFields]);
 
     useEffect(() => {
         const data = window.appData;
@@ -268,20 +302,20 @@ const ProductionLineApp: React.FC = () => {
         const extraUsageArr = result.extraUsageArr || [];
         setImportsList(newImports);
 
-        // Update local_usage fields in production rows only if values actually changed
+        // Update calculated usage/export fields in production rows only if values actually changed.
         setProductionRows(prev => {
-            const needsUpdate = prev.some((row, idx) => 
-                row.local_usage !== (usageArr[idx] ?? 0) || 
-                row.local_usage2 !== (extraUsageArr[idx] ?? null)
-            );
+            const calculatedRows = applyProductionCalculations(prev, usageArr, extraUsageArr);
+            const needsUpdate = calculatedRows.some((calculatedRow, idx) => {
+                const row = prev[idx];
+                return row.local_usage !== calculatedRow.local_usage ||
+                    row.local_usage2 !== calculatedRow.local_usage2 ||
+                    row.export_amount_per_min !== calculatedRow.export_amount_per_min ||
+                    row.export_ammount_per_min2 !== calculatedRow.export_ammount_per_min2;
+            });
             
             if (!needsUpdate) return prev; // Prevent infinite loop
             
-            return prev.map((row, idx) => ({
-                ...row,
-                local_usage: usageArr[idx] ?? 0,
-                local_usage2: extraUsageArr[idx] ?? null
-            }));
+            return calculatedRows;
         });
 
         // Umami tracking for import recalculation
@@ -294,7 +328,7 @@ const ProductionLineApp: React.FC = () => {
                 });
             }
         } catch (e) { /* ignore */ }
-    }, [appData, productionRows, recipeMap]);
+    }, [appData, productionRows, recipeMap, applyProductionCalculations]);
 
     const handleQuantityChange = (rowId: number, value: number) => {
         setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, product_quantity: value} : r));
@@ -428,7 +462,18 @@ const ProductionLineApp: React.FC = () => {
 
         const saveService = await import('./service/SaveService');
         try {
-            const resp = await saveService.saveProductionLineData(appData, productionRows, powerRows, importsList, undefined, importSourceSelections);
+            const importResult = calculateImports(appData, productionRows, recipeMap) as any;
+            const importsToSave = importResult.imports || importResult;
+            const productionRowsToSave = applyProductionCalculations(
+                productionRows,
+                importResult.usageArr || [],
+                importResult.extraUsageArr || []
+            );
+
+            setImportsList(importsToSave);
+            setProductionRows(productionRowsToSave);
+
+            const resp = await saveService.saveProductionLineData(appData, productionRowsToSave, powerRows, importsToSave, undefined, importSourceSelections);
             if (resp && resp.success) {
                 const mappings = resp.data?.newAndOldIds || resp.data?.newAndOldIds || resp.newAndOldIds || [];
                 const savedImportSources = resp.data?.importSources || resp.importSources || [];
@@ -439,10 +484,10 @@ const ProductionLineApp: React.FC = () => {
                     setProductionRows(prev => prev.map(r => ({...r, id: mapOldToNew.get(String(r.id)) ?? r.id})));
                     setAppData(prev => prev ? {
                         ...prev,
-                        production: (productionRows || []).map(r => ({...r, id: mapOldToNew.get(String(r.id)) ?? r.id}))
+                        production: (productionRowsToSave || []).map(r => ({...r, id: mapOldToNew.get(String(r.id)) ?? r.id}))
                     } : prev);
                 } else {
-                    setAppData(prev => prev ? {...prev, production: productionRows} : prev);
+                    setAppData(prev => prev ? {...prev, production: productionRowsToSave} : prev);
                 }
                 if (savedImportSources.length > 0 || importSourceSelections.length > 0) {
                     const normalizedSources = savedImportSources.map(normalizeImportSourceSelection);
@@ -452,7 +497,7 @@ const ProductionLineApp: React.FC = () => {
 
                 setAppData(prev => prev ? {
                     ...prev,
-                    imports: importsList,
+                    imports: importsToSave,
                     powers: powerRows,
                     checklist: appData?.checklist || [],
                     importSourceSelections: savedImportSources
