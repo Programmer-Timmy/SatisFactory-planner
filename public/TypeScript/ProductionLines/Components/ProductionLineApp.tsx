@@ -1,177 +1,20 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import PageTitle from "./PageTitle";
 import PowerModal from "./modals/PowerModal";
 import ImportsCard from "./ImportsCard";
 import ProductionRowCard from "./ProductionCard/index";
 import Tooltip from "./Tooltip";
 import ProductionAddCard from "./ProductionAddCard";
-import {calculateImports} from "./service/ProductionService";
+import {calculateProductionPlan} from "./service/ProductionService";
 import {calculateAutoPowerRows, computeConsumption, totalConsumption} from "./service/PowerService";
 import VisualizationPanel from "./modals/VisualizationPanel";
 import HelpModal from "./modals/HelpModal";
 import ChecklistModal from "./modals/ChecklistModal";
 import ProductionLineSettingsModal from "./modals/ProductionLineSettingsModal";
 import Alert from "./Alert";
+import type {AppData, ImportSourceSelection, PowerItem, ProductionItem, Recipe} from "../Types/global";
+export type {AppData, ImportSourceSelection, PowerItem, ProductionItem, Recipe} from "../Types/global";
 
-
-interface ProductLine {
-    id: number;
-    title?: string;
-    active?: number;
-    created_at?: string;
-    updated_at?: string;
-    description?: string;
-    power_consumbtion?: number;
-    game_saves_id: number;
-}
-
-interface ImportItem {
-    ammount: number;
-    name: string;
-    items_id: number;
-    item_class_name: string;
-}
-
-interface ImportSourceCandidate {
-    production_line_id: number;
-    production_line_title: string;
-    items_id: number;
-    item_name: string;
-    item_class_name: string;
-    output_amount: number;
-    assigned_amount: number;
-    available_amount: number;
-}
-
-interface ImportSourceSelection {
-    exportingProductionLineId: number;
-    itemId: number;
-    requestedAmount: number;
-    assignedAmount: number;
-    productionLineTitle?: string;
-    itemName?: string;
-    itemClassName?: string;
-}
-
-export interface ProductionItem {
-    id: number;
-    item_name_1: string;
-    item_class_name_1: string;
-    item_name_2: string | null;
-    item_class_name_2: string | null;
-    local_usage2: number | null;
-    export_ammount_per_min2: number | null;
-    recipe_id: number;
-    local_usage: number;
-    recipe_name: string;
-    export_amount_per_min: number;
-    building_name: string;
-    building_class_name: string;
-    power_used: number;
-    product_quantity: number;
-    // allow empty string while editing clock
-    clock_speed: number | '';
-    use_somersloop: number | boolean | null;
-    collapsed?: boolean;
-}
-
-export interface PowerItem {
-    idpower: number;
-    building_ammount: number;
-    clock_speed: number;
-    buildings_id: number;
-    production_lines_id: number;
-    power_used: number;
-    user: number;
-    building: Building | null;
-}
-
-interface ChecklistItem {
-    id: number;
-    production_lines_id: number;
-    production_id: number;
-    been_build: number;
-    been_tested: number;
-}
-
-export interface Item {
-    id: number;
-    name: string;
-    class_name: string;
-    form: string;
-}
-
-interface RecipeIngredient {
-    id: number;
-    form: string;
-    name: string;
-    quantity: number;
-    class_name: string;
-}
-
-interface RecipeBuilding {
-    id: number;
-    name: string;
-    class_name: string;
-    power_used: number;
-    power_generated: number;
-}
-
-interface RecipeProduct {
-    id: number;
-    form: string;
-    name: string;
-    quantity: number;
-    class_name: string;
-}
-
-export interface Recipe {
-    id: number;
-    name: string;
-    export_amount_per_min: number;
-    export_amount_per_min2: number | null;
-    class_name: string;
-    buildings_id: number;
-    item_id: number;
-    item_id2: number | null;
-    ingredients: RecipeIngredient[];
-    building: RecipeBuilding[];
-    products: RecipeProduct[];
-}
-
-export interface Building {
-    id: number;
-    name: string;
-    class_name: string;
-    power_used: number;
-    power_generation: number;
-    image: string;
-}
-
-interface ProductionSetting {
-    id: number;
-    clockSpeed: number;
-    useSomersloop: boolean;
-}
-
-export interface AppData {
-    productLine: ProductLine;
-    imports: ImportItem[];
-    importSourceCandidates: ImportSourceCandidate[];
-    importSourceSelections: any[];
-    production: ProductionItem[];
-    powers: PowerItem[];
-    checklist: ChecklistItem[];
-    items: Item[];
-    recipes: Recipe[];
-    buildings: Building[];
-    itemClassMap: Record<string, string>;
-    productionSettings: ProductionSetting[];
-    viewOnly: boolean;
-    firstProduction: boolean;
-    userId: number | null;
-    importsReadonly: boolean;
-}
 
 declare global {
     interface Window {
@@ -188,7 +31,6 @@ const ProductionLineApp: React.FC = () => {
     const [settingsOpen, setSettingsOpen] = useState(false);
 
     const [productionRows, setProductionRows] = useState<ProductionItem[]>([]);
-    const [importsList, setImportsList] = useState<ImportItem[]>([]);
     const [importSourceSelections, setImportSourceSelections] = useState<ImportSourceSelection[]>([]);
 
     const normalizeImportSourceSelection = (source: any): ImportSourceSelection => ({
@@ -200,7 +42,6 @@ const ProductionLineApp: React.FC = () => {
         itemName: source.itemName ?? source.item_name,
         itemClassName: source.itemClassName ?? source.item_class_name,
     });
-    const idleRecalcRef = useRef<number | null>(null);
     const recipeMap = useMemo(() => {
         const m: Record<number, Recipe> = {};
         if (appData && appData.recipes) {
@@ -209,37 +50,14 @@ const ProductionLineApp: React.FC = () => {
         return m;
     }, [appData?.recipes]);
 
-    const getCalculatedProductionFields = useCallback((
-        row: ProductionItem,
-        index: number,
-        usageArr: number[],
-        extraUsageArr: number[]
-    ): Pick<ProductionItem, 'local_usage' | 'local_usage2' | 'export_amount_per_min' | 'export_ammount_per_min2'> => {
-        const recipe = recipeMap[row.recipe_id];
-        const productQuantity = Number(row.product_quantity ?? 0) || 0;
-        const localUsage = usageArr[index] ?? 0;
-        const hasSecondProduct = !!(recipe?.export_amount_per_min && recipe.export_amount_per_min2 != null);
-        const localUsage2 = hasSecondProduct ? (extraUsageArr[index] ?? 0) : null;
-        const extraQuantity = hasSecondProduct
-            ? productQuantity * (Number(recipe.export_amount_per_min2) / Number(recipe.export_amount_per_min))
-            : null;
+    const productionPlan = useMemo(
+        () => calculateProductionPlan(appData, productionRows, recipeMap),
+        [appData, productionRows, recipeMap]
+    );
+    const calculatedProductionRows = productionPlan.productionRows;
+    const importsList = productionPlan.imports;
 
-        return {
-            local_usage: localUsage,
-            local_usage2: localUsage2,
-            export_amount_per_min: productQuantity - localUsage,
-            export_ammount_per_min2: extraQuantity === null ? null : extraQuantity - Number(localUsage2 ?? 0),
-        };
-    }, [recipeMap]);
 
-    const applyProductionCalculations = useCallback((
-        rows: ProductionItem[],
-        usageArr: number[],
-        extraUsageArr: number[]
-    ): ProductionItem[] => rows.map((row, index) => ({
-        ...row,
-        ...getCalculatedProductionFields(row, index, usageArr, extraUsageArr),
-    })), [getCalculatedProductionFields]);
 
     useEffect(() => {
         const data = window.appData;
@@ -249,84 +67,11 @@ const ProductionLineApp: React.FC = () => {
                 ...p,
                 clock_speed: Math.max(0, Math.min(250, Number(p.clock_speed ?? 100)))
             })));
-            setImportsList(data.imports.map(i => ({...i})));
             setImportSourceSelections((data.importSourceSelections || []).map(normalizeImportSourceSelection));
             setLoading(false);
         }
     }, []);
 
-    useEffect(() => {
-        if (!appData) return;
-        if (idleRecalcRef.current != null) {
-            if ('cancelIdleCallback' in window) {
-                (window as any).cancelIdleCallback(idleRecalcRef.current);
-            } else {
-                clearTimeout(idleRecalcRef.current);
-            }
-            idleRecalcRef.current = null;
-        }
-
-        const schedule = () => {
-            if ('requestIdleCallback' in window) {
-                idleRecalcRef.current = (window as any).requestIdleCallback(() => {
-                    recalculateImports();
-                    idleRecalcRef.current = null;
-                }, {timeout: 200});
-            } else {
-                idleRecalcRef.current = (window as any).setTimeout(() => {
-                    recalculateImports();
-                    idleRecalcRef.current = null;
-                }, 100);
-            }
-        };
-
-        schedule();
-
-        return () => {
-            if (idleRecalcRef.current != null) {
-                if ('cancelIdleCallback' in window) (window as any).cancelIdleCallback(idleRecalcRef.current);
-                else clearTimeout(idleRecalcRef.current);
-                idleRecalcRef.current = null;
-            }
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [productionRows]);
-
-    const recalculateImports = useCallback(() => {
-        if (!appData) return;
-        const result = calculateImports(appData, productionRows, recipeMap) as any;
-        const newImports = result.imports || result;
-        const usageArr = result.usageArr || [];
-        const extraUsageArr = result.extraUsageArr || [];
-        setImportsList(newImports);
-
-        // Update calculated usage/export fields in production rows only if values actually changed.
-        setProductionRows(prev => {
-            const calculatedRows = applyProductionCalculations(prev, usageArr, extraUsageArr);
-            const needsUpdate = calculatedRows.some((calculatedRow, idx) => {
-                const row = prev[idx];
-                return row.local_usage !== calculatedRow.local_usage ||
-                    row.local_usage2 !== calculatedRow.local_usage2 ||
-                    row.export_amount_per_min !== calculatedRow.export_amount_per_min ||
-                    row.export_ammount_per_min2 !== calculatedRow.export_ammount_per_min2;
-            });
-            
-            if (!needsUpdate) return prev; // Prevent infinite loop
-            
-            return calculatedRows;
-        });
-
-        // Umami tracking for import recalculation
-        try {
-            const umami = (window as any).umami;
-            if (umami) {
-                umami.track('Calculate Imports', {
-                    game_save: appData.productLine.game_saves_id,
-                    production_line: appData.productLine.id
-                });
-            }
-        } catch (e) { /* ignore */ }
-    }, [appData, productionRows, recipeMap, applyProductionCalculations]);
 
     const handleQuantityChange = (rowId: number, value: number) => {
         setProductionRows(prev => prev.map(r => r.id === rowId ? {...r, product_quantity: value} : r));
@@ -413,7 +158,7 @@ const ProductionLineApp: React.FC = () => {
 
     useEffect(() => {
         if (!appData) return;
-        const autoRows = calculateAutoPowerRows(appData, productionRows, recipeMap);
+        const autoRows = calculateAutoPowerRows(appData, calculatedProductionRows, recipeMap);
         setPowerRows(prev => {
             const manual = (prev || []).filter(r => !!r.user);
             return [...autoRows, ...manual];
@@ -429,7 +174,7 @@ const ProductionLineApp: React.FC = () => {
                 });
             }
         } catch (e) { /* ignore */ }
-    }, [productionRows, recipeMap, appData]);
+    }, [calculatedProductionRows, recipeMap, appData]);
 
     const totalConsumptionValue = useMemo(() => {
         return totalConsumption(powerRows, appData);
@@ -460,21 +205,14 @@ const ProductionLineApp: React.FC = () => {
 
         const saveService = await import('./service/SaveService');
         try {
-            const importResult = calculateImports(appData, productionRows, recipeMap) as any;
-            const importsToSave = importResult.imports || importResult;
-            const productionRowsToSave = applyProductionCalculations(
-                productionRows,
-                importResult.usageArr || [],
-                importResult.extraUsageArr || []
-            );
-
-            setImportsList(importsToSave);
-            setProductionRows(productionRowsToSave);
+            const importsToSave = productionPlan.imports;
+            const productionRowsToSave = productionPlan.productionRows;
 
             const resp = await saveService.saveProductionLineData(appData, productionRowsToSave, powerRows, importsToSave, undefined, importSourceSelections);
             if (resp && resp.success) {
                 const mappings = resp.data?.newAndOldIds || resp.data?.newAndOldIds || resp.newAndOldIds || [];
-                const savedImportSources = resp.data?.importSources || resp.importSources || [];
+                const savedImportSources = (resp.data?.importSources || resp.importSources || []) as unknown[];
+                const normalizedSources = savedImportSources.map(normalizeImportSourceSelection);
 
                 if (mappings && mappings.length > 0) {
                     const mapOldToNew = new Map<string, number>();
@@ -488,9 +226,8 @@ const ProductionLineApp: React.FC = () => {
                     setAppData(prev => prev ? {...prev, production: productionRowsToSave} : prev);
                 }
                 if (savedImportSources.length > 0 || importSourceSelections.length > 0) {
-                    const normalizedSources = savedImportSources.map(normalizeImportSourceSelection);
                     setImportSourceSelections(normalizedSources);
-                    setAppData(prev => prev ? {...prev, importSourceSelections: savedImportSources} : prev);
+                    setAppData(prev => prev ? {...prev, importSourceSelections: normalizedSources} : prev);
                 }
 
                 setAppData(prev => prev ? {
@@ -498,7 +235,7 @@ const ProductionLineApp: React.FC = () => {
                     imports: importsToSave,
                     powers: powerRows,
                     checklist: appData?.checklist || [],
-                    importSourceSelections: savedImportSources
+                    importSourceSelections: normalizedSources
                 } : prev);
 
                 saveService.showSaveMessage(true, 'Production line saved successfully.');
@@ -595,7 +332,7 @@ const ProductionLineApp: React.FC = () => {
                 isOpen={visualizationOpen}
                 onClose={() => setVisualizationOpen(false)}
                 appData={appData}
-                productionRows={productionRows}
+                productionRows={calculatedProductionRows}
                 importsList={importsList}
                 recipeMap={recipeMap}
                 importSourceSelections={importSourceSelections}
@@ -610,7 +347,7 @@ const ProductionLineApp: React.FC = () => {
                 isOpen={checklistOpen}
                 onClose={() => setChecklistOpen(false)}
                 appData={appData}
-                productionRows={productionRows}
+                productionRows={calculatedProductionRows}
                 onSave={(checklist) => {
                     setAppData(prev => prev ? {...prev, checklist: checklist} : prev);
                 }}
@@ -620,7 +357,7 @@ const ProductionLineApp: React.FC = () => {
                 isOpen={settingsOpen}
                 onClose={() => setSettingsOpen(false)}
                 appData={appData}
-                productionRows={productionRows}
+                productionRows={calculatedProductionRows}
                 powerRows={powerRows}
                 importsList={importsList}
                 onSave={(pl) => {
@@ -636,16 +373,19 @@ const ProductionLineApp: React.FC = () => {
                     // apply locally first
                     setProductionRows(newProduction);
                     setPowerRows(newPowers);
-                    setImportsList(newImports);
-                    setAppData(prev => prev ? {...prev, powers: newPowers, production: newProduction, imports: newImports, checklist: newChecklist} : prev);
+                    const importedPlan = calculateProductionPlan({...appData, production: newProduction, powers: newPowers, imports: newImports, checklist: newChecklist}, newProduction, recipeMap);
+                    const importsToSave = importedPlan.imports;
+                    const productionToSave = importedPlan.productionRows;
+                    setAppData(prev => prev ? {...prev, powers: newPowers, production: productionToSave, imports: importsToSave, checklist: newChecklist} : prev);
 
                     // Now save the production line using SaveService (same behaviour as Save button)
                     try {
                         const saveService = await import('./service/SaveService');
-                        const resp = await saveService.saveProductionLineData({...appData, production: newProduction, powers: newPowers, imports: newImports, checklist: newChecklist}, newProduction, newPowers, newImports, (newProduction || []).map((r:any) => r.id), importSourceSelections);
+                        const resp = await saveService.saveProductionLineData({...appData, production: productionToSave, powers: newPowers, imports: importsToSave, checklist: newChecklist}, productionToSave, newPowers, importsToSave, (newProduction || []).map((r: ProductionItem) => r.id), importSourceSelections);
                         if (resp && resp.success) {
                             const mappings = resp.data?.newAndOldIds || resp.data?.newAndOldIds || resp.newAndOldIds || [];
-                            const savedImportSources = resp.data?.importSources || resp.importSources || [];
+                            const savedImportSources = (resp.data?.importSources || resp.importSources || []) as unknown[];
+                            const normalizedSources = savedImportSources.map(normalizeImportSourceSelection);
 
                             if (mappings && mappings.length > 0) {
                                 const mapOldToNew = new Map<number, number>();
@@ -654,24 +394,23 @@ const ProductionLineApp: React.FC = () => {
                                 setProductionRows(prev => prev.map(r => ({...r, id: mapOldToNew.get(Number(r.id)) ?? r.id})));
                                 setAppData(prev => prev ? {
                                     ...prev,
-                                    production: (newProduction || []).map(r => ({...r, id: mapOldToNew.get(Number(r.id)) ?? r.id}))
+                                    production: (productionToSave || []).map(r => ({...r, id: mapOldToNew.get(Number(r.id)) ?? r.id}))
                                 } : prev);
                             } else {
-                                setAppData(prev => prev ? {...prev, production: newProduction} : prev);
+                                setAppData(prev => prev ? {...prev, production: productionToSave} : prev);
                             }
 
                             if (savedImportSources.length > 0 || importSourceSelections.length > 0) {
-                                const normalizedSources = savedImportSources.map(normalizeImportSourceSelection);
                                 setImportSourceSelections(normalizedSources);
-                                setAppData(prev => prev ? {...prev, importSourceSelections: savedImportSources} : prev);
+                                setAppData(prev => prev ? {...prev, importSourceSelections: normalizedSources} : prev);
                             }
 
                             setAppData(prev => prev ? {
                                 ...prev,
-                                imports: newImports,
+                                imports: importsToSave,
                                 powers: newPowers,
                                 checklist: newChecklist,
-                                importSourceSelections: savedImportSources
+                                importSourceSelections: normalizedSources
                             } : prev);
 
                             saveService.showSaveMessage(true, 'Production line imported and saved successfully.');
@@ -743,7 +482,7 @@ const ProductionLineApp: React.FC = () => {
                         Read-only
                         values are shown as labels (not inputs).</p>
                     <div className="pl-list mb-2">
-                        {productionRows.map((productionItem) => (
+                        {calculatedProductionRows.map((productionItem) => (
                             <ProductionRowCard key={productionItem.id}
                                                row={productionItem}
                                                recipe={recipeMap[productionItem.recipe_id] || undefined}

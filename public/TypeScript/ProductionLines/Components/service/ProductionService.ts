@@ -1,58 +1,117 @@
-// Service to calculate imports from production rows (moved from ProductionLineApp)
-export function calculateImports(appData: any, productionRows: any[], recipeMap: Record<number, any>) {
+import type {AppData, ImportItem, ProductionItem, Recipe} from '../../Types/global';
+
+export interface ProductionPlan {
+    productionRows: ProductionItem[];
+    imports: ImportItem[];
+    usageArr: number[];
+    extraUsageArr: number[];
+}
+
+interface ProducerMetadata {
+    rec: Recipe | null;
+    primaryNameLower: string;
+    secondNameLower: string;
+    exportPerMin: number;
+    exportPerMin2: number;
+    productQty: number;
+    extraQty: number;
+}
+
+const toNumber = (value: unknown): number => {
+    const parsed = Number(value ?? 0);
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const calculateProductionFields = (
+    row: ProductionItem,
+    recipe: Recipe | undefined,
+    index: number,
+    usageArr: number[],
+    extraUsageArr: number[]
+): Pick<ProductionItem, 'local_usage' | 'local_usage2' | 'export_amount_per_min' | 'export_ammount_per_min2'> => {
+    const productQuantity = toNumber(row.product_quantity);
+    const localUsage = usageArr[index] ?? 0;
+    const hasSecondProduct = !!(recipe?.export_amount_per_min && recipe.export_amount_per_min2 != null);
+    const localUsage2 = hasSecondProduct ? (extraUsageArr[index] ?? 0) : null;
+    const extraQuantity = hasSecondProduct
+        ? productQuantity * (toNumber(recipe.export_amount_per_min2) / toNumber(recipe.export_amount_per_min))
+        : null;
+
+    return {
+        local_usage: localUsage,
+        local_usage2: localUsage2,
+        export_amount_per_min: productQuantity - localUsage,
+        export_ammount_per_min2: extraQuantity === null ? null : extraQuantity - toNumber(localUsage2),
+    };
+};
+
+export function calculateProductionPlan(
+    appData: AppData | null,
+    productionRows: ProductionItem[],
+    recipeMap: Record<number, Recipe>
+): ProductionPlan {
     const rows = productionRows || [];
-    const n = rows.length;
-    const usageArr = new Array(n).fill(0);
-    const extraUsageArr = new Array(n).fill(0);
-    
-    if (!appData) return { imports: [], usageArr, extraUsageArr };
-    
+    const usageArr = new Array<number>(rows.length).fill(0);
+    const extraUsageArr = new Array<number>(rows.length).fill(0);
+
+    if (!appData) {
+        return {productionRows: rows, imports: [], usageArr, extraUsageArr};
+    }
+
     const importsMap: Record<string, { itemId: number; className: string; name: string; amount: number }> = {};
 
-    // precompute producer metadata
-    const producers = rows.map((p: any) => {
-        const rec = recipeMap[p.recipe_id] ?? null;
-        const primaryName = rec && rec.products && rec.products[0] ? rec.products[0].name : p.item_name_1 || '';
-        const secondName = rec && rec.products && rec.products[1] ? rec.products[1].name : p.item_name_2 || '';
-        const exportPerMin = rec?.export_amount_per_min ?? 0;
-        const exportPerMin2 = rec?.export_amount_per_min2 ?? 0;
-        const productQty = Number(p.product_quantity) || 0;
-        const primaryNameLower = primaryName.toLowerCase();
-        const secondNameLower = secondName.toLowerCase();
-        const extraQty = (exportPerMin2 && exportPerMin) ? productQty * (exportPerMin2 / exportPerMin) : 0;
-        return {rec, primaryNameLower, secondNameLower, exportPerMin, exportPerMin2, productQty, extraQty};
+    const producers: ProducerMetadata[] = rows.map((row) => {
+        const rec = recipeMap[row.recipe_id] ?? null;
+        const primaryName = rec?.products?.[0]?.name ?? row.item_name_1 ?? '';
+        const secondName = rec?.products?.[1]?.name ?? row.item_name_2 ?? '';
+        const exportPerMin = toNumber(rec?.export_amount_per_min);
+        const exportPerMin2 = toNumber(rec?.export_amount_per_min2);
+        const productQty = toNumber(row.product_quantity);
+        const extraQty = exportPerMin2 && exportPerMin ? productQty * (exportPerMin2 / exportPerMin) : 0;
+
+        return {
+            rec,
+            primaryNameLower: primaryName.toLowerCase(),
+            secondNameLower: secondName.toLowerCase(),
+            exportPerMin,
+            exportPerMin2,
+            productQty,
+            extraQty,
+        };
     });
 
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const recipe = recipeMap[row.recipe_id] ?? null;
         if (!recipe) continue;
-        const rowQty = Number(row.product_quantity) || 0;
-        const productionRate = recipe.export_amount_per_min ? rowQty / recipe.export_amount_per_min : 0;
 
-        for (const ing of (recipe.ingredients || [])) {
-            const useSomersloop = !!row.use_somersloop;
-            const amountNeeded = (ing.quantity * productionRate) / (useSomersloop ? 2 : 1);
+        const rowQty = toNumber(row.product_quantity);
+        const recipeExportPerMin = toNumber(recipe.export_amount_per_min);
+        const productionRate = recipeExportPerMin ? rowQty / recipeExportPerMin : 0;
+
+        for (const ingredient of recipe.ingredients || []) {
+            const amountNeeded = (toNumber(ingredient.quantity) * productionRate) / (row.use_somersloop ? 2 : 1);
             let remainingNeed = amountNeeded;
-            const ingNameLower = ing.name.toLowerCase();
+            const ingredientNameLower = ingredient.name.toLowerCase();
 
-            // consume from primary products
-            for (let j = 0; j < n && remainingNeed > 0; j++) {
-                if (producers[j].primaryNameLower !== ingNameLower) continue;
+            for (let j = 0; j < rows.length && remainingNeed > 0; j++) {
+                if (producers[j].primaryNameLower !== ingredientNameLower) continue;
                 const available = producers[j].productQty - usageArr[j];
                 if (available <= 0) continue;
+
                 const take = Math.min(available, remainingNeed);
                 usageArr[j] += take;
                 remainingNeed -= take;
             }
 
-            // consume from secondary products (extra)
             if (remainingNeed > 0) {
-                for (let j = 0; j < n && remainingNeed > 0; j++) {
+                for (let j = 0; j < rows.length && remainingNeed > 0; j++) {
                     if (!producers[j].rec || !producers[j].exportPerMin2) continue;
-                    if (producers[j].secondNameLower !== ingNameLower) continue;
+                    if (producers[j].secondNameLower !== ingredientNameLower) continue;
+
                     const available = producers[j].extraQty - extraUsageArr[j];
                     if (available <= 0) continue;
+
                     const take = Math.min(available, remainingNeed);
                     extraUsageArr[j] += take;
                     remainingNeed -= take;
@@ -60,23 +119,39 @@ export function calculateImports(appData: any, productionRows: any[], recipeMap:
             }
 
             if (remainingNeed > 1e-7) {
-                const foundItem = (appData.items || []).find((it: any) => it.name && it.name.toLowerCase() === ing.name.toLowerCase());
-                const itemId = foundItem ? foundItem.id : 0;
-                const className = foundItem ? foundItem.class_name : '';
-                const name = ing.name;
-                const key = `${itemId}-${name}`;
-                if (!importsMap[key]) importsMap[key] = {itemId, className, name, amount: 0};
+                const foundItem = (appData.items || []).find((item) => item.name?.toLowerCase() === ingredientNameLower);
+                const itemId = foundItem?.id ?? 0;
+                const className = foundItem?.class_name ?? '';
+                const key = `${itemId}-${ingredient.name}`;
+
+                if (!importsMap[key]) {
+                    importsMap[key] = {itemId, className, name: ingredient.name, amount: 0};
+                }
                 importsMap[key].amount += remainingNeed;
             }
         }
     }
 
-    const newImports: any[] = Object.values(importsMap).map(it => ({
-        ammount: it.amount,
-        name: it.name,
-        items_id: it.itemId,
-        item_class_name: it.className
+    const imports: ImportItem[] = Object.values(importsMap).map((item) => ({
+        ammount: item.amount,
+        name: item.name,
+        items_id: item.itemId,
+        item_class_name: item.className,
     }));
 
-    return { imports: newImports, usageArr, extraUsageArr };
+    const calculatedProductionRows = rows.map((row, index) => ({
+        ...row,
+        ...calculateProductionFields(row, recipeMap[row.recipe_id], index, usageArr, extraUsageArr),
+    }));
+
+    return {productionRows: calculatedProductionRows, imports, usageArr, extraUsageArr};
+}
+
+export function calculateImports(
+    appData: AppData | null,
+    productionRows: ProductionItem[],
+    recipeMap: Record<number, Recipe>
+): Pick<ProductionPlan, 'imports' | 'usageArr' | 'extraUsageArr'> {
+    const {imports, usageArr, extraUsageArr} = calculateProductionPlan(appData, productionRows, recipeMap);
+    return {imports, usageArr, extraUsageArr};
 }

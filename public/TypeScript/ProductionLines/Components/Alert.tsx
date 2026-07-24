@@ -9,9 +9,9 @@ const Alert: FC = () => {
         const handler = (e: Event) => {
             const detail = (e as CustomEvent).detail as { type?: string; message?: string } | undefined;
             if (!detail || !detail.message) return;
-            const type = (detail.type as any) || 'info';
+            const type = detail.type || 'info';
             const id = Date.now() + Math.floor(Math.random() * 1000);
-            const item: AlertItem = { id, type: (['success','danger','info','warning'].includes(type) ? (type as any) : 'info'), message: detail.message };
+            const item: AlertItem = { id, type: (['success','danger','info','warning'].includes(type) ? type as AlertItem['type'] : 'info'), message: detail.message };
             setAlerts(prev => [...prev, item]);
 
             // Auto remove after 4s
@@ -32,7 +32,7 @@ const Alert: FC = () => {
         <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 2000 }}>
             {alerts.map(alert => (
                 <div key={alert.id} className={`alert alert-${alert.type} alert-dismissible fade show`} role="alert" style={{ minWidth: 260, boxShadow: '0 2px 6px rgba(0,0,0,0.12)', marginBottom: 8 }}>
-                    <div dangerouslySetInnerHTML={{ __html: alert.message }} />
+                    <div>{alert.message}</div>
                     <button type="button" className="btn-close" aria-label="Close" onClick={() => remove(alert.id)} />
                 </div>
             ))}
