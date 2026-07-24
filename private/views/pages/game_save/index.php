@@ -487,8 +487,8 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
                     <?php else: ?>
                         <div class="accordion" id="productionLinesAccordion">
                             <?php foreach ($outputs as $lineTitle => $lineOutputs) :
-                                $lineId = preg_replace('/\s+/', '_', $lineTitle);
-                                ?>
+                                $lineId = preg_replace('/[^\p{L}\p{N}]+/u', '_', $lineTitle);
+                            ?>
                                 <div class="accordion-item">
                                     <h2 class="accordion-header">
                                         <button class="accordion-button collapsed" type="button"

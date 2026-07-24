@@ -36,6 +36,15 @@ export interface Recipe {
     products: RecipeProduct[];
 }
 
+export interface Building {
+    id: number;
+    name: string;
+    class_name: string;
+    power_used: number;
+    power_generation: number;
+    image: string;
+}
+
 export interface ProductionItem {
     id: number;
     item_name_1: string;
@@ -52,9 +61,31 @@ export interface ProductionItem {
     building_class_name: string;
     power_used: number;
     product_quantity: number;
-    // allow empty string while editing clock
     clock_speed: number | '';
     use_somersloop: number | boolean | null;
+    collapsed?: boolean;
+}
+
+export interface ProductLine {
+    id: number;
+    title?: string;
+    active?: number;
+    created_at?: string;
+    updated_at?: string;
+    description?: string;
+    power_consumbtion?: number;
+    game_saves_id: number;
+}
+
+export interface PowerItem {
+    idpower: number;
+    building_ammount: number;
+    clock_speed: number;
+    buildings_id: number;
+    production_lines_id: number;
+    power_used: number;
+    user: number;
+    building: Building | null;
 }
 
 export interface Item {
@@ -70,6 +101,7 @@ export interface ImportItem {
     items_id: number;
     item_class_name: string;
 }
+
 export interface ImportSourceCandidate {
     production_line_id: number;
     production_line_title: string;
@@ -89,4 +121,37 @@ export interface ImportSourceSelection {
     productionLineTitle?: string;
     itemName?: string;
     itemClassName?: string;
+}
+
+export interface ChecklistItem {
+    id: number;
+    production_lines_id: number;
+    production_id: number;
+    been_build: number;
+    been_tested: number;
+}
+
+export interface ProductionSetting {
+    id: number;
+    clockSpeed: number;
+    useSomersloop: boolean;
+}
+
+export interface AppData {
+    productLine: ProductLine;
+    imports: ImportItem[];
+    importSourceCandidates: ImportSourceCandidate[];
+    importSourceSelections: ImportSourceSelection[];
+    production: ProductionItem[];
+    powers: PowerItem[];
+    checklist: ChecklistItem[];
+    items: Item[];
+    recipes: Recipe[];
+    buildings: Building[];
+    itemClassMap: Record<string, string>;
+    productionSettings: ProductionSetting[];
+    viewOnly: boolean;
+    firstProduction: boolean;
+    userId: number | null;
+    importsReadonly: boolean;
 }

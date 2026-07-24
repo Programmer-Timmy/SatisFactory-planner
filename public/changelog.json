@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.17.3",
+    "date": "July 24, 2026",
+    "changes": [
+      "Improved: Added a TypeScript/React pain-point tracker for production-line editor cleanup work.",
+      "Improved: Production-line editor calculations now use a shared production plan so rendering and saving use the same import, usage, and export values.",
+      "Improved: Production-line save logic is split into typed payload building and the ajax posting boundary for safer future changes.",
+      "Fixed: Alert messages now render as text instead of raw HTML."
+    ]
+  },
+  {
     "version": "1.17.2",
     "date": "July 24, 2026",
     "changes": [
