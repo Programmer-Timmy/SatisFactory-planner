@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.17.2",
+    "date": "July 24, 2026",
+    "changes": [
+      "Fixed: Production row export amounts are now recalculated in state before saving so saved exports match the values shown in the editor.",
+      "Improved: Power production now uses the globally available game save id instead of deriving it from the current URL."
+    ]
+  },
+  {
     "version": "1.17.1",
     "date": "July 21, 2026",
     "changes": [
