@@ -45,6 +45,9 @@ $accessDedicatedServer = GameSaves::checkAccess($gameSave->id, $_SESSION['userId
 
 ?>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+        window.gameSaveId = <?= json_encode($gameSave->id) ?>;
+    </script>
     <script type="text/javascript">
         google.charts.load('current', {'packages': ['gauge']});
         google.charts.setOnLoadCallback(drawChart);

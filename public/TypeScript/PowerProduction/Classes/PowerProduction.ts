@@ -7,9 +7,16 @@ enum ActionType {
 
 declare function updatePowerProduction(power: number): void;
 
+declare global {
+    interface Window {
+        gameSaveId: number;
+    }
+}
+
 export class PowerProduction {
     private powerProduction: JQuery<HTMLElement>;
     private newInput: JQuery<HTMLElement>;
+    private gameSaveId: number = window.gameSaveId | 0
 
     constructor() {
         this.powerProduction = $('#powerProduction');
@@ -234,7 +241,7 @@ export class PowerProduction {
         const powerProductionId = cardId.replace('powerProductionCard', '');
 
         const url = new URL(window.location.href);
-        const gameSaveId = parseInt(url.pathname.split('/').pop() || '0');
+        const gameSaveId = this.gameSaveId;
 
         switch (action) {
             case ActionType.Add:
