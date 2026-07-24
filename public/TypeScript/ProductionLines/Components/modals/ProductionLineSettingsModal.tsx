@@ -1,29 +1,47 @@
 import React, {useEffect, useState} from 'react';
 import Modal from "../Modal";
+import LegacyBootstrapToggle from "../LegacyBootstrapToggle";
+import type {AppData, ImportItem, PowerItem, ProductLine, ProductionItem} from "../../Types/global";
+
+interface ProductionLineImportPreview {
+    productLine: Partial<ProductLine> | null;
+    production: ProductionItem[];
+    powers: PowerItem[];
+    imports: ImportItem[];
+    checklist: any[];
+}
+
+interface ProductionLineImportData {
+    production?: ProductionItem[];
+    powers?: PowerItem[];
+    imports?: ImportItem[];
+    checklist?: any[];
+    productLine?: Partial<ProductLine> | null;
+}
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    appData: any; // lightweight typing to avoid large imports
-    productionRows?: any[];
-    powerRows?: any[];
-    importsList?: any[];
+    appData: AppData;
+    productionRows?: ProductionItem[];
+    powerRows?: PowerItem[];
+    importsList?: ImportItem[];
     onSave: (productLine: { title?: string; active?: number }) => void;
-    onImport?: (data: { production?: any[]; powers?: any[]; imports?: any[]; checklist?: any[]; productLine?: any }) => void;
+    onImport?: (data: ProductionLineImportData) => void;
 }
+
+const toArray = <T,>(value: unknown): T[] => Array.isArray(value) ? value as T[] : [];
 
 const ProductionLineSettingsModal: React.FC<Props> = ({isOpen, onClose, appData, productionRows, powerRows, importsList, onSave, onImport}) => {
     const [title, setTitle] = useState<string>(appData?.productLine?.title || '');
     const [active, setActive] = useState<boolean>(!!appData?.productLine?.active);
-    const [importText, setImportText] = useState<string>('');
     const [message, setMessage] = useState<string | null>(null);
-    const [importPreview, setImportPreview] = useState<any | null>(null);
+    const [importPreview, setImportPreview] = useState<ProductionLineImportPreview | null>(null);
 
     useEffect(() => {
         if (!isOpen) return;
         setTitle(appData?.productLine?.title || '');
         setActive(!!appData?.productLine?.active);
-        setImportText('');
         setMessage(null);
         setImportPreview(null);
     }, [isOpen, appData]);
@@ -35,75 +53,29 @@ const ProductionLineSettingsModal: React.FC<Props> = ({isOpen, onClose, appData,
         onClose();
     };
 
-    // Initialize bootstrap-toggle for the active switch and attach change handler (legacy style)
-    useEffect(() => {
-        if (!isOpen) return;
-        const selector = '#productionLineActiveToggle';
-        const $ = (window as any).$;
-        try {
-            setTimeout(() => {
-                try {
-                    if ($ && $.fn && $.fn.bootstrapToggle) {
-                        $(selector).each(function () {
-                            // @ts-ignore
-                            try { if ($(this).data('bs.toggle')) $(this).bootstrapToggle('destroy'); } catch (e) { /* ignore */ }
-                        });
-                        $(selector).bootstrapToggle();
-                        $(selector).off('.plActive').on('change.plActive', function () {
-                            try {
-                                // @ts-ignore
-                                const checked = !!$(this).prop('checked');
-                                setActive(checked);
-                            } catch (e) { /* ignore */ }
-                        });
-                    } else {
-                        const el = document.querySelector(selector) as HTMLInputElement | null;
-                        if (el) {
-                            const handler = (ev: Event) => {
-                                try { setActive((ev.currentTarget as HTMLInputElement).checked); } catch (e) { /* ignore */ }
-                            };
-                            (el as any).__plActiveHandler = handler;
-                            el.addEventListener('change', handler);
-                        }
-                    }
-                } catch (inner) { /* ignore */ }
-            }, 0);
-        } catch (e) { /* ignore */ }
-
-        return () => {
-            try {
-                if ((window as any).$ && (window as any).$.fn) (window as any).$(selector).off('.plActive');
-                else {
-                    const el = document.querySelector(selector) as HTMLInputElement | null;
-                    if (el && (el as any).__plActiveHandler) el.removeEventListener('change', (el as any).__plActiveHandler);
-                }
-            } catch (e) { /* ignore */ }
-        };
-    }, [isOpen]);
-
     const handleExport = () => {
         try {
-            const payload: any = {
+            const payload = {
                 productLine: {
                     id: appData?.productLine?.id,
                     title: title || appData?.productLine?.title || '',
                     active: active ? 1 : 0,
-                    game_saves_id: appData?.productLine?.game_saves_id || 0
+                    game_saves_id: appData?.productLine?.game_saves_id || 0,
                 },
                 production: (productionRows && productionRows.length) ? productionRows : (appData?.production || []),
                 powers: (powerRows && powerRows.length) ? powerRows : (appData?.powers || []),
                 imports: (importsList && importsList.length) ? importsList : (appData?.imports || []),
-                checklist: appData?.checklist || []
+                checklist: appData?.checklist || [],
             };
             const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
+            const anchor = document.createElement('a');
+            anchor.href = url;
             const name = (appData?.productLine?.title || 'production-line').replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
-            a.download = `${name || 'production-line'}-${appData?.productLine?.id || '0'}.json`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
+            anchor.download = `${name || 'production-line'}-${appData?.productLine?.id || '0'}.json`;
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
             URL.revokeObjectURL(url);
             setMessage('Export started, check your downloads folder.');
             setTimeout(() => setMessage(null), 2500);
@@ -115,48 +87,41 @@ const ProductionLineSettingsModal: React.FC<Props> = ({isOpen, onClose, appData,
 
     const handleImportJson = (text: string) => {
         try {
-            const parsed = JSON.parse(text);
+            const parsed = JSON.parse(text) as Record<string, unknown>;
             if (!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON');
-            // productLine
-            const pl = parsed.productLine || parsed.productionLine || parsed.product_line || parsed.productline || parsed.prodLine;
 
-            // production/powers/imports
-            const importedProduction = parsed.production || parsed.productionRows || parsed.production_table || [];
-            const importedPowers = parsed.powers || parsed.powerRows || parsed.power || [];
-            const importedImports = parsed.imports || parsed.importsList || parsed.imports_table || [];
-            const importedChecklist = parsed.checklist || parsed.checkList || [];
+            const productLine = parsed.productLine || parsed.productionLine || parsed.product_line || parsed.productline || parsed.prodLine;
+            const importedProduction = toArray<ProductionItem>(parsed.production || parsed.productionRows || parsed.production_table);
+            const importedPowers = toArray<PowerItem>(parsed.powers || parsed.powerRows || parsed.power);
+            const importedImports = toArray<ImportItem>(parsed.imports || parsed.importsList || parsed.imports_table);
+            const importedChecklist = toArray<any>(parsed.checklist || parsed.checkList);
 
-            if (!pl && (!importedProduction.length && !importedPowers.length && !importedImports.length)) {
+            if (!productLine && (!importedProduction.length && !importedPowers.length && !importedImports.length)) {
                 throw new Error('No supported data found (productLine, production, powers, imports)');
             }
 
-            // prepare preview but do NOT apply anything yet
-            const preview = {
-                productLine: pl || null,
+            setImportPreview({
+                productLine: productLine && typeof productLine === 'object' ? productLine as Partial<ProductLine> : null,
                 production: importedProduction,
                 powers: importedPowers,
                 imports: importedImports,
-                checklist: importedChecklist
-            };
-
-            setImportPreview(preview);
-            setMessage('Preview loaded — press "Apply Import" to apply production/powers/imports to this production line.');
+                checklist: importedChecklist,
+            });
+            setMessage('Preview loaded - press "Apply Import" to apply production/powers/imports to this production line.');
             setTimeout(() => setMessage(null), 4000);
-        } catch (e: any) {
-            setMessage('Import failed: ' + (e?.message || 'unknown'));
+        } catch (e: unknown) {
+            setMessage('Import failed: ' + (e instanceof Error ? e.message : 'unknown'));
             setTimeout(() => setMessage(null), 4000);
         }
     };
 
-    const onFileChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        const f = ev.currentTarget.files && ev.currentTarget.files[0];
-        if (!f) return;
+    const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.currentTarget.files && event.currentTarget.files[0];
+        if (!file) return;
+
         const reader = new FileReader();
-        reader.onload = () => {
-            const text = String(reader.result || '');
-            handleImportJson(text);
-        };
-        reader.readAsText(f);
+        reader.onload = () => handleImportJson(String(reader.result || ''));
+        reader.readAsText(file);
     };
 
     return (
@@ -179,21 +144,13 @@ const ProductionLineSettingsModal: React.FC<Props> = ({isOpen, onClose, appData,
                     <div className="mb-3 col-12 col-md-2">
                         <label htmlFor="productionLineActiveToggle" className="form-label">Active</label>
                         <div>
-                            <input
+                            <LegacyBootstrapToggle
                                 id="productionLineActiveToggle"
-                                type="checkbox"
-                                // let bootstrap-toggle manage visuals; use uncontrolled defaultChecked
-                                defaultChecked={active}
-                                data-toggle="toggle"
-                                data-onstyle="success"
-                                data-offstyle="dark"
-                                data-onlabel="<i class='fa-solid fa-check'></i>"
-                                data-offlabel="<i class='fa-solid fa-times'></i>"
-                                data-size="md"
-                                data-style="ios"
-                                data-theme="dark"
-                                data-pl-active="1"
-                                aria-label="Production line active"
+                                checked={active}
+                                onChange={setActive}
+                                size="md"
+                                ariaLabel="Production line active"
+                                dataAttributes={{'data-pl-active': 1}}
                             />
                         </div>
                     </div>
@@ -227,13 +184,14 @@ const ProductionLineSettingsModal: React.FC<Props> = ({isOpen, onClose, appData,
                             )}
                             <div className="d-flex gap-2 mt-3">
                                 <button className="btn btn-success" onClick={() => {
-                                    const dataToApply: any = {
-                                        production: importPreview.production || [],
-                                        powers: importPreview.powers || [],
-                                        imports: importPreview.imports || [],
-                                        checklist: importPreview.checklist || []
-                                    };
-                                    if (onImport) onImport(dataToApply);
+                                    if (onImport) {
+                                        onImport({
+                                            production: importPreview.production || [],
+                                            powers: importPreview.powers || [],
+                                            imports: importPreview.imports || [],
+                                            checklist: importPreview.checklist || [],
+                                        });
+                                    }
                                     setMessage('Import applied locally. Use Save to persist to server.');
                                     setTimeout(() => setMessage(null), 3000);
                                     setImportPreview(null);

@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.17.5",
+    "date": "July 24, 2026",
+    "changes": [
+      "Improved: Legacy production-line Bootstrap toggle behavior is now isolated in a React adapter component.",
+      "Improved: Settings and checklist modals no longer bind bootstrap-toggle handlers directly.",
+      "Improved: Added a production-line verification script for TypeScript checks and generated JavaScript builds."
+    ]
+  },
+  {
     "version": "1.17.4",
     "date": "July 24, 2026",
     "changes": [
