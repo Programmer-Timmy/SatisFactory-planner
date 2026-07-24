@@ -1,20 +1,21 @@
 import React, {useEffect, useRef} from 'react';
 import Modal from "../Modal";
-
+import type {AppData, ImportItem, ImportSourceSelection, ProductionItem, Recipe} from '../../Types/global';
+import type {Visualization} from '../../Utils/Visualization';
 import Tooltip from "../Tooltip";
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    appData: any;
-    productionRows: any[];
-    importsList: any[];
-    recipeMap: Record<number, any>;
-    importSourceSelections?: any[];
+    appData: AppData;
+    productionRows: ProductionItem[];
+    importsList: ImportItem[];
+    recipeMap: Record<number, Recipe>;
+    importSourceSelections?: ImportSourceSelection[];
 }
 
 const VisualizationPanel: React.FC<Props> = ({isOpen, onClose, appData, productionRows, importsList, recipeMap, importSourceSelections = []}) => {
-    const vizRef = useRef<any | null>(null);
+    const vizRef = useRef<Visualization | null>(null);
     const [loading, setLoading] = React.useState<boolean>(false);
     const [progress, setProgress] = React.useState<number>(0);
 
@@ -30,7 +31,7 @@ const VisualizationPanel: React.FC<Props> = ({isOpen, onClose, appData, producti
                 const mod = await import('../../Utils/VisualizationAdapter');
                 if (cancelled) return;
                 if (mod && typeof mod.createVisualizationFromData === 'function') {
-                    const viz = (mod.createVisualizationFromData as any)({...appData, importSourceSelections}, productionRows, importsList, recipeMap, { onProgress: (p:number) => { if (!cancelled) setProgress(Math.max(0, Math.min(100, Math.round(p)))) } });
+                    const viz = mod.createVisualizationFromData({...appData, importSourceSelections}, productionRows, importsList, recipeMap, { onProgress: (p: number) => { if (!cancelled) setProgress(Math.max(0, Math.min(100, Math.round(p)))) } });
                     vizRef.current = viz;
                     if (viz && typeof viz.ready === 'object' && typeof (viz.ready as Promise<void>).then === 'function') {
                         try {

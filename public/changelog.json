@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.17.4",
+    "date": "July 24, 2026",
+    "changes": [
+      "Improved: Production-line editor orchestration is now extracted into a dedicated React hook so the app component focuses on UI composition.",
+      "Improved: Production-line analytics tracking now uses a shared helper with consistent event payloads.",
+      "Improved: Visualization creation now uses a typed adapter facade with the legacy loose table-handler boundary isolated."
+    ]
+  },
+  {
     "version": "1.17.3",
     "date": "July 24, 2026",
     "changes": [

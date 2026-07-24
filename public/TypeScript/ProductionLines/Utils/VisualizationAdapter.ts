@@ -1,92 +1,188 @@
-import { Import as ProductionImport } from "./visualization-data/Import";
+import type {AppData, Building, ChecklistItem, ImportItem, ImportSourceSelection, Item, ProductionItem, Recipe} from "../Types/global";
+import {Import as ProductionImport} from "./visualization-data/Import";
 import {Visualization} from "./Visualization";
 
-export function createVisualizationFromData(appData: any, productionRows: any[], importsList: any[], recipeMap: Record<number, any>, options?: { onProgress?: (pct: number) => void }) {
+type VisualizationOptions = { onProgress?: (pct: number) => void };
+
+type VisualizationRecipe = Omit<Recipe, 'building'> & {
+    building: Building | null;
+    itemName?: string;
+    secondItemName?: string;
+    resources?: Array<{ itemId: number }>;
+};
+
+interface ProducerMetadata {
+    rec: VisualizationRecipe | null;
+    primaryNameLower: string;
+    secondNameLower: string;
+    exportPerMin: number;
+    exportPerMin2: number;
+    productQty: number;
+    extraQty: number;
+}
+
+interface ProductionTableImport {
+    index: number;
+    amount: number;
+    product: string;
+}
+
+interface ProductionTableRow {
+    row_id: number;
+    recipe: VisualizationRecipe | null;
+    quantity: number;
+    product: string;
+    recipeSetting: { clockSpeed: number; useSomersloop: boolean };
+    productionImports: ProductionImport[];
+    imports: ProductionTableImport[];
+    exportPerMin: number;
+    extraCells: { Quantity?: number; ExportPerMin?: number; Usage?: number; Product?: string };
+    Usage: number;
+}
+
+interface ImportSourceVisualizationSelection extends ImportSourceSelection {
+    shortAmount: number;
+}
+
+interface ImportTableRow {
+    index: number;
+    product: string;
+    quantity: number;
+    itemId: number;
+    sourceSelections: ImportSourceVisualizationSelection[];
+    sourcedQuantity: number;
+    unresolvedQuantity: number;
+}
+
+interface ChecklistVisualizationItem {
+    index: number;
+    productionRow: ProductionTableRow;
+    beenBuild: boolean;
+    beenTested: boolean;
+}
+
+interface VisualizationTableHandler {
+    productionTableRows: ProductionTableRow[];
+    importsTableRows: ImportTableRow[];
+    checklist: { getChecklist: () => ChecklistVisualizationItem[] };
+    getRecipeById: (id: number) => VisualizationRecipe | null;
+    items: Item[];
+}
+
+const toNumber = (value: unknown): number => {
+    const parsed = Number(value ?? 0);
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const normalizeImportSourceSelection = (source: Partial<ImportSourceSelection> & { exporting_production_lines_id?: unknown; items_id?: unknown; requested_amount?: unknown; assigned_amount?: unknown; production_line_title?: unknown; item_name?: unknown; item_class_name?: unknown }): ImportSourceSelection => ({
+    exportingProductionLineId: Number(source.exportingProductionLineId ?? source.exporting_production_lines_id ?? 0),
+    itemId: Number(source.itemId ?? source.items_id ?? 0),
+    requestedAmount: Number(source.requestedAmount ?? source.requested_amount ?? 0),
+    assignedAmount: Number(source.assignedAmount ?? source.assigned_amount ?? 0),
+    productionLineTitle: String(source.productionLineTitle ?? source.production_line_title ?? 'Unknown line'),
+    itemName: source.itemName === undefined && source.item_name === undefined ? undefined : String(source.itemName ?? source.item_name),
+    itemClassName: source.itemClassName === undefined && source.item_class_name === undefined ? undefined : String(source.itemClassName ?? source.item_class_name),
+});
+
+const withVisualizationBuildings = (
+    appData: AppData,
+    recipeMap: Record<number, Recipe>
+): Record<number, VisualizationRecipe | null> => Object.fromEntries(
+    Object.entries(recipeMap).map(([key, recipe]) => {
+        if (!recipe) return [key, null];
+
+        const buildingInfo = recipe.building?.[0] || null;
+        const foundBuilding =
+            appData.buildings.find((building) => building.class_name === (buildingInfo?.class_name || "")) ||
+            appData.buildings.find((building) => building.id === (recipe.buildings_id || 0)) ||
+            null;
+
+        return [
+            key,
+            {
+                ...recipe,
+                building: foundBuilding,
+                itemName: recipe.products?.[0]?.name,
+                secondItemName: recipe.products?.[1]?.name,
+                resources: recipe.ingredients?.map((ingredient) => ({itemId: ingredient.id})),
+            },
+        ];
+    })
+) as Record<number, VisualizationRecipe | null>;
+
+export function createVisualizationFromData(
+    appData: AppData,
+    productionRows: ProductionItem[],
+    importsList: ImportItem[],
+    recipeMap: Record<number, Recipe>,
+    options?: VisualizationOptions
+): Visualization {
     const rows = productionRows || [];
-    const n = rows.length;
+    const visualizationRecipeMap = withVisualizationBuildings(appData, recipeMap);
 
-    // set building to = recipe.building[0]
-    recipeMap = Object.fromEntries(
-        Object.entries(recipeMap).map(([key, rec]) => {
-            if (!rec) return [key, null];
-
-            const buildingInfo = rec.building?.[0] || null;
-
-            const foundBuilding =
-                appData.buildings.find((b: any) => b.class_name === (buildingInfo?.class_name || "")) ||
-                appData.buildings.find((b: any) => b.id === (rec.buildings_id || 0)) ||
-                null;
-
-            return [
-                key,
-                {
-                    ...rec,
-                    building: foundBuilding,
-                },
-            ];
-        })
-    ) as Record<number, any>;
-
-    // Precompute producer metadata similar to ProductionService
-    const producers = rows.map((p: any) => {
-        const rec = recipeMap[p.recipe_id] ?? null;
-        const primaryName = rec && rec.products && rec.products[0] ? rec.products[0].name : p.item_name_1 || '';
-        const secondName = rec && rec.products && rec.products[1] ? rec.products[1].name : p.item_name_2 || '';
-        const exportPerMin = rec?.export_amount_per_min ?? 0;
-        const exportPerMin2 = rec?.export_amount_per_min2 ?? 0;
-        const productQty = Number(p.product_quantity) || 0;
-        const extraQty = (exportPerMin2 && exportPerMin) ? productQty * (exportPerMin2 / exportPerMin) : 0;
-        return { rec, primaryNameLower: primaryName.toLowerCase(), secondNameLower: secondName.toLowerCase(), exportPerMin, exportPerMin2, productQty, extraQty };
-    });
-
-    const usageArr = new Array(n).fill(0);
-    const extraUsageArr = new Array(n).fill(0);
-
-    // Build productionTableRows and populate productionImports by consuming from producers
-    const productionTableRows: any[] = rows.map((r: any, i: number) => {
-        const recipe = recipeMap[r.recipe_id] || null;
-        const qty = Number(r.product_quantity) || Number(r.quantity) || 0;
-        const usage = Number(r.Usage ?? r.local_usage ?? r.localUsage ?? 0) || 0;
-        const extraCells: any = r.extraCells || {};
-
-        // compute exportPerMin similar to ProductionLineFunctions.calculateProductionExport
-        let exportPerMin = Number(r.exportPerMin ?? r.export_amount_per_min ?? 0);
-        if (!exportPerMin) {
-            exportPerMin = Math.max(0, qty - usage);
-        }
-
-        // handle double export if recipe provides second export info
-        if (recipe && recipe.export_amount_per_min2 && recipe.export_amount_per_min) {
-            const exportPerMin2 = recipe.export_amount_per_min2;
-            const exportPerMinMain = recipe.export_amount_per_min;
-            const secondExportPerMin = exportPerMinMain ? qty * (exportPerMin2 / exportPerMinMain) : 0;
-            extraCells.Quantity = extraCells.Quantity ?? secondExportPerMin;
-            extraCells.ExportPerMin = extraCells.ExportPerMin ?? secondExportPerMin;
-        }
+    const producers: ProducerMetadata[] = rows.map((row) => {
+        const recipe = visualizationRecipeMap[row.recipe_id] ?? null;
+        const primaryName = recipe?.products?.[0]?.name ?? row.item_name_1 ?? '';
+        const secondName = recipe?.products?.[1]?.name ?? row.item_name_2 ?? '';
+        const exportPerMin = toNumber(recipe?.export_amount_per_min);
+        const exportPerMin2 = toNumber(recipe?.export_amount_per_min2);
+        const productQty = toNumber(row.product_quantity);
+        const extraQty = exportPerMin2 && exportPerMin ? productQty * (exportPerMin2 / exportPerMin) : 0;
 
         return {
-            row_id: r.id || i,
-            recipe,
-            quantity: qty,
-            product: (recipe && (recipe.itemName || recipe.name)) || r.item_name_1 || '',
-            recipeSetting: { clockSpeed: r.clock_speed === '' ? 100 : Number(r.clock_speed ?? r.clockSpeed ?? 100), useSomersloop: !!r.use_somersloop },
-            productionImports: [] as ProductionImport[],
-            imports: r.imports || [],
-            exportPerMin: exportPerMin,
-            extraCells: extraCells,
-            Usage: usage
+            rec: recipe,
+            primaryNameLower: primaryName.toLowerCase(),
+            secondNameLower: secondName.toLowerCase(),
+            exportPerMin,
+            exportPerMin2,
+            productQty,
+            extraQty,
         };
     });
 
-    const importSourceSelections = (appData?.importSourceSelections || []).map((source: any) => ({
-        exportingProductionLineId: Number(source.exportingProductionLineId ?? source.exporting_production_lines_id ?? 0),
-        itemId: Number(source.itemId ?? source.items_id ?? 0),
-        requestedAmount: Number(source.requestedAmount ?? source.requested_amount ?? 0),
-        assignedAmount: Number(source.assignedAmount ?? source.assigned_amount ?? 0),
-        productionLineTitle: source.productionLineTitle ?? source.production_line_title ?? 'Unknown line',
-    })).filter((source: any) => source.itemId > 0 && source.requestedAmount > 0);
+    const usageArr = new Array<number>(rows.length).fill(0);
+    const extraUsageArr = new Array<number>(rows.length).fill(0);
 
-    const importSourcesByItem = new Map<number, any[]>();
+    const productionTableRows: ProductionTableRow[] = rows.map((row, index) => {
+        const recipe = visualizationRecipeMap[row.recipe_id] || null;
+        const quantity = toNumber(row.product_quantity);
+        const usage = toNumber((row as ProductionItem & { Usage?: number; localUsage?: number }).Usage ?? row.local_usage ?? (row as ProductionItem & { localUsage?: number }).localUsage);
+        const extraCells: ProductionTableRow['extraCells'] = {};
+        let exportPerMin = toNumber((row as ProductionItem & { exportPerMin?: number }).exportPerMin ?? row.export_amount_per_min);
+
+        if (!exportPerMin) {
+            exportPerMin = Math.max(0, quantity - usage);
+        }
+
+        if (recipe?.export_amount_per_min2 && recipe.export_amount_per_min) {
+            const secondExportPerMin = quantity * (recipe.export_amount_per_min2 / recipe.export_amount_per_min);
+            extraCells.Quantity = secondExportPerMin;
+            extraCells.ExportPerMin = secondExportPerMin;
+            extraCells.Product = recipe.products?.[1]?.name ?? row.item_name_2 ?? '';
+        }
+
+        return {
+            row_id: row.id || index,
+            recipe,
+            quantity,
+            product: recipe?.itemName || recipe?.name || row.item_name_1 || '',
+            recipeSetting: {
+                clockSpeed: row.clock_speed === '' ? 100 : toNumber(row.clock_speed ?? 100),
+                useSomersloop: !!row.use_somersloop,
+            },
+            productionImports: [],
+            imports: [],
+            exportPerMin,
+            extraCells,
+            Usage: usage,
+        };
+    });
+
+    const importSourceSelections = (appData.importSourceSelections || [])
+        .map(normalizeImportSourceSelection)
+        .filter((source) => source.itemId > 0 && source.requestedAmount > 0);
+
+    const importSourcesByItem = new Map<number, ImportSourceVisualizationSelection[]>();
     for (const source of importSourceSelections) {
         const list = importSourcesByItem.get(source.itemId) || [];
         list.push({
@@ -95,114 +191,110 @@ export function createVisualizationFromData(appData: any, productionRows: any[],
         });
         importSourcesByItem.set(source.itemId, list);
     }
-    // Prepare imports mapping (external imports) and iterate/consume ingredients from producers
+
     const importsMap: Record<string, { itemId: number; className: string; name: string; amount: number }> = {};
-    const importsOrder: string[] = []; // keys in insertion order
+    const importsOrder: string[] = [];
 
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        const recipe = recipeMap[row.recipe_id] ?? null;
+        const recipe = visualizationRecipeMap[row.recipe_id] ?? null;
         if (!recipe) continue;
-        const rowQty = Number(row.product_quantity) || 0;
-        const productionRate = recipe.export_amount_per_min ? rowQty / recipe.export_amount_per_min : 0;
 
-        // reset per-row imports
+        const rowQty = toNumber(row.product_quantity);
+        const productionRate = recipe.export_amount_per_min ? rowQty / recipe.export_amount_per_min : 0;
         productionTableRows[i].imports = [];
 
-        for (const ing of (recipe.ingredients || [])) {
-            const useSomersloop = !!row.use_somersloop;
-            const amountNeeded = (ing.quantity * productionRate) / (useSomersloop ? 2 : 1);
+        for (const ingredient of recipe.ingredients || []) {
+            const amountNeeded = (ingredient.quantity * productionRate) / (row.use_somersloop ? 2 : 1);
             let remainingNeed = amountNeeded;
-            const ingNameLower = ing.name.toLowerCase();
+            const ingredientNameLower = ingredient.name.toLowerCase();
 
-            // consume from primary products
-            for (let j = 0; j < n && remainingNeed > 0; j++) {
-                if (producers[j].primaryNameLower !== ingNameLower) continue;
+            for (let j = 0; j < rows.length && remainingNeed > 0; j++) {
+                if (producers[j].primaryNameLower !== ingredientNameLower) continue;
+
                 const available = producers[j].productQty - usageArr[j];
                 if (available <= 0) continue;
+
                 const take = Math.min(available, remainingNeed);
-                if (take > 0) {
-                    productionTableRows[i].productionImports.push(new ProductionImport(j, take, ing.name, false));
-                    usageArr[j] += take;
+                productionTableRows[i].productionImports.push(new ProductionImport(j, take, ingredient.name, false));
+                usageArr[j] += take;
+                remainingNeed -= take;
+            }
+
+            if (remainingNeed > 0) {
+                for (let j = 0; j < rows.length && remainingNeed > 0; j++) {
+                    if (!producers[j].rec || !producers[j].exportPerMin2) continue;
+                    if (producers[j].secondNameLower !== ingredientNameLower) continue;
+
+                    const available = producers[j].extraQty - extraUsageArr[j];
+                    if (available <= 0) continue;
+
+                    const take = Math.min(available, remainingNeed);
+                    productionTableRows[i].productionImports.push(new ProductionImport(j, take, ingredient.name, true));
+                    extraUsageArr[j] += take;
                     remainingNeed -= take;
                 }
             }
 
-            // consume from secondary products (extra)
-            if (remainingNeed > 0) {
-                for (let j = 0; j < n && remainingNeed > 0; j++) {
-                    if (!producers[j].rec || !producers[j].exportPerMin2) continue;
-                    if (producers[j].secondNameLower !== ingNameLower) continue;
-                    const available = producers[j].extraQty - extraUsageArr[j];
-                    if (available <= 0) continue;
-                    const take = Math.min(available, remainingNeed);
-                    if (take > 0) {
-                        productionTableRows[i].productionImports.push(new ProductionImport(j, take, ing.name, true));
-                        extraUsageArr[j] += take;
-                        remainingNeed -= take;
-                    }
-                }
-            }
-
-            // remainingNeed > 0 becomes an external import; record it and attach to production row
             if (remainingNeed > 1e-7) {
-                const foundItem = (appData.items || []).find((it: any) => it.name && it.name.toLowerCase() === ing.name.toLowerCase());
-                const itemId = foundItem ? foundItem.id : 0;
-                const className = foundItem ? foundItem.class_name : '';
-                const name = ing.name;
-                const key = `${itemId}-${name}`;
+                const foundItem = (appData.items || []).find((item) => item.name?.toLowerCase() === ingredient.name.toLowerCase());
+                const itemId = foundItem?.id ?? 0;
+                const className = foundItem?.class_name ?? '';
+                const key = `${itemId}-${ingredient.name}`;
 
                 if (!importsMap[key]) {
-                    importsMap[key] = { itemId, className, name, amount: 0 };
+                    importsMap[key] = {itemId, className, name: ingredient.name, amount: 0};
                     importsOrder.push(key);
                 }
                 importsMap[key].amount += remainingNeed;
 
                 const importIndex = importsOrder.indexOf(key);
-                productionTableRows[i].imports.push({ index: importIndex, amount: remainingNeed, product: name });
-
+                productionTableRows[i].imports.push({index: importIndex, amount: remainingNeed, product: ingredient.name});
                 remainingNeed = 0;
             }
         }
     }
 
-    const importsTableRows = importsOrder.map((key, i) => {
+    const importsTableRows: ImportTableRow[] = importsOrder.map((key, index) => {
         const row = importsMap[key];
         const sourceSelections = importSourcesByItem.get(row.itemId) || [];
-        const sourcedQuantity = sourceSelections.reduce((total: number, source: any) => total + Math.max(0, Number(source.assignedAmount || 0)), 0);
+        const sourcedQuantity = sourceSelections.reduce((total, source) => total + Math.max(0, toNumber(source.assignedAmount)), 0);
+
         return {
-            index: i,
+            index,
             product: row.name,
             quantity: row.amount,
             itemId: row.itemId,
             sourceSelections,
             sourcedQuantity,
-            unresolvedQuantity: Math.max(0, row.amount - sourcedQuantity)
+            unresolvedQuantity: Math.max(0, row.amount - sourcedQuantity),
         };
     });
-    // Build a checklist in the shape expected by Visualization/Checklist.ts
-    const checklistFromServer: any[] = appData?.checklist || [];
-    const checklistArray: any[] = [];
 
-    for (let i = 0; i < checklistFromServer.length; i++) {
-        const ck = checklistFromServer[i];
-        // server row contains production_id -> map to productionTableRows row_id
-        const productionRow = productionTableRows.find(pr => pr.row_id == ck.production_id || pr.row_id == (ck.productionRow && ck.productionRow.row_id));
+    const checklistArray: ChecklistVisualizationItem[] = [];
+    for (let i = 0; i < (appData.checklist || []).length; i++) {
+        const checklistItem = (appData.checklist || [])[i] as ChecklistItem & { productionRow?: { row_id?: number }; beenBuild?: boolean; beenTested?: boolean };
+        const productionRow = productionTableRows.find((row) => row.row_id == checklistItem.production_id || row.row_id == checklistItem.productionRow?.row_id);
         if (!productionRow) continue;
-        checklistArray.push({ index: i, productionRow, beenBuild: !!ck.been_build || !!ck.beenBuild, beenTested: !!ck.been_tested || !!ck.beenTested });
+
+        checklistArray.push({
+            index: i,
+            productionRow,
+            beenBuild: !!checklistItem.been_build || !!checklistItem.beenBuild,
+            beenTested: !!checklistItem.been_tested || !!checklistItem.beenTested,
+        });
     }
 
-    const checklistObj = {
-        getChecklist: () => checklistArray
-    };
-
-    const fakeTableHandler: any = {
+    const tableHandler: VisualizationTableHandler = {
         productionTableRows,
         importsTableRows,
-        checklist: checklistObj,
-        getRecipeById: (id: number) => recipeMap[id] || null,
-        items: appData?.items || [],
+        checklist: {
+            getChecklist: () => checklistArray,
+        },
+        getRecipeById: (id: number) => visualizationRecipeMap[id] || null,
+        items: appData.items || [],
     };
 
-    return new Visualization(fakeTableHandler as any, options);
+    // Visualization is still a legacy boundary; keep its loose constructor isolated here.
+    return new Visualization(tableHandler as unknown as ConstructorParameters<typeof Visualization>[0], options);
 }
