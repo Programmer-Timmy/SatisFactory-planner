@@ -523,7 +523,7 @@ export class Visualization {
 
             for (let j = 0; j < row.imports.length; j++) {
                 const importRow = row.imports[j];
-                const itemId = row.recipe?.resources?.[j]?.itemId || 0;
+                const itemId = row.recipe?.ingredients.find((ingredient: any) => ingredient.name === importRow.product)?.id || 0;
                 this.importConnections.push(new Connection(index, importRow.index, i, importRow.amount, importRow.product, itemId));
                 index++;
             }
