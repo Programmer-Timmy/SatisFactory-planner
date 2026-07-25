@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.17.5",
+    "date": "July 25, 2026",
+    "changes": [
+      "Fixed: Wrong icon displayed on import connections between import nodes and production nodes in the production line visualization."
+    ]
+  },
+  {
     "version": "1.17.4",
     "date": "July 24, 2026",
     "changes": [
