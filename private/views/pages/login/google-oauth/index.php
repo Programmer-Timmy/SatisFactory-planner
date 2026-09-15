@@ -6,7 +6,7 @@ $error = null;
 $showFullScreenError = false;
 
 // load .env file
-$env = parse_ini_file(__DIR__ . '../../../../../../.env');
+$env = parse_ini_file(__DIR__ . '/../../../../../.env');
 
 $google_oauth_client_id = $env['GOOGLE_OAUTH_CLIENT_ID'];
 $google_oauth_client_secret = $env['GOOGLE_OAUTH_CLIENT_SECRET'];
@@ -61,8 +61,8 @@ if (isset($_GET['code']) && !empty($_GET['code']) && !isset($_POST['type'])) {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//    disable ssl
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
     $response = curl_exec($ch);
     if ($response === false) {
         echo 'cURL Error: ' . curl_error($ch);
@@ -82,8 +82,8 @@ if (isset($_GET['code']) && !empty($_GET['code']) && !isset($_POST['type'])) {
         curl_setopt($ch, CURLOPT_URL, 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $access_token]);
-//    disable ssl
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 
         $userinfo = curl_exec($ch);
         if ($userinfo === false) {
