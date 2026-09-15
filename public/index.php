@@ -86,8 +86,8 @@ if (str_contains($require, '/api')) {
 
 if ($site['admin']['enabled']) {
     $admin = $site['admin'];
-    $pageTemplate = __DIR__ . "/../private/Views/pages$require.php";
-    $pageDirectory = __DIR__ . "/../private/Views/pages$require";
+    $pageTemplate = __DIR__ . "/../private/views/pages$require.php";
+    $pageDirectory = __DIR__ . "/../private/views/pages$require";
     if (file_exists($pageTemplate) || is_dir($pageDirectory) || Router::isRoute($uri, true)) {
         if (str_contains($require, $admin['filterInUrl']) && $require !== $site['redirect'] && !in_array($require, $admin['skipChecks'])) {
             if (!isset($_SESSION[$admin['sessionName']])) {
@@ -112,7 +112,7 @@ if ($site['accounts']['enabled']) {
     $accounts = $site['accounts'];
 
     $pageTemplate = __DIR__ . "/../private/views/pages$require.php";
-    $pageDirectory = __DIR__ . "/../private/Views/pages$require";
+    $pageDirectory = __DIR__ . "/../private/views/pages$require";
     if (file_exists($pageTemplate) || is_dir($pageDirectory) || Router::isRoute($uri, true)) {
         if (str_contains($require, $accounts['filterInUrl']) && !str_contains($require, $site['redirect']) && !in_array(substr($require, 1), $accounts['skipChecks'])) {
             if (!isset($_SESSION[$accounts['sessionName']])) {

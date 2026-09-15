@@ -135,22 +135,27 @@ class AuthControler
 
     public static function searchLoginAttempts($ip, $userId, $year, $success) {
         $where = [];
+        $params = [];
         if ($ip) {
-            $where[] = "ip_address = '$ip'";
+            $where[] = "ip_address = ?";
+            $params[] = $ip;
         }
         if ($userId) {
-            $where[] = "users_id = '$userId'";
+            $where[] = "users_id = ?";
+            $params[] = $userId;
         }
         if ($year) {
-            $where[] = "YEAR(login_timestamp) = '$year'";
+            $where[] = "YEAR(login_timestamp) = ?";
+            $params[] = $year;
         }
         if ($success !== null && $success !== '') {
-            $where[] = "success = '$success'";
+            $where[] = "success = ?";
+            $params[] = $success;
         }
 
         $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        return Database::query("SELECT users.username, login_attempts.ip_address, login_attempts.success, login_attempts.login_timestamp FROM login_attempts LEFT JOIN users ON login_attempts.users_id = users.id $whereClause");
+        return Database::query("SELECT users.username, login_attempts.ip_address, login_attempts.success, login_attempts.login_timestamp FROM login_attempts LEFT JOIN users ON login_attempts.users_id = users.id $whereClause", $params);
 
     }
 
